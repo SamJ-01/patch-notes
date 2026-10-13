@@ -100,6 +100,18 @@ class Feeds(unittest.TestCase):
     def test_topic_patterns_compile_and_match(self):
         self.assertTrue(news.TOPIC_RE["ransomware"].search("LockBit ransomware hits retailer"))
         self.assertTrue(news.TOPIC_RE["web-sqli"].search("SQL injection in MOVEit"))
+        self.assertTrue(news.TOPIC_RE["zero-day"].search("Maximum-Severity SSRF Flaw in SonicWall SMA Devices Under Attack"))
+        self.assertTrue(news.TOPIC_RE["malware"].search("16 Malicious Firefox Extensions Pose as Wallets"))
+        self.assertFalse(news.TOPIC_RE["malware"].search("Malicious actors target banks"))
+
+    def test_topics_link_to_real_lessons(self):
+        lessons = {l["id"] for l in content("lessons.json")}
+        self.assertLessEqual(set(news.TOPICS), lessons)
+
+    def test_non_news_items_are_skipped(self):
+        self.assertTrue(news.NOT_NEWS.search("ISC Stormcast For Tuesday, October 13th"))
+        self.assertTrue(news.NOT_NEWS.search("Friday Squid Blogging: I Caught a Squid"))
+        self.assertFalse(news.NOT_NEWS.search("Squid proxy vulnerability patched"))
 
 
 class PageGeneration(unittest.TestCase):
@@ -137,21 +149,49 @@ class PageGeneration(unittest.TestCase):
 
 
 class ExplainHelper(unittest.TestCase):
-    def test_add_only_known_stories_and_truncates(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            tmp = Path(tmp)
-            originals = explain.NEWS, explain.EXPLAINERS
-            explain.NEWS, explain.EXPLAINERS = tmp / "news.json", tmp / "explainers.json"
-            try:
-                explain.NEWS.write_text(json.dumps([{"link": "https://k/1", "title": "t", "snippet": "", "source": "s"}]))
-                incoming = tmp / "in.json"
-                incoming.write_text(json.dumps({"https://k/1": "x " * 600, "https://unknown/2": "nope"}))
-                explain.add(incoming)
-                saved = json.loads(explain.EXPLAINERS.read_text())
-                self.assertEqual(list(saved), ["https://k/1"])
-                self.assertLessEqual(len(saved["https://k/1"]["text"]), explain.MAX_CHARS)
-            finally:
-                explain.NEWS, explain.EXPLAINERS = originals
+    """AI-written content must go through drafts and only reach the site once approved."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        tmp = Path(self.tmp.name)
+        self.saved = {k: getattr(explain, k) for k in ("NEWS", "EXPLAINERS", "EXPLAINER_DRAFTS", "GLOSSARY", "DRAFTS")}
+        for k in self.saved:
+            setattr(explain, k, tmp / f"{k.lower()}.json")
+        explain.NEWS.write_text(json.dumps([{"link": "https://k/1", "title": "t", "snippet": "", "source": "s"}]))
+        self.incoming = tmp / "in.json"
+
+    def tearDown(self):
+        for k, v in self.saved.items():
+            setattr(explain, k, v)
+        self.tmp.cleanup()
+
+    def test_add_creates_drafts_not_live_content(self):
+        self.incoming.write_text(json.dumps({"https://k/1": "x " * 600, "https://unknown/2": "nope"}))
+        explain.add(self.incoming)
+        drafts = json.loads(explain.EXPLAINER_DRAFTS.read_text())
+        self.assertEqual(list(drafts), ["https://k/1"])
+        self.assertLessEqual(len(drafts["https://k/1"]["text"]), explain.MAX_CHARS)
+        self.assertFalse(explain.EXPLAINERS.exists())
+
+    def test_approve_publishes_and_clears_draft(self):
+        self.incoming.write_text(json.dumps({"https://k/1": "Draft text."}))
+        explain.add(self.incoming)
+        explain.approve("https://k/1", "Edited  text.")
+        self.assertEqual(json.loads(explain.EXPLAINERS.read_text())["https://k/1"]["text"], "Edited text.")
+        self.assertEqual(json.loads(explain.EXPLAINER_DRAFTS.read_text()), {})
+
+    def test_glossary_approval_blocks_clashes(self):
+        explain.GLOSSARY.write_text(json.dumps([{"id": "rce", "term": "RCE", "kind": "Attack", "aliases": ["RCE"], "short": "x"}]))
+        explain.DRAFTS.write_text(json.dumps([
+            {"id": "dup", "term": "Dup", "kind": "Attack", "aliases": ["rce"], "short": "x", "draft": "2026-10-13"},
+            {"id": "new", "term": "New", "kind": "Concept", "aliases": ["NEWTERM"], "short": "y", "see": [], "lesson": "", "draft": "2026-10-13"},
+        ]))
+        drafts = json.loads(explain.DRAFTS.read_text())
+        self.assertIn("aliases already used", explain.approve_term(drafts[0]))
+        self.assertIsNone(explain.approve_term(drafts[1]))
+        live = json.loads(explain.GLOSSARY.read_text())
+        self.assertEqual(live[-1], {"id": "new", "term": "New", "kind": "Concept", "aliases": ["NEWTERM"], "short": "y"})
+        self.assertEqual([d["id"] for d in json.loads(explain.DRAFTS.read_text())], ["dup"])
 
 
 class ContentIntegrity(unittest.TestCase):

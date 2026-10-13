@@ -36,22 +36,27 @@ FEEDS = [
 # so every tagged story can link to the lesson that explains it.
 TOPICS = {
     "ransomware": r"ransomware|extortion|lockbit|akira|cl0p|\bclop\b|alphv|blackcat|qilin|scattered spider",
-    "phishing": r"phish|smishing|vishing|social engineering|business email compromise|\bbec\b|\bscam",
-    "zero-day": r"zero-day|0-day|zero day|exploited in the wild|actively exploited|under active attack",
+    "phishing": r"phish|smishing|vishing|social engineering|business email compromise|\bbec\b|\bscam|clickfix|email security",
+    "zero-day": r"zero-day|0-day|zero day|exploited in the wild|actively exploited|under (active )?attack",
     "vuln-management": r"\bcve-\d{4}-\d+|vulnerabilit|\bflaw|\bpatch|security update|\bbug\b",
-    "supply-chain": r"supply[- ]chain|\bnpm\b|pypi|malicious package|open[- ]source package|dependenc|github action|typosquat",
-    "data-breach": r"breach|data leak|leaked|exposed data|stolen data|data theft|customer data|personal data",
-    "malware": r"malware|trojan|infostealer|stealer|botnet|\brat\b|backdoor|loader|spyware|\bworm\b|rootkit",
+    "supply-chain": r"supply[- ]chain|\bnpm\b|pypi|malicious package|open[- ]source package|dependenc|github action|typosquat|hardware implant|spy chip",
+    "data-breach": r"breach|data leak|leaked|exposed data|stolen data|data theft|customer data|personal data|data dump|dumped|spills?\b|data sharing",
+    "malware": r"malware|trojan|infostealer|stealer|botnet|\brat\b|backdoor|loader|spyware|\bworm\b|rootkit|malicious\b.{0,40}\b(extensions?|apps?|add-ons?)\b|\brmm\b",
     "nation-state": r"nation[- ]state|state[- ]sponsored|\bapt\s?\d*\b|chin(a|ese)|russia|north korea|\biran|lazarus|typhoon|fancy bear|espionage",
     "ddos": r"ddos|denial[- ]of[- ]service",
     "ai-security": r"\bai\b|artificial intelligence|\bllm|chatgpt|deepfake|prompt injection|openai|gemini|copilot|agentic|\bclaude\b",
     "cloud": r"\bcloud|\baws\b|azure|google cloud|kubernetes|misconfigur|s3 bucket|\bsaas\b",
-    "identity": r"password|credential|\bmfa\b|multi-factor|\b2fa\b|passkey|authenticat|account takeover|\bokta\b|\bsso\b",
+    "identity": r"password|credential|\bmfa\b|multi-factor|\b2fa\b|passkey|authenticat|account takeover|\bokta\b|\bsso\b|sign-on|zero trust",
     "iot-ot": r"\bics\b|scada|industrial|\bot\b|\biot\b|router|camera|\bplc\b|operational technology|critical infrastructure",
     "web-sqli": r"sql injection|\bsqli\b",
     "web-xss": r"cross-site scripting|\bxss\b",
+    "incident-response": r"cyberattack|cyber attack|systems offline|takes .* offline|disrupt|outage|incident (response|affecting)",
+    "encryption": r"encrypt|certificate|\bcerts?\b|\btls\b|let.s encrypt|quantum|cryptograph",
+    "soc": r"\bedr\b|antivirus|microsoft defender|\bsiem\b|security operations|threat hunt|detection",
+    "networking": r"\bdns\b|top-level domain|domain hijack|\bbgp\b|firewall rule",
 }
 TOPIC_RE = {topic: re.compile(pattern, re.I) for topic, pattern in TOPICS.items()}
+NOT_NEWS = re.compile(r"^ISC Stormcast|squid blogging|names new editor|writing the next chapter|passing the baton", re.I)
 CVE_RE = re.compile(r"CVE-\d{4}-\d{4,7}", re.I)
 TAG_RE = re.compile(r"<[^>]+>")
 
@@ -131,7 +136,7 @@ def collect_news(days=7):
         for it in batch:
             title = clean(it["title"], words=40)
             link = it["link"]
-            if not title or not link.startswith("https://") or not it["date"] or it["date"] < cutoff:
+            if not title or not link.startswith("https://") or not it["date"] or it["date"] < cutoff or NOT_NEWS.search(title):
                 continue
             key = re.sub(r"[^a-z0-9]", "", title.lower())[:60]
             if key in seen:
@@ -144,6 +149,8 @@ def collect_news(days=7):
             # Weight the headline: a topic in the title counts, in the snippet it needs to be specific.
             topics = [t for t, rx in TOPIC_RE.items() if rx.search(title)]
             topics += [t for t, rx in TOPIC_RE.items() if t not in topics and t != "vuln-management" and rx.search(snippet)]
+            if it["source"] == "CISA" and not topics:
+                topics = ["vuln-management"]
             stories.append({
                 "title": title,
                 "link": link,

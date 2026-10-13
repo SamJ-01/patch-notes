@@ -21,7 +21,7 @@ I wanted one place that does both: today's news, with every story linked to a pl
 - **Python, standard library only.** Fetching (NVD, CISA, EPSS, RSS feeds), parsing, prioritising and building the site use no third-party packages, so there's nothing to install and nothing extra to trust.
 - **Static site.** Everything is pre-built into HTML and JSON, so there's no server to attack or pay for.
 - **GitHub Actions** runs the tests, rebuilds the site every day and deploys it to GitHub Pages. A failing test stops the deploy.
-- **A scheduled AI step** writes the beginner "What this means" explanations from each headline and summary. They're labelled as AI-generated, and the prompt forbids inventing facts beyond the headline.
+- **A scheduled AI step** drafts the beginner "What this means" explanations from each headline and summary. Nothing goes live until I review it (`python3 explain.py review`: approve, edit or reject), and published explanations are labelled as AI-generated.
 
 ## Things I had to get right
 
@@ -40,7 +40,7 @@ I wanted one place that does both: today's news, with every story linked to a pl
 
 ## How I used AI
 
-I built this with Claude (Anthropic's AI assistant) as a pair programmer: it wrote much of the code from my direction, and I reviewed, tested and changed it. I can explain how each part works. AI is also part of the product: it drafts the daily explanations, which are labelled as AI-generated.
+I built this with Claude (Anthropic's AI assistant) as a pair programmer: it wrote much of the code from my direction, and I reviewed, tested and changed it. I can explain how each part works. AI is also part of the product: it drafts the daily explanations, which I review before they're published and which are labelled as AI-generated.
 
 ## What's next
 

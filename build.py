@@ -23,6 +23,7 @@ import email.utils
 import html
 import json
 import re
+import shutil
 import sqlite3
 from pathlib import Path
 
@@ -34,6 +35,7 @@ CONTENT = HERE / "content"
 DATA_DIR = HERE / "data"
 SITE_DIR = HERE / "site"
 TEMPLATE = HERE / "site_template.html"
+STATIC = HERE / "static"  # copied into site/ as-is (e.g. the social preview image)
 
 # Fields the page actually uses; everything else is dropped to keep the download small.
 CVE_FIELDS = ["id", "published", "description", "cvss", "severity", "vector", "cvss_version",
@@ -119,6 +121,25 @@ def trends(rows, cwe_names, db_path=cve_watch.DB_PATH, days=30):
 
 # --------------------------------------------------------------------------- Static pages
 
+def social_meta(site, title, description, path=""):
+    """Open Graph / Twitter tags so shared links show a title, summary and preview image."""
+    e = html.escape
+    base = site["url"].rstrip("/") + "/"
+    return "\n".join([
+        f'<link rel="canonical" href="{e(base + path)}">',
+        '<meta property="og:type" content="website">',
+        '<meta property="og:site_name" content="Patch Notes">',
+        f'<meta property="og:title" content="{e(title)}">',
+        f'<meta property="og:description" content="{e(description)}">',
+        f'<meta property="og:url" content="{e(base + path)}">',
+        f'<meta property="og:image" content="{e(base)}og.png">',
+        '<meta property="og:image:width" content="1200">',
+        '<meta property="og:image:height" content="630">',
+        '<meta property="og:image:alt" content="Patch Notes: cyber security news, explained">',
+        '<meta name="twitter:card" content="summary_large_image">',
+        '<meta name="theme-color" content="#070A10">',
+    ])
+
 def page_css(template):
     """Reuse the app's own fonts and stylesheet for the static lesson pages."""
     fonts = re.search(r'<link rel="stylesheet" href="https://fonts[^>]+>', template).group(0)
@@ -128,7 +149,6 @@ def page_css(template):
 
 def lesson_page(lesson, nxt, fonts, css, site):
     e = html.escape
-    url = site["url"].rstrip("/") + f"/lessons/{lesson['id']}.html"
     ex = lesson["example"]
     src = ex.get("source")
     check = lesson["check"]
@@ -138,7 +158,7 @@ def lesson_page(lesson, nxt, fonts, css, site):
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{e(lesson['title'])} explained · Patch Notes</title>
 <meta name="description" content="{e(lesson['hook'])} A {lesson['minutes']}-minute plain-English lesson with a real case and how defenders stop it.">
-<link rel="canonical" href="{e(url)}">
+{social_meta(site, f"{lesson['title']} explained · Patch Notes", lesson['hook'] + " A plain-English lesson with a real case and how defenders stop it.", f"lessons/{lesson['id']}.html")}
 <link rel="alternate" type="application/rss+xml" title="Patch Notes" href="../feed.xml">
 {fonts}
 <style>{css}
@@ -175,7 +195,7 @@ def lessons_index(lessons, fonts, css, site):
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cyber security lessons · Patch Notes</title>
 <meta name="description" content="{len(lessons)} short, plain-English cyber security lessons: phishing, ransomware, SQL injection, cloud security and more.">
-<link rel="canonical" href="{e(site['url'].rstrip('/'))}/lessons/">
+{social_meta(site, "Cyber security lessons · Patch Notes", f"{len(lessons)} short, plain-English cyber security lessons.", "lessons/")}
 {fonts}
 <style>{css}</style>
 <header class="masthead" style="position:static"><div class="mast-inner"><a class="brand" href="../index.html"><b>PATCH<i>//</i>NOTES</b></a></div></header>
@@ -302,7 +322,8 @@ def main():
     (SITE_DIR / "lessons").mkdir(exist_ok=True)
     (SITE_DIR / "data" / "cves.json").write_text(json.dumps(rows, ensure_ascii=False))
     out = SITE_DIR / "index.html"
-    page = template.replace("/*__DATA__*/null", embed_json(data))
+    meta = social_meta(site, "Patch Notes: cyber security news, explained", site.get("description", ""))
+    page = template.replace("<!--__META__-->", meta).replace("/*__DATA__*/null", embed_json(data))
     out.write_text('<!doctype html>\n<html lang="en">\n<meta charset="utf-8">\n' + page)
     # Same page without the document skeleton, for publishing as a claude.ai artifact (which adds its own).
     DATA_DIR.mkdir(exist_ok=True)
@@ -314,6 +335,8 @@ def main():
     (SITE_DIR / "lessons" / "index.html").write_text(lessons_index(lessons, fonts, css, site))
     (SITE_DIR / "feed.xml").write_text(rss(stories, explainers, site))
     (SITE_DIR / "sitemap.xml").write_text(sitemap(lessons, site))
+    if STATIC.exists():
+        shutil.copytree(STATIC, SITE_DIR, dirs_exist_ok=True)
     (SITE_DIR / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {site['url'].rstrip('/')}/sitemap.xml\n")
 
     kev = len(data["kev"])

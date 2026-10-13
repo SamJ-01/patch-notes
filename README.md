@@ -9,7 +9,7 @@ Security news sites are written for people already in the industry, and courses 
 | Section | What it does |
 |---|---|
 | **Today** | A daily changelog for the internet: top stories, trending topics, newly exploited vulnerabilities, your next learning step and a daily challenge with a streak |
-| **News** | Headlines from 12 outlets, auto-tagged by topic, with links to lessons, CVEs and AI-written "What this means" explanations |
+| **News** | Headlines from 12 outlets, auto-tagged by topic, with links to lessons, CVEs and "What this means" explanations (AI-drafted, human-approved) |
 | **CVE Radar** | Every new CVE, enriched with CISA KEV and FIRST EPSS, prioritised by real-world risk, with trend charts and plain-English explanations |
 | **Am I affected?** | Pick the tech you use (phone, browser, router, work apps) for personal alerts on news and vulnerabilities |
 | **Learn** | 22 lessons with sourced real-world cases, 4 learning paths (e.g. Path to SOC Analyst) and a 250+ term glossary |
@@ -76,12 +76,16 @@ gh secret set NVD_API_KEY
 
 ## Daily automation
 
-Two things keep the site fresh:
+1. **GitHub Actions** (`.github/workflows/daily.yml`) runs the tests, then rebuilds and deploys the site every day at 06:00 UTC and on every push. A failing test blocks the deploy.
+2. **A scheduled Claude task** on the maintainer's Mac runs each morning. It fetches the news, drafts beginner explanations for new stories and glossary entries for new jargon, then pushes the drafts.
+3. **A person reviews the drafts.** Nothing AI-written goes live until approved:
 
-1. **GitHub Actions** (`.github/workflows/daily.yml`) rebuilds and deploys the site every day at 06:00 UTC and on every push.
-2. **A scheduled Claude task** on the maintainer's Mac runs each morning. It fetches the news, writes beginner explanations for new stories (`explain.py`), drafts glossary entries for new jargon into `content/glossary_drafts.json`, then commits and pushes. Drafts are reviewed by a person before moving into `content/glossary.json`.
+```bash
+python3 explain.py review         # story explanations: approve / edit / reject, then push
+python3 explain.py review-terms   # glossary drafts
+```
 
-If the Mac is off, step 1 still runs: news and CVEs stay current, only the new explanations are skipped.
+If the Mac is off, step 1 still runs: news and CVEs stay current, only new explanations are skipped.
 
 ## Adding content
 

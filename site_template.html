@@ -2,6 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Daily cyber security news, explained. Learn the concepts behind every headline, track exploited vulnerabilities and practise with hands-on labs.">
 <link rel="alternate" type="application/rss+xml" title="Patch Notes" href="feed.xml">
+<!--__META__-->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
@@ -432,6 +433,11 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .flag-form input { flex: 1 1 240px; font: 0.9rem var(--font-mono); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 9px 12px; min-width: 0; }
 
 
+/* ---------- Welcome ---------- */
+.welcome { border-color: rgba(63, 224, 232, 0.4); }
+.welcome-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.welcome .lcard .link-btn { margin-top: 4px; }
+
 /* ---------- Labs, paths, charts, progress ---------- */
 .kev-item.soft { border-left-color: var(--critical); }
 .stack-cta { border-color: rgba(255, 176, 0, 0.35); }
@@ -802,6 +808,7 @@ VIEWS.today = () => {
   const featured = news.filter(n => n.topics.length).slice(0, 7);
 
   main.innerHTML = `<div class="view">
+    ${P.intro ? "" : welcomeHtml()}
     <section class="changelog" aria-labelledby="today-h">
       <div class="win-bar"><b>today.log</b><span>v${esc(m.version)} · ${esc(m.dateLong)}</span></div>
       <div class="win-body">
@@ -852,6 +859,24 @@ VIEWS.today = () => {
   </div>`;
   renderDaily();
 };
+
+/* WELCOME: first visit only */
+const WELCOME = [
+  { id: "new", title: "I'm new to cyber security", text: "Start with the basics: scams, passwords and how attacks work. About 20 minutes.", href: "#path-awareness", cta: "Start the basics path" },
+  { id: "career", title: "I want a job in cyber", text: "See the entry-level roles, what they involve, and a learning path for each.", href: "#careers", cta: "Explore careers" },
+  { id: "news", title: "Just here for the news", text: "Today's security news, with every story linked to a plain-English explanation.", href: "#news", cta: "Read the news" },
+];
+function welcomeHtml() {
+  return `<section class="panel welcome" aria-labelledby="welcome-h">
+    <div class="panel-title"><h2 id="welcome-h">Welcome. What brings you here?</h2><button class="link-btn" data-intro="skip">Skip</button></div>
+    <div class="welcome-grid">${WELCOME.map(w => `<a class="lcard" href="${w.href}" data-intro="${w.id}"><h3>${esc(w.title)}</h3><p>${esc(w.text)}</p><span class="link-btn">${esc(w.cta)} →</span></a>`).join("")}</div>
+    <p class="muted" style="font-size:0.85rem">No sign-up. Your progress is saved in this browser.</p></section>`;
+}
+document.addEventListener("click", e => {
+  const w = e.target.closest?.("[data-intro]"); if (!w) return;
+  P.intro = w.dataset.intro; saveP();
+  if (w.dataset.intro === "skip") rerender();
+});
 
 /* STACK ("Am I affected?") */
 const STACK = Object.fromEntries(DATA.stack.map(s => [s.id, s]));
@@ -1630,6 +1655,7 @@ VIEWS.careers = () => {
       <h4>Start here</h4><ul>${p.start.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
       <h4>First job titles</h4><p class="muted" style="font-size:0.88rem">${p.titles.map(esc).join(" · ")}</p>
       <h4>Lessons for this path</h4><div class="row">${p.lessons.filter(id => LESSON[id]).map(id => `<a class="topic" href="#lesson-${esc(id)}">${esc(LESSON[id].title)}</a>`).join("")}</div>
+      ${(lp => lp ? `<a class="btn brand" href="#path-${esc(lp.id)}" style="justify-self:start">Start the learning path →</a>` : "")(DATA.paths.find(x => x.career === p.id))}
     </article>`).join("")}</div>
     <section class="stack">
       <div class="view-head"><h2>The best of the rest</h2><p>Where to go next: the outlets, shows, labs and tools working security people use.</p></div>
