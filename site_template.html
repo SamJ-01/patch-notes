@@ -1,6 +1,7 @@
 <title>Patch Notes</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Daily cyber security news, explained. Learn the concepts behind every headline, track exploited vulnerabilities and test your skills.">
+<meta name="description" content="Daily cyber security news, explained. Learn the concepts behind every headline, track exploited vulnerabilities and practise with hands-on labs.">
+<link rel="alternate" type="application/rss+xml" title="Patch Notes" href="feed.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
@@ -430,6 +431,55 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .flag-form { display: flex; gap: 8px; flex-wrap: wrap; }
 .flag-form input { flex: 1 1 240px; font: 0.9rem var(--font-mono); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 9px 12px; min-width: 0; }
 
+
+/* ---------- Labs, paths, charts, progress ---------- */
+.kev-item.soft { border-left-color: var(--critical); }
+.stack-cta { border-color: rgba(255, 176, 0, 0.35); }
+.paths-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.lcard .progress { font-size: 0.78rem; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.steps li { display: grid; grid-template-columns: 2.2rem minmax(0, 1fr); gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+.steps .st { font: 600 0.8rem var(--font-mono); text-align: center; padding: 5px 0; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
+.steps li.got .st { color: var(--good); border-color: var(--good); background: var(--good-tint); }
+.steps a { font-weight: 600; text-decoration: none; }
+.evidence { margin: 0; max-height: 360px; overflow: auto; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 12px; font: 0.76rem/1.6 var(--font-mono); color: var(--ink); white-space: pre; }
+.evidence mark { background: rgba(255, 176, 0, 0.3); color: var(--ink); border-radius: 2px; }
+#lab-f { flex: 1 1 240px; }
+.lab-step.got { border-color: rgba(61, 220, 151, 0.4); }
+.cvss-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.metric { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px 12px; margin: 0; min-width: 0; background: var(--surface); }
+.metric legend { font: 500 0.74rem var(--font-mono); color: var(--muted); padding: 0 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+.metric .chip { font-size: 0.76rem; }
+.score-panel { grid-template-columns: minmax(0, 1fr) auto; align-items: center; position: sticky; bottom: 40px; z-index: 2; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font: 0.76rem var(--font-mono); color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.chart { overflow-x: auto; }
+.chart svg { width: 100%; min-width: 320px; height: auto; display: block; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .axis { fill: var(--muted); font: 11px var(--font-mono); }
+.chart .axis.lbl { fill: var(--ink); font-family: var(--font-body); font-size: 12px; }
+.chart .axis.val { fill: var(--ink); }
+.chart-tip { position: fixed; z-index: 35; pointer-events: none; background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; padding: 6px 9px; font: 0.76rem var(--font-mono); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); max-width: 280px; }
+.tbl summary { cursor: pointer; font: 0.76rem var(--font-mono); color: var(--brand); }
+.tbl-wrap { overflow-x: auto; margin-top: 8px; }
+.tbl table { border-collapse: collapse; font: 0.78rem var(--font-mono); width: 100%; }
+.tbl td, .tbl th { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: left; font-variant-numeric: tabular-nums; }
+.trend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+.trend-grid .panel:first-child { grid-column: 1 / -1; }
+.stat-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; display: grid; gap: 4px; }
+.stat b { font: 700 1.4rem var(--font-display); font-variant-numeric: tabular-nums; }
+.badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.badge { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 10px; align-items: start; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; opacity: 0.55; }
+.badge.got { opacity: 1; border-color: rgba(255, 176, 0, 0.45); box-shadow: 0 0 20px rgba(255, 176, 0, 0.08); }
+.badge .ico { font-size: 1.4rem; line-height: 1; color: var(--sun); text-align: center; }
+.badge b { font-size: 0.95rem; }
+.badge span { font-size: 0.82rem; color: var(--muted); }
+.xp-log { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.xp-log li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr) auto; gap: 10px; font-size: 0.9rem; align-items: baseline; }
+.xp-log b { color: var(--sun); font-family: var(--font-mono); }
+
 @media (max-width: 860px) {
   .masthead { position: static; }
   .split { grid-template-columns: 1fr; }
@@ -443,6 +493,9 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
   .cwd { display: none; }
   .cmd-btn span { display: none; }
   .statusbar { display: none; }
+  .score-panel { bottom: 8px; }
+  .xp-log li { grid-template-columns: minmax(0, 1fr) auto; }
+  .xp-log li .mono { display: none; }
   body.has-status { padding-bottom: 0; }
   nav.tabs a kbd { display: none; }
 }
@@ -465,8 +518,10 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
     <a href="#news" data-tab="news"><kbd>2</kbd>news</a>
     <a href="#cves" data-tab="cves"><kbd>3</kbd>cve-radar</a>
     <a href="#learn" data-tab="learn"><kbd>4</kbd>learn</a>
-    <a href="#play" data-tab="play"><kbd>5</kbd>play</a>
-    <a href="#careers" data-tab="careers"><kbd>6</kbd>careers</a>
+    <a href="#labs" data-tab="labs"><kbd>5</kbd>labs</a>
+    <a href="#play" data-tab="play"><kbd>6</kbd>play</a>
+    <a href="#careers" data-tab="careers"><kbd>7</kbd>careers</a>
+    <a href="#progress" data-tab="progress"><kbd>8</kbd>progress</a>
   </div></nav>
 </header>
 
@@ -485,6 +540,7 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
     <div><strong>Data:</strong> headlines from the outlets linked on each story · <a href="https://nvd.nist.gov/" target="_blank" rel="noopener">NIST NVD</a> · <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" target="_blank" rel="noopener">CISA KEV</a> · <a href="https://www.first.org/epss/" target="_blank" rel="noopener">FIRST EPSS</a> · <a href="https://cwe.mitre.org/" target="_blank" rel="noopener">MITRE CWE</a></div>
     <div>Headlines and short snippets link to the original publishers. Patch Notes is an independent learning project and isn't affiliated with or endorsed by any of these sources. This product uses data from the NVD API but is not endorsed or certified by the NVD.</div>
     <div>Only practise hacking on systems you own or have written permission to test.</div>
+    <div><a href="feed.xml">RSS feed</a> · <a id="lessons-link" href="lessons/index.html">All lessons as pages</a> · <a href="https://github.com/SamJ-01/patch-notes" target="_blank" rel="noopener">Source code</a></div>
     <div id="foot-meta"></div>
     <div class="rot" title="Transmission intercepted">rot13 // synt{pnrfne_jbhyq_or_cebhq}</div>
   </div>
@@ -498,6 +554,8 @@ const DATA = /*__DATA__*/null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 const pct = x => x == null ? "—" : (x * 100 < 1 ? (x * 100).toFixed(2) : (x * 100).toFixed(1)) + "%";
+DATA.cves = DATA.kev.slice();  // replaced by the full list once data/cves.json arrives
+let CVES_READY = false, CVES_FAILED = false;
 const CVE_IDS = new Set(DATA.cves.map(c => c.id));
 const LESSON = Object.fromEntries(DATA.lessons.map(l => [l.id, l]));
 const TOPIC_NAME = id => (LESSON[id] ? LESSON[id].title.split(" & ")[0].split(" (")[0] : id);
@@ -556,6 +614,7 @@ function gloss(text, max = 4, seen = new Set()) {
 
 const pop = $("pop");
 let popAnchor = null, popPinned = false, popTimer = null;
+function learnTerm(id) { if (!P.terms[id]) { P.terms[id] = 1; award(2, "New term", { quiet: true }); } }
 function popHtml(id) {
   const g = GLOSS[id];
   const see = (g.see || []).filter(x => GLOSS[x]);
@@ -600,9 +659,9 @@ document.addEventListener("pointerout", e => {
 });
 document.addEventListener("click", e => {
   const t = e.target.closest(".term[data-g]");
-  if (t) { e.preventDefault(); (popAnchor === t && popPinned) ? closePop() : openPop(t, t.dataset.g, true); return; }
+  if (t) { e.preventDefault(); (popAnchor === t && popPinned) ? closePop() : (openPop(t, t.dataset.g, true), learnTerm(t.dataset.g)); return; }
   const see = e.target.closest("[data-see]");
-  if (see) { pop.innerHTML = popHtml(see.dataset.see); popPinned = true; placePop(); return; }
+  if (see) { pop.innerHTML = popHtml(see.dataset.see); popPinned = true; placePop(); learnTerm(see.dataset.see); return; }
   if (e.target.closest("#pop .x")) { closePop(true); return; }
   const gf = e.target.closest("[data-gl-focus]");
   if (gf) { GLS.focus = gf.dataset.glFocus; GLS.q = ""; GLS.kind = "All"; closePop(); if (location.hash === "#glossary") route(); return; }
@@ -611,15 +670,22 @@ document.addEventListener("click", e => {
 document.addEventListener("keydown", e => { if (e.key === "Escape") closePop(true); });
 addEventListener("scroll", () => popPinned ? placePop() : closePop(), { passive: true });
 addEventListener("resize", placePop);
+document.addEventListener("toggle", e => {
+  const d = e.target; if (!d.open || !d.dataset || !d.dataset.read || P.read[d.dataset.read]) return;
+  P.read[d.dataset.read] = todayStr(); award(2, "Read an explanation", { quiet: count(P.read) % 5 !== 1 });
+}, true);
 
 function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
 /* ---------- progress & XP (stored only in this browser) ---------- */
 const PKEY = "patch-notes-progress";
 const RANKS = [[0, "guest"], [100, "intern"], [300, "analyst"], [700, "hunter"], [1500, "responder"], [3000, "root"]];
-let P = { xp: 0, done: {}, daily: null, streak: 0, lastDaily: null, best: {} };
+const FRESH = () => ({ xp: 0, done: {}, daily: null, streak: 0, lastDaily: null, best: {}, flags: {}, labs: {}, labSteps: {}, paths: {}, terms: {}, read: {}, badges: {}, stack: null, log: [] });
+let P = FRESH();
 try { P = Object.assign(P, JSON.parse(localStorage.getItem(PKEY)) || {}); } catch (e) {}
 const saveP = () => { try { localStorage.setItem(PKEY, JSON.stringify(P)); } catch (e) {} };
+const count = o => Object.keys(o || {}).length;
+function progressChanged() { checkProgress(); saveP(); renderXP(); }
 function rank() {
   let i = 0; while (i + 1 < RANKS.length && P.xp >= RANKS[i + 1][0]) i++;
   const next = RANKS[i + 1];
@@ -629,20 +695,75 @@ function renderXP() {
   const r = rank();
   const prog = r.next ? (P.xp - r.floor) / (r.next - r.floor) : 1;
   $("xp").innerHTML = `<span class="lvl">${esc(r.name)}</span><span class="bar" aria-hidden="true"><i style="width:${Math.round(prog * 100)}%"></i></span><span class="pts">${P.xp} XP</span>`;
-  $("xp").title = r.next ? `${r.next - P.xp} XP to ${r.nextName}` : "Top rank reached";
+  $("xp").title = r.next ? `${r.next - P.xp} XP to ${r.nextName}. Click for your progress.` : "Top rank reached";
   renderStatus();
 }
-let toastTimer;
-function award(n, why) {
-  const before = rank().name;
-  P.xp += n; saveP(); renderXP();
-  const after = rank().name;
-  document.querySelector(".toast")?.remove();
+
+// Toasts queue up so a badge unlocked by the same action doesn't hide the XP message.
+const toasts = [];
+function toast(text) {
+  toasts.push(text);
+  if (toasts.length === 1) showToast();
+}
+function showToast() {
+  if (!toasts.length) return;
   const t = document.createElement("div");
-  t.className = "toast"; t.setAttribute("role", "status");
-  t.textContent = after !== before ? `Access level raised: ${after}` : `+${n} XP · ${why}`;
+  t.className = "toast"; t.setAttribute("role", "status"); t.textContent = toasts[0];
   document.body.appendChild(t);
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.remove(), 2600);
+  setTimeout(() => { t.remove(); toasts.shift(); showToast(); }, 2300);
+}
+function gain(n, why) { P.xp += n; P.log.unshift({ d: todayStr(), n, why }); P.log = P.log.slice(0, 40); }
+function award(n, why, { quiet = false } = {}) {
+  const before = rank().name;
+  gain(n, why);
+  if (!quiet) toast(`+${n} XP · ${why}`);
+  checkProgress();
+  const after = rank().name;
+  if (after !== before) toast(`Access level raised: ${after}`);
+  saveP(); renderXP();
+}
+
+const BADGES = [
+  { id: "first-steps", name: "First steps", desc: "Finish your first lesson", test: () => count(P.done) >= 1 },
+  { id: "scholar", name: "Scholar", desc: "Finish 10 lessons", test: () => count(P.done) >= 10 },
+  { id: "graduate", name: "Graduate", desc: "Finish every lesson", test: () => count(P.done) >= DATA.lessons.length },
+  { id: "hands-on", name: "Hands-on", desc: "Complete a lab", test: () => count(P.labs) >= 1 },
+  { id: "lab-master", name: "Lab master", desc: "Complete every lab", test: () => count(P.labs) >= DATA.labs.length },
+  { id: "first-flag", name: "First flag", desc: "Capture a hidden flag", test: () => count(P.flags) >= 1 },
+  { id: "ctf", name: "CTF champion", desc: "Capture all 3 flags", test: () => count(P.flags) >= 3 },
+  { id: "phish-proof", name: "Phish-proof", desc: "Spot every email in Phish or Legit", test: () => (P.best.phish || 0) >= DATA.phish.length },
+  { id: "quiz-ace", name: "Quiz ace", desc: "Score 10/10 in the quiz", test: () => (P.best.quiz || 0) >= 10 },
+  { id: "streak-3", name: "On a roll", desc: "3-day challenge streak", test: () => (P.streak || 0) >= 3 },
+  { id: "streak-7", name: "Habit formed", desc: "7-day challenge streak", test: () => (P.streak || 0) >= 7 },
+  { id: "pathfinder", name: "Pathfinder", desc: "Complete a learning path", test: () => count(P.paths) >= 1 },
+  { id: "word-nerd", name: "Word nerd", desc: "Look up 25 glossary terms", test: () => count(P.terms) >= 25 },
+  { id: "informed", name: "Informed", desc: "Read 10 story explanations", test: () => count(P.read) >= 10 },
+  { id: "know-your-stack", name: "Know your stack", desc: "Set up “Am I affected?”", test: () => !!(P.stack && P.stack.length) },
+  { id: "nice-try", name: "Nice try", desc: "Try sudo in the terminal", test: () => !!P.egg },
+];
+const BADGE_XP = 20, PATH_XP = 100, LAB_XP = 30;
+
+// One place decides what's complete: path bonuses and badges are granted here, never twice.
+function pathSteps(p) {
+  return p.steps.map(st => {
+    if (st.type === "lesson") return { ...st, label: LESSON[st.id]?.title || st.id, href: "#lesson-" + st.id, done: !!P.done[st.id], kind: "lesson" };
+    if (st.type === "lab") { const l = DATA.labs.find(x => x.id === st.id); return { ...st, label: l ? l.title : st.id, href: "#lab-" + st.id, done: !!P.labs[st.id], kind: "lab" }; }
+    if (st.type === "game") return { ...st, label: `Score ${st.min}+ in Phish or Legit`, href: "#play", done: (P.best.phish || 0) >= st.min, kind: "game" };
+    if (st.type === "flags") return { ...st, label: `Capture ${st.min} hidden flag${st.min > 1 ? "s" : ""}`, href: "#play", done: count(P.flags) >= st.min, kind: "ctf", flags: true };
+    return { ...st, label: st.type, href: "#learn", done: false, kind: st.type };
+  });
+}
+function checkProgress() {
+  DATA.paths.forEach(p => {
+    if (!P.paths[p.id] && pathSteps(p).every(st => st.done)) {
+      P.paths[p.id] = todayStr(); gain(PATH_XP, `Path complete: ${p.title}`); toast(`Path complete: ${p.title} · +${PATH_XP} XP`);
+    }
+  });
+  BADGES.forEach(b => {
+    if (!P.badges[b.id] && b.test()) {
+      P.badges[b.id] = todayStr(); gain(BADGE_XP, `Badge: ${b.name}`); toast(`Badge unlocked: ${b.name} · +${BADGE_XP} XP`);
+    }
+  });
 }
 
 /* ---------- shared quiz block ---------- */
@@ -670,8 +791,8 @@ const main = $("main");
 
 /* TODAY */
 VIEWS.today = () => {
-  const news = DATA.news, cves = DATA.cves, m = DATA.meta;
-  const kev = cves.filter(c => c.kev).sort((a, b) => b.kev.added.localeCompare(a.kev.added));
+  const news = DATA.news, m = DATA.meta;
+  const kev = DATA.kev.slice().sort((a, b) => b.kev.added.localeCompare(a.kev.added));
   const sources = new Set(news.map(n => n.source)).size;
   const counts = {};
   news.forEach(n => n.topics.forEach(t => counts[t] = (counts[t] || 0) + 1));
@@ -689,7 +810,7 @@ VIEWS.today = () => {
       <ul>
         <li><span class="mk add">+</span><span><a href="#news">${news.length} stories</a> from ${sources} security outlets, each linked to a lesson that explains it.</span></li>
         <li><span class="mk warn">!</span><span><a href="#cves" data-radar-prio="1">${kev.length} ${kev.length === 1 ? "vulnerability" : "vulnerabilities"}</a> newly confirmed as actively exploited. These get patched first.</span></li>
-        <li><span class="mk add">+</span><span><a href="#cves">${cves.length.toLocaleString()} new CVEs</a> published in the last ${m.days} days.</span></li>
+        <li><span class="mk add">+</span><span><a href="#cves">${m.cveCount.toLocaleString()} new CVEs</a> published in the last ${m.days} days.</span></li>
         ${top ? `<li><span class="mk trend">~</span><span>Most-covered topic: <a href="#lesson-${esc(top[0])}">${esc(TOPIC_NAME(top[0]))}</a>, in ${top[1]} stories.</span></li>` : ""}
         <li><span class="mk trend">?</span><span>New here? Press <kbd>/</kbd> and type <a href="#" data-cmd="help">help</a>. There are 3 hidden flags on this site.</span></li>
       </ul>
@@ -712,7 +833,9 @@ VIEWS.today = () => {
         </section>
       </div>
       <aside class="stack" style="gap:18px">
+        ${stackCard()}
         <section class="panel" id="daily"></section>
+        ${nextStepCard()}
         <section class="panel">
           <div class="eyebrow">Concept of the day · ${lesson.minutes} min</div>
           <h2>${esc(lesson.title)}</h2>
@@ -728,6 +851,61 @@ VIEWS.today = () => {
     </div>
   </div>`;
   renderDaily();
+};
+
+/* STACK ("Am I affected?") */
+const STACK = Object.fromEntries(DATA.stack.map(s => [s.id, s]));
+const stackItems = () => (P.stack || []).map(id => STACK[id]).filter(Boolean);
+const stackHits = text => { const t = text.toLowerCase(); return stackItems().filter(s => s.terms.some(w => t.includes(w))); };
+// Vulnerabilities match on the affected product names (vendor + product), not on description text,
+// so a library bug that merely mentions Windows doesn't tell a Windows user to update.
+const stackHitsCve = c => {
+  const prod = " " + c.products.join(" | ").toLowerCase() + " ", d = c.description.toLowerCase();
+  return stackItems().filter(s => s.cpe.some(w => prod.includes(" " + w)) || (s.desc || []).some(w => d.includes(w)));
+};
+function stackCard() {
+  if (!stackItems().length) return `<section class="panel stack-cta"><div class="eyebrow">Am I affected?</div><h2>Personal alerts</h2>
+    <p class="muted">Tell us what you use (phone, browser, router, work apps) and we'll flag the news and vulnerabilities that affect you. Stored only in this browser.</p>
+    <a class="btn brand" href="#stack" style="justify-self:start">Set up · +10 XP</a></section>`;
+  const stories = DATA.news.filter(n => stackHits(n.title + " " + n.snippet).length);
+  const vulns = DATA.cves.filter(c => (c.kev || c.priority <= 3) && stackHitsCve(c).length).sort((a, b) => a.priority - b.priority);
+  const advice = vulns.slice(0, 3).map(c => {
+    const what = stackHitsCve(c).map(s => s.label).join(", ");
+    return `<div class="kev-item ${c.kev ? "" : "soft"}"><b>${c.kev ? "Update now" : "Update soon"}: ${esc(what)}</b><span>${esc(c.id)} · ${c.kev ? "being exploited" : PRIO[c.priority].label.toLowerCase()} · <a href="#cves" data-cve="${esc(c.id)}">details</a></span></div>`;
+  }).join("");
+  return `<section class="panel"><div class="panel-title"><h2>Your stack</h2><a class="link-btn" href="#stack">Edit</a></div>
+    <p class="muted" style="font-size:0.9rem">${stackItems().map(s => esc(s.label)).join(" · ")}</p>
+    <p><strong>${stories.length}</strong> ${stories.length === 1 ? "story mentions" : "stories mention"} your tech this week${stories.length ? ` · <a href="#news" data-news-stack="1">show them</a>` : ""}.</p>
+    ${advice || `<p class="muted" style="font-size:0.9rem">No exploited or critical vulnerabilities for your stack ${CVES_READY ? "this week" : "in the exploited list"}. Nice.</p>`}
+  </section>`;
+}
+function nextStepCard() {
+  const p = DATA.paths.find(p => !P.paths[p.id] && pathSteps(p).some(s => s.done)) || DATA.paths.find(p => !P.paths[p.id]);
+  if (!p) return "";
+  const steps = pathSteps(p), next = steps.find(s => !s.done), done = steps.filter(s => s.done).length;
+  return `<section class="panel"><div class="eyebrow">Your path · ${done}/${steps.length}</div><h2>${esc(p.title)}</h2>
+    <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(done / steps.length * 100)}%"></i></span></div>
+    <p class="muted" style="font-size:0.9rem">Next: ${esc(next.label)}</p>
+    <div class="row"><a class="btn brand" href="${next.href}">Continue</a><a class="link-btn" href="#path-${esc(p.id)}">See path</a></div></section>`;
+}
+VIEWS.stack = () => {
+  const chosen = new Set(P.stack || []);
+  const groups = [...new Set(DATA.stack.map(s => s.group))];
+  main.innerHTML = `<div class="view"><div class="view-head"><a class="link-btn" href="#today">← Today</a><div class="eyebrow">Am I affected?</div><h1>What do you use?</h1>
+    <p>Pick the things you use at home or work. We'll highlight news and vulnerabilities that mention them, and tell you what to update. Your choices stay in this browser.</p></div>
+    <div class="stack" id="stack-pick">${groups.map(g => `<section class="stack" style="gap:8px"><h3 class="eyebrow">${esc(g)}</h3><div class="row">${DATA.stack.filter(s => s.group === g).map(s => `<button class="chip" data-stack="${esc(s.id)}" aria-pressed="${chosen.has(s.id)}">${esc(s.label)}</button>`).join("")}</div></section>`).join("")}</div>
+    <div class="row"><button class="btn brand" id="stack-save">Save my stack</button><span class="muted" id="stack-n">${chosen.size} selected</span></div></div>`;
+  $("stack-pick").addEventListener("click", e => {
+    const b = e.target.closest("[data-stack]"); if (!b) return;
+    chosen.has(b.dataset.stack) ? chosen.delete(b.dataset.stack) : chosen.add(b.dataset.stack);
+    b.setAttribute("aria-pressed", chosen.has(b.dataset.stack)); $("stack-n").textContent = `${chosen.size} selected`;
+  });
+  $("stack-save").addEventListener("click", () => {
+    const first = !(P.stack && P.stack.length);
+    P.stack = [...chosen];
+    if (first && P.stack.length) award(10, "Stack set up"); else progressChanged();
+    location.hash = "today";
+  });
 };
 
 function renderDaily() {
@@ -760,13 +938,13 @@ function storyHtml(s) {
     <div class="meta"><span>${esc(s.source)}</span><span>${ago(s.date)}</span><a class="read" href="${esc(s.link)}" target="_blank" rel="noopener">Read the story ↗</a></div>
     <h3>${gloss(s.title, 3, seen)}</h3>
     ${s.snippet ? `<p class="snip">${gloss(s.snippet, 4)}</p>` : ""}
-    ${DATA.explainers && DATA.explainers[s.link] ? `<details class="eli"><summary>What this means</summary><p>${gloss(DATA.explainers[s.link], 4)}</p><p class="ai-note">AI-generated explanation based on the headline and summary. Read the full story for details.</p></details>` : ""}
+    ${DATA.explainers && DATA.explainers[s.link] ? `<details class="eli" data-read="${esc(s.link)}"><summary>What this means</summary><p>${gloss(DATA.explainers[s.link], 4)}</p><p class="ai-note">AI-generated explanation based on the headline and summary. Read the full story for details.</p></details>` : ""}
     ${s.topics.length || s.cves.length ? `<div class="row">${s.topics.filter(t => LESSON[t]).map(t => `<a class="topic" href="#lesson-${esc(t)}">Learn: ${esc(TOPIC_NAME(t))}</a>`).join("")}${s.cves.map(c => CVE_IDS.has(c) ? `<button class="cvetag" data-cve="${esc(c)}" title="Open on the CVE Radar">${esc(c)}</button>` : `<a class="cvetag" href="https://nvd.nist.gov/vuln/detail/${esc(c)}" target="_blank" rel="noopener" title="Open on NVD">${esc(c)} ↗</a>`).join("")}</div>` : ""}
   </article>`;
 }
 
 /* NEWS */
-const NS = { q: "", topic: "all", source: "all", shown: 25 };
+const NS = { q: "", topic: "all", source: "all", shown: 25, stack: false };
 VIEWS.news = () => {
   const counts = {};
   DATA.news.forEach(n => n.topics.forEach(t => counts[t] = (counts[t] || 0) + 1));
@@ -780,7 +958,8 @@ VIEWS.news = () => {
       <div class="row"><label class="sr" for="nq">Search news</label><input id="nq" type="search" placeholder="Search headlines (e.g. Microsoft, ransomware, CVE-2026)" value="${esc(NS.q)}">
         <label class="sr" for="nsrc">Source</label><select id="nsrc"><option value="all">All sources</option>${sources.map(s => `<option ${NS.source === s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select></div>
       <div class="row" id="ntopics">
-        <button class="chip" data-t="all" aria-pressed="${NS.topic === "all"}">All</button>
+        <button class="chip" data-t="all" aria-pressed="${NS.topic === "all" && !NS.stack}">All</button>
+        ${stackItems().length ? `<button class="chip" data-t="__stack" aria-pressed="${NS.stack}">Your stack</button>` : ""}
         ${topics.map(([t, n]) => `<button class="chip" data-t="${esc(t)}" aria-pressed="${NS.topic === t}">${esc(TOPIC_NAME(t))}<span class="n">${n}</span></button>`).join("")}
       </div>
     </div>
@@ -789,7 +968,7 @@ VIEWS.news = () => {
   </div>`;
   const draw = () => {
     const q = NS.q.trim().toLowerCase();
-    const rows = DATA.news.filter(n => (NS.topic === "all" || n.topics.includes(NS.topic)) && (NS.source === "all" || n.source === NS.source) &&
+    const rows = DATA.news.filter(n => (!NS.stack || stackHits(n.title + " " + n.snippet).length) && (NS.topic === "all" || n.topics.includes(NS.topic)) && (NS.source === "all" || n.source === NS.source) &&
       (!q || (n.title + " " + n.snippet + " " + n.cves.join(" ")).toLowerCase().includes(q)));
     $("ncount").textContent = `${rows.length} ${rows.length === 1 ? "story" : "stories"}${NS.topic !== "all" ? " about " + TOPIC_NAME(NS.topic) : ""}`;
     $("nlist").innerHTML = rows.slice(0, NS.shown).map(storyHtml).join("") || `<div class="empty">No stories match. Try another topic or search.</div>`;
@@ -797,7 +976,7 @@ VIEWS.news = () => {
   };
   $("nq").addEventListener("input", e => { NS.q = e.target.value; NS.shown = 25; draw(); });
   $("nsrc").addEventListener("change", e => { NS.source = e.target.value; NS.shown = 25; draw(); });
-  $("ntopics").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; NS.topic = b.dataset.t; NS.shown = 25;
+  $("ntopics").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; NS.stack = b.dataset.t === "__stack"; NS.topic = NS.stack ? "all" : b.dataset.t; NS.shown = 25;
     $("ntopics").querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b)); draw(); });
   $("nmore").addEventListener("click", () => { NS.shown += 25; draw(); });
   draw();
@@ -821,7 +1000,7 @@ function hay(c) {
   if (!c._hay) c._hay = [c.id, c.description, c.products.join(" "), c.cwes.map(id => id + " " + (DATA.cwe[id]?.name || "")).join(" "), c.kev?.name || ""].join(" ").toLowerCase();
   return c._hay;
 }
-const watchHits = c => RS.watch.filter(t => hay(c).includes(t));
+const watchHits = c => [...RS.watch.filter(t => hay(c).includes(t)), ...stackHitsCve(c).map(s => s.label)];
 function headline(c) {
   if (c.kev?.name) return c.kev.name;
   const l = c.cwes.map(id => DATA.cwe[id]).find(Boolean);
@@ -900,6 +1079,7 @@ VIEWS.cves = () => {
     <div class="view-head"><div class="eyebrow">CVE Radar</div><h1>Which vulnerabilities actually matter</h1>
       <p>Every CVE published in the last ${DATA.meta.days} days, plus older ones CISA has just confirmed are being exploited. Sorted by real-world risk, not just severity score. Open any card for a plain-English explanation.</p></div>
     <section class="glance" id="glance" aria-label="At a glance"></section>
+    ${trendsHtml()}
     <div class="stack" style="gap:10px">
       <h3>How the priority works</h3>
       <div class="ladder">
@@ -946,23 +1126,30 @@ VIEWS.cves = () => {
   drawRadar();
 };
 function drawRadar() {
-  const counts = { 1: 0, 2: 0 };
-  DATA.cves.forEach(c => { if (counts[c.priority] != null) counts[c.priority]++; });
-  const wc = DATA.cves.filter(c => watchHits(c).length).length;
+  const counts = DATA.meta.priorityCounts;
+  const wc = CVES_READY ? DATA.cves.filter(c => watchHits(c).length).length : "…";
   const tiles = [
-    { key: "all", n: DATA.cves.length, what: "vulnerabilities", why: `Published in the last ${DATA.meta.days} days, plus recent KEV additions.`, c: "var(--brand)", t: "var(--brand-soft)" },
-    { key: "1", n: counts[1], what: PRIO[1].tile, why: PRIO[1].why, c: "var(--exploited)", t: "var(--exploited-tint)" },
-    { key: "2", n: counts[2], what: PRIO[2].tile, why: PRIO[2].why, c: "var(--likely)", t: "var(--likely-tint)" },
+    { key: "all", n: DATA.meta.cveCount, what: "vulnerabilities", why: `Published in the last ${DATA.meta.days} days, plus recent KEV additions.`, c: "var(--brand)", t: "var(--brand-soft)" },
+    { key: "1", n: counts[1] || 0, what: PRIO[1].tile, why: PRIO[1].why, c: "var(--exploited)", t: "var(--exploited-tint)" },
+    { key: "2", n: counts[2] || 0, what: PRIO[2].tile, why: PRIO[2].why, c: "var(--likely)", t: "var(--likely-tint)" },
     { key: "watch", n: wc, what: "match your watchlist", why: RS.watch.length ? `Mentions ${RS.watch.slice(0, 3).join(", ")}${RS.watch.length > 3 ? "…" : ""}.` : "Add vendors you use below.", c: "var(--ink)", t: "var(--surface-2)" },
   ];
   $("glance").innerHTML = tiles.map(t => `<button class="tile" data-key="${t.key}" aria-pressed="${t.key === "watch" ? RS.onlyWatch : (!RS.onlyWatch && RS.prio === t.key)}" style="--tile:${t.c};--tile-tint:${t.t}"><span class="n">${t.n.toLocaleString()}</span><span class="what">${esc(t.what)}</span><span class="why">${esc(t.why)}</span></button>`).join("");
   $("rchips").innerHTML = [["all", "All"], ...Object.entries(PRIO).map(([k, v]) => [k, v.label])].map(([k, l]) => `<button class="chip" data-prio="${k}" aria-pressed="${RS.prio === k}">${l}</button>`).join("") +
     `<button class="chip" data-toggle="onlyNew" aria-pressed="${RS.onlyNew}">New since last update</button><button class="chip" data-toggle="onlyWatch" aria-pressed="${RS.onlyWatch}">Watchlist only</button>`;
   $("rwatch").innerHTML = `<span>Your watchlist:</span>` + RS.watch.map((t, i) => `<span class="wterm">${esc(t)}<button data-rm="${i}" aria-label="Remove ${esc(t)}">×</button></span>`).join("") +
-    `<form class="inline-form"><label class="sr" for="rwi">Add a vendor or product</label><input id="rwi" placeholder="add vendor/product" autocomplete="off"><button type="submit">Add</button></form>`;
+    (stackItems().length ? `<span>+ your stack (${stackItems().length}) <a href="#stack">edit</a></span>` : `<a href="#stack">+ add your stack</a>`) + `<form class="inline-form"><label class="sr" for="rwi">Add a vendor or product</label><input id="rwi" placeholder="add vendor/product" autocomplete="off"><button type="submit">Add</button></form>`;
   drawRadarList();
 }
 function drawRadarList() {
+  if (!CVES_READY) {
+    $("rcount").textContent = "";
+    $("rlist").innerHTML = CVES_FAILED
+      ? `<div class="empty">Couldn't load the full CVE list (data/cves.json). If you opened index.html straight from disk, preview it with <span class="mono">python3 build.py --offline --serve</span> instead.</div>`
+      : `<div class="empty">Loading ${DATA.meta.cveCount.toLocaleString()} vulnerabilities…</div>`;
+    $("rmore").hidden = true;
+    return;
+  }
   const q = RS.q.trim().toLowerCase();
   const rows = DATA.cves.filter(c => (RS.prio === "all" || c.priority === Number(RS.prio)) && (!RS.onlyNew || c.new) && (!RS.onlyWatch || watchHits(c).length) && (!q || q.split(/\s+/).every(w => hay(c).includes(w))));
   const by = {
@@ -977,6 +1164,91 @@ function drawRadarList() {
   $("rmore").hidden = rows.length <= RS.shown;
 }
 
+/* TRENDS: hand-built SVG charts. Severity is ordinal, so it uses one amber ramp (validated
+   for the dark surface); single-series charts use the brand cyan. Every mark has a hover tooltip
+   and each chart has a table view. */
+const SEV_COLORS = { critical: "#FFB000", high: "#A8740F", other: "#5E4614" };
+const SEV_LABEL = { critical: "Critical (9.0+)", high: "High (7.0–8.9)", other: "Other / unscored" };
+const niceMax = v => { if (v <= 5) return 5; const p = 10 ** Math.floor(Math.log10(v)); const m = v / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p; };
+const fmtDay = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+function colPath(x, y0, w, h, r) {  // column grown from baseline y0, rounded data-end on top
+  if (h <= 0) return "";
+  r = Math.min(r, h, w / 2);
+  return `M${x},${y0}V${y0 - h + r}Q${x},${y0 - h} ${x + r},${y0 - h}H${x + w - r}Q${x + w},${y0 - h} ${x + w},${y0 - h + r}V${y0}Z`;
+}
+function barPath(x0, y, w, h, r) {  // bar grown from the left baseline, rounded data-end on the right
+  if (w <= 0) return "";
+  r = Math.min(r, w, h / 2);
+  return `M${x0},${y}H${x0 + w - r}Q${x0 + w},${y} ${x0 + w},${y + r}V${y + h - r}Q${x0 + w},${y + h} ${x0 + w - r},${y + h}H${x0}Z`;
+}
+function dailyChart(daily) {
+  if (!daily.length) return `<p class="muted">Not enough history yet. This chart fills in as the site runs each day.</p>`;
+  const W = 640, H = 220, L = 40, R = 8, T = 10, B = 26, keys = ["other", "high", "critical"];
+  const total = d => keys.reduce((a, k) => a + d[k], 0);
+  const max = niceMax(Math.max(...daily.map(total)));
+  const slot = (W - L - R) / daily.length, bw = Math.min(24, slot * 0.7), y0 = H - B;
+  const sy = v => (v / max) * (H - T - B);
+  const ticks = [0, max / 2, max];
+  let svg = ticks.map(t => `<line x1="${L}" x2="${W - R}" y1="${y0 - sy(t)}" y2="${y0 - sy(t)}" class="grid"/><text x="${L - 6}" y="${y0 - sy(t) + 4}" class="axis" text-anchor="end">${t.toLocaleString()}</text>`).join("");
+  const every = Math.ceil(daily.length / 7);
+  daily.forEach((d, i) => {
+    const x = L + i * slot + (slot - bw) / 2;
+    let base = y0;
+    const segs = keys.filter(k => d[k] > 0);
+    segs.forEach((k, j) => {
+      const h = sy(d[k]), top = j === segs.length - 1;
+      const gap = j > 0 ? 2 : 0;  // 2px surface gap between stacked segments
+      svg += top ? `<path d="${colPath(x, base - gap, bw, h - gap, 4)}" fill="${SEV_COLORS[k]}"/>` : `<rect x="${x}" y="${base - h}" width="${bw}" height="${Math.max(0, h - gap)}" fill="${SEV_COLORS[k]}"/>`;
+      base -= h;
+    });
+    const tip = `${fmtDay(d.date)}: ${total(d)} CVEs · ${d.critical} critical · ${d.high} high · ${d.other} other`;
+    svg += `<rect x="${L + i * slot}" y="${T}" width="${slot}" height="${H - T - B}" fill="transparent" data-tip="${esc(tip)}"/>`;
+    if (i % every === 0 || i === daily.length - 1) svg += `<text x="${x + bw / 2}" y="${H - 8}" class="axis" text-anchor="middle">${esc(fmtDay(d.date))}</text>`;
+  });
+  return `<div class="legend">${keys.slice().reverse().map(k => `<span><i style="background:${SEV_COLORS[k]}"></i>${SEV_LABEL[k]}</span>`).join("")}</div>
+    <div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="New CVEs per day by severity">${svg}</svg></div>
+    <details class="tbl"><summary>View as table</summary><div class="tbl-wrap"><table><thead><tr><th>Day</th><th>Critical</th><th>High</th><th>Other</th><th>Total</th></tr></thead><tbody>${daily.map(d => `<tr><td>${esc(fmtDay(d.date))}</td><td>${d.critical}</td><td>${d.high}</td><td>${d.other}</td><td>${total(d)}</td></tr>`).join("")}</tbody></table></div></details>`;
+}
+function rankChart(items, label, linkFn) {
+  if (!items.length) return `<p class="muted">No data yet.</p>`;
+  const W = 640, rowH = 26, L = 200, R = 44, H = items.length * rowH + 4;
+  const max = Math.max(...items.map(i => i.n));
+  let svg = "";
+  items.forEach((it, i) => {
+    const y = i * rowH + 4, w = (it.n / max) * (W - L - R);
+    svg += `<text x="${L - 10}" y="${y + 13}" class="axis lbl" text-anchor="end">${esc(it.label.length > 28 ? it.label.slice(0, 27) + "…" : it.label)}</text>
+      <path d="${barPath(L, y + 2, w, 14, 4)}" fill="#3FE0E8"/>
+      <text x="${L + w + 6}" y="${y + 13}" class="axis val">${it.n.toLocaleString()}</text>
+      <rect x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent" data-tip="${esc(`${it.label}: ${it.n.toLocaleString()} CVEs`)}"${linkFn ? ` data-chart-q="${esc(linkFn(it))}"` : ""} style="cursor:${linkFn ? "pointer" : "default"}"/>`;
+  });
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${svg}</svg></div>
+    <details class="tbl"><summary>View as table</summary><div class="tbl-wrap"><table><tbody>${items.map(it => `<tr><td>${esc(it.label)}</td><td>${it.n}</td></tr>`).join("")}</tbody></table></div></details>`;
+}
+function trendsHtml() {
+  const t = DATA.trends;
+  return `<section class="stack" style="gap:12px" aria-labelledby="trends-h">
+    <div class="panel-title"><h2 id="trends-h" class="eyebrow" style="font-size:0.8rem">Trends</h2><span class="muted" style="font-size:0.85rem">Hover a bar for numbers · click a bar to filter</span></div>
+    <div class="trend-grid">
+      <section class="panel"><h3>New CVEs per day</h3><p class="muted" style="font-size:0.85rem">By severity score. History grows as the site runs each day.</p>${dailyChart(t.daily)}</section>
+      <section class="panel"><h3>Most common bug types</h3><p class="muted" style="font-size:0.85rem">CVEs in the last ${DATA.meta.days} days, by weakness (CWE).</p>${rankChart(t.cwes.map(c => ({ label: c.name, n: c.n, id: c.id })), "Most common bug types", it => it.id.toLowerCase())}</section>
+      <section class="panel"><h3>Most-affected vendors</h3><p class="muted" style="font-size:0.85rem">CVEs in the last ${DATA.meta.days} days, by first listed vendor.</p>${rankChart(t.vendors.map(v => ({ label: v.name, n: v.n })), "Most-affected vendors", it => it.label.toLowerCase())}</section>
+    </div></section>`;
+}
+const tipEl = document.createElement("div"); tipEl.className = "chart-tip"; tipEl.hidden = true; document.body.appendChild(tipEl);
+document.addEventListener("pointermove", e => {
+  const t = e.target.closest?.("[data-tip]");
+  if (!t) { tipEl.hidden = true; return; }
+  tipEl.textContent = t.dataset.tip; tipEl.hidden = false;
+  const w = tipEl.offsetWidth;
+  tipEl.style.left = Math.min(innerWidth - w - 12, e.clientX + 14) + "px";
+  tipEl.style.top = (e.clientY + 16) + "px";
+});
+document.addEventListener("click", e => {
+  const q = e.target.closest?.("[data-chart-q]"); if (!q) return;
+  RS.q = q.dataset.chartQ; RS.prio = "all"; RS.onlyWatch = false; RS.shown = 25;
+  $("rq").value = RS.q; drawRadarList(); $("rq").scrollIntoView({ block: "center" });
+});
+
 /* LEARN */
 const LS = { track: "All", gq: "" };
 VIEWS.learn = () => {
@@ -989,6 +1261,8 @@ VIEWS.learn = () => {
       <div class="row" id="ltracks">${tracks.map(t => `<button class="chip" data-t="${esc(t)}" aria-pressed="${LS.track === t}">${esc(t)}</button>`).join("")}</div>
       <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(doneCount / DATA.lessons.length * 100)}%"></i></span><span>${doneCount} of ${DATA.lessons.length} done</span></div>
     </div>
+    <section class="stack" style="gap:12px"><div class="panel-title"><h2 class="eyebrow" style="font-size:0.8rem">Learning paths</h2><span class="muted" style="font-size:0.85rem">Finish a path for +${PATH_XP} XP and a badge</span></div>
+      <div class="paths-grid">${DATA.paths.map(pathCard).join("")}</div></section>
     <div class="lessons" id="lgrid"></div>
     <section class="panel" style="grid-template-columns:minmax(0,1fr) auto;align-items:center">
       <div class="stack" style="gap:6px"><h2>Glossary</h2><p class="muted">${DATA.glossary.length + Object.keys(DATA.cwe).length} terms explained in plain English, from APT to zero-day, plus the products that keep making headlines. Dotted words across the site open these explanations.</p></div>
@@ -1005,6 +1279,24 @@ VIEWS.learn = () => {
     $("ltracks").querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b)); drawGrid(); });
   drawGrid();
 };
+function pathCard(p) {
+  const steps = pathSteps(p), done = steps.filter(s => s.done).length;
+  return `<a class="lcard" href="#path-${esc(p.id)}">${P.paths[p.id] ? '<span class="done">DONE</span>' : ""}<span class="eyebrow">${steps.length} steps</span><h3>${esc(p.title)}</h3><p>${esc(p.blurb)}</p>
+    <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(done / steps.length * 100)}%"></i></span><span>${done}/${steps.length}</span></div></a>`;
+}
+function pathView(id) {
+  const p = DATA.paths.find(x => x.id === id); if (!p) return VIEWS.learn();
+  const steps = pathSteps(p), done = steps.filter(s => s.done).length;
+  const career = p.career && DATA.careers.paths.find(c => c.id === p.career);
+  main.innerHTML = `<div class="view"><article class="article">
+    <a class="link-btn" href="#learn">← Learn</a>
+    <div class="stack" style="gap:8px"><div class="eyebrow">Learning path · ${done}/${steps.length} done</div><h1>${esc(p.title)}</h1><p class="hook">${esc(p.blurb)}</p></div>
+    <div class="progress"><span class="trk" aria-hidden="true" style="flex-basis:100%"><i style="width:${Math.round(done / steps.length * 100)}%"></i></span></div>
+    <ol class="steps">${steps.map((st, i) => `<li class="${st.done ? "got" : ""}"><span class="st">${st.done ? "✓" : i + 1}</span><span class="stack" style="gap:2px"><span class="eyebrow">${esc(st.kind)}</span><a href="${st.href}"${st.flags ? ' data-play-mode="flags"' : st.kind === "game" ? ' data-play-mode="phish"' : ""}>${esc(st.label)}</a></span></li>`).join("")}</ol>
+    <p class="muted">${P.paths[p.id] ? `Completed on ${esc(P.paths[p.id])}. Nice work.` : `Finish every step to earn <strong>+${PATH_XP} XP</strong> and the Pathfinder badge.`}${career ? ` See the <a href="#careers">${esc(career.role)}</a> career guide.` : ""}</p>
+  </article></div>`;
+}
+
 function lessonView(id) {
   const l = LESSON[id]; if (!l) return VIEWS.learn();
   const idx = DATA.lessons.indexOf(l);
@@ -1016,7 +1308,7 @@ function lessonView(id) {
     <a class="link-btn" href="#learn">← All lessons</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">${esc(l.track)} · ${esc(l.level)} · ${l.minutes} min</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.hook)}</p></div>
     <section><h2>What it is</h2><p>${gloss(l.what, 6, lseen)}</p></section>
-    <section class="case"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h3>${esc(l.example.title)}</h3><p>${gloss(l.example.text, 4, lseen)}</p></section>
+    <section class="case"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h3>${esc(l.example.title)}</h3><p>${gloss(l.example.text, 4, lseen)}</p>${l.example.source ? `<p class="muted" style="font-size:0.85rem">Source: <a href="${esc(l.example.source.url)}" target="_blank" rel="noopener">${esc(l.example.source.label)} ↗</a></p>` : ""}</section>
     <section><h2>How defenders stop it</h2><ul class="checklist">${l.defend.map(d => `<li>${esc(d)}</li>`).join("")}</ul></section>
     <section><h2>Try it yourself</h2><p><a class="btn brand" href="${esc(l.practice.url)}" ${internal ? "" : 'target="_blank" rel="noopener"'}>${esc(l.practice.label)}${internal ? "" : " ↗"}</a></p></section>
     <section class="panel" id="lcheck"><div class="panel-title"><h2>Check yourself</h2>${P.done[id] ? '<span class="eyebrow" style="color:var(--good)">Completed</span>' : '<span class="eyebrow">+25 XP</span>'}</div></section>
@@ -1025,7 +1317,7 @@ function lessonView(id) {
   </article></div>`;
   $("lcheck").appendChild(quizBlock(l.check, {
     onAnswer: (choice, correct) => {
-      if (correct && !P.done[id]) { P.done[id] = true; saveP(); award(25, "Lesson complete"); }
+      if (correct && !P.done[id]) { P.done[id] = true; award(25, "Lesson complete"); }
     }
   }));
 }
@@ -1076,6 +1368,155 @@ VIEWS.glossary = () => {
   }
 };
 
+/* LABS */
+const LAB = Object.fromEntries(DATA.labs.map(l => [l.id, l]));
+VIEWS.labs = () => {
+  main.innerHTML = `<div class="view">
+    <div class="view-head"><div class="eyebrow">Labs</div><h1>Hands-on practice</h1>
+      <p>Real tasks security analysts do every day, with realistic (made-up) evidence. Finish a lab for +${LAB_XP} XP. Everything runs in your browser.</p></div>
+    <div class="lessons">${DATA.labs.map(l => `<a class="lcard" href="#lab-${esc(l.id)}">${P.labs[l.id] ? '<span class="done">DONE</span>' : ""}
+      <span class="eyebrow">${esc(l.track)}</span><h3>${esc(l.title)}</h3><p>${esc(l.skill)}</p><span class="lmeta"><span>${l.minutes} min</span><span>+${LAB_XP} XP</span></span></a>`).join("")}</div>
+  </div>`;
+};
+function completeLab(l) {
+  if (P.labs[l.id]) return;
+  P.labs[l.id] = todayStr(); award(LAB_XP, `Lab complete: ${l.title}`);
+}
+const norm = v => String(v || "").trim().toLowerCase().replace(/^["'<]+|[">']+$/g, "");
+function labView(id) {
+  const l = LAB[id]; if (!l) return VIEWS.labs();
+  if (l.kind === "cvss") return cvssLab(l);
+  const solved = new Set(P.labSteps[id] || []);
+  main.innerHTML = `<div class="view"><article class="article" style="max-width:900px">
+    <a class="link-btn" href="#labs">← Labs</a>
+    <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${l.minutes} min · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.intro)}</p></div>
+    <section class="panel"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
+      ${l.artifact.kind === "log" ? `<div class="row"><label class="sr" for="lab-f">Filter lines</label><span class="mono" style="color:var(--sun)">grep</span><input id="lab-f" type="search" placeholder="e.g. Failed password" autocomplete="off" spellcheck="false"></div>` : ""}
+      <pre class="evidence" id="lab-pre"></pre></section>
+    <section class="stack" id="lab-steps">${l.steps.map((st, i) => `<div class="panel lab-step ${solved.has(i) ? "got" : ""}" data-i="${i}">
+      <div class="panel-title"><h2>Question ${i + 1}</h2>${solved.has(i) ? '<span class="eyebrow" style="color:var(--good)">Solved</span>' : ""}</div>
+      <p class="q">${esc(st.q)}</p>
+      ${st.type === "choice" ? `<div class="opts">${st.options.map((o, j) => `<button class="opt" data-j="${j}" ${solved.has(i) ? "disabled" : ""}>${esc(o)}</button>`).join("")}</div>`
+        : `<form class="flag-form" data-form="${i}"><label class="sr" for="ans-${i}">Answer</label><input id="ans-${i}" autocomplete="off" spellcheck="false" ${solved.has(i) ? `value="${esc(st.answers[0])}" disabled` : ""}><button class="btn" type="submit" ${solved.has(i) ? "disabled" : ""}>Check</button></form>`}
+      <div class="fb">${solved.has(i) ? `<div class="feedback"><b class="ok">Correct.</b> ${esc(st.explain)}</div>` : ""}</div>
+    </div>`).join("")}</section>
+    <p class="muted">${P.labs[id] ? `Completed on ${esc(P.labs[id])}.` : `Answer every question to complete the lab.`} Related lesson: <a href="#lesson-${esc(l.lesson)}">${esc(LESSON[l.lesson]?.title || l.lesson)}</a></p>
+  </article></div>`;
+  const lines = l.artifact.text.split("\n");
+  const drawLog = () => {
+    const f = ($("lab-f")?.value || "").trim().toLowerCase();
+    const shown = f ? lines.filter(x => x.toLowerCase().includes(f)) : lines;
+    const hl = f ? new RegExp(reEsc(esc(f)), "gi") : null;  // match against the escaped text we display
+    $("lab-pre").innerHTML = shown.map(x => hl ? esc(x).replace(hl, m => `<mark>${m}</mark>`) : esc(x)).join("\n") || "(no matching lines)";
+    $("lab-n").textContent = `${shown.length} of ${lines.length} lines`;
+  };
+  drawLog();
+  $("lab-f")?.addEventListener("input", drawLog);
+  const solve = (i, box) => {
+    solved.add(i); P.labSteps[id] = [...solved];
+    box.classList.add("got");
+    box.querySelector(".fb").innerHTML = `<div class="feedback"><b class="ok">Correct.</b> ${esc(l.steps[i].explain)}</div>`;
+    box.querySelectorAll("button, input").forEach(el => el.disabled = true);
+    if (solved.size === l.steps.length) completeLab(l); else { saveP(); }
+  };
+  const miss = (i, box, msg) => { box.querySelector(".fb").innerHTML = `<div class="feedback"><b class="no">Not quite.</b> ${esc(msg)}</div>`; };
+  $("lab-steps").addEventListener("click", e => {
+    const b = e.target.closest(".opt"); if (!b || b.disabled) return;
+    const box = b.closest(".lab-step"), i = Number(box.dataset.i), st = l.steps[i];
+    Number(b.dataset.j) === st.answer ? solve(i, box) : (b.classList.add("wrong"), miss(i, box, "Look at the evidence again."));
+  });
+  $("lab-steps").addEventListener("submit", e => {
+    e.preventDefault();
+    const box = e.target.closest(".lab-step"), i = Number(box.dataset.i), st = l.steps[i];
+    st.answers.map(norm).includes(norm(e.target.querySelector("input").value)) ? solve(i, box) : miss(i, box, st.hint || "Check the evidence and try again.");
+  });
+}
+
+// CVSS 3.1 base score, per the FIRST specification (section 7.1 + Appendix A rounding).
+const CVSS_METRICS = [
+  ["AV", "Attack vector: where can the attacker be?", [["N", "Network (anywhere on the internet)"], ["A", "Adjacent (same local network)"], ["L", "Local (logged in on the machine)"], ["P", "Physical (hands on the device)"]]],
+  ["AC", "Attack complexity", [["L", "Low (works reliably)"], ["H", "High (needs special conditions)"]]],
+  ["PR", "Privileges required", [["N", "None (no login)"], ["L", "Low (a normal user account)"], ["H", "High (an admin account)"]]],
+  ["UI", "User interaction", [["N", "None (nobody has to do anything)"], ["R", "Required (a victim must click or open something)"]]],
+  ["S", "Scope: does the impact reach beyond the vulnerable part?", [["U", "Unchanged"], ["C", "Changed (e.g. the victim's browser)"]]],
+  ["C", "Confidentiality impact (data read)", [["N", "None"], ["L", "Low (some data)"], ["H", "High (everything)"]]],
+  ["I", "Integrity impact (data changed)", [["N", "None"], ["L", "Low (some data)"], ["H", "High (anything)"]]],
+  ["A", "Availability impact (service down)", [["N", "None"], ["L", "Low (slower / partial)"], ["H", "High (fully down)"]]],
+];
+function cvss31(v) {
+  const W = { AV: { N: 0.85, A: 0.62, L: 0.55, P: 0.2 }, AC: { L: 0.77, H: 0.44 }, UI: { N: 0.85, R: 0.62 }, CIA: { H: 0.56, L: 0.22, N: 0 } };
+  const pr = v.S === "C" ? { N: 0.85, L: 0.68, H: 0.5 } : { N: 0.85, L: 0.62, H: 0.27 };
+  const iss = 1 - (1 - W.CIA[v.C]) * (1 - W.CIA[v.I]) * (1 - W.CIA[v.A]);
+  const impact = v.S === "U" ? 6.42 * iss : 7.52 * (iss - 0.029) - 3.25 * Math.pow(iss - 0.02, 15);
+  const expl = 8.22 * W.AV[v.AV] * W.AC[v.AC] * pr[v.PR] * W.UI[v.UI];
+  if (impact <= 0) return 0;
+  const roundup = x => { const i = Math.round(x * 100000); return i % 10000 === 0 ? i / 100000 : (Math.floor(i / 10000) + 1) / 10; };
+  return roundup(Math.min((v.S === "U" ? 1 : 1.08) * (impact + expl), 10));
+}
+const cvssSeverity = s => s === 0 ? "None" : s < 4 ? "Low" : s < 7 ? "Medium" : s < 9 ? "High" : "Critical";
+const parseVector = str => Object.fromEntries(str.split("/").map(p => p.split(":")));
+function cvssLab(l) {
+  const done = new Set(P.labSteps[l.id] || []);
+  let cur = Math.max(0, l.scenarios.findIndex((_, i) => !done.has(i)));
+  const pick = { AV: "N", AC: "L", PR: "N", UI: "N", S: "U", C: "N", I: "N", A: "N" };
+  const draw = () => {
+    const sc = l.scenarios[cur], score = cvss31(pick), vec = CVSS_METRICS.map(([k]) => `${k}:${pick[k]}`).join("/");
+    main.innerHTML = `<div class="view"><article class="article" style="max-width:900px">
+      <a class="link-btn" href="#labs">← Labs</a>
+      <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${done.size}/${l.scenarios.length} scenarios · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.intro)}</p></div>
+      <div class="row">${l.scenarios.map((x, i) => `<button class="chip" data-sc="${i}" aria-pressed="${i === cur}">${done.has(i) ? "✓ " : ""}${esc(x.title)}</button>`).join("")}</div>
+      <section class="case"><div class="eyebrow">Scenario ${cur + 1}</div><h3>${esc(sc.title)}</h3><p>${esc(sc.text)}</p></section>
+      <div class="cvss-grid">${CVSS_METRICS.map(([k, label, opts]) => `<fieldset class="metric"><legend>${esc(label)}</legend><div class="row">${opts.map(([v, t]) => `<button class="chip" data-m="${k}" data-v="${v}" aria-pressed="${pick[k] === v}">${esc(t)}</button>`).join("")}</div></fieldset>`).join("")}</div>
+      <section class="panel score-panel"><div><div class="eyebrow">Your score</div><div class="score-big">${score.toFixed(1)}</div><div class="mono muted">${esc(cvssSeverity(score))} · CVSS:3.1/${esc(vec)}</div></div>
+        <div class="stack" style="gap:8px"><button class="btn brand" id="cvss-check">${done.has(cur) ? "Solved ✓" : "Check my vector"}</button><div id="cvss-fb"></div></div></section>
+    </article></div>`;
+  };
+  draw();
+  main.onclick = e => {
+    if (!location.hash.startsWith("#lab-")) { main.onclick = null; return; }
+    const m = e.target.closest("[data-m]"); if (m) { pick[m.dataset.m] = m.dataset.v; draw(); return; }
+    const sc = e.target.closest("[data-sc]"); if (sc) { cur = Number(sc.dataset.sc); draw(); return; }
+    if (e.target.closest("#cvss-check")) {
+      const target = parseVector(l.scenarios[cur].target);
+      const wrong = CVSS_METRICS.filter(([k]) => pick[k] !== target[k]);
+      if (!wrong.length) {
+        done.add(cur); P.labSteps[l.id] = [...done];
+        if (done.size === l.scenarios.length) completeLab(l); else saveP();
+        const next = l.scenarios.findIndex((_, i) => !done.has(i));
+        $("cvss-fb").innerHTML = `<div class="feedback"><b class="ok">Spot on.</b> That's ${cvss31(target).toFixed(1)} (${cvssSeverity(cvss31(target))}).${next >= 0 ? " Try the next scenario." : " Lab complete!"}</div>`;
+      } else {
+        $("cvss-fb").innerHTML = `<div class="feedback"><b class="no">${wrong.length} metric${wrong.length > 1 ? "s" : ""} off.</b> Re-read the scenario and check: ${esc(wrong[0][1].split(":")[0])}${wrong.length > 1 ? " and others" : ""}.</div>`;
+      }
+    }
+  };
+}
+
+/* PROGRESS */
+let resetArmed = 0;
+VIEWS.progress = () => {
+  const r = rank(), prog = r.next ? (P.xp - r.floor) / (r.next - r.floor) : 1;
+  const stats = [["XP", P.xp], ["Lessons", `${count(P.done)}/${DATA.lessons.length}`], ["Labs", `${count(P.labs)}/${DATA.labs.length}`], ["Flags", `${count(P.flags)}/3`], ["Paths", `${count(P.paths)}/${DATA.paths.length}`], ["Streak", `${P.streak || 0}d`], ["Terms", count(P.terms)], ["Badges", `${count(P.badges)}/${BADGES.length}`]];
+  main.innerHTML = `<div class="view">
+    <div class="view-head"><div class="eyebrow">Progress</div><h1>uid=${esc(r.name)}</h1>
+      <p>${r.next ? `${(r.next - P.xp).toLocaleString()} XP to <strong>${esc(r.nextName)}</strong>.` : "Top access level reached. You are root."} Progress is saved in this browser only.</p></div>
+    <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(prog * 100)}%;background:var(--sun)"></i></span><span class="mono">${RANKS.map(x => x[1]).join(" → ")}</span></div>
+    <div class="stat-row">${stats.map(([k, v]) => `<div class="stat"><span class="eyebrow">${k}</span><b>${v}</b></div>`).join("")}</div>
+    <section class="stack"><h2 class="eyebrow" style="font-size:0.8rem">Badges</h2>
+      <div class="badges">${BADGES.map(b => `<div class="badge ${P.badges[b.id] ? "got" : ""}"><span class="ico" aria-hidden="true">${P.badges[b.id] ? "★" : "☆"}</span><span class="stack" style="gap:2px"><b>${esc(b.name)}</b><span>${esc(b.desc)}</span>${P.badges[b.id] ? `<span class="mono" style="font-size:0.7rem;color:var(--good)">earned ${esc(P.badges[b.id])}</span>` : ""}</span></div>`).join("")}</div></section>
+    <section class="stack"><h2 class="eyebrow" style="font-size:0.8rem">Learning paths</h2><div class="paths-grid">${DATA.paths.map(pathCard).join("")}</div></section>
+    <section class="panel"><h2>Recent XP</h2>${P.log.length ? `<ul class="xp-log">${P.log.slice(0, 15).map(x => `<li><span class="mono">${esc(x.d)}</span><span>${esc(x.why)}</span><b>+${x.n}</b></li>`).join("")}</ul>` : `<p class="muted">Nothing yet. Try today's challenge, a lesson or a lab.</p>`}</section>
+    <section class="panel"><h2>How to earn XP</h2><ul class="xp-log">
+      <li><span></span><span>Daily challenge (correct)</span><b>+20</b></li><li><span></span><span>Finish a lesson</span><b>+25</b></li><li><span></span><span>Complete a lab</span><b>+${LAB_XP}</b></li>
+      <li><span></span><span>Capture a hidden flag</span><b>+50</b></li><li><span></span><span>Complete a learning path</span><b>+${PATH_XP}</b></li><li><span></span><span>Unlock a badge</span><b>+${BADGE_XP}</b></li>
+      <li><span></span><span>Correct quiz answer / spotted phish</span><b>+10 / +15</b></li><li><span></span><span>Set up your stack</span><b>+10</b></li><li><span></span><span>New glossary term or story explanation</span><b>+2</b></li></ul></section>
+    <div class="row"><button class="btn ghost" id="reset">Reset my progress</button><span class="muted" id="reset-msg"></span></div>
+  </div>`;
+  $("reset").addEventListener("click", () => {
+    if (Date.now() - resetArmed < 5000) { P = FRESH(); saveP(); renderXP(); VIEWS.progress(); toast("Progress reset"); return; }
+    resetArmed = Date.now(); $("reset").textContent = "Click again to confirm"; $("reset-msg").textContent = "This clears XP, badges and progress in this browser.";
+  });
+};
+
 /* PLAY */
 const GS = { mode: "phish", phish: null, quiz: null };
 VIEWS.play = () => {
@@ -1116,7 +1557,7 @@ function drawPhish() {
   if (!GS.phish) newPhish();
   const g = GS.phish, box = $("game");
   if (g.i >= g.deck.length) {
-    const best = Math.max(P.best.phish || 0, g.score); P.best.phish = best; saveP();
+    const best = Math.max(P.best.phish || 0, g.score); P.best.phish = best; progressChanged();
     box.innerHTML = `<section class="panel" style="text-align:center;justify-items:center"><div class="eyebrow">Round complete</div><div class="score-big">${g.score}/${g.deck.length}</div>
       <p>${g.score === g.deck.length ? "Perfect. Nothing gets past you." : g.score >= 7 ? "Sharp eyes. A couple slipped through." : "Phishers are good at this. Review the clues and try again."}</p>
       <p class="muted">Your best: ${best}/${g.deck.length}</p><div class="row" style="justify-content:center"><button class="btn brand" id="again">Play again</button><a class="btn ghost" href="#lesson-phishing">Phishing lesson</a></div></section>`;
@@ -1152,7 +1593,7 @@ function drawQuiz() {
   if (!GS.quiz) newQuiz();
   const g = GS.quiz, box = $("game");
   if (g.i >= g.deck.length) {
-    const best = Math.max(P.best.quiz || 0, g.score); P.best.quiz = best; saveP();
+    const best = Math.max(P.best.quiz || 0, g.score); P.best.quiz = best; progressChanged();
     const missed = [...new Set(g.missed || [])].filter(t => LESSON[t]);
     box.innerHTML = `<section class="panel" style="text-align:center;justify-items:center"><div class="eyebrow">Quiz complete</div><div class="score-big">${g.score}/10</div>
       <p class="muted">Your best: ${best}/10</p>
@@ -1201,14 +1642,13 @@ VIEWS.careers = () => {
 function renderStatus() {
   const bar = $("statusbar"); if (!bar) return;
   document.body.classList.add("has-status");
-  const r = rank(), h = (location.hash || "#today").slice(1);
-  const mode = h.startsWith("lesson-") || h === "glossary" ? "learn" : (VIEWS[h] ? h : "today");
-  const kev = DATA.cves.filter(c => c.kev).length;
-  const flags = Object.keys(P.flags || {}).length;
+  const r = rank(), mode = parseRoute().tab;
+  const kev = DATA.kev.length;
+  const flags = count(P.flags);
   bar.innerHTML = `<span class="mode">${esc(mode)}</span>
     <span class="live">${new Set(DATA.news.map(n => n.source)).size} feeds · ${DATA.news.length} stories · ${kev} KEV · updated ${esc(DATA.meta.generated)}</span>
     <span class="grow"></span>
-    <span>flags ${flags}/3</span><span>streak ${P.streak || 0}d</span>
+    <span>flags ${flags}/3</span><span>badges ${count(P.badges)}/${BADGES.length}</span><span>streak ${P.streak || 0}d</span>
     <span class="lvl">uid=${esc(r.name)} · ${P.xp} xp</span>
     <span><button type="button" data-cmd="help">? help</button></span>`;
 }
@@ -1230,7 +1670,7 @@ async function checkFlag(input) {
   if (i < 0) return { ok: false, msg: "Wrong flag. Keep hunting." };
   P.flags = P.flags || {};
   if (P.flags[i]) return { ok: true, msg: `Flag ${i + 1} (${FLAG_INFO[i].name}) already captured.` };
-  P.flags[i] = todayStr(); saveP(); award(50, `Flag ${i + 1} captured`);
+  P.flags[i] = todayStr(); award(50, `Flag ${i + 1} captured`);
   return { ok: true, msg: `Flag ${i + 1} captured: ${FLAG_INFO[i].name}. +50 XP. We checked it by comparing SHA-256 hashes, so the answers aren't stored in this page.` };
 }
 try {
@@ -1240,11 +1680,11 @@ try {
 /* ---------- command palette ---------- */
 const cmdk = $("cmdk"), cmdIn = $("cmdk-input"), cmdOut = $("cmdk-out");
 let cmdLog = [], cmdSel = 0, cmdItems = [], sudoTried = false;
-const SECTIONS = [["today", "Daily briefing"], ["news", "Security news, explained"], ["cves", "CVE Radar"], ["learn", "Lessons"], ["glossary", "Glossary A–Z"], ["play", "Games & flag hunt"], ["careers", "Career paths & resources"]];
+const SECTIONS = [["today", "Daily briefing"], ["news", "Security news, explained"], ["cves", "CVE Radar"], ["learn", "Lessons & paths"], ["glossary", "Glossary A–Z"], ["labs", "Hands-on labs"], ["play", "Games & flag hunt"], ["careers", "Career paths & resources"], ["progress", "Your XP, badges & level"], ["stack", "Am I affected? (your tech)"]];
 const HELP = [
   ["help", "show this list"], ["ls", "list sections"], ["cd <section>", "go to a section, e.g. cd news"],
   ["open <lesson>", "open a lesson, e.g. open ransomware"], ["define <term>", "explain a term, e.g. define rce"],
-  ["news <words>", "search headlines"], ["cve <id|product>", "search the CVE radar"], ["whoami", "your level, XP and progress"],
+  ["lab <name>", "open a lab, e.g. lab log"], ["path <name>", "open a learning path, e.g. path soc"], ["news <words>", "search headlines"], ["cve <id|product>", "search the CVE radar"], ["whoami", "your level, XP and progress"],
   ["flags", "hints for the 3 hidden flags"], ["submit flag{...}", "check a flag"], ["clear", "clear this screen"], ["exit", "close (or Esc)"],
 ];
 function openCmd(prefill = "", run = false) {
@@ -1259,6 +1699,8 @@ function searchAll(q) {
   q = q.toLowerCase(); const out = [];
   const hit = (str) => str.toLowerCase().includes(q);
   SECTIONS.forEach(([id, label]) => { if (hit(id) || hit(label)) out.push({ k: "section", t: label, h: "#" + id, go: () => go(id) }); });
+  DATA.labs.forEach(l => { if (hit(l.title) || hit(l.skill)) out.push({ k: "lab", t: l.title, h: l.minutes + " min", go: () => go("lab-" + l.id) }); });
+  DATA.paths.forEach(p => { if (hit(p.title) || hit(p.id)) out.push({ k: "path", t: p.title, h: p.steps.length + " steps", go: () => go("path-" + p.id) }); });
   DATA.lessons.forEach(l => { if (hit(l.title) || hit(l.id) || hit(l.hook)) out.push({ k: "lesson", t: l.title, h: l.minutes + " min", go: () => go("lesson-" + l.id) }); });
   DATA.glossary.forEach(g => { if (hit(g.term) || g.aliases.some(hit)) out.push({ k: "term", t: g.term, h: g.kind, go: () => define(g.id) }); });
   if (/^cve-\d{4}-\d+$/i.test(q)) out.push({ k: "cve", t: q.toUpperCase(), h: "radar", go: () => { RS.q = q; RS.prio = "all"; go("cves"); } });
@@ -1293,6 +1735,15 @@ async function runCmd(raw) {
     const g = DATA.glossary.find(g => g.term.toLowerCase() === m || g.aliases.some(a => a.toLowerCase() === m)) || DATA.glossary.find(g => g.term.toLowerCase().includes(m));
     if (m && g) define(g.id); else say(`No glossary entry for "${arg}" yet.`, "err");
   }
+  else if (c === "lab" || c === "labs") {
+    const l = arg && DATA.labs.find(l => (l.id + " " + l.title).toLowerCase().includes(arg.toLowerCase()));
+    if (l) go("lab-" + l.id); else if (!arg) go("labs"); else say(`No lab matches "${arg}". Labs: ${DATA.labs.map(l => l.id).join(", ")}`, "err");
+  }
+  else if (c === "path" || c === "paths") {
+    const p = arg && DATA.paths.find(p => (p.id + " " + p.title).toLowerCase().includes(arg.toLowerCase()));
+    if (p) go("path-" + p.id); else if (!arg) go("learn"); else say(`No path matches "${arg}". Paths: ${DATA.paths.map(p => p.id).join(", ")}`, "err");
+  }
+  else if (c === "progress" || c === "badges") go("progress");
   else if (c === "news") { NS.q = arg; NS.topic = "all"; NS.source = "all"; go("news"); }
   else if (c === "cve" || c === "cves" || c === "radar") { RS.q = arg.toLowerCase(); RS.prio = "all"; RS.onlyWatch = false; go("cves"); }
   else if (c === "whoami" || c === "id") {
@@ -1304,7 +1755,7 @@ async function runCmd(raw) {
   else if (c === "submit" || c.startsWith("flag{")) { const r = await checkFlag(c === "submit" ? arg : line); say(r.msg, r.ok ? "ok" : "err"); }
   else if (c === "sudo") {
     say("guest is not in the sudoers file. This incident will be reported.", "err");
-    if (!sudoTried) { sudoTried = true; if (!P.egg) { P.egg = 1; saveP(); award(5, "Nice try"); } }
+    if (!sudoTried) { sudoTried = true; if (!P.egg) { P.egg = 1; award(5, "Nice try"); } }
   }
   else if (c === "rm") say("Nice try. Deleting things is a job for incident response, not you.", "err");
   else if (c === "hack" || c === "nmap") say("Only test systems you own or have written permission to test. Try: cd play", "err");
@@ -1320,7 +1771,7 @@ async function runCmd(raw) {
 function drawCmd() {
   const q = cmdIn.value.trim();
   const firstWord = q.split(/\s+/)[0].toLowerCase();
-  const isCmd = ["help", "ls", "cd", "open", "man", "define", "whatis", "news", "cve", "whoami", "flags", "submit", "sudo", "clear", "exit"].includes(firstWord);
+  const isCmd = ["help", "ls", "cd", "open", "man", "define", "whatis", "news", "cve", "whoami", "flags", "submit", "sudo", "clear", "exit", "lab", "labs", "path", "paths", "progress", "badges"].includes(firstWord);
   cmdItems = q && !isCmd ? searchAll(q) : [];
   if (cmdSel >= cmdItems.length) cmdSel = 0;
   const log = cmdLog.map(l => `<div class="cmdk-line ${l.cls}">${esc(l.text).replace(/→ open (\S+)/, '→ <b>open $1</b>')}</div>`).join("");
@@ -1351,26 +1802,43 @@ document.addEventListener("keydown", e => {
   if (typing || !cmdk.hidden || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === "/") { e.preventDefault(); openCmd(); }
   else if (e.key === "?") { e.preventDefault(); openCmd("help", true); }
-  else if (/^[1-6]$/.test(e.key)) { const tabs = ["today", "news", "cves", "learn", "play", "careers"]; location.hash = tabs[Number(e.key) - 1]; }
+  else if (/^[1-8]$/.test(e.key)) { const tabs = ["today", "news", "cves", "learn", "labs", "play", "careers", "progress"]; location.hash = tabs[Number(e.key) - 1]; }
 });
 
 /* ---------- router ---------- */
-function route() {
+// Which tab each route lives under, and what draws it.
+function parseRoute() {
   const h = (location.hash || "#today").slice(1);
-  const tab = h.startsWith("lesson-") || h === "glossary" ? "learn" : (VIEWS[h] ? h : "today");
+  if (h.startsWith("lesson-")) return { tab: "learn", path: "learn/" + h.slice(7), draw: () => lessonView(h.slice(7)) };
+  if (h.startsWith("path-")) return { tab: "learn", path: "learn/paths/" + h.slice(5), draw: () => pathView(h.slice(5)) };
+  if (h.startsWith("lab-")) return { tab: "labs", path: "labs/" + h.slice(4), draw: () => labView(h.slice(4)) };
+  if (h === "glossary") return { tab: "learn", path: "learn/glossary", draw: VIEWS.glossary };
+  if (h === "stack") return { tab: "today", path: "today/stack", draw: VIEWS.stack };
+  const tab = VIEWS[h] ? h : "today";
+  return { tab, path: tab, draw: VIEWS[tab] };
+}
+function route() {
+  const r = parseRoute();
+  document.querySelectorAll("nav.tabs a").forEach(a => a.dataset.tab === r.tab ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   closePop();
-  document.querySelectorAll("nav.tabs a").forEach(a => a.dataset.tab === tab ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
-  $("cwd").textContent = "~/" + (h.startsWith("lesson-") ? "learn/" + h.slice(7) : h === "glossary" ? "learn/glossary" : tab);
+  main.onclick = null;
+  $("cwd").textContent = "~/" + r.path;
   renderStatus();
   window.scrollTo(0, 0);
-  if (h.startsWith("lesson-")) lessonView(h.slice(7)); else if (h === "glossary") VIEWS.glossary(); else VIEWS[tab]();
+  r.draw();
 }
+// Redraw the current view in place (no scroll jump), e.g. when the CVE list finishes loading.
+function rerender() { const y = scrollY; parseRoute().draw(); scrollTo(0, y); }
 document.addEventListener("click", e => {
   const pr = e.target.closest("[data-radar-prio]");
   if (pr) { RS.prio = pr.dataset.radarPrio; RS.onlyWatch = false; RS.q = ""; if (location.hash === "#cves") route(); return; }
   const cv = e.target.closest("[data-cve]");
   if (cv) { RS.q = cv.dataset.cve.toLowerCase(); RS.prio = "all"; RS.onlyWatch = false; RS.onlyNew = false;
     if (location.hash === "#cves") route(); else location.hash = "cves"; return; }
+  const ns = e.target.closest("[data-news-stack]");
+  if (ns) { NS.stack = true; NS.topic = "all"; NS.q = ""; NS.source = "all"; }
+  const pm = e.target.closest("[data-play-mode]");
+  if (pm) GS.mode = pm.dataset.playMode;
   const nt = e.target.closest("[data-news-topic]");
   if (nt) { NS.topic = nt.dataset.newsTopic; NS.q = ""; NS.source = "all"; location.hash = "news"; }
 });
@@ -1378,6 +1846,14 @@ window.addEventListener("hashchange", route);
 
 $("ver").textContent = "v" + DATA.meta.version;
 $("foot-meta").textContent = `Updated ${DATA.meta.generated}.` + (DATA.site.author ? ` Built by ${DATA.site.author}.` : "");
+$("xp").addEventListener("click", () => { location.hash = "progress"; });
+$("xp").style.cursor = "pointer";
+if (DATA.site.url) $("lessons-link").href = DATA.site.url + "lessons/";
 renderXP();
 route();
+fetch("data/cves.json")
+  .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+  .then(rows => { DATA.cves = rows; rows.forEach(c => CVE_IDS.add(c.id)); CVES_READY = true; })
+  .catch(() => { CVES_FAILED = true; })
+  .finally(() => { if (["cves", "today", "news"].includes(parseRoute().tab)) rerender(); renderStatus(); });
 </script>

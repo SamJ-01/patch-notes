@@ -1,0 +1,219 @@
+"""
+Core tests: data parsing, prioritisation, page generation and content integrity.
+Run with:  python3 -m unittest discover -s tests -v
+"""
+
+import datetime as dt
+import json
+import sys
+import tempfile
+import unittest
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+import build  # noqa: E402
+import cve_watch  # noqa: E402
+import explain  # noqa: E402
+import news  # noqa: E402
+
+CONTENT = ROOT / "content"
+
+
+def content(name):
+    return json.loads((CONTENT / name).read_text())
+
+
+class Prioritisation(unittest.TestCase):
+    def cve(self, kev=None, epss=None, cvss=None):
+        return {"kev": kev, "epss": epss, "cvss": cvss}
+
+    def test_kev_beats_everything(self):
+        self.assertEqual(cve_watch.priority(self.cve(kev={"added": "x"}, epss=0.0, cvss=2.0))[0], 1)
+
+    def test_epss_beats_cvss(self):
+        self.assertEqual(cve_watch.priority(self.cve(epss=0.10, cvss=9.8))[0], 2)
+
+    def test_cvss_bands(self):
+        self.assertEqual(cve_watch.priority(self.cve(cvss=9.0))[0], 3)
+        self.assertEqual(cve_watch.priority(self.cve(cvss=7.0))[0], 4)
+        self.assertEqual(cve_watch.priority(self.cve(cvss=6.9))[0], 5)
+        self.assertEqual(cve_watch.priority(self.cve())[0], 5)
+
+
+class NvdParsing(unittest.TestCase):
+    def test_newest_cvss_and_primary_preferred(self):
+        metrics = {
+            "cvssMetricV31": [
+                {"type": "Secondary", "cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "S", "version": "3.1"}},
+                {"type": "Primary", "cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "P", "version": "3.1"}},
+            ],
+            "cvssMetricV2": [{"type": "Primary", "cvssData": {"baseScore": 5.0, "vectorString": "V2", "version": "2.0"}, "baseSeverity": "MEDIUM"}],
+        }
+        self.assertEqual(cve_watch.best_cvss(metrics), (9.8, "CRITICAL", "P", "3.1"))
+        self.assertEqual(cve_watch.best_cvss({}), (None, None, None, None))
+
+    def test_affected_products_cna_first_and_no_placeholders(self):
+        record = {
+            "affected": [{"affectedData": [{"vendor": "n/a", "product": "n/a"}, {"vendor": "ProFTPD", "product": "ProFTPD"}]}],
+            "configurations": [{"nodes": [{"cpeMatch": [
+                {"vulnerable": True, "criteria": "cpe:2.3:o:debian:debian_linux:8.0:*:*:*:*:*:*:*"},
+                {"vulnerable": False, "criteria": "cpe:2.3:h:acme:widget:-:*:*:*:*:*:*:*"},
+            ]}]}],
+        }
+        self.assertEqual(cve_watch.affected_products(record), ["ProFTPD ProFTPD", "debian debian linux"])
+
+    def test_parse_nvd_cleans_mangled_text(self):
+        record = {"id": "CVE-2026-1", "published": "2026-10-01T00:00:00.000",
+                  "descriptions": [{"lang": "en", "value": "the victim�s browser"}], "metrics": {},
+                  "weaknesses": [{"description": [{"value": "CWE-79"}, {"value": "NVD-CWE-noinfo"}]}]}
+        parsed = cve_watch.parse_nvd(record)
+        self.assertEqual(parsed["description"], "the victim's browser")
+        self.assertEqual(parsed["cwes"], ["CWE-79"])
+        self.assertEqual(parsed["published"], "2026-10-01")
+
+
+class Feeds(unittest.TestCase):
+    RSS = b"""<?xml version="1.0"?><rss version="2.0"><channel>
+      <item><title>Big &amp; bad &lt;b&gt;bug&lt;/b&gt;</title><link>https://example.com/a</link>
+      <pubDate>Mon, 12 Oct 2026 08:00:00 +0000</pubDate><description>&lt;p&gt;Attackers exploit a flaw&lt;/p&gt;</description></item>
+    </channel></rss>"""
+    ATOM = b"""<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom">
+      <entry><title>Atom story</title><link rel="alternate" href="https://example.com/b"/>
+      <updated>2026-10-12T09:30:00Z</updated><summary>Summary text</summary></entry></feed>"""
+
+    def test_rss_and_atom(self):
+        rss = news.parse_feed(self.RSS, "Example")
+        atom = news.parse_feed(self.ATOM, "Example")
+        self.assertEqual(rss[0]["link"], "https://example.com/a")
+        self.assertEqual(rss[0]["date"], dt.datetime(2026, 10, 12, 8, 0, tzinfo=dt.timezone.utc))
+        self.assertEqual(atom[0]["link"], "https://example.com/b")
+        self.assertEqual(atom[0]["date"].hour, 9)
+
+    def test_clean_strips_markup_and_limits_words(self):
+        self.assertEqual(news.clean("<p>Hello <b>world</b></p>"), "Hello world")
+        self.assertEqual(news.clean("one two three four", words=2), "one two…")
+        self.assertEqual(news.clean("it�s"), "it's")
+
+    def test_topic_patterns_compile_and_match(self):
+        self.assertTrue(news.TOPIC_RE["ransomware"].search("LockBit ransomware hits retailer"))
+        self.assertTrue(news.TOPIC_RE["web-sqli"].search("SQL injection in MOVEit"))
+
+
+class PageGeneration(unittest.TestCase):
+    def test_embed_json_cannot_break_out_of_script(self):
+        out = build.embed_json({"x": "</script><!--<script>alert(1)"})
+        self.assertNotIn("<", out)
+        self.assertEqual(json.loads(out)["x"], "</script><!--<script>alert(1)")
+
+    def test_trends_from_rows_without_history(self):
+        today = dt.date.today().isoformat()
+        rows = [{"published": today, "cvss": 9.8, "cwes": ["CWE-79"], "products": ["acme widget"]},
+                {"published": today, "cvss": 7.0, "cwes": ["CWE-79"], "products": ["acme gadget"]},
+                {"published": None, "cvss": None, "cwes": [], "products": []}]
+        t = build.trends(rows, {"CWE-79": {"name": "XSS"}}, db_path=ROOT / "does-not-exist.db")
+        self.assertEqual(t["daily"][-1], {"date": today, "critical": 1, "high": 1, "other": 0})
+        self.assertEqual(t["cwes"][0], {"id": "CWE-79", "name": "XSS", "n": 2})
+        self.assertEqual(t["vendors"][0], {"name": "acme", "n": 2})
+
+    def test_rss_and_sitemap_are_valid_xml(self):
+        site = {"url": "https://example.com/patch-notes/", "description": "d"}
+        stories = [{"title": "A & B <x>", "link": "https://example.com/a", "date": "2026-10-12T08:00+00:00", "snippet": "s", "source": "Src"}]
+        feed = ET.fromstring(build.rss(stories, {"https://example.com/a": "Explained."}, site))
+        self.assertEqual(feed.find("channel/item/title").text, "A & B <x>")
+        self.assertIn("Explained.", feed.find("channel/item/description").text)
+        smap = ET.fromstring(build.sitemap(content("lessons.json"), site))
+        self.assertEqual(len(smap), len(content("lessons.json")) + 2)
+
+    def test_lesson_page_escapes_content(self):
+        lessons = content("lessons.json")
+        lesson = dict(lessons[0], title="<script>x</script>")
+        fonts, css = build.page_css((ROOT / "site_template.html").read_text())
+        page = build.lesson_page(lesson, lessons[1], fonts, css, {"url": "https://example.com/"})
+        self.assertNotIn("<script>x</script>", page)
+        self.assertIn("&lt;script&gt;", page)
+
+
+class ExplainHelper(unittest.TestCase):
+    def test_add_only_known_stories_and_truncates(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            originals = explain.NEWS, explain.EXPLAINERS
+            explain.NEWS, explain.EXPLAINERS = tmp / "news.json", tmp / "explainers.json"
+            try:
+                explain.NEWS.write_text(json.dumps([{"link": "https://k/1", "title": "t", "snippet": "", "source": "s"}]))
+                incoming = tmp / "in.json"
+                incoming.write_text(json.dumps({"https://k/1": "x " * 600, "https://unknown/2": "nope"}))
+                explain.add(incoming)
+                saved = json.loads(explain.EXPLAINERS.read_text())
+                self.assertEqual(list(saved), ["https://k/1"])
+                self.assertLessEqual(len(saved["https://k/1"]["text"]), explain.MAX_CHARS)
+            finally:
+                explain.NEWS, explain.EXPLAINERS = originals
+
+
+class ContentIntegrity(unittest.TestCase):
+    """Catch broken cross-references before they reach the live site."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.lessons = {l["id"]: l for l in content("lessons.json")}
+        cls.labs = {l["id"]: l for l in content("labs.json")}
+        cls.glossary = content("glossary.json")
+
+    def test_lessons_complete(self):
+        for l in self.lessons.values():
+            self.assertTrue(0 <= l["check"]["answer"] < len(l["check"]["options"]), l["id"])
+            self.assertTrue(l["practice"]["url"].startswith(("https://", "http://", "#")), l["id"])
+            src = l["example"].get("source")
+            if src:
+                self.assertTrue(src["url"].startswith("https://"), l["id"])
+
+    def test_glossary_ids_unique_and_links_valid(self):
+        ids = [g["id"] for g in self.glossary]
+        self.assertEqual(len(ids), len(set(ids)))
+        for g in self.glossary:
+            if g.get("lesson"):
+                self.assertIn(g["lesson"], self.lessons, g["id"])
+            for other in g.get("see", []):
+                self.assertIn(other, ids, g["id"])
+
+    def test_quiz_and_paths_reference_real_things(self):
+        for q in content("quiz.json"):
+            self.assertIn(q["topic"], self.lessons, q["q"])
+            self.assertTrue(0 <= q["answer"] < len(q["options"]))
+        for p in content("paths.json"):
+            for step in p["steps"]:
+                if step["type"] == "lesson":
+                    self.assertIn(step["id"], self.lessons, p["id"])
+                if step["type"] == "lab":
+                    self.assertIn(step["id"], self.labs, p["id"])
+
+    def test_lab_answers_are_in_the_evidence(self):
+        for lab in self.labs.values():
+            if lab.get("kind") == "cvss":
+                for sc in lab["scenarios"]:
+                    self.assertEqual(len(sc["target"].split("/")), 8, sc["title"])
+                continue
+            for step in lab["steps"]:
+                if step["type"] == "text":
+                    self.assertTrue(any(a.lower() in lab["artifact"]["text"].lower() for a in step["answers"]), step["q"])
+                else:
+                    self.assertTrue(0 <= step["answer"] < len(step["options"]), step["q"])
+
+    def test_stack_items_have_matchers(self):
+        stack = content("stack.json")
+        self.assertEqual(len({s["id"] for s in stack}), len(stack))
+        for s in stack:
+            self.assertTrue(s["terms"] and s["cpe"], s["id"])
+
+    def test_phishing_examples(self):
+        for m in content("phish.json"):
+            self.assertIn(m["verdict"], ("phish", "legit"))
+            self.assertTrue(m["clues"])
+
+
+if __name__ == "__main__":
+    unittest.main()

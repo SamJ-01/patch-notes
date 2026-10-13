@@ -35,6 +35,14 @@ jobs:
           path: cves.db
           key: cves-db-${{ steps.day.outputs.day }}
           restore-keys: cves-db-
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # A failing test stops the deploy, so a bad change never reaches the live site.
+      - name: Run tests
+        run: |
+          python -m unittest discover -s tests -v
+          node --test tests/page.test.mjs
       - name: Build site
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}

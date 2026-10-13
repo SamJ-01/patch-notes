@@ -1,0 +1,335 @@
+[
+ {
+  "id": "iphone",
+  "label": "iPhone / iPad",
+  "group": "Phone",
+  "terms": [
+   "iphone",
+   "ios",
+   "ipados",
+   "apple"
+  ],
+  "cpe": [
+   "apple iphone os",
+   "apple ios",
+   "apple ipados"
+  ]
+ },
+ {
+  "id": "android",
+  "label": "Android phone",
+  "group": "Phone",
+  "terms": [
+   "android"
+  ],
+  "cpe": [
+   "google android",
+   "android"
+  ]
+ },
+ {
+  "id": "windows",
+  "label": "Windows PC",
+  "group": "Computer",
+  "terms": [
+   "windows"
+  ],
+  "cpe": [
+   "microsoft windows"
+  ]
+ },
+ {
+  "id": "mac",
+  "label": "Mac",
+  "group": "Computer",
+  "terms": [
+   "macos",
+   "apple"
+  ],
+  "cpe": [
+   "apple macos",
+   "apple mac os"
+  ]
+ },
+ {
+  "id": "linux",
+  "label": "Linux",
+  "group": "Computer",
+  "terms": [
+   "linux"
+  ],
+  "cpe": [
+   "linux linux kernel",
+   "linux kernel"
+  ]
+ },
+ {
+  "id": "chrome",
+  "label": "Chrome",
+  "group": "Browser",
+  "terms": [
+   "chrome",
+   "chromium"
+  ],
+  "cpe": [
+   "google chrome",
+   "chromium"
+  ]
+ },
+ {
+  "id": "edge",
+  "label": "Microsoft Edge",
+  "group": "Browser",
+  "terms": [
+   "microsoft edge",
+   "chromium"
+  ],
+  "cpe": [
+   "microsoft edge"
+  ]
+ },
+ {
+  "id": "firefox",
+  "label": "Firefox",
+  "group": "Browser",
+  "terms": [
+   "firefox",
+   "mozilla"
+  ],
+  "cpe": [
+   "mozilla firefox"
+  ]
+ },
+ {
+  "id": "safari",
+  "label": "Safari",
+  "group": "Browser",
+  "terms": [
+   "safari",
+   "webkit"
+  ],
+  "cpe": [
+   "apple safari",
+   "webkit"
+  ]
+ },
+ {
+  "id": "m365",
+  "label": "Microsoft 365 / Outlook",
+  "group": "Work apps",
+  "terms": [
+   "microsoft 365",
+   "outlook",
+   "microsoft office",
+   "microsoft teams",
+   "sharepoint",
+   "exchange server"
+  ],
+  "cpe": [
+   "microsoft 365",
+   "microsoft office",
+   "microsoft exchange",
+   "microsoft sharepoint",
+   "microsoft teams",
+   "microsoft outlook"
+  ]
+ },
+ {
+  "id": "google",
+  "label": "Gmail / Google Workspace",
+  "group": "Work apps",
+  "terms": [
+   "gmail",
+   "google workspace",
+   "google drive"
+  ],
+  "cpe": [
+   "google workspace",
+   "google gmail"
+  ]
+ },
+ {
+  "id": "zoom",
+  "label": "Zoom",
+  "group": "Work apps",
+  "terms": [
+   "zoom video",
+   "zoom client",
+   "zoom workplace"
+  ],
+  "cpe": [
+   "zoom "
+  ]
+ },
+ {
+  "id": "slack",
+  "label": "Slack",
+  "group": "Work apps",
+  "terms": [
+   "slack"
+  ],
+  "cpe": [
+   "slack "
+  ]
+ },
+ {
+  "id": "whatsapp",
+  "label": "WhatsApp",
+  "group": "Work apps",
+  "terms": [
+   "whatsapp"
+  ],
+  "cpe": [
+   "whatsapp"
+  ]
+ },
+ {
+  "id": "tplink",
+  "label": "TP-Link router",
+  "group": "Home network",
+  "terms": [
+   "tp-link"
+  ],
+  "cpe": [
+   "tp-link",
+   "tp link",
+   "tplink"
+  ]
+ },
+ {
+  "id": "netgear",
+  "label": "Netgear router",
+  "group": "Home network",
+  "terms": [
+   "netgear"
+  ],
+  "cpe": [
+   "netgear"
+  ]
+ },
+ {
+  "id": "asus",
+  "label": "ASUS router",
+  "group": "Home network",
+  "terms": [
+   "asus"
+  ],
+  "cpe": [
+   "asus "
+  ]
+ },
+ {
+  "id": "ubiquiti",
+  "label": "Ubiquiti / UniFi",
+  "group": "Home network",
+  "terms": [
+   "ubiquiti",
+   "unifi"
+  ],
+  "cpe": [
+   "ubiquiti",
+   "unifi"
+  ]
+ },
+ {
+  "id": "wordpress",
+  "label": "WordPress website",
+  "group": "Website",
+  "terms": [
+   "wordpress",
+   "woocommerce"
+  ],
+  "cpe": [
+   "wordpress"
+  ],
+  "desc": [
+   "plugin for wordpress",
+   "theme for wordpress"
+  ]
+ },
+ {
+  "id": "fortinet",
+  "label": "Fortinet / FortiGate",
+  "group": "Business network",
+  "terms": [
+   "fortinet",
+   "fortigate",
+   "fortios"
+  ],
+  "cpe": [
+   "fortinet"
+  ]
+ },
+ {
+  "id": "cisco",
+  "label": "Cisco",
+  "group": "Business network",
+  "terms": [
+   "cisco"
+  ],
+  "cpe": [
+   "cisco "
+  ]
+ },
+ {
+  "id": "paloalto",
+  "label": "Palo Alto Networks",
+  "group": "Business network",
+  "terms": [
+   "palo alto",
+   "pan-os",
+   "globalprotect"
+  ],
+  "cpe": [
+   "palo alto",
+   "paloaltonetworks"
+  ]
+ },
+ {
+  "id": "sonicwall",
+  "label": "SonicWall",
+  "group": "Business network",
+  "terms": [
+   "sonicwall"
+  ],
+  "cpe": [
+   "sonicwall"
+  ]
+ },
+ {
+  "id": "ivanti",
+  "label": "Ivanti",
+  "group": "Business network",
+  "terms": [
+   "ivanti"
+  ],
+  "cpe": [
+   "ivanti"
+  ]
+ },
+ {
+  "id": "citrix",
+  "label": "Citrix / NetScaler",
+  "group": "Business network",
+  "terms": [
+   "citrix",
+   "netscaler"
+  ],
+  "cpe": [
+   "citrix"
+  ]
+ },
+ {
+  "id": "vmware",
+  "label": "VMware",
+  "group": "Business network",
+  "terms": [
+   "vmware",
+   "esxi",
+   "vcenter"
+  ],
+  "cpe": [
+   "vmware"
+  ]
+ }
+]

@@ -1,20 +1,29 @@
 #!/usr/bin/env python3
 """
-Build the Patch Notes site: live news + CVE radar + lessons + games, as one static page.
+Build the Patch Notes site: live news + CVE radar + lessons + labs + games.
 
     python3 build.py                 # fetch everything fresh (NVD takes a few minutes without an API key)
     python3 build.py --reuse-cves    # reuse the last CVE snapshot, refresh news only (fast)
     python3 build.py --offline       # rebuild from saved snapshots only (for editing content/design)
+    python3 build.py --offline --serve   # ...then preview it at http://localhost:8000
 
-Output: site/index.html (open it directly, or host the site/ folder anywhere, e.g. GitHub Pages).
+Output in site/:
+    index.html          the app (news, radar, lessons, labs, games, progress)
+    data/cves.json      CVE list, loaded after the page appears so first paint stays fast
+    lessons/*.html      one static, search-engine-friendly page per lesson
+    feed.xml            RSS feed of the day's stories with beginner explanations
+    sitemap.xml, robots.txt
+Also data/artifact.html: the app without a document skeleton, for the private claude.ai preview.
 """
 
 import argparse
 import collections
 import datetime as dt
+import email.utils
+import html
 import json
 import re
-import webbrowser
+import sqlite3
 from pathlib import Path
 
 import cve_watch
@@ -26,13 +35,20 @@ DATA_DIR = HERE / "data"
 SITE_DIR = HERE / "site"
 TEMPLATE = HERE / "site_template.html"
 
-# Fields the page actually uses; everything else is dropped to keep the page small.
+# Fields the page actually uses; everything else is dropped to keep the download small.
 CVE_FIELDS = ["id", "published", "description", "cvss", "severity", "vector", "cvss_version",
               "cwes", "products", "kev", "epss", "epss_pct", "priority", "new"]
+MAX_DESCRIPTION = 420
+
+STOPWORDS = {"US", "UK", "EU", "UN", "CEO", "CTO", "CFO", "IT", "TV", "PC", "OK", "AM", "PM", "ID", "FAQ", "PDF", "URL", "URLs",
+             "HTML", "USA", "NATO", "COVID", "LLC", "INC", "GMT", "UTC", "ROI", "ATM", "GPU", "CPU", "SDK", "NET", "FEATURE"}
 
 
-def load(name):
-    return json.loads((CONTENT / name).read_text())
+def load(name, default=None):
+    path = CONTENT / name
+    if default is not None and not path.exists():
+        return default
+    return json.loads(path.read_text())
 
 
 def snapshot(name, data=None):
@@ -47,8 +63,10 @@ def snapshot(name, data=None):
     return data
 
 
-STOPWORDS = {"US", "UK", "EU", "UN", "CEO", "CTO", "CFO", "IT", "TV", "PC", "OK", "AM", "PM", "ID", "FAQ", "PDF", "URL", "URLs",
-             "HTML", "USA", "NATO", "COVID", "LLC", "INC", "GMT", "UTC", "ROI", "ATM", "GPU", "CPU", "SDK", "NET", "FEATURE"}
+def embed_json(data):
+    """Serialise data for an inline <script>. Escaping every '<' means no feed text ('</script>',
+    '<!--<script>') can change how the HTML parser reads the script."""
+    return json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
 
 
 def unexplained(stories, glossary, cwe, top=25):
@@ -66,12 +84,163 @@ def unexplained(stories, glossary, cwe, top=25):
     return counts.most_common(top)
 
 
+# --------------------------------------------------------------------------- Trends
+
+def trends(rows, cwe_names, db_path=cve_watch.DB_PATH, days=30):
+    """Chart data: CVEs per published day (from the growing local history), plus this window's
+    most common bug types and most-affected vendors."""
+    today = dt.date.today()
+    start = today - dt.timedelta(days=days - 1)
+    per_day = {start + dt.timedelta(days=i): collections.Counter() for i in range(days)}
+    history = []
+    if Path(db_path).exists():
+        with sqlite3.connect(db_path) as db:
+            history = [json.loads(d) for (d,) in db.execute("SELECT data FROM cves")]
+    for c in history or rows:
+        if not c.get("published"):
+            continue
+        day = dt.date.fromisoformat(c["published"])
+        if day in per_day:
+            bucket = "critical" if (c.get("cvss") or 0) >= 9 else "high" if (c.get("cvss") or 0) >= 7 else "other"
+            per_day[day][bucket] += 1
+    daily = [{"date": d.isoformat(), **{k: per_day[d][k] for k in ("critical", "high", "other")}} for d in sorted(per_day)]
+    # Trim leading days with no data, so a new install doesn't show 23 empty bars.
+    while daily and not any(daily[0][k] for k in ("critical", "high", "other")):
+        daily.pop(0)
+
+    cwe_counts = collections.Counter(cw for c in rows for cw in c["cwes"] if cw in cwe_names)
+    vendor_counts = collections.Counter(c["products"][0].split()[0] for c in rows if c["products"])
+    return {
+        "daily": daily,
+        "cwes": [{"id": k, "name": cwe_names[k]["name"], "n": n} for k, n in cwe_counts.most_common(8)],
+        "vendors": [{"name": k, "n": n} for k, n in vendor_counts.most_common(8)],
+    }
+
+
+# --------------------------------------------------------------------------- Static pages
+
+def page_css(template):
+    """Reuse the app's own fonts and stylesheet for the static lesson pages."""
+    fonts = re.search(r'<link rel="stylesheet" href="https://fonts[^>]+>', template).group(0)
+    css = re.search(r"<style>(.*?)</style>", template, re.S).group(1)
+    return fonts, css
+
+
+def lesson_page(lesson, nxt, fonts, css, site):
+    e = html.escape
+    url = site["url"].rstrip("/") + f"/lessons/{lesson['id']}.html"
+    ex = lesson["example"]
+    src = ex.get("source")
+    check = lesson["check"]
+    return f"""<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{e(lesson['title'])} explained · Patch Notes</title>
+<meta name="description" content="{e(lesson['hook'])} A {lesson['minutes']}-minute plain-English lesson with a real case and how defenders stop it.">
+<link rel="canonical" href="{e(url)}">
+<link rel="alternate" type="application/rss+xml" title="Patch Notes" href="../feed.xml">
+{fonts}
+<style>{css}
+.static {{ max-width: 760px; margin: 0 auto; padding-block: 28px 56px; }}
+</style>
+<header class="masthead" style="position:static"><div class="mast-inner">
+  <a class="brand" href="../index.html"><b>PATCH<i>//</i>NOTES</b></a>
+  <a class="cmd-btn" href="../index.html#lesson-{e(lesson['id'])}" style="text-decoration:none"><span>Open the interactive version</span></a>
+</div></header>
+<main><article class="article static">
+  <a class="link-btn" href="index.html">← All lessons</a>
+  <div class="stack" style="gap:8px"><div class="eyebrow">{e(lesson['track'])} · {e(lesson['level'])} · {lesson['minutes']} min</div><h1>{e(lesson['title'])}</h1><p class="hook">{e(lesson['hook'])}</p></div>
+  <section><h2>What it is</h2><p>{e(lesson['what'])}</p></section>
+  <section class="case"><div class="eyebrow">Real case · {e(ex['year'])}</div><h3>{e(ex['title'])}</h3><p>{e(ex['text'])}</p>{f'<p class="muted" style="font-size:0.85rem">Source: <a href="{e(src["url"])}" rel="noopener">{e(src["label"])}</a></p>' if src else ''}</section>
+  <section><h2>How defenders stop it</h2><ul class="checklist">{''.join(f'<li>{e(d)}</li>' for d in lesson['defend'])}</ul></section>
+  <section><h2>Try it yourself</h2><p><a class="btn brand" href="{e(lesson['practice']['url'] if not lesson['practice']['url'].startswith('#') else '../index.html' + lesson['practice']['url'])}" rel="noopener">{e(lesson['practice']['label'])}</a></p></section>
+  <section class="panel"><h2>Check yourself</h2><p class="q">{e(check['q'])}</p><ol>{''.join(f'<li>{e(o)}</li>' for o in check['options'])}</ol>
+    <details><summary>Show answer</summary><p><strong>{e(check['options'][check['answer']])}</strong>. {e(check['why'])}</p></details>
+    <p class="muted" style="font-size:0.88rem"><a href="../index.html#lesson-{e(lesson['id'])}">Answer it in the app</a> to earn XP.</p></section>
+  <a class="btn ghost" href="{e(nxt['id'])}.html" style="justify-self:start">Next: {e(nxt['title'])} →</a>
+</article></main>
+</html>
+"""
+
+
+def lessons_index(lessons, fonts, css, site):
+    e = html.escape
+    cards = "".join(
+        f'<a class="lcard" href="{e(l["id"])}.html"><span class="eyebrow">{e(l["track"])}</span><h3>{e(l["title"])}</h3><p>{e(l["hook"])}</p>'
+        f'<span class="lmeta"><span>{l["minutes"]} min</span><span>{e(l["level"])}</span></span></a>' for l in lessons)
+    return f"""<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cyber security lessons · Patch Notes</title>
+<meta name="description" content="{len(lessons)} short, plain-English cyber security lessons: phishing, ransomware, SQL injection, cloud security and more.">
+<link rel="canonical" href="{e(site['url'].rstrip('/'))}/lessons/">
+{fonts}
+<style>{css}</style>
+<header class="masthead" style="position:static"><div class="mast-inner"><a class="brand" href="../index.html"><b>PATCH<i>//</i>NOTES</b></a></div></header>
+<main><div class="view"><div class="view-head"><div class="eyebrow">Lessons</div><h1>Cyber security, explained</h1></div>
+<div class="lessons">{cards}</div></div></main>
+</html>
+"""
+
+
+def rss(stories, explainers, site, limit=40):
+    e = html.escape
+    items = []
+    for s in stories[:limit]:
+        text = explainers.get(s["link"]) or s["snippet"]
+        pub = email.utils.format_datetime(dt.datetime.fromisoformat(s["date"]))
+        items.append(f"""  <item>
+    <title>{e(s['title'])}</title>
+    <link>{e(s['link'])}</link>
+    <guid isPermaLink="true">{e(s['link'])}</guid>
+    <pubDate>{pub}</pubDate>
+    <source url="{e(site['url'])}feed.xml">{e(s['source'])}</source>
+    <description>{e(text)}{' (Explanation by Patch Notes, AI-assisted.)' if s['link'] in explainers else ''} Via {e(s['source'])}.</description>
+  </item>""")
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+  <title>Patch Notes: cyber security news, explained</title>
+  <link>{e(site['url'])}</link>
+  <description>{e(site.get('description', ''))}</description>
+  <language>en</language>
+  <lastBuildDate>{email.utils.format_datetime(dt.datetime.now(dt.timezone.utc))}</lastBuildDate>
+{chr(10).join(items)}
+</channel>
+</rss>
+"""
+
+
+def sitemap(lessons, site):
+    base = site["url"].rstrip("/")
+    urls = [f"{base}/", f"{base}/lessons/"] + [f"{base}/lessons/{l['id']}.html" for l in lessons]
+    today = dt.date.today().isoformat()
+    body = "".join(f"  <url><loc>{html.escape(u)}</loc><lastmod>{today}</lastmod></url>\n" for u in urls)
+    return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{body}</urlset>\n'
+
+
+# --------------------------------------------------------------------------- Main
+
+def serve(directory, port=8000):
+    import functools
+    import http.server
+    import webbrowser
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(directory))
+    with http.server.ThreadingHTTPServer(("127.0.0.1", port), handler) as httpd:
+        url = f"http://localhost:{port}/"
+        print(f"\nServing {directory} at {url}  (Ctrl+C to stop)")
+        webbrowser.open(url)
+        httpd.serve_forever()
+
+
 def main():
     parser = argparse.ArgumentParser(description="Build the Patch Notes site.")
     parser.add_argument("--days", type=int, default=7, help="look-back window for news and CVEs")
     parser.add_argument("--reuse-cves", action="store_true", help="reuse the last CVE snapshot")
     parser.add_argument("--offline", action="store_true", help="use saved news and CVE snapshots only")
-    parser.add_argument("--open", action="store_true", help="open the built site in your browser")
+    parser.add_argument("--serve", action="store_true", help="preview the built site at http://localhost:8000")
     args = parser.parse_args()
     days = max(1, min(args.days, 120))  # NVD allows at most a 120-day window
 
@@ -89,6 +258,17 @@ def main():
         print("Fetching news feeds...")
         stories = snapshot("news", news.collect_news(days))
 
+    site = load("site.json")
+    lessons = load("lessons.json")
+    cwe = load("cwe.json")
+    explainers_all = load("explainers.json", {})
+    links = {s["link"] for s in stories}
+    explainers = {k: v["text"] for k, v in explainers_all.items() if k in links}
+    rows = cves["rows"]
+    for r in rows:
+        if len(r["description"]) > MAX_DESCRIPTION:
+            r["description"] = r["description"][:MAX_DESCRIPTION - 1].rstrip() + "…"
+
     now = dt.datetime.now()
     data = {
         "meta": {
@@ -97,43 +277,58 @@ def main():
             "dateLong": now.strftime("%A %-d %B %Y"),
             "days": days,
             "watchlist": cves["watchlist"],
+            "cveCount": len(rows),
+            "priorityCounts": collections.Counter(r["priority"] for r in rows),
         },
-        "site": load("site.json"),
+        "site": site,
         "news": stories,
-        "cves": cves["rows"],
-        "lessons": load("lessons.json"),
+        "kev": [r for r in rows if r["kev"]],  # small and needed for the first screen; the full list loads after
+        "trends": trends(rows, cwe),
+        "lessons": lessons,
+        "labs": load("labs.json"),
+        "paths": load("paths.json"),
+        "stack": load("stack.json"),
         "quiz": load("quiz.json"),
         "phish": load("phish.json"),
         "careers": load("careers.json"),
-        "cwe": load("cwe.json"),
+        "cwe": cwe,
         "glossary": load("glossary.json"),
+        "explainers": explainers,
     }
-    # AI-written beginner explanations (added by the daily task via explain.py); only keep current stories.
-    explainers_path = CONTENT / "explainers.json"
-    explainers = json.loads(explainers_path.read_text()) if explainers_path.exists() else {}
-    links = {s["link"] for s in stories}
-    data["explainers"] = {k: v["text"] for k, v in explainers.items() if k in links}
 
-    # Escape every "<" so no feed text (e.g. "</script>" or "<!--<script>") can change how the HTML parser reads the inline script.
-    payload = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
-    page = TEMPLATE.read_text().replace("/*__DATA__*/null", payload)
+    template = TEMPLATE.read_text()
     SITE_DIR.mkdir(exist_ok=True)
+    (SITE_DIR / "data").mkdir(exist_ok=True)
+    (SITE_DIR / "lessons").mkdir(exist_ok=True)
+    (SITE_DIR / "data" / "cves.json").write_text(json.dumps(rows, ensure_ascii=False))
     out = SITE_DIR / "index.html"
+    page = template.replace("/*__DATA__*/null", embed_json(data))
     out.write_text('<!doctype html>\n<html lang="en">\n<meta charset="utf-8">\n' + page)
+    # Same page without the document skeleton, for publishing as a claude.ai artifact (which adds its own).
+    DATA_DIR.mkdir(exist_ok=True)
+    (DATA_DIR / "artifact.html").write_text(page)
 
-    kev = sum(1 for c in data["cves"] if c["kev"])
-    print(f"\nBuilt {out}  ({out.stat().st_size / 1e6:.1f} MB)")
-    print(f"  {len(stories)} stories · {len(data['cves'])} CVEs ({kev} exploited) · "
-          f"{len(data['lessons'])} lessons · {len(data['quiz'])} quiz questions · "
-          f"{len(data['explainers'])} story explanations")
-    gaps = unexplained(stories, data["glossary"], data["cwe"])
+    fonts, css = page_css(template)
+    for i, l in enumerate(lessons):
+        (SITE_DIR / "lessons" / f"{l['id']}.html").write_text(lesson_page(l, lessons[(i + 1) % len(lessons)], fonts, css, site))
+    (SITE_DIR / "lessons" / "index.html").write_text(lessons_index(lessons, fonts, css, site))
+    (SITE_DIR / "feed.xml").write_text(rss(stories, explainers, site))
+    (SITE_DIR / "sitemap.xml").write_text(sitemap(lessons, site))
+    (SITE_DIR / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {site['url'].rstrip('/')}/sitemap.xml\n")
+
+    kev = len(data["kev"])
+    print(f"\nBuilt {out}  ({out.stat().st_size / 1e6:.1f} MB page + {(SITE_DIR / 'data' / 'cves.json').stat().st_size / 1e6:.1f} MB CVE data)")
+    print(f"  {len(stories)} stories · {len(rows)} CVEs ({kev} exploited) · {len(lessons)} lessons + pages · "
+          f"{len(data['labs'])} labs · {len(data['paths'])} paths · {len(explainers)} story explanations")
+    gaps = unexplained(stories, data["glossary"], cwe)
     if gaps:
+        DATA_DIR.mkdir(exist_ok=True)
         (DATA_DIR / "unexplained.txt").write_text("\n".join(f"{n}\t{w}" for w, n in gaps) + "\n")
         print("\nJargon in this week's news that the glossary doesn't explain yet (stories, term):")
         print("  " + ", ".join(f"{w} ({n})" for w, n in gaps))
         print("  Add the useful ones to content/glossary.json.")
-    if args.open:
-        webbrowser.open(out.as_uri())
+    if args.serve:
+        serve(SITE_DIR)
 
 
 if __name__ == "__main__":
