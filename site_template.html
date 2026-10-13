@@ -418,6 +418,7 @@ footer { padding-bottom: 8px; }
 .statusbar .lvl { color: var(--sun); }
 .statusbar button { all: unset; cursor: pointer; color: var(--brand); }
 body.has-status { padding-bottom: 30px; }
+body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); }
 
 /* Flag hunt */
 .flags { display: grid; gap: 10px; }
@@ -500,7 +501,8 @@ const pct = x => x == null ? "—" : (x * 100 < 1 ? (x * 100).toFixed(2) : (x * 
 const CVE_IDS = new Set(DATA.cves.map(c => c.id));
 const LESSON = Object.fromEntries(DATA.lessons.map(l => [l.id, l]));
 const TOPIC_NAME = id => (LESSON[id] ? LESSON[id].title.split(" & ")[0].split(" (")[0] : id);
-const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+const dateStr = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const todayStr = () => dateStr(new Date());
 const dayNumber = () => Math.floor(new Date(todayStr() + "T00:00:00Z").getTime() / 864e5);
 function ago(iso) {
   const mins = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
@@ -520,17 +522,18 @@ const MATCH = (() => {
   });
   const make = (map, flags, plural) => {
     const keys = [...map.keys()].sort((a, b) => b.length - a.length);
-    return new RegExp(`(?<![A-Za-z0-9_])(?:${keys.map(k => reEsc(k) + (plural && /[a-z]$/.test(k) ? "(?:e?s)?" : "")).join("|")})(?![A-Za-z0-9_])`, flags);
+    // Prefix group instead of a lookbehind so older Safari (< 16.4) can parse it.
+    return new RegExp(`(^|[^A-Za-z0-9_])(${keys.map(k => reEsc(k) + (plural && /[a-z]$/.test(k) ? "(?:e?s)?" : "")).join("|")})(?![A-Za-z0-9_])`, flags);
   };
   return { cs, ci, rx, csRe: make(cs, "g", false), ciRe: make(ci, "gi", true) };
 })();
 function findTerms(text) {
   const hits = [];
-  for (const m of text.matchAll(MATCH.csRe)) hits.push({ i: m.index, len: m[0].length, id: MATCH.cs.get(m[0]) });
+  for (const m of text.matchAll(MATCH.csRe)) hits.push({ i: m.index + m[1].length, len: m[2].length, id: MATCH.cs.get(m[2]) });
   for (const m of text.matchAll(MATCH.ciRe)) {
-    const w = m[0].toLowerCase();
+    const w = m[2].toLowerCase();
     const id = MATCH.ci.get(w) || MATCH.ci.get(w.replace(/es$/, "")) || MATCH.ci.get(w.replace(/s$/, ""));
-    hits.push({ i: m.index, len: m[0].length, id });
+    hits.push({ i: m.index + m[1].length, len: m[2].length, id });
   }
   MATCH.rx.forEach(({ re, id }) => { for (const m of text.matchAll(re)) hits.push({ i: m.index, len: m[0].length, id }); });
   hits.sort((a, b) => a.i - b.i || b.len - a.len);
@@ -737,7 +740,7 @@ function renderDaily() {
     answered,
     onAnswer: (choice, correct) => {
       const y = new Date(); y.setDate(y.getDate() - 1);
-      const yStr = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, "0")}-${String(y.getDate()).padStart(2, "0")}`;
+      const yStr = dateStr(y);
       P.streak = P.lastDaily === yStr ? (P.streak || 0) + 1 : 1;
       P.lastDaily = today; P.daily = { date: today, choice };
       saveP();
@@ -824,7 +827,7 @@ function headline(c) {
   const l = c.cwes.map(id => DATA.cwe[id]).find(Boolean);
   if (l && c.products[0]) return `${l.name} in ${c.products[0]}`;
   if (l) return l.name;
-  const first = c.description.split(/(?<=\.)\s/)[0];
+  const first = (c.description.match(/^.*?\.(?=\s|$)/) || [c.description])[0];
   return first.length > 110 ? first.slice(0, 107) + "…" : first;
 }
 function decodeVector(vec) {

@@ -27,11 +27,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      # Keep the CVE database between runs so the site can show what's new.
+      - id: day
+        run: echo "day=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+      # Keep the CVE database between runs so the site can show what's new (one cache entry per day).
       - uses: actions/cache@v4
         with:
           path: cves.db
-          key: cves-db-${{ github.run_id }}
+          key: cves-db-${{ steps.day.outputs.day }}
           restore-keys: cves-db-
       - name: Build site
         env:

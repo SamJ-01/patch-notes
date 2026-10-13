@@ -10,8 +10,10 @@ Output: site/index.html (open it directly, or host the site/ folder anywhere, e.
 """
 
 import argparse
+import collections
 import datetime as dt
 import json
+import re
 import webbrowser
 from pathlib import Path
 
@@ -51,10 +53,7 @@ STOPWORDS = {"US", "UK", "EU", "UN", "CEO", "CTO", "CFO", "IT", "TV", "PC", "OK"
 
 def unexplained(stories, glossary, cwe, top=25):
     """Acronyms and product-style names in the news that the glossary doesn't explain yet."""
-    import collections
-    import re
-    import news as _news
-    outlets = {w.lower() for f in _news.FEEDS for w in f["name"].split()}
+    outlets = {w.lower() for f in news.FEEDS for w in f["name"].split()}
     known = outlets | {a.lower() for g in glossary for a in g["aliases"]} | {g["term"].lower() for g in glossary} | {k.lower() for k in cwe}
     words = re.compile(r"\b(?:[A-Z]{2,8}[0-9]*|[A-Z][a-z]+[A-Z][A-Za-z0-9]*|[A-Za-z]+[0-9]{2,})\b")
     counts = collections.Counter()
@@ -74,19 +73,21 @@ def main():
     parser.add_argument("--offline", action="store_true", help="use saved news and CVE snapshots only")
     parser.add_argument("--open", action="store_true", help="open the built site in your browser")
     args = parser.parse_args()
+    days = max(1, min(args.days, 120))  # NVD allows at most a 120-day window
 
     if args.offline or args.reuse_cves:
         cves = snapshot("cves")
+        days = cves.get("days", days)  # describe the data we actually have, not the CLI default
     else:
-        rows, cve_meta = cve_watch.collect(args.days)
+        rows, cve_meta = cve_watch.collect(days)
         cves = snapshot("cves", {"rows": [{k: r.get(k) for k in CVE_FIELDS} for r in rows],
-                                 "watchlist": cve_meta["watchlist"]})
+                                 "watchlist": cve_meta["watchlist"], "days": days})
 
     if args.offline:
         stories = snapshot("news")
     else:
         print("Fetching news feeds...")
-        stories = snapshot("news", news.collect_news(args.days))
+        stories = snapshot("news", news.collect_news(days))
 
     now = dt.datetime.now()
     data = {
@@ -94,7 +95,7 @@ def main():
             "generated": now.strftime("%Y-%m-%d %H:%M"),
             "version": now.strftime("%Y.%m.%d"),
             "dateLong": now.strftime("%A %-d %B %Y"),
-            "days": args.days,
+            "days": days,
             "watchlist": cves["watchlist"],
         },
         "site": load("site.json"),
@@ -113,8 +114,8 @@ def main():
     links = {s["link"] for s in stories}
     data["explainers"] = {k: v["text"] for k, v in explainers.items() if k in links}
 
-    payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")  # never let data close the <script>
-    payload = payload.replace("\ufffd", "'")  # some upstream records arrive with mangled apostrophes
+    # Escape every "<" so no feed text (e.g. "</script>" or "<!--<script>") can change how the HTML parser reads the inline script.
+    payload = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
     page = TEMPLATE.read_text().replace("/*__DATA__*/null", payload)
     SITE_DIR.mkdir(exist_ok=True)
     out = SITE_DIR / "index.html"

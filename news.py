@@ -65,7 +65,7 @@ def _text(el):
 def clean(raw, words=32):
     """Strip HTML, collapse whitespace and keep only a short snippet."""
     text = html.unescape(TAG_RE.sub(" ", html.unescape(raw or "")))
-    text = re.sub(r"\s+", " ", text).strip()
+    text = re.sub(r"\s+", " ", text.replace("\ufffd", "'")).strip()
     parts = text.split(" ")
     return text if len(parts) <= words else " ".join(parts[:words]).rstrip(",;:") + "…"
 

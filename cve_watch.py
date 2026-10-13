@@ -8,9 +8,8 @@ Pipeline:
   3. FIRST EPSS      -> probability each CVE gets exploited in the next 30 days
   4. Watchlist       -> flag CVEs touching vendors/products you care about
   5. SQLite          -> remember what we've already seen, so each run can report what's NEW
-  6. HTML guide      -> a beginner-friendly page that explains each CVE in plain English
-
-Standard library only. Run:  python3 cve_watch.py --days 7 --open
+Used by build.py for the site's CVE Radar. Standard library only.
+Run on its own for a terminal summary:  python3 cve_watch.py --days 7 --notify
 """
 
 import argparse
@@ -23,14 +22,11 @@ import sys
 import time
 import urllib.parse
 import urllib.request
-import webbrowser
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 DB_PATH = HERE / "cves.db"
 WATCHLIST_PATH = HERE / "watchlist.txt"
-TEMPLATE_PATH = HERE / "dashboard_template.html"
-OUTPUT_PATH = HERE / "dashboard.html"
 
 NVD_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 KEV_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
@@ -131,6 +127,7 @@ def affected_products(cve):
 def parse_nvd(cve):
     """Flatten one NVD record into the fields we care about."""
     description = next((d["value"] for d in cve.get("descriptions", []) if d["lang"] == "en"), "")
+    description = description.replace("\ufffd", "'")  # some CNAs submit text with mangled apostrophes
     score, severity, vector, version = best_cvss(cve.get("metrics", {}))
     cwes = sorted({
         d["value"]
@@ -242,13 +239,6 @@ def save(db, cves):
 
 # --------------------------------------------------------------------------- Output
 
-def render(cves, meta):
-    payload = json.dumps({"meta": meta, "cves": cves})
-    payload = payload.replace("</", "<\\/")  # never let data close the <script> tag
-    html = TEMPLATE_PATH.read_text().replace("/*__DATA__*/null", payload)
-    OUTPUT_PATH.write_text("<!doctype html>\n<meta charset=\"utf-8\">\n" + html)
-
-
 def notify(title, message):
     """macOS notification banner (silently skipped on other systems)."""
     if sys.platform != "darwin":
@@ -287,7 +277,7 @@ def collect(days):
                 "description": entry["shortDescription"],
                 "cvss": None, "severity": "NONE", "vector": None, "cvss_version": None,
                 "cwes": entry.get("cwes", []),
-                "products": [f"{entry['vendorProject']} {entry['product']}"],
+                "products": [f"{entry['vendorProject']} {entry['product']}".lower()],
             }
 
     print("Fetching EPSS exploit-probability scores...")
@@ -331,27 +321,24 @@ def collect(days):
 def main():
     parser = argparse.ArgumentParser(description="Track new CVEs, prioritised by real-world risk.")
     parser.add_argument("--days", type=int, default=7, help="look back this many days (max 120)")
-    parser.add_argument("--open", action="store_true", help="open the dashboard in your browser")
     parser.add_argument("--notify", action="store_true", help="macOS notification for new KEV/watchlist hits")
     args = parser.parse_args()
 
     rows, meta = collect(args.days)
-    render(rows, meta)
 
     exploited = [c for c in rows if c["kev"]]
     watched = [c for c in rows if c["watch"]]
     print(f"\n{len(rows)} CVEs | {meta['new']} new since last run | "
           f"{len(exploited)} known exploited | {len(watched)} watchlist hits")
-    print(f"Dashboard: {OUTPUT_PATH}")
+    for c in rows[:10]:
+        print(f"  [{c['priority_label']:9}] {c['id']:16} {c['description'][:90]}")
+    print("Build the full site with: python3 build.py")
 
     urgent_new = [c for c in rows if c["new"] and (c["kev"] or c["watch"])]
     if args.notify and urgent_new:
         top = urgent_new[0]
         notify(f"CVE Watch: {len(urgent_new)} new to review",
                f"{top['id']} ({top['priority_label']}) {top['description'][:90]}")
-
-    if args.open:
-        webbrowser.open(OUTPUT_PATH.as_uri())
 
 
 if __name__ == "__main__":
