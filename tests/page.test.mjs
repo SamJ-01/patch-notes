@@ -40,7 +40,8 @@ vm.runInContext([
   "this.api = { findTerms, cvss31, cvssSeverity, parseVector, decodeVector };",
 ].join("\n"), ctx);
 const { findTerms, cvss31, cvssSeverity, parseVector, decodeVector } = ctx.api;
-const terms = text => findTerms(text).map(h => [text.substr(h.i, h.len), h.id]);
+// Copy results out of the vm sandbox: its arrays have a different prototype, which strict deep-equal rejects.
+const terms = text => JSON.parse(JSON.stringify(findTerms(text).map(h => [text.substr(h.i, h.len), h.id])));
 
 test("CVSS 3.1 scores match the official calculator", () => {
   const cases = {
