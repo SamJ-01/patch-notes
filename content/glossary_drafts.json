@@ -1,1 +1,54 @@
-[]
+[
+ {
+  "id": "marklogic",
+  "term": "MarkLogic",
+  "kind": "Product",
+  "aliases": [
+   "MarkLogic",
+   "MarkLogic Server"
+  ],
+  "short": "A database product from Progress Software that businesses use to store and search large amounts of documents and data. Flaws in it can expose that data or let attackers take control of the server.",
+  "see": [],
+  "lesson": "vuln-management",
+  "draft": "2026-10-13"
+ },
+ {
+  "id": "ahsaycbs",
+  "term": "AhsayCBS",
+  "kind": "Product",
+  "aliases": [
+   "AhsayCBS",
+   "Ahsay"
+  ],
+  "short": "Ahsay Cloud Backup Suite, server software that backup providers and businesses run to store customers' backups. Because it is reachable over the internet and holds copies of data, unpatched flaws in it are attractive to attackers.",
+  "see": [],
+  "lesson": "vuln-management",
+  "draft": "2026-10-13"
+ },
+ {
+  "id": "agentcore",
+  "term": "Amazon Bedrock AgentCore",
+  "kind": "Product",
+  "aliases": [
+   "AgentCore",
+   "AWS AgentCore",
+   "Bedrock AgentCore"
+  ],
+  "short": "An Amazon Web Services (AWS) service for building and running AI agents in the cloud. Agents run there may hold credentials and permissions, so weaknesses can let a malicious prompt reach sensitive cloud resources.",
+  "see": [],
+  "lesson": "ai-security",
+  "draft": "2026-10-13"
+ },
+ {
+  "id": "prc",
+  "term": "PRC",
+  "kind": "Organisation",
+  "aliases": [
+   "PRC"
+  ],
+  "short": "Short for the People's Republic of China. Security reports use 'PRC-linked' or 'PRC state-sponsored' to describe hacking groups believed to work for or on behalf of the Chinese government.",
+  "see": [],
+  "lesson": "nation-state",
+  "draft": "2026-10-13"
+ }
+]
