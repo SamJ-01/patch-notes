@@ -1,0 +1,232 @@
+{
+ "CWE-20": {
+  "name": "Improper input validation",
+  "plain": "The software trusts data it receives without checking it's the right type, size or format. Many other bug types start here.",
+  "defend": "Check every input against what's allowed (type, length, format) and reject anything else."
+ },
+ "CWE-22": {
+  "name": "Path traversal",
+  "plain": "An attacker puts sequences like ../ in a file name to climb out of the folder they're meant to stay in, then reads or overwrites other files.",
+  "defend": "Resolve the full path and confirm it's still inside the allowed folder before opening it."
+ },
+ "CWE-74": {
+  "name": "Injection",
+  "plain": "Attacker input is passed to another system (a database, shell or template) and gets treated as instructions instead of plain data.",
+  "defend": "Keep data and commands separate: use parameterised APIs and encode output."
+ },
+ "CWE-77": {
+  "name": "Command injection",
+  "plain": "User input ends up inside a system command, so an attacker can add their own commands and run them on the server.",
+  "defend": "Avoid the shell. Pass arguments as a list to safe APIs and allow-list expected values."
+ },
+ "CWE-78": {
+  "name": "OS command injection",
+  "plain": "User input ends up inside an operating-system command, so an attacker can tack on their own commands (e.g. ; rm -rf) and run them on the server.",
+  "defend": "Avoid the shell. Pass arguments as a list to safe APIs and allow-list expected values."
+ },
+ "CWE-79": {
+  "name": "Cross-site scripting (XSS)",
+  "plain": "The site shows attacker-supplied text as live code in other people's browsers. The attacker can then act as those users: steal sessions, change settings, show fake login forms.",
+  "defend": "Encode output for where it appears (HTML, attribute, JavaScript) and add a Content Security Policy."
+ },
+ "CWE-89": {
+  "name": "SQL injection",
+  "plain": "Input is pasted straight into a database query, so an attacker can rewrite the query to read, change or delete data they shouldn't touch.",
+  "defend": "Use parameterised queries (prepared statements) every time. Never build SQL by joining strings."
+ },
+ "CWE-94": {
+  "name": "Code injection",
+  "plain": "The application runs attacker-controlled input as program code.",
+  "defend": "Never eval() user input. Use safe parsers and run risky code in a sandbox."
+ },
+ "CWE-119": {
+  "name": "Memory buffer error",
+  "plain": "The program reads or writes outside the block of memory it was given. This can crash it, leak secrets, or let an attacker run their own code.",
+  "defend": "Bounds-check every buffer, prefer memory-safe languages, keep mitigations like ASLR and DEP enabled."
+ },
+ "CWE-120": {
+  "name": "Buffer overflow",
+  "plain": "Data is copied into a fixed-size space without checking it fits, so it spills over and overwrites whatever is next in memory.",
+  "defend": "Use length-checked copy functions and memory-safe languages."
+ },
+ "CWE-121": {
+  "name": "Stack buffer overflow",
+  "plain": "Too much data is written into a buffer on the stack, which can overwrite the return address and hijack the program's flow.",
+  "defend": "Bounds checks, stack canaries and compiler hardening flags."
+ },
+ "CWE-122": {
+  "name": "Heap buffer overflow",
+  "plain": "Too much data is written into a buffer on the heap, corrupting nearby data structures that an attacker can then abuse.",
+  "defend": "Bounds checks, hardened allocators and memory-safe languages."
+ },
+ "CWE-125": {
+  "name": "Out-of-bounds read",
+  "plain": "The program reads past the end of a block of memory. That can leak secrets (Heartbleed was one of these) or crash the program.",
+  "defend": "Validate lengths and indexes before reading."
+ },
+ "CWE-190": {
+  "name": "Integer overflow",
+  "plain": "A number grows bigger than its type can hold and wraps around, like a car odometer rolling over to zero. The wrong number then leads to memory bugs.",
+  "defend": "Check arithmetic before using the result for sizes or indexes."
+ },
+ "CWE-200": {
+  "name": "Information exposure",
+  "plain": "The software reveals information to someone who shouldn't see it, such as internal paths, user records or keys. Attackers use these leaks to plan the next step.",
+  "defend": "Return generic errors, limit what APIs return, and review what's logged or exposed."
+ },
+ "CWE-269": {
+  "name": "Improper privilege management",
+  "plain": "The software hands out, keeps or fails to drop privileges properly, so a normal user can climb to admin.",
+  "defend": "Least privilege: give each user and process only the access it needs."
+ },
+ "CWE-276": {
+  "name": "Incorrect default permissions",
+  "plain": "Files or settings are installed with permissions that let too many people read or change them.",
+  "defend": "Ship locked-down defaults and audit permissions after install."
+ },
+ "CWE-284": {
+  "name": "Improper access control",
+  "plain": "The rules about who can do what are missing or broken.",
+  "defend": "Enforce access checks on the server for every request."
+ },
+ "CWE-287": {
+  "name": "Improper authentication",
+  "plain": "The software doesn't properly prove you are who you say you are, so an attacker can log in as someone else.",
+  "defend": "Use well-tested login frameworks, MFA and secure session handling."
+ },
+ "CWE-295": {
+  "name": "Improper certificate validation",
+  "plain": "The software doesn't properly check HTTPS certificates, so someone in the middle of the connection can pretend to be the real server.",
+  "defend": "Use the platform's default TLS validation and never disable it in production."
+ },
+ "CWE-306": {
+  "name": "Missing authentication",
+  "plain": "An important function works with no login at all. Anyone who can reach it can use it.",
+  "defend": "Require authentication on every sensitive function, including admin and API endpoints."
+ },
+ "CWE-312": {
+  "name": "Cleartext storage of sensitive data",
+  "plain": "Passwords, keys or personal data are stored unencrypted, so anyone who gets the file or database can read them.",
+  "defend": "Encrypt sensitive data at rest and hash passwords with a slow algorithm like bcrypt or Argon2."
+ },
+ "CWE-327": {
+  "name": "Broken or risky cryptography",
+  "plain": "The software uses an outdated or weak encryption method that attackers know how to break.",
+  "defend": "Use modern, well-reviewed libraries and algorithms (AES-GCM, SHA-256 or better)."
+ },
+ "CWE-347": {
+  "name": "Improper signature verification",
+  "plain": "The software doesn't properly check digital signatures, so tampered files or tokens are accepted as genuine.",
+  "defend": "Always verify signatures with a trusted library and reject anything unsigned."
+ },
+ "CWE-352": {
+  "name": "Cross-site request forgery (CSRF)",
+  "plain": "A malicious website makes your browser send a request to another site where you're already logged in, like changing your email or password, without you knowing.",
+  "defend": "Use anti-CSRF tokens and SameSite cookies."
+ },
+ "CWE-362": {
+  "name": "Race condition",
+  "plain": "Two things happen at almost the same time and the software doesn't handle the overlap, letting an attacker slip in between a check and an action.",
+  "defend": "Use proper locking and make check-and-act steps atomic."
+ },
+ "CWE-400": {
+  "name": "Uncontrolled resource consumption",
+  "plain": "An attacker can make the software use up memory, CPU or disk until it slows down or falls over. This is a denial-of-service bug.",
+  "defend": "Set limits, timeouts and rate limiting on expensive operations."
+ },
+ "CWE-416": {
+  "name": "Use after free",
+  "plain": "The program keeps using a piece of memory after it has given it back. If an attacker fills that spot with their own data, they can often take control.",
+  "defend": "Clear pointers after freeing, use smart pointers or memory-safe languages."
+ },
+ "CWE-427": {
+  "name": "Uncontrolled search path",
+  "plain": "The program looks for libraries or files in folders an attacker can write to, so it loads the attacker's planted file instead (DLL hijacking).",
+  "defend": "Load from absolute, trusted paths only."
+ },
+ "CWE-434": {
+  "name": "Unrestricted file upload",
+  "plain": "The site accepts uploaded files without checking what they are, so an attacker can upload a script (a web shell) and run it on the server.",
+  "defend": "Allow-list file types, rename uploads, and store them where they can't be executed."
+ },
+ "CWE-476": {
+  "name": "NULL pointer dereference",
+  "plain": "The program tries to use something that doesn't exist and crashes. Usually a denial-of-service bug.",
+  "defend": "Check for null before use; memory-safe languages prevent most of these."
+ },
+ "CWE-502": {
+  "name": "Deserialisation of untrusted data",
+  "plain": "The app rebuilds objects from data it received. Crafted data can make it run attacker code while rebuilding them.",
+  "defend": "Never deserialise untrusted data with native formats; use simple formats like JSON with strict schemas."
+ },
+ "CWE-522": {
+  "name": "Weakly protected credentials",
+  "plain": "Passwords or keys are stored or sent in a way that's easy to steal.",
+  "defend": "Hash passwords properly, encrypt secrets, and send them only over TLS."
+ },
+ "CWE-532": {
+  "name": "Sensitive data in log files",
+  "plain": "Passwords, tokens or personal data get written into logs, where far more people and systems can read them.",
+  "defend": "Scrub secrets before logging and restrict who can read logs."
+ },
+ "CWE-601": {
+  "name": "Open redirect",
+  "plain": "A link on a trusted site can be made to forward visitors anywhere. Phishers use it so their links look legitimate.",
+  "defend": "Only redirect to allow-listed destinations."
+ },
+ "CWE-639": {
+  "name": "Insecure direct object reference (IDOR)",
+  "plain": "Changing an ID in a request (like /invoice/1001 to /invoice/1002) shows someone else's data because the app never checks who owns it.",
+  "defend": "Check ownership on the server for every object a user requests."
+ },
+ "CWE-732": {
+  "name": "Incorrect permission assignment",
+  "plain": "A critical file, folder or resource can be changed by users who shouldn't have that power.",
+  "defend": "Apply least privilege to files and services and audit them regularly."
+ },
+ "CWE-770": {
+  "name": "No limits on resource allocation",
+  "plain": "The software lets a request reserve as much memory or as many connections as it asks for, so an attacker can exhaust them.",
+  "defend": "Cap sizes, counts and time per request."
+ },
+ "CWE-787": {
+  "name": "Out-of-bounds write",
+  "plain": "The program writes past the end of a block of memory, corrupting nearby data. Skilled attackers turn this into running their own code. It's #1 on MITRE's most dangerous list.",
+  "defend": "Bounds-check writes, prefer memory-safe languages, keep exploit mitigations on."
+ },
+ "CWE-798": {
+  "name": "Hard-coded credentials",
+  "plain": "A password or key is baked into the software itself. Anyone who finds it can log in to every device running that version.",
+  "defend": "Never ship built-in passwords; force unique credentials on setup."
+ },
+ "CWE-862": {
+  "name": "Missing authorisation",
+  "plain": "The app checks that you're logged in, but not whether you're allowed to do this particular thing.",
+  "defend": "Check permissions on the server for every action, not just login."
+ },
+ "CWE-863": {
+  "name": "Incorrect authorisation",
+  "plain": "A permission check exists but gets it wrong, so some users can do things they shouldn't.",
+  "defend": "Centralise permission checks and test them with different user roles."
+ },
+ "CWE-917": {
+  "name": "Expression language injection",
+  "plain": "Input is evaluated by a template or expression engine, letting attackers run code. This was the root cause of Log4Shell.",
+  "defend": "Never evaluate user input as an expression; disable lookups you don't need."
+ },
+ "CWE-918": {
+  "name": "Server-side request forgery (SSRF)",
+  "plain": "The attacker makes the server send web requests for them, often to internal systems or cloud metadata services that aren't reachable from outside.",
+  "defend": "Allow-list destinations and block internal IP ranges from server-side fetches."
+ },
+ "CWE-1321": {
+  "name": "Prototype pollution",
+  "plain": "In JavaScript, attacker input changes the base object that all other objects inherit from, which can change app behaviour or lead to code execution.",
+  "defend": "Freeze prototypes, validate keys like __proto__, and use Map for user-keyed data."
+ },
+ "CWE-1333": {
+  "name": "Inefficient regular expression (ReDoS)",
+  "plain": "A badly written pattern can take forever on a crafted input, freezing the app.",
+  "defend": "Use linear-time regex engines or limit input length and matching time."
+ }
+}

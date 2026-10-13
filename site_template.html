@@ -1,0 +1,1073 @@
+<title>Patch Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Daily cyber security news, explained. Learn the concepts behind every headline, track exploited vulnerabilities and test your skills.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Unbounded:wght@500;700;800&display=swap">
+<style>
+/* Layout: a daily changelog for the internet. Sticky masthead with version stamp + tabs; each tab is one column (max 1120px) that splits main/side on wide screens. */
+:root {
+  --bg: #F2F4FA;
+  --surface: #FFFFFF;
+  --surface-2: #E8ECF6;
+  --ink: #0E1730;
+  --muted: #56627E;
+  --line: #D4DAE8;
+  --brand: #2B42E6;
+  --brand-ink: #FFFFFF;
+  --brand-soft: #E2E6FD;
+  --sun: #FFC530;
+  --sun-ink: #2E2200;
+  --slab: #0E1730;
+  --slab-ink: #F2F4FA;
+
+  --good: #17804F;  --good-tint: #E1F4EA;
+  --bad: #C42339;   --bad-tint: #FCE6E9;
+
+  --exploited: #C42339;  --exploited-tint: #FCE6E9;
+  --likely:    #A85400;  --likely-tint:    #FCEEDD;
+  --critical:  #7135B2;  --critical-tint:  #F0E7FA;
+  --high:      #1B67AA;  --high-tint:      #E2EEF9;
+  --other:     #6B778D;  --other-tint:     #ECEFF4;
+
+  --font-display: "Unbounded", "Avenir Next", "Segoe UI", sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A0F1E; --surface: #131A2E; --surface-2: #1B2440; --ink: #E8EDF8; --muted: #9AA6C2; --line: #263152;
+    --brand: #8C9BFF; --brand-ink: #0A0F1E; --brand-soft: #1E2754; --sun: #FFD45E; --sun-ink: #2A1E00; --slab: #1C2550; --slab-ink: #E8EDF8;
+    --good: #4FD291; --good-tint: #12332A; --bad: #FF7385; --bad-tint: #3A1823;
+    --exploited: #FF7385; --exploited-tint: #3A1823; --likely: #F2A34E; --likely-tint: #3A2A16;
+    --critical: #BE93FF; --critical-tint: #2D2142; --high: #72B2F0; --high-tint: #182D44;
+    --other: #93A0B5; --other-tint: #222C3E;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A0F1E; --surface: #131A2E; --surface-2: #1B2440; --ink: #E8EDF8; --muted: #9AA6C2; --line: #263152;
+  --brand: #8C9BFF; --brand-ink: #0A0F1E; --brand-soft: #1E2754; --sun: #FFD45E; --sun-ink: #2A1E00; --slab: #1C2550; --slab-ink: #E8EDF8;
+  --good: #4FD291; --good-tint: #12332A; --bad: #FF7385; --bad-tint: #3A1823;
+  --exploited: #FF7385; --exploited-tint: #3A1823; --likely: #F2A34E; --likely-tint: #3A2A16;
+  --critical: #BE93FF; --critical-tint: #2D2142; --high: #72B2F0; --high-tint: #182D44;
+  --other: #93A0B5; --other-tint: #222C3E;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--font-body); }
+h1, h2, h3, h4 { margin: 0; text-wrap: balance; }
+h1, h2 { font-family: var(--font-display); letter-spacing: -0.02em; }
+h2 { font-size: 1.3rem; font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 700; }
+p { margin: 0; }
+a { color: var(--brand); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+.mono { font-family: var(--font-mono); }
+.muted { color: var(--muted); }
+.eyebrow { font: 600 0.7rem/1.2 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.stack { display: grid; gap: 14px; align-content: start; min-width: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+/* Masthead */
+.masthead { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); border-bottom: 1px solid var(--line); padding-inline: 16px; }
+.mast-inner { max-width: 1120px; margin: 0 auto; padding-block: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; }
+.brand { display: flex; align-items: baseline; gap: 10px; text-decoration: none; color: var(--ink); }
+.brand b { font: 800 1.25rem/1 var(--font-display); letter-spacing: -0.03em; }
+.brand b i { font-style: normal; color: var(--brand); }
+.brand span { font: 600 0.72rem var(--font-mono); color: var(--muted); }
+nav.tabs { display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 auto; }
+nav.tabs a { text-decoration: none; color: var(--muted); font-weight: 700; font-size: 0.92rem; padding: 7px 12px; border-radius: 999px; }
+nav.tabs a:hover { color: var(--ink); background: var(--surface-2); }
+nav.tabs a[aria-current="page"] { color: var(--brand-ink); background: var(--brand); }
+.xp { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px 5px 6px; font-size: 0.82rem; }
+.xp .lvl { background: var(--sun); color: var(--sun-ink); font: 700 0.72rem var(--font-mono); border-radius: 999px; padding: 4px 9px; white-space: nowrap; }
+.xp .bar { width: 64px; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.xp .bar i { display: block; height: 100%; background: var(--sun); }
+.xp .pts { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+
+main { padding-inline: 16px; }
+.view { max-width: 1120px; margin: 0 auto; padding-block: 28px 56px; display: grid; gap: 28px; }
+.view-head { display: grid; gap: 8px; }
+.view-head h1 { font-size: clamp(1.7rem, 4.6vw, 2.6rem); font-weight: 800; line-height: 1.08; }
+.view-head p { color: var(--muted); max-width: 68ch; }
+.split { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.panel-title { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--brand); font-weight: 700; cursor: pointer; font-size: 0.9rem; text-decoration: none; }
+
+/* Changelog hero */
+.changelog { background: var(--slab); color: var(--slab-ink); border-radius: var(--radius); padding: clamp(18px, 4vw, 32px); display: grid; gap: 18px; }
+.changelog .ver { font: 600 0.78rem var(--font-mono); opacity: 0.75; }
+.changelog h1 { font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 800; line-height: 1.02; }
+.changelog ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.changelog li { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 10px; align-items: baseline; font-size: 1.02rem; }
+.changelog li a { color: inherit; }
+.mk { font: 700 0.95rem/1.6 var(--font-mono); text-align: center; border-radius: 6px; }
+.mk.add { background: #6F82FF; color: #0A0F1E; }
+.mk.warn { background: #FF6B7E; color: #0A0F1E; }
+.mk.trend { background: var(--sun); color: var(--sun-ink); }
+
+/* Chips & pills */
+.chip { font: 700 0.82rem var(--font-body); cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; color: var(--ink); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chip .n { font-family: var(--font-mono); font-weight: 400; opacity: 0.7; margin-left: 4px; }
+.topic { font: 700 0.75rem var(--font-body); text-decoration: none; color: var(--brand); background: var(--brand-soft); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+.topic:hover { text-decoration: underline; }
+.cvetag { font: 600 0.72rem var(--font-mono); text-decoration: none; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px; cursor: pointer; background: none; }
+.pill { font: 700 0.72rem/1 var(--font-body); letter-spacing: 0.04em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; color: var(--c); background: var(--t); }
+.tag { font: 600 0.72rem/1 var(--font-mono); padding: 5px 8px; border-radius: 6px; border: 1px solid var(--line); color: var(--muted); }
+.tag.new { color: var(--brand); border-color: var(--brand); }
+.tag.watch { color: var(--ink); background: var(--brand-soft); border-color: transparent; }
+
+input[type="search"], select, .inline-form input {
+  font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; min-width: 0;
+}
+input[type="search"] { flex: 1 1 240px; }
+
+/* Stories */
+.stories { display: grid; gap: 0; }
+.story { display: grid; gap: 6px; padding-block: 14px; border-top: 1px solid var(--line); min-width: 0; }
+.story:first-child { border-top: 0; padding-top: 0; }
+.story .meta { font: 0.75rem var(--font-mono); color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+.story h3 a { color: var(--ink); text-decoration: none; overflow-wrap: anywhere; }
+.story h3 a:hover { color: var(--brand); text-decoration: underline; }
+.story .snip { color: var(--muted); font-size: 0.93rem; overflow-wrap: anywhere; max-width: 75ch; }
+
+/* Trend bars */
+.bars { display: grid; gap: 8px; }
+.bar-row { display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) 2.5rem; gap: 10px; align-items: center; cursor: pointer; background: none; border: 0; padding: 0; text-align: left; }
+.bar-row .lbl { font-size: 0.88rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-row .trk { height: 10px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+.bar-row .trk i { display: block; height: 100%; border-radius: 5px; background: var(--brand); }
+.bar-row .v { font: 600 0.8rem var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; color: var(--muted); }
+.bar-row:hover .lbl { color: var(--brand); }
+
+/* Quiz blocks */
+.q { font-weight: 700; font-size: 1.02rem; }
+.opts { display: grid; gap: 8px; }
+.opt { text-align: left; cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 0.95rem; }
+.opt:hover:not([disabled]) { border-color: var(--brand); }
+.opt[disabled] { cursor: default; }
+.opt.right { background: var(--good-tint); border-color: var(--good); }
+.opt.wrong { background: var(--bad-tint); border-color: var(--bad); }
+.feedback { font-size: 0.92rem; border-radius: 10px; padding: 10px 12px; background: var(--surface-2); }
+.feedback b.ok { color: var(--good); }
+.feedback b.no { color: var(--bad); }
+.btn { cursor: pointer; font-weight: 700; border-radius: 999px; padding: 10px 18px; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); text-decoration: none; display: inline-block; font-size: 0.95rem; }
+.btn.ghost { background: var(--surface); color: var(--ink); }
+.btn.brand { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+
+/* KEV list */
+.kev-list { display: grid; gap: 10px; }
+.kev-item { display: grid; gap: 2px; border-left: 4px solid var(--exploited); padding-left: 10px; }
+.kev-item b { font-size: 0.93rem; }
+.kev-item span { font: 0.75rem var(--font-mono); color: var(--muted); }
+
+/* CVE Radar */
+.glance { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.tile { text-align: left; cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 6px; align-content: start; border-top: 4px solid var(--tile); }
+.tile[aria-pressed="true"] { background: var(--tile-tint); }
+.tile .n { font: 800 1.8rem/1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--tile); }
+.tile .what { font-weight: 700; }
+.tile .why { font-size: 0.84rem; color: var(--muted); }
+.ladder { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+.rung { padding: 12px 14px; display: grid; gap: 4px; align-content: start; border-left: 1px solid var(--line); }
+.rung:first-child { border-left: 0; }
+.rung b { font-size: 0.92rem; color: var(--c); }
+.rung span { font-size: 0.8rem; color: var(--muted); }
+.controls { display: grid; gap: 10px; }
+.watch { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 0.85rem; color: var(--muted); }
+.wterm { display: inline-flex; gap: 2px; align-items: center; background: var(--brand-soft); color: var(--ink); border-radius: 999px; padding: 3px 4px 3px 10px; font-weight: 700; }
+.wterm button { border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0 6px; }
+.inline-form { display: inline-flex; gap: 4px; }
+.inline-form input { padding: 4px 10px; width: 9.5rem; font-size: 0.85rem; }
+.inline-form button { font-weight: 700; font-size: 0.85rem; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 4px 10px; cursor: pointer; }
+.cards { display: grid; gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-left: 5px solid var(--c); border-radius: var(--radius); padding: 16px 18px; display: grid; gap: 10px; min-width: 0; }
+.card-top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.cid { font: 600 0.88rem var(--font-mono); color: var(--muted); margin-left: auto; }
+.headline { font-size: 1.08rem; overflow-wrap: anywhere; }
+.desc { color: var(--muted); font-size: 0.94rem; overflow-wrap: anywhere; max-width: 78ch; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 0.85rem; margin: 0; }
+.facts div { display: grid; }
+.facts dt { font: 600 0.66rem var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.meter { display: inline-block; width: 56px; height: 6px; border-radius: 3px; background: var(--surface-2); vertical-align: middle; margin-left: 6px; overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--c); }
+details.explain { border-top: 1px dashed var(--line); padding-top: 8px; }
+details.explain summary { cursor: pointer; font-weight: 700; color: var(--brand); width: fit-content; }
+.lesson-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 12px; }
+.lesson-grid section { display: grid; gap: 6px; align-content: start; min-width: 0; }
+.lesson-grid h4 { font: 600 0.7rem var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.lesson-grid p, .lesson-grid li { font-size: 0.92rem; }
+.lesson-grid ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
+.defend { background: var(--brand-soft); border-radius: 8px; padding: 8px 10px; font-size: 0.9rem; }
+.kevbox { background: var(--exploited-tint); border-radius: 8px; padding: 10px 12px; font-size: 0.9rem; grid-column: 1 / -1; }
+.links { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.88rem; grid-column: 1 / -1; }
+.vector { font: 0.74rem var(--font-mono); color: var(--muted); overflow-wrap: anywhere; }
+.p1 { --c: var(--exploited); --t: var(--exploited-tint); }
+.p2 { --c: var(--likely); --t: var(--likely-tint); }
+.p3 { --c: var(--critical); --t: var(--critical-tint); }
+.p4 { --c: var(--high); --t: var(--high-tint); }
+.p5 { --c: var(--other); --t: var(--other-tint); }
+.more { justify-self: center; }
+.empty { text-align: center; color: var(--muted); padding: 28px; background: var(--surface); border-radius: var(--radius); border: 1px dashed var(--line); }
+
+/* Learn */
+.lessons { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.lcard { text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 8px; align-content: start; position: relative; }
+.lcard:hover { border-color: var(--brand); }
+.lcard h3 { font-size: 1.02rem; }
+.lcard p { font-size: 0.9rem; color: var(--muted); }
+.lcard .lmeta { display: flex; gap: 10px; font: 0.72rem var(--font-mono); color: var(--muted); }
+.lcard .done { position: absolute; top: 14px; right: 14px; font: 700 0.7rem var(--font-mono); color: var(--good); background: var(--good-tint); border-radius: 999px; padding: 3px 8px; }
+.progress { display: flex; align-items: center; gap: 12px; font-size: 0.88rem; color: var(--muted); }
+.progress .trk { flex: 0 1 240px; height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.progress .trk i { display: block; height: 100%; background: var(--good); }
+.article { display: grid; gap: 22px; max-width: 760px; }
+.article h1 { font-size: clamp(1.7rem, 4.6vw, 2.5rem); font-weight: 800; line-height: 1.08; }
+.article .hook { font-size: 1.15rem; color: var(--muted); }
+.article section { display: grid; gap: 8px; }
+.article section > p { max-width: 68ch; font-size: 1.02rem; }
+.case { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; display: grid; gap: 6px; }
+.case .eyebrow { color: var(--exploited); }
+.checklist { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.checklist li { display: grid; grid-template-columns: 1.4rem minmax(0, 1fr); gap: 8px; }
+.checklist li::before { content: "✓"; font-weight: 700; color: var(--good); }
+.glossary { display: grid; gap: 6px; }
+.glossary details { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+.glossary summary { cursor: pointer; font-weight: 700; display: flex; gap: 10px; flex-wrap: wrap; align-items: baseline; }
+.glossary summary .mono { font-size: 0.78rem; color: var(--muted); font-weight: 400; }
+.glossary p { font-size: 0.92rem; margin-top: 8px; }
+
+/* Play */
+.game-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.email { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.email-head { background: var(--surface-2); padding: 14px 18px; display: grid; gap: 4px; font-size: 0.9rem; }
+.email-head .from b { font-size: 0.98rem; }
+.email-head .addr { font-family: var(--font-mono); font-size: 0.82rem; color: var(--muted); overflow-wrap: anywhere; }
+.email-head .subj { font-weight: 700; font-size: 1.02rem; }
+.email-body { padding: 18px; display: grid; gap: 10px; }
+.email-body .cta { justify-self: start; background: var(--brand); color: var(--brand-ink); border: 0; border-radius: 8px; padding: 9px 16px; font-weight: 700; cursor: help; }
+.inspect { font: 0.8rem var(--font-mono); color: var(--muted); overflow-wrap: anywhere; }
+.game-bar { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font: 0.82rem var(--font-mono); color: var(--muted); }
+.verdict { display: flex; gap: 10px; flex-wrap: wrap; }
+.verdict .btn { flex: 1 1 160px; text-align: center; }
+.result { display: grid; gap: 8px; border-radius: var(--radius); padding: 14px 16px; }
+.result.ok { background: var(--good-tint); }
+.result.no { background: var(--bad-tint); }
+.result ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 0.93rem; }
+.score-big { font: 800 3rem/1 var(--font-display); color: var(--brand); }
+
+/* Careers */
+.paths { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.path { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; gap: 10px; align-content: start; }
+.path h3 { font-family: var(--font-display); font-size: 1.05rem; }
+.path .tl { color: var(--brand); font-weight: 700; font-size: 0.92rem; }
+.path p { font-size: 0.93rem; }
+.path h4 { font: 600 0.68rem var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+.path ul { margin: 0; padding-left: 18px; font-size: 0.9rem; display: grid; gap: 2px; }
+.pchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.pchip { font-size: 0.78rem; font-weight: 700; background: var(--surface-2); border-radius: 6px; padding: 3px 8px; }
+.dir { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+.dir ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.dir li { display: grid; gap: 1px; }
+.dir li a { font-weight: 700; text-decoration: none; }
+.dir li a:hover { text-decoration: underline; }
+.dir li span { font-size: 0.85rem; color: var(--muted); }
+
+footer { padding-inline: 16px; border-top: 1px solid var(--line); }
+.foot { max-width: 1120px; margin: 0 auto; padding-block: 22px 40px; display: grid; gap: 6px; font-size: 0.84rem; color: var(--muted); }
+
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--sun); color: var(--sun-ink); font-weight: 700; padding: 10px 18px; border-radius: 999px; box-shadow: 0 6px 24px rgb(0 0 0 / 0.18); z-index: 20; }
+
+/* Glossary terms & popover */
+.term { background: none; border: 0; padding: 0 1px; margin: 0; font: inherit; color: inherit; cursor: help; text-align: inherit;
+  text-decoration: underline dotted var(--brand); text-decoration-thickness: 1.5px; text-underline-offset: 3px; border-radius: 3px; }
+.term:hover, .term[aria-expanded="true"] { background: var(--brand-soft); text-decoration-style: solid; }
+.pop { position: fixed; z-index: 30; width: min(360px, calc(100vw - 24px)); background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 14px; box-shadow: 0 14px 44px rgb(0 0 0 / 0.24); padding: 14px 16px 16px; display: grid; gap: 8px; }
+.pop.sheet { left: 12px !important; right: 12px; top: auto !important; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: auto; }
+.pop .pk { font: 600 0.68rem var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--brand); }
+.pop h4 { font: 700 1.05rem var(--font-body); padding-right: 28px; }
+.pop p { font-size: 0.93rem; line-height: 1.5; }
+.pop .more-t { color: var(--muted); }
+.pop .see { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 0.8rem; color: var(--muted); }
+.pop .see button { font: 700 0.78rem var(--font-body); border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 999px; padding: 3px 9px; cursor: pointer; }
+.pop .acts { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.88rem; font-weight: 700; padding-top: 2px; }
+.pop .acts a { text-decoration: none; }
+.pop .x { position: absolute; top: 8px; right: 8px; border: 0; background: none; color: var(--muted); font-size: 1.2rem; line-height: 1; padding: 6px 8px; cursor: pointer; border-radius: 8px; }
+.pop .x:hover { background: var(--surface-2); }
+.hint { font-size: 0.85rem; color: var(--muted); }
+.hint .term { cursor: default; }
+.gl-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+.gl-item { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 6px; align-content: start; scroll-margin-top: 90px; }
+.gl-item.flash { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+.gl-item h3 { font-size: 1rem; }
+.gl-item .pk { font: 600 0.66rem var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.gl-item p { font-size: 0.9rem; }
+.gl-item .aka { font: 0.74rem var(--font-mono); color: var(--muted); overflow-wrap: anywhere; }
+.gl-letter { font: 800 1.4rem var(--font-display); color: var(--brand); grid-column: 1 / -1; padding-top: 8px; }
+details.eli { background: var(--surface-2); border-radius: 10px; padding: 8px 12px; max-width: 75ch; }
+details.eli summary { cursor: pointer; font-weight: 700; color: var(--brand); font-size: 0.9rem; }
+details.eli p { font-size: 0.93rem; margin-top: 8px; }
+details.eli .ai-note { font-size: 0.78rem; color: var(--muted); }
+.story .read { margin-left: auto; font-family: var(--font-body); font-weight: 700; text-decoration: none; }
+
+@media (max-width: 860px) {
+  .masthead { position: static; }
+  .split { grid-template-columns: 1fr; }
+  .glance { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ladder { grid-template-columns: 1fr; }
+  .rung { border-left: 0; border-top: 1px solid var(--line); }
+  .rung:first-child { border-top: 0; }
+  .cid { margin-left: 0; }
+  .bar-row { grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr) 2.2rem; }
+  .xp .bar { display: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .toast { animation: pop 0.25s ease-out; }
+  @keyframes pop { from { transform: translate(-50%, 12px); opacity: 0; } }
+}
+</style>
+
+<header class="masthead">
+  <div class="mast-inner">
+    <a class="brand" href="#today"><b>Patch<i>Notes</i></b><span id="ver"></span></a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#today" data-tab="today">Today</a>
+      <a href="#news" data-tab="news">News</a>
+      <a href="#cves" data-tab="cves">CVE Radar</a>
+      <a href="#learn" data-tab="learn">Learn</a>
+      <a href="#play" data-tab="play">Play</a>
+      <a href="#careers" data-tab="careers">Careers</a>
+    </nav>
+    <div class="xp" id="xp" title="Earn XP by finishing lessons, games and the daily challenge"></div>
+  </div>
+</header>
+
+<main id="main"></main>
+<div class="pop" id="pop" role="dialog" aria-label="Explanation" hidden></div>
+
+<footer>
+  <div class="foot">
+    <div><strong>Data:</strong> headlines from the outlets linked on each story · <a href="https://nvd.nist.gov/" target="_blank" rel="noopener">NIST NVD</a> · <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" target="_blank" rel="noopener">CISA KEV</a> · <a href="https://www.first.org/epss/" target="_blank" rel="noopener">FIRST EPSS</a> · <a href="https://cwe.mitre.org/" target="_blank" rel="noopener">MITRE CWE</a></div>
+    <div>Headlines and short snippets link to the original publishers. Patch Notes is an independent learning project and isn't affiliated with or endorsed by any of these sources. This product uses data from the NVD API but is not endorsed or certified by the NVD.</div>
+    <div>Only practise hacking on systems you own or have written permission to test.</div>
+    <div id="foot-meta"></div>
+  </div>
+</footer>
+
+<script>
+const DATA = /*__DATA__*/null;
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+const pct = x => x == null ? "—" : (x * 100 < 1 ? (x * 100).toFixed(2) : (x * 100).toFixed(1)) + "%";
+const CVE_IDS = new Set(DATA.cves.map(c => c.id));
+const LESSON = Object.fromEntries(DATA.lessons.map(l => [l.id, l]));
+const TOPIC_NAME = id => (LESSON[id] ? LESSON[id].title.split(" & ")[0].split(" (")[0] : id);
+const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+const dayNumber = () => Math.floor(new Date(todayStr() + "T00:00:00Z").getTime() / 864e5);
+function ago(iso) {
+  const mins = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (mins < 60) return `${mins}m ago`;
+  const h = Math.round(mins / 60);
+  return h < 36 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
+}
+/* ---------- glossary: auto-explain jargon ---------- */
+const GLOSS = Object.fromEntries(DATA.glossary.map(g => [g.id, g]));
+const reEsc = x => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const MATCH = (() => {
+  const cs = new Map(), ci = new Map(), rx = [];
+  DATA.glossary.forEach(g => {
+    if (g.regex) rx.push({ re: new RegExp(g.regex, "g"), id: g.id });
+    if (g.auto === false) return;
+    g.aliases.forEach(a => /[A-Z]/.test(a) ? cs.set(a, g.id) : ci.set(a.toLowerCase(), g.id));
+  });
+  const make = (map, flags, plural) => {
+    const keys = [...map.keys()].sort((a, b) => b.length - a.length);
+    return new RegExp(`(?<![A-Za-z0-9_])(?:${keys.map(k => reEsc(k) + (plural && /[a-z]$/.test(k) ? "(?:e?s)?" : "")).join("|")})(?![A-Za-z0-9_])`, flags);
+  };
+  return { cs, ci, rx, csRe: make(cs, "g", false), ciRe: make(ci, "gi", true) };
+})();
+function findTerms(text) {
+  const hits = [];
+  for (const m of text.matchAll(MATCH.csRe)) hits.push({ i: m.index, len: m[0].length, id: MATCH.cs.get(m[0]) });
+  for (const m of text.matchAll(MATCH.ciRe)) {
+    const w = m[0].toLowerCase();
+    const id = MATCH.ci.get(w) || MATCH.ci.get(w.replace(/es$/, "")) || MATCH.ci.get(w.replace(/s$/, ""));
+    hits.push({ i: m.index, len: m[0].length, id });
+  }
+  MATCH.rx.forEach(({ re, id }) => { for (const m of text.matchAll(re)) hits.push({ i: m.index, len: m[0].length, id }); });
+  hits.sort((a, b) => a.i - b.i || b.len - a.len);
+  const out = []; let end = 0;
+  for (const h of hits) if (h.id && h.i >= end) { out.push(h); end = h.i + h.len; }
+  return out;
+}
+// Escape text and wrap known jargon in explain-on-hover buttons. `seen` stops repeats within one block.
+function gloss(text, max = 4, seen = new Set()) {
+  text = String(text ?? "");
+  let html = "", pos = 0, n = 0;
+  for (const h of findTerms(text)) {
+    if (n >= max || seen.has(h.id)) continue;
+    seen.add(h.id); n++;
+    html += esc(text.slice(pos, h.i)) + `<button type="button" class="term" data-g="${h.id}" aria-expanded="false">${esc(text.substr(h.i, h.len))}</button>`;
+    pos = h.i + h.len;
+  }
+  return html + esc(text.slice(pos));
+}
+
+const pop = $("pop");
+let popAnchor = null, popPinned = false, popTimer = null;
+function popHtml(id) {
+  const g = GLOSS[id];
+  const see = (g.see || []).filter(x => GLOSS[x]);
+  return `<button class="x" aria-label="Close">×</button>
+    <div class="pk">${esc(g.kind)}</div><h4>${esc(g.term)}</h4><p>${esc(g.short)}</p>${g.more ? `<p class="more-t">${esc(g.more)}</p>` : ""}
+    ${see.length ? `<div class="see">Related: ${see.map(x => `<button data-see="${x}">${esc(GLOSS[x].term)}</button>`).join("")}</div>` : ""}
+    <div class="acts">${g.lesson && LESSON[g.lesson] ? `<a href="#lesson-${esc(g.lesson)}">Lesson: ${esc(LESSON[g.lesson].title)} →</a>` : ""}<a href="#glossary" data-gl-focus="${esc(id)}">Full glossary</a></div>`;
+}
+function placePop() {
+  if (!popAnchor || pop.hidden) return;
+  if (innerWidth < 640) { pop.classList.add("sheet"); return; }
+  pop.classList.remove("sheet");
+  const r = popAnchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+  let top = r.bottom + 8;
+  if (top + h > innerHeight - 12 && r.top - h - 8 > 12) top = r.top - h - 8;
+  pop.style.left = Math.min(Math.max(12, r.left), innerWidth - w - 12) + "px";
+  pop.style.top = top + "px";
+}
+function openPop(anchor, id, pinned) {
+  clearTimeout(popTimer);
+  if (popAnchor && popAnchor !== anchor) popAnchor.setAttribute("aria-expanded", "false");
+  popAnchor = anchor; popPinned = pinned;
+  anchor.setAttribute("aria-expanded", "true");
+  pop.innerHTML = popHtml(id); pop.hidden = false; placePop();
+}
+function closePop(refocus) {
+  clearTimeout(popTimer);
+  if (pop.hidden) return;
+  pop.hidden = true;
+  if (popAnchor) { popAnchor.setAttribute("aria-expanded", "false"); if (refocus) popAnchor.focus(); }
+  popAnchor = null; popPinned = false;
+}
+document.addEventListener("pointerover", e => {
+  if (e.pointerType !== "mouse") return;
+  const t = e.target.closest(".term[data-g]");
+  if (t && !popPinned) { clearTimeout(popTimer); popTimer = setTimeout(() => openPop(t, t.dataset.g, false), 160); }
+  else if (e.target.closest("#pop")) clearTimeout(popTimer);
+});
+document.addEventListener("pointerout", e => {
+  if (e.pointerType !== "mouse" || popPinned) return;
+  if (e.target.closest(".term[data-g]") || e.target.closest("#pop")) { clearTimeout(popTimer); popTimer = setTimeout(() => closePop(), 240); }
+});
+document.addEventListener("click", e => {
+  const t = e.target.closest(".term[data-g]");
+  if (t) { e.preventDefault(); (popAnchor === t && popPinned) ? closePop() : openPop(t, t.dataset.g, true); return; }
+  const see = e.target.closest("[data-see]");
+  if (see) { pop.innerHTML = popHtml(see.dataset.see); popPinned = true; placePop(); return; }
+  if (e.target.closest("#pop .x")) { closePop(true); return; }
+  const gf = e.target.closest("[data-gl-focus]");
+  if (gf) { GLS.focus = gf.dataset.glFocus; GLS.q = ""; GLS.kind = "All"; closePop(); if (location.hash === "#glossary") route(); return; }
+  if (!e.target.closest("#pop")) closePop();
+}, true);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closePop(true); });
+addEventListener("scroll", () => popPinned ? placePop() : closePop(), { passive: true });
+addEventListener("resize", placePop);
+
+function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* ---------- progress & XP (stored only in this browser) ---------- */
+const PKEY = "patch-notes-progress";
+const RANKS = [[0, "Newbie"], [100, "Recruit"], [300, "Analyst"], [700, "Threat Hunter"], [1500, "Incident Commander"], [3000, "CISO"]];
+let P = { xp: 0, done: {}, daily: null, streak: 0, lastDaily: null, best: {} };
+try { P = Object.assign(P, JSON.parse(localStorage.getItem(PKEY)) || {}); } catch (e) {}
+const saveP = () => { try { localStorage.setItem(PKEY, JSON.stringify(P)); } catch (e) {} };
+function rank() {
+  let i = 0; while (i + 1 < RANKS.length && P.xp >= RANKS[i + 1][0]) i++;
+  const next = RANKS[i + 1];
+  return { name: RANKS[i][1], floor: RANKS[i][0], next: next ? next[0] : null, nextName: next ? next[1] : null };
+}
+function renderXP() {
+  const r = rank();
+  const prog = r.next ? (P.xp - r.floor) / (r.next - r.floor) : 1;
+  $("xp").innerHTML = `<span class="lvl">${esc(r.name)}</span><span class="bar" aria-hidden="true"><i style="width:${Math.round(prog * 100)}%"></i></span><span class="pts">${P.xp} XP</span>`;
+  $("xp").title = r.next ? `${r.next - P.xp} XP to ${r.nextName}` : "Top rank reached";
+}
+let toastTimer;
+function award(n, why) {
+  const before = rank().name;
+  P.xp += n; saveP(); renderXP();
+  const after = rank().name;
+  document.querySelector(".toast")?.remove();
+  const t = document.createElement("div");
+  t.className = "toast"; t.setAttribute("role", "status");
+  t.textContent = after !== before ? `Rank up: ${after}!` : `+${n} XP · ${why}`;
+  document.body.appendChild(t);
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.remove(), 2600);
+}
+
+/* ---------- shared quiz block ---------- */
+function quizBlock(q, { onAnswer, answered } = {}) {
+  const wrap = document.createElement("div");
+  wrap.className = "stack";
+  const draw = choice => {
+    const done = choice != null;
+    wrap.innerHTML = `<p class="q">${esc(q.q)}</p><div class="opts">${q.options.map((o, i) => {
+      const cls = done ? (i === q.answer ? " right" : i === choice ? " wrong" : "") : "";
+      return `<button class="opt${cls}" data-i="${i}" ${done ? "disabled" : ""}>${esc(o)}</button>`;
+    }).join("")}</div>` + (done ? `<div class="feedback">${choice === q.answer ? '<b class="ok">Correct.</b>' : '<b class="no">Not quite.</b>'} ${esc(q.why)}</div>` : "");
+  };
+  draw(answered);
+  wrap.addEventListener("click", e => {
+    const b = e.target.closest(".opt"); if (!b || b.disabled) return;
+    const i = Number(b.dataset.i); draw(i); onAnswer && onAnswer(i, i === q.answer, wrap);
+  });
+  return wrap;
+}
+
+/* ---------- views ---------- */
+const VIEWS = {};
+const main = $("main");
+
+/* TODAY */
+VIEWS.today = () => {
+  const news = DATA.news, cves = DATA.cves, m = DATA.meta;
+  const kev = cves.filter(c => c.kev).sort((a, b) => b.kev.added.localeCompare(a.kev.added));
+  const sources = new Set(news.map(n => n.source)).size;
+  const counts = {};
+  news.forEach(n => n.topics.forEach(t => counts[t] = (counts[t] || 0) + 1));
+  const trend = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const top = trend[0];
+  const lesson = DATA.lessons[dayNumber() % DATA.lessons.length];
+  const featured = news.filter(n => n.topics.length).slice(0, 7);
+
+  main.innerHTML = `<div class="view">
+    <section class="changelog" aria-labelledby="today-h">
+      <div class="ver">PATCH NOTES v${esc(m.version)} · ${esc(m.dateLong)}</div>
+      <h1 id="today-h">What changed on the internet this week</h1>
+      <ul>
+        <li><span class="mk add">+</span><span><a href="#news">${news.length} stories</a> from ${sources} security outlets, each linked to a lesson that explains it.</span></li>
+        <li><span class="mk warn">!</span><span><a href="#cves" data-radar-prio="1">${kev.length} ${kev.length === 1 ? "vulnerability" : "vulnerabilities"}</a> newly confirmed as actively exploited. These get patched first.</span></li>
+        <li><span class="mk add">+</span><span><a href="#cves">${cves.length.toLocaleString()} new CVEs</a> published in the last ${m.days} days.</span></li>
+        ${top ? `<li><span class="mk trend">~</span><span>Most-covered topic: <a href="#lesson-${esc(top[0])}">${esc(TOPIC_NAME(top[0]))}</a>, in ${top[1]} stories.</span></li>` : ""}
+      </ul>
+    </section>
+
+    <div class="split">
+      <div class="stack" style="gap:28px">
+        <section class="panel">
+          <div class="panel-title"><h2>Top stories</h2><a class="link-btn" href="#news">All ${news.length} stories →</a></div>
+          <p class="hint">New to this? Hover over or tap any <span class="term">dotted word</span> for a plain-English explanation.</p>
+          <div class="stories">${featured.map(storyHtml).join("")}</div>
+        </section>
+        <section class="panel">
+          <div class="panel-title"><h2>Trending this week</h2><span class="eyebrow">stories per topic</span></div>
+          <div class="bars">${trend.slice(0, 8).map(([t, n]) => `
+            <button class="bar-row" data-news-topic="${esc(t)}"><span class="lbl">${esc(TOPIC_NAME(t))}</span>
+            <span class="trk" aria-hidden="true"><i style="width:${Math.round(n / trend[0][1] * 100)}%"></i></span><span class="v">${n}</span></button>`).join("")}</div>
+        </section>
+      </div>
+      <aside class="stack" style="gap:18px">
+        <section class="panel" id="daily"></section>
+        <section class="panel">
+          <div class="eyebrow">Concept of the day · ${lesson.minutes} min</div>
+          <h2>${esc(lesson.title)}</h2>
+          <p class="muted">${esc(lesson.hook)}</p>
+          <a class="btn brand" href="#lesson-${esc(lesson.id)}" style="justify-self:start">Learn it</a>
+        </section>
+        <section class="panel">
+          <div class="panel-title"><h2>Patch these first</h2><a class="link-btn" href="#cves" data-radar-prio="1">Radar →</a></div>
+          <p class="muted" style="font-size:0.88rem">Added to CISA's Known Exploited list in the last ${m.days} days.</p>
+          <div class="kev-list">${kev.slice(0, 6).map(c => `<div class="kev-item"><b>${esc(c.kev.name)}</b><span>${esc(c.id)} · added ${esc(c.kev.added)}${c.kev.ransomware ? " · used by ransomware" : ""}</span></div>`).join("") || '<p class="muted">None this week.</p>'}</div>
+        </section>
+      </aside>
+    </div>
+  </div>`;
+  renderDaily();
+};
+
+function renderDaily() {
+  const box = $("daily"); if (!box) return;
+  const q = DATA.quiz[dayNumber() % DATA.quiz.length];
+  const today = todayStr();
+  const answered = P.daily && P.daily.date === today ? P.daily.choice : null;
+  box.innerHTML = `<div class="panel-title"><div class="eyebrow">Daily challenge</div><span class="eyebrow">Streak: ${P.streak || 0} day${P.streak === 1 ? "" : "s"}</span></div>`;
+  box.appendChild(quizBlock(q, {
+    answered,
+    onAnswer: (choice, correct) => {
+      const y = new Date(); y.setDate(y.getDate() - 1);
+      const yStr = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, "0")}-${String(y.getDate()).padStart(2, "0")}`;
+      P.streak = P.lastDaily === yStr ? (P.streak || 0) + 1 : 1;
+      P.lastDaily = today; P.daily = { date: today, choice };
+      saveP();
+      if (correct) award(20, "Daily challenge"); else renderXP();
+      box.querySelector(".eyebrow:last-child").textContent = `Streak: ${P.streak} day${P.streak === 1 ? "" : "s"}`;
+      const more = document.createElement("p");
+      more.className = "muted"; more.style.fontSize = "0.88rem";
+      more.innerHTML = `New question tomorrow. ${LESSON[q.topic] ? `Brush up: <a href="#lesson-${esc(q.topic)}">${esc(LESSON[q.topic].title)}</a>` : ""}`;
+      box.appendChild(more);
+    }
+  }));
+}
+
+function storyHtml(s) {
+  const seen = new Set();
+  return `<article class="story">
+    <div class="meta"><span>${esc(s.source)}</span><span>${ago(s.date)}</span><a class="read" href="${esc(s.link)}" target="_blank" rel="noopener">Read the story ↗</a></div>
+    <h3>${gloss(s.title, 3, seen)}</h3>
+    ${s.snippet ? `<p class="snip">${gloss(s.snippet, 4)}</p>` : ""}
+    ${DATA.explainers && DATA.explainers[s.link] ? `<details class="eli"><summary>What this means</summary><p>${gloss(DATA.explainers[s.link], 4)}</p><p class="ai-note">AI-generated explanation based on the headline and summary. Read the full story for details.</p></details>` : ""}
+    ${s.topics.length || s.cves.length ? `<div class="row">${s.topics.filter(t => LESSON[t]).map(t => `<a class="topic" href="#lesson-${esc(t)}">Learn: ${esc(TOPIC_NAME(t))}</a>`).join("")}${s.cves.map(c => CVE_IDS.has(c) ? `<button class="cvetag" data-cve="${esc(c)}" title="Open on the CVE Radar">${esc(c)}</button>` : `<a class="cvetag" href="https://nvd.nist.gov/vuln/detail/${esc(c)}" target="_blank" rel="noopener" title="Open on NVD">${esc(c)} ↗</a>`).join("")}</div>` : ""}
+  </article>`;
+}
+
+/* NEWS */
+const NS = { q: "", topic: "all", source: "all", shown: 25 };
+VIEWS.news = () => {
+  const counts = {};
+  DATA.news.forEach(n => n.topics.forEach(t => counts[t] = (counts[t] || 0) + 1));
+  const topics = Object.entries(counts).filter(([t]) => LESSON[t]).sort((a, b) => b[1] - a[1]);
+  const sources = [...new Set(DATA.news.map(n => n.source))].sort();
+  main.innerHTML = `<div class="view">
+    <div class="view-head"><div class="eyebrow">News</div><h1>Security news, explained</h1>
+      <p>Headlines from ${sources.length} outlets over the past ${DATA.meta.days} days. Tap a topic tag to learn the concept behind the story.</p>
+      <p class="hint">Words with a <span class="term">dotted underline</span> have explanations. Hover over or tap them.</p></div>
+    <div class="controls">
+      <div class="row"><label class="sr" for="nq">Search news</label><input id="nq" type="search" placeholder="Search headlines (e.g. Microsoft, ransomware, CVE-2026)" value="${esc(NS.q)}">
+        <label class="sr" for="nsrc">Source</label><select id="nsrc"><option value="all">All sources</option>${sources.map(s => `<option ${NS.source === s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select></div>
+      <div class="row" id="ntopics">
+        <button class="chip" data-t="all" aria-pressed="${NS.topic === "all"}">All</button>
+        ${topics.map(([t, n]) => `<button class="chip" data-t="${esc(t)}" aria-pressed="${NS.topic === t}">${esc(TOPIC_NAME(t))}<span class="n">${n}</span></button>`).join("")}
+      </div>
+    </div>
+    <section class="panel"><div class="eyebrow" id="ncount" aria-live="polite"></div><div class="stories" id="nlist"></div></section>
+    <button class="btn ghost more" id="nmore" hidden>Show more</button>
+  </div>`;
+  const draw = () => {
+    const q = NS.q.trim().toLowerCase();
+    const rows = DATA.news.filter(n => (NS.topic === "all" || n.topics.includes(NS.topic)) && (NS.source === "all" || n.source === NS.source) &&
+      (!q || (n.title + " " + n.snippet + " " + n.cves.join(" ")).toLowerCase().includes(q)));
+    $("ncount").textContent = `${rows.length} ${rows.length === 1 ? "story" : "stories"}${NS.topic !== "all" ? " about " + TOPIC_NAME(NS.topic) : ""}`;
+    $("nlist").innerHTML = rows.slice(0, NS.shown).map(storyHtml).join("") || `<div class="empty">No stories match. Try another topic or search.</div>`;
+    $("nmore").hidden = rows.length <= NS.shown;
+  };
+  $("nq").addEventListener("input", e => { NS.q = e.target.value; NS.shown = 25; draw(); });
+  $("nsrc").addEventListener("change", e => { NS.source = e.target.value; NS.shown = 25; draw(); });
+  $("ntopics").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; NS.topic = b.dataset.t; NS.shown = 25;
+    $("ntopics").querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b)); draw(); });
+  $("nmore").addEventListener("click", () => { NS.shown += 25; draw(); });
+  draw();
+};
+
+/* CVE RADAR */
+const PRIO = {
+  1: { label: "Exploited", tile: "being exploited", why: "On CISA's KEV list. Attackers are using these now." },
+  2: { label: "Likely", tile: "likely to be exploited", why: "EPSS 10%+ chance of attack in 30 days." },
+  3: { label: "Critical", tile: "critical, not yet attacked", why: "CVSS 9.0+ but no attacks seen." },
+  4: { label: "High", tile: "high severity", why: "CVSS 7.0–8.9." },
+  5: { label: "Other", tile: "other", why: "Lower or no score yet." },
+};
+const WKEY = "patch-notes-watch";
+const RS = { q: "", prio: "all", onlyNew: false, onlyWatch: false, sort: "priority", shown: 25, watch: null };
+try { const w = JSON.parse(localStorage.getItem(WKEY)); if (Array.isArray(w)) RS.watch = w; } catch (e) {}
+if (!RS.watch) RS.watch = DATA.meta.watchlist.slice();
+const saveWatch = () => { try { localStorage.setItem(WKEY, JSON.stringify(RS.watch)); } catch (e) {} };
+
+function hay(c) {
+  if (!c._hay) c._hay = [c.id, c.description, c.products.join(" "), c.cwes.map(id => id + " " + (DATA.cwe[id]?.name || "")).join(" "), c.kev?.name || ""].join(" ").toLowerCase();
+  return c._hay;
+}
+const watchHits = c => RS.watch.filter(t => hay(c).includes(t));
+function headline(c) {
+  if (c.kev?.name) return c.kev.name;
+  const l = c.cwes.map(id => DATA.cwe[id]).find(Boolean);
+  if (l && c.products[0]) return `${l.name} in ${c.products[0]}`;
+  if (l) return l.name;
+  const first = c.description.split(/(?<=\.)\s/)[0];
+  return first.length > 110 ? first.slice(0, 107) + "…" : first;
+}
+function decodeVector(vec) {
+  if (!vec) return null;
+  const m = Object.fromEntries(vec.split("/").map(p => p.split(":")));
+  const out = [];
+  const av = { N: "over the network, potentially from anywhere on the internet", A: "from the same local network (e.g. same Wi-Fi)", L: "only with access to the machine itself", P: "only with physical access to the device" }[m.AV];
+  if (av) out.push(`An attacker can reach it ${av}.`);
+  const pr = { N: "No login is needed.", L: "They need an ordinary user account.", H: "They need an admin-level account." }[m.PR];
+  if (pr) out.push(pr);
+  if (m.Au) out.push(m.Au === "N" ? "No login is needed." : "They need to log in first.");
+  const ui = { N: "No one has to click or open anything.", R: "A user must do something, like open a file or click a link.", P: "A user must do something, like open a file or click a link.", A: "A user must actively interact with the attack." }[m.UI];
+  if (ui) out.push(ui);
+  if (m.AC === "H") out.push("It only works under specific conditions, which makes it harder to pull off.");
+  const c = m.VC || m.C, i = m.VI || m.I, a = m.VA || m.A, impact = [];
+  if (c === "H" || c === "C") impact.push("read sensitive data"); else if (c === "L" || c === "P") impact.push("see some data");
+  if (i === "H" || i === "C") impact.push("change or plant data"); else if (i === "L" || i === "P") impact.push("change some data");
+  if (a === "H" || a === "C") impact.push("crash or shut down the service");
+  if (impact.length) out.push(`If it works, they could ${impact.join(", ").replace(/, ([^,]*)$/, " and $1")}.`);
+  return out;
+}
+function worry(c) {
+  const lines = [];
+  if (c.kev) {
+    lines.push(`<strong>Attackers are already using this.</strong> CISA added it to the KEV list on ${esc(c.kev.added)} and requires US federal agencies to fix it by ${esc(c.kev.due)}.`);
+    if (c.kev.ransomware) lines.push("It has been used in ransomware campaigns.");
+  }
+  lines.push(c.epss != null
+    ? `EPSS gives it a <strong>${pct(c.epss)}</strong> chance of being exploited in the next 30 days. That's higher than ${Math.round(c.epss_pct * 100)}% of all scored CVEs.`
+    : "No EPSS score yet. Brand-new CVEs often take a day or two to be scored.");
+  lines.push(c.cvss != null
+    ? `Its CVSS ${esc(c.cvss_version || "")} severity is <strong>${c.cvss}/10 (${esc(c.severity.toLowerCase())})</strong>.`
+    : "It has no CVSS severity score yet. NVD often scores new CVEs later.");
+  return lines;
+}
+function cveCard(c) {
+  const seen = new Set();
+  const hits = watchHits(c);
+  const known = c.cwes.filter(id => DATA.cwe[id]).map(id => ({ id, ...DATA.cwe[id] }));
+  const vector = decodeVector(c.vector);
+  const desc = c.description.length > 320 ? c.description.slice(0, 317) + "…" : c.description;
+  const lessonHtml = known.length
+    ? known.map(l => `<p><strong>${esc(l.name)}</strong> <span class="mono muted">(${esc(l.id)})</span>. ${esc(l.plain)}</p><p class="defend"><strong>How it's prevented:</strong> ${esc(l.defend)}</p>`).join("")
+    : c.cwes.length
+      ? `<p>This is classified as ${c.cwes.map(id => `<a href="https://cwe.mitre.org/data/definitions/${esc(id.slice(4))}.html" target="_blank" rel="noopener">${esc(id)}</a>`).join(", ")}. Follow the link for MITRE's description.</p>`
+      : `<p>No weakness type has been assigned yet. Look for clues in the description: words like "injection", "overflow" or "bypass" usually point to the category.</p>`;
+  return `<article class="card p${c.priority}">
+    <div class="card-top"><span class="pill">${PRIO[c.priority].label}</span>${c.new ? '<span class="tag new">New</span>' : ""}${c.kev?.ransomware ? '<span class="tag" style="color:var(--exploited);border-color:var(--exploited)">Ransomware</span>' : ""}${hits.map(h => `<span class="tag watch">Watching: ${esc(h)}</span>`).join("")}<span class="cid">${esc(c.id)}</span></div>
+    <h3 class="headline">${gloss(headline(c), 2, seen)}</h3>
+    <p class="desc">${gloss(desc, 4, seen)}</p>
+    <dl class="facts">
+      <div><dt>Severity · CVSS</dt><dd>${c.cvss != null ? `${c.cvss} <span class="muted" style="font-weight:400">${esc(c.severity.toLowerCase())}</span>` : "Not scored yet"}</dd></div>
+      <div><dt>Likelihood · EPSS</dt><dd>${pct(c.epss)}${c.epss != null ? `<span class="meter" aria-hidden="true"><i style="width:${Math.max(2, Math.round(c.epss_pct * 100))}%"></i></span>` : ""}</dd></div>
+      <div><dt>Affects</dt><dd>${esc(c.products.slice(0, 2).join(", ") || "See description")}${c.products.length > 2 ? ` +${c.products.length - 2}` : ""}</dd></div>
+      <div><dt>${c.published ? "Published" : "Added to KEV"}</dt><dd>${esc(c.published || c.kev?.added || "")}</dd></div>
+    </dl>
+    <details class="explain"><summary>Explain this in plain English</summary>
+      <div class="lesson-grid">
+        ${c.kev ? `<div class="kevbox"><strong>What defenders are told to do:</strong> ${esc(c.kev.action)}</div>` : ""}
+        <section><h4>What kind of bug is this?</h4>${lessonHtml}</section>
+        <section><h4>How would an attacker use it?</h4>${vector ? `<ul>${vector.map(s => `<li>${esc(s)}</li>`).join("")}</ul><p class="vector">${esc(c.vector)}</p>` : "<p>No CVSS vector yet, so the attack path hasn't been formally described. Check the vendor advisory.</p>"}</section>
+        <section><h4>How worried should you be?</h4>${worry(c).map(l => `<p>${l}</p>`).join("")}</section>
+        <div class="links"><a href="https://nvd.nist.gov/vuln/detail/${esc(c.id)}" target="_blank" rel="noopener">Full NVD record</a><a href="https://www.cve.org/CVERecord?id=${esc(c.id)}" target="_blank" rel="noopener">CVE.org</a><a href="#lesson-vuln-management">Lesson: how teams prioritise</a></div>
+      </div>
+    </details>
+  </article>`;
+}
+VIEWS.cves = () => {
+  main.innerHTML = `<div class="view">
+    <div class="view-head"><div class="eyebrow">CVE Radar</div><h1>Which vulnerabilities actually matter</h1>
+      <p>Every CVE published in the last ${DATA.meta.days} days, plus older ones CISA has just confirmed are being exploited. Sorted by real-world risk, not just severity score. Open any card for a plain-English explanation.</p></div>
+    <section class="glance" id="glance" aria-label="At a glance"></section>
+    <div class="stack" style="gap:10px">
+      <h3>How the priority works</h3>
+      <div class="ladder">
+        <div class="rung p1"><b>1 · Exploited</b><span>On CISA's KEV list. Patch now.</span></div>
+        <div class="rung p2"><b>2 · Likely</b><span>EPSS of 10% or more.</span></div>
+        <div class="rung p3"><b>3 · Critical</b><span>CVSS 9.0+, no attacks seen yet.</span></div>
+        <div class="rung p4"><b>4 · High</b><span>CVSS 7.0–8.9.</span></div>
+        <div class="rung p5"><b>5 · Other</b><span>Lower or not scored yet.</span></div>
+      </div>
+      <p class="muted" style="font-size:0.88rem">New to CVE, CVSS, EPSS and KEV? <a href="#lesson-vuln-management">Take the 5-minute lesson</a>.</p>
+    </div>
+    <div class="controls">
+      <div class="row"><label class="sr" for="rq">Search vulnerabilities</label><input id="rq" type="search" placeholder="Search a product, vendor, CVE or bug type (e.g. apple, SQL injection)" value="${esc(RS.q)}">
+        <label class="sr" for="rsort">Sort</label><select id="rsort">
+          <option value="priority">Sort: priority</option><option value="epss">Sort: likelihood (EPSS)</option><option value="cvss">Sort: severity (CVSS)</option><option value="newest">Sort: newest</option></select></div>
+      <div class="row" id="rchips"></div>
+      <div class="watch" id="rwatch"></div>
+    </div>
+    <div class="eyebrow" id="rcount" aria-live="polite"></div>
+    <div class="cards" id="rlist"></div>
+    <button class="btn ghost more" id="rmore" hidden>Show more</button>
+  </div>`;
+  $("rsort").value = RS.sort;
+  $("rq").addEventListener("input", e => { RS.q = e.target.value; RS.shown = 25; drawRadarList(); });
+  $("rsort").addEventListener("change", e => { RS.sort = e.target.value; drawRadarList(); });
+  $("rmore").addEventListener("click", () => { RS.shown += 25; drawRadarList(); });
+  $("glance").addEventListener("click", e => {
+    const t = e.target.closest(".tile"); if (!t) return;
+    if (t.dataset.key === "watch") { RS.onlyWatch = !RS.onlyWatch; RS.prio = "all"; } else { RS.prio = t.dataset.key; RS.onlyWatch = false; }
+    RS.shown = 25; drawRadar();
+  });
+  $("rchips").addEventListener("click", e => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    if (b.dataset.prio) RS.prio = b.dataset.prio;
+    if (b.dataset.toggle) RS[b.dataset.toggle] = !RS[b.dataset.toggle];
+    RS.shown = 25; drawRadar();
+  });
+  $("rwatch").addEventListener("click", e => { const rm = e.target.closest("[data-rm]"); if (!rm) return; RS.watch.splice(Number(rm.dataset.rm), 1); saveWatch(); drawRadar(); });
+  $("rwatch").addEventListener("submit", e => {
+    e.preventDefault(); const v = $("rwi").value.trim().toLowerCase();
+    if (v && !RS.watch.includes(v)) { RS.watch.push(v); saveWatch(); }
+    drawRadar(); $("rwi").focus();
+  });
+  drawRadar();
+};
+function drawRadar() {
+  const counts = { 1: 0, 2: 0 };
+  DATA.cves.forEach(c => { if (counts[c.priority] != null) counts[c.priority]++; });
+  const wc = DATA.cves.filter(c => watchHits(c).length).length;
+  const tiles = [
+    { key: "all", n: DATA.cves.length, what: "vulnerabilities", why: `Published in the last ${DATA.meta.days} days, plus recent KEV additions.`, c: "var(--brand)", t: "var(--brand-soft)" },
+    { key: "1", n: counts[1], what: PRIO[1].tile, why: PRIO[1].why, c: "var(--exploited)", t: "var(--exploited-tint)" },
+    { key: "2", n: counts[2], what: PRIO[2].tile, why: PRIO[2].why, c: "var(--likely)", t: "var(--likely-tint)" },
+    { key: "watch", n: wc, what: "match your watchlist", why: RS.watch.length ? `Mentions ${RS.watch.slice(0, 3).join(", ")}${RS.watch.length > 3 ? "…" : ""}.` : "Add vendors you use below.", c: "var(--ink)", t: "var(--surface-2)" },
+  ];
+  $("glance").innerHTML = tiles.map(t => `<button class="tile" data-key="${t.key}" aria-pressed="${t.key === "watch" ? RS.onlyWatch : (!RS.onlyWatch && RS.prio === t.key)}" style="--tile:${t.c};--tile-tint:${t.t}"><span class="n">${t.n.toLocaleString()}</span><span class="what">${esc(t.what)}</span><span class="why">${esc(t.why)}</span></button>`).join("");
+  $("rchips").innerHTML = [["all", "All"], ...Object.entries(PRIO).map(([k, v]) => [k, v.label])].map(([k, l]) => `<button class="chip" data-prio="${k}" aria-pressed="${RS.prio === k}">${l}</button>`).join("") +
+    `<button class="chip" data-toggle="onlyNew" aria-pressed="${RS.onlyNew}">New since last update</button><button class="chip" data-toggle="onlyWatch" aria-pressed="${RS.onlyWatch}">Watchlist only</button>`;
+  $("rwatch").innerHTML = `<span>Your watchlist:</span>` + RS.watch.map((t, i) => `<span class="wterm">${esc(t)}<button data-rm="${i}" aria-label="Remove ${esc(t)}">×</button></span>`).join("") +
+    `<form class="inline-form"><label class="sr" for="rwi">Add a vendor or product</label><input id="rwi" placeholder="add vendor/product" autocomplete="off"><button type="submit">Add</button></form>`;
+  drawRadarList();
+}
+function drawRadarList() {
+  const q = RS.q.trim().toLowerCase();
+  const rows = DATA.cves.filter(c => (RS.prio === "all" || c.priority === Number(RS.prio)) && (!RS.onlyNew || c.new) && (!RS.onlyWatch || watchHits(c).length) && (!q || q.split(/\s+/).every(w => hay(c).includes(w))));
+  const by = {
+    priority: (a, b) => a.priority - b.priority || (b.epss || 0) - (a.epss || 0) || (b.cvss || 0) - (a.cvss || 0),
+    epss: (a, b) => (b.epss ?? -1) - (a.epss ?? -1),
+    cvss: (a, b) => (b.cvss ?? -1) - (a.cvss ?? -1),
+    newest: (a, b) => String(b.published || b.kev?.added).localeCompare(String(a.published || a.kev?.added)),
+  }[RS.sort];
+  rows.sort(by);
+  $("rcount").textContent = `Showing ${Math.min(RS.shown, rows.length).toLocaleString()} of ${rows.length.toLocaleString()} matching vulnerabilities`;
+  $("rlist").innerHTML = rows.length ? rows.slice(0, RS.shown).map(cveCard).join("") : `<div class="empty">Nothing matches these filters. Try a broader search or choose "All".</div>`;
+  $("rmore").hidden = rows.length <= RS.shown;
+}
+
+/* LEARN */
+const LS = { track: "All", gq: "" };
+VIEWS.learn = () => {
+  const tracks = ["All", ...new Set(DATA.lessons.map(l => l.track))];
+  const doneCount = DATA.lessons.filter(l => P.done[l.id]).length;
+  main.innerHTML = `<div class="view">
+    <div class="view-head"><div class="eyebrow">Learn</div><h1>The concepts behind the headlines</h1>
+      <p>Short, plain-English lessons with a real case, how defenders stop it, a free place to practise and a quick check. Finish one for +25 XP.</p></div>
+    <div class="row" style="justify-content:space-between">
+      <div class="row" id="ltracks">${tracks.map(t => `<button class="chip" data-t="${esc(t)}" aria-pressed="${LS.track === t}">${esc(t)}</button>`).join("")}</div>
+      <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(doneCount / DATA.lessons.length * 100)}%"></i></span><span>${doneCount} of ${DATA.lessons.length} done</span></div>
+    </div>
+    <div class="lessons" id="lgrid"></div>
+    <section class="panel" style="grid-template-columns:minmax(0,1fr) auto;align-items:center">
+      <div class="stack" style="gap:6px"><h2>Glossary</h2><p class="muted">${DATA.glossary.length + Object.keys(DATA.cwe).length} terms explained in plain English, from APT to zero-day, plus the products that keep making headlines. Dotted words across the site open these explanations.</p></div>
+      <a class="btn brand" href="#glossary">Open glossary</a>
+    </section>
+  </div>`;
+  const drawGrid = () => {
+    $("lgrid").innerHTML = DATA.lessons.filter(l => LS.track === "All" || l.track === LS.track).map(l => `
+      <a class="lcard" href="#lesson-${esc(l.id)}">${P.done[l.id] ? '<span class="done">DONE</span>' : ""}
+        <span class="eyebrow">${esc(l.track)}</span><h3>${esc(l.title)}</h3><p>${esc(l.hook)}</p>
+        <span class="lmeta"><span>${l.minutes} min</span><span>${esc(l.level)}</span></span></a>`).join("");
+  };
+  $("ltracks").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; LS.track = b.dataset.t;
+    $("ltracks").querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b)); drawGrid(); });
+  drawGrid();
+};
+function lessonView(id) {
+  const l = LESSON[id]; if (!l) return VIEWS.learn();
+  const idx = DATA.lessons.indexOf(l);
+  const next = DATA.lessons[(idx + 1) % DATA.lessons.length];
+  const related = DATA.news.filter(n => n.topics.includes(id)).slice(0, 5);
+  const internal = l.practice.url.startsWith("#");
+  const lseen = new Set([id]);
+  main.innerHTML = `<div class="view"><article class="article">
+    <a class="link-btn" href="#learn">← All lessons</a>
+    <div class="stack" style="gap:8px"><div class="eyebrow">${esc(l.track)} · ${esc(l.level)} · ${l.minutes} min</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.hook)}</p></div>
+    <section><h2>What it is</h2><p>${gloss(l.what, 6, lseen)}</p></section>
+    <section class="case"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h3>${esc(l.example.title)}</h3><p>${gloss(l.example.text, 4, lseen)}</p></section>
+    <section><h2>How defenders stop it</h2><ul class="checklist">${l.defend.map(d => `<li>${esc(d)}</li>`).join("")}</ul></section>
+    <section><h2>Try it yourself</h2><p><a class="btn brand" href="${esc(l.practice.url)}" ${internal ? "" : 'target="_blank" rel="noopener"'}>${esc(l.practice.label)}${internal ? "" : " ↗"}</a></p></section>
+    <section class="panel" id="lcheck"><div class="panel-title"><h2>Check yourself</h2>${P.done[id] ? '<span class="eyebrow" style="color:var(--good)">Completed</span>' : '<span class="eyebrow">+25 XP</span>'}</div></section>
+    ${related.length ? `<section class="panel"><h2>In the news this week</h2><div class="stories">${related.map(storyHtml).join("")}</div></section>` : ""}
+    <a class="btn ghost" href="#lesson-${esc(next.id)}" style="justify-self:start">Next: ${esc(next.title)} →</a>
+  </article></div>`;
+  $("lcheck").appendChild(quizBlock(l.check, {
+    onAnswer: (choice, correct) => {
+      if (correct && !P.done[id]) { P.done[id] = true; saveP(); award(25, "Lesson complete"); }
+    }
+  }));
+}
+
+/* GLOSSARY */
+const GLS = { q: "", kind: "All", focus: null };
+const GL_ALL = [
+  ...DATA.glossary.map(g => ({ ...g, key: g.id })),
+  ...Object.entries(DATA.cwe).map(([id, c]) => ({ key: id, id: null, term: c.name, kind: "Bug type", aliases: [id], short: c.plain, more: "How it's prevented: " + c.defend })),
+].sort((a, b) => a.term.localeCompare(b.term, "en", { sensitivity: "base" }));
+VIEWS.glossary = () => {
+  const kinds = ["All", ...new Set(GL_ALL.map(g => g.kind))];
+  main.innerHTML = `<div class="view">
+    <div class="view-head"><a class="link-btn" href="#learn">← Learn</a><div class="eyebrow">Glossary</div><h1>Cyber security, decoded</h1>
+      <p>${GL_ALL.length} terms in plain English. Across the site, dotted words like <button type="button" class="term" data-g="rce" aria-expanded="false">RCE</button> or <button type="button" class="term" data-g="sonicwall-sma" aria-expanded="false">SMA</button> open these explanations when you hover over or tap them.</p></div>
+    <div class="controls">
+      <div class="row"><label class="sr" for="glq">Search the glossary</label><input id="glq" type="search" placeholder="Search terms (e.g. VPN, infostealer, Fortinet)" value="${esc(GLS.q)}"></div>
+      <div class="row" id="glk">${kinds.map(k => `<button class="chip" data-k="${esc(k)}" aria-pressed="${GLS.kind === k}">${esc(k)}</button>`).join("")}</div>
+    </div>
+    <div class="eyebrow" id="glc" aria-live="polite"></div>
+    <div class="gl-list" id="gll"></div>
+  </div>`;
+  const draw = () => {
+    const q = GLS.q.trim().toLowerCase();
+    const rows = GL_ALL.filter(g => (GLS.kind === "All" || g.kind === GLS.kind) && (!q || (g.term + " " + g.aliases.join(" ") + " " + g.short).toLowerCase().includes(q)));
+    $("glc").textContent = `${rows.length} terms`;
+    let letter = "", html = "";
+    rows.forEach(g => {
+      const L = /[a-z]/i.test(g.term[0]) ? g.term[0].toUpperCase() : "#";
+      if (L !== letter && !q) { letter = L; html += `<div class="gl-letter" aria-hidden="true">${L}</div>`; }
+      const see = (g.see || []).filter(x => GLOSS[x]);
+      const aka = g.aliases.filter(a => a.toLowerCase() !== g.term.toLowerCase()).slice(0, 6);
+      html += `<article class="gl-item" id="g-${esc(g.key)}"><div class="pk">${esc(g.kind)}</div><h3>${esc(g.term)}</h3>
+        ${aka.length ? `<div class="aka">Also: ${aka.map(esc).join(" · ")}</div>` : ""}
+        <p>${esc(g.short)}</p>${g.more ? `<p class="muted">${esc(g.more)}</p>` : ""}
+        <div class="row">${g.lesson && LESSON[g.lesson] ? `<a class="topic" href="#lesson-${esc(g.lesson)}">Lesson: ${esc(LESSON[g.lesson].title)}</a>` : ""}${see.map(x => `<button type="button" class="term" data-g="${x}" aria-expanded="false" style="font-size:0.82rem">${esc(GLOSS[x].term)}</button>`).join(" ")}</div>
+      </article>`;
+    });
+    $("gll").innerHTML = html || `<div class="empty">No terms match. Try a shorter search.</div>`;
+  };
+  $("glq").addEventListener("input", e => { GLS.q = e.target.value; draw(); });
+  $("glk").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; GLS.kind = b.dataset.k;
+    $("glk").querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b)); draw(); });
+  draw();
+  if (GLS.focus) {
+    const el = document.getElementById("g-" + GLS.focus); GLS.focus = null;
+    if (el) requestAnimationFrame(() => { el.scrollIntoView({ block: "center" }); el.classList.add("flash"); });
+  }
+};
+
+/* PLAY */
+const GS = { mode: "phish", phish: null, quiz: null };
+VIEWS.play = () => {
+  main.innerHTML = `<div class="view">
+    <div class="view-head"><div class="eyebrow">Play</div><h1>Train your instincts</h1>
+      <p>Spot the phish, then test your knowledge. Every right answer earns XP towards your next rank.</p></div>
+    <div class="game-tabs" id="gtabs">
+      <button class="chip" data-m="phish" aria-pressed="${GS.mode === "phish"}">Phish or Legit?</button>
+      <button class="chip" data-m="quiz" aria-pressed="${GS.mode === "quiz"}">Quick-fire quiz</button>
+      <a class="chip" href="#today" style="text-decoration:none">Daily challenge</a>
+    </div>
+    <div id="game" class="stack" style="max-width:760px"></div>
+  </div>`;
+  $("gtabs").addEventListener("click", e => { const b = e.target.closest("button.chip"); if (!b) return; GS.mode = b.dataset.m;
+    $("gtabs").querySelectorAll("button.chip").forEach(c => c.setAttribute("aria-pressed", c === b)); drawGame(); });
+  drawGame();
+};
+function drawGame() { GS.mode === "phish" ? drawPhish() : drawQuiz(); }
+
+function newPhish() { GS.phish = { deck: shuffle(DATA.phish), i: 0, score: 0, answered: null }; }
+function drawPhish() {
+  if (!GS.phish) newPhish();
+  const g = GS.phish, box = $("game");
+  if (g.i >= g.deck.length) {
+    const best = Math.max(P.best.phish || 0, g.score); P.best.phish = best; saveP();
+    box.innerHTML = `<section class="panel" style="text-align:center;justify-items:center"><div class="eyebrow">Round complete</div><div class="score-big">${g.score}/${g.deck.length}</div>
+      <p>${g.score === g.deck.length ? "Perfect. Nothing gets past you." : g.score >= 7 ? "Sharp eyes. A couple slipped through." : "Phishers are good at this. Review the clues and try again."}</p>
+      <p class="muted">Your best: ${best}/${g.deck.length}</p><div class="row" style="justify-content:center"><button class="btn brand" id="again">Play again</button><a class="btn ghost" href="#lesson-phishing">Phishing lesson</a></div></section>`;
+    $("again").onclick = () => { newPhish(); drawPhish(); };
+    return;
+  }
+  const m = g.deck[g.i];
+  box.innerHTML = `<div class="game-bar"><span>Email ${g.i + 1} of ${g.deck.length}</span><span>Score ${g.score}</span></div>
+    <div class="email">
+      <div class="email-head"><div class="from"><b>${esc(m.fromName)}</b> <span class="addr">&lt;${esc(m.fromAddr)}&gt;</span></div><div class="subj">${esc(m.subject)}</div></div>
+      <div class="email-body">${m.body.map(p => `<p>${esc(p)}</p>`).join("")}
+        ${m.link ? `<button class="cta" id="cta" title="Tap to inspect where this link goes">${esc(m.link.text)}</button><p class="inspect" id="insp">Tip: tap the button to inspect the link before deciding.</p>` : ""}
+      </div>
+    </div>
+    <div id="pv"></div>`;
+  if (m.link) $("cta").onclick = () => { $("insp").innerHTML = `Link really goes to: <strong>${esc(m.link.href)}</strong>`; };
+  const pv = $("pv");
+  if (g.answered == null) {
+    pv.innerHTML = `<div class="verdict"><button class="btn" data-v="phish">It's phishing</button><button class="btn ghost" data-v="legit">It's legit</button></div>`;
+    pv.onclick = e => { const b = e.target.closest("[data-v]"); if (!b) return; g.answered = b.dataset.v;
+      if (g.answered === m.verdict) { g.score++; award(15, "Spotted it"); } drawPhish(); };
+  } else {
+    const ok = g.answered === m.verdict;
+    if (m.link) $("insp").innerHTML = `Link really goes to: <strong>${esc(m.link.href)}</strong>`;
+    pv.innerHTML = `<div class="result ${ok ? "ok" : "no"}"><strong>${ok ? "Correct" : "Not this time"}: this one is ${m.verdict === "phish" ? "phishing" : "legitimate"}.</strong><ul>${m.clues.map(c => `<li>${esc(c)}</li>`).join("")}</ul></div>
+      <button class="btn brand" id="nextp" style="justify-self:start">${g.i + 1 < g.deck.length ? "Next email" : "See score"}</button>`;
+    $("nextp").onclick = () => { g.i++; g.answered = null; drawPhish(); };
+  }
+}
+
+function newQuiz() { GS.quiz = { deck: shuffle(DATA.quiz).slice(0, 10), i: 0, score: 0, answered: null }; }
+function drawQuiz() {
+  if (!GS.quiz) newQuiz();
+  const g = GS.quiz, box = $("game");
+  if (g.i >= g.deck.length) {
+    const best = Math.max(P.best.quiz || 0, g.score); P.best.quiz = best; saveP();
+    const missed = [...new Set(g.missed || [])].filter(t => LESSON[t]);
+    box.innerHTML = `<section class="panel" style="text-align:center;justify-items:center"><div class="eyebrow">Quiz complete</div><div class="score-big">${g.score}/10</div>
+      <p class="muted">Your best: ${best}/10</p>
+      ${missed.length ? `<p>Worth a review: ${missed.map(t => `<a href="#lesson-${esc(t)}">${esc(LESSON[t].title)}</a>`).join(", ")}</p>` : "<p>Flawless.</p>"}
+      <button class="btn brand" id="againq">New quiz</button></section>`;
+    $("againq").onclick = () => { newQuiz(); drawQuiz(); };
+    return;
+  }
+  const q = g.deck[g.i];
+  box.innerHTML = `<div class="game-bar"><span>Question ${g.i + 1} of 10</span><span>Score ${g.score}</span></div><section class="panel" id="qp"></section>`;
+  $("qp").appendChild(quizBlock(q, {
+    answered: g.answered,
+    onAnswer: (choice, correct, wrap) => {
+      g.answered = choice;
+      if (correct) { g.score++; award(10, "Correct answer"); } else { (g.missed = g.missed || []).push(q.topic); }
+      const nb = document.createElement("button"); nb.className = "btn brand"; nb.style.justifySelf = "start";
+      nb.textContent = g.i + 1 < 10 ? "Next question" : "See score";
+      nb.onclick = () => { g.i++; g.answered = null; drawQuiz(); };
+      wrap.appendChild(nb);
+    }
+  }));
+}
+
+/* CAREERS */
+VIEWS.careers = () => {
+  const C = DATA.careers;
+  main.innerHTML = `<div class="view">
+    <div class="view-head"><div class="eyebrow">Careers</div><h1>Find your way into cyber</h1>
+      <p>Five common paths, what the work is really like, and the free resources that get you there. Most people start in IT support or a SOC.</p></div>
+    <div class="paths">${C.paths.map(p => `<article class="path">
+      <h3>${esc(p.role)}</h3><p class="tl">${esc(p.tagline)}</p><p>${gloss(p.what, 3)}</p>
+      <h4>Skills</h4><div class="pchips">${p.skills.map(s => `<span class="pchip">${esc(s)}</span>`).join("")}</div>
+      <h4>Certifications</h4><div class="pchips">${p.certs.map(s => `<span class="pchip">${esc(s)}</span>`).join("")}</div>
+      <h4>Start here</h4><ul>${p.start.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
+      <h4>First job titles</h4><p class="muted" style="font-size:0.88rem">${p.titles.map(esc).join(" · ")}</p>
+      <h4>Lessons for this path</h4><div class="row">${p.lessons.filter(id => LESSON[id]).map(id => `<a class="topic" href="#lesson-${esc(id)}">${esc(LESSON[id].title)}</a>`).join("")}</div>
+    </article>`).join("")}</div>
+    <section class="stack">
+      <div class="view-head"><h2>The best of the rest</h2><p>Where to go next: the outlets, shows, labs and tools working security people use.</p></div>
+      <div class="dir">${C.directory.map(g => `<section class="panel"><h3>${esc(g.group)}</h3><ul>${g.items.map(i => `<li><a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.name)} ↗</a><span>${esc(i.note)}</span></li>`).join("")}</ul></section>`).join("")}</div>
+    </section>
+  </div>`;
+};
+
+/* ---------- router ---------- */
+function route() {
+  const h = (location.hash || "#today").slice(1);
+  const tab = h.startsWith("lesson-") || h === "glossary" ? "learn" : (VIEWS[h] ? h : "today");
+  closePop();
+  document.querySelectorAll("nav.tabs a").forEach(a => a.dataset.tab === tab ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+  window.scrollTo(0, 0);
+  if (h.startsWith("lesson-")) lessonView(h.slice(7)); else if (h === "glossary") VIEWS.glossary(); else VIEWS[tab]();
+}
+document.addEventListener("click", e => {
+  const pr = e.target.closest("[data-radar-prio]");
+  if (pr) { RS.prio = pr.dataset.radarPrio; RS.onlyWatch = false; RS.q = ""; if (location.hash === "#cves") route(); return; }
+  const cv = e.target.closest("[data-cve]");
+  if (cv) { RS.q = cv.dataset.cve.toLowerCase(); RS.prio = "all"; RS.onlyWatch = false; RS.onlyNew = false;
+    if (location.hash === "#cves") route(); else location.hash = "cves"; return; }
+  const nt = e.target.closest("[data-news-topic]");
+  if (nt) { NS.topic = nt.dataset.newsTopic; NS.q = ""; NS.source = "all"; location.hash = "news"; }
+});
+window.addEventListener("hashchange", route);
+
+$("ver").textContent = "v" + DATA.meta.version;
+$("foot-meta").textContent = `Updated ${DATA.meta.generated}.` + (DATA.site.author ? ` Built by ${DATA.site.author}.` : "");
+renderXP();
+route();
+</script>

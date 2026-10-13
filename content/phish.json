@@ -1,0 +1,92 @@
+[
+  {
+    "fromName": "Northvale Bank Security",
+    "fromAddr": "alerts@northvale-secure-verify.com",
+    "subject": "URGENT: Unusual sign-in detected – account suspended",
+    "body": ["Dear Customer,", "We detected an unusual sign-in to your account from Moscow, Russia. For your protection your account has been temporarily suspended.", "You must verify your identity within 12 hours or your account will be permanently closed."],
+    "link": { "text": "Verify my account", "href": "http://northvale-secure-verify.com/login.php" },
+    "verdict": "phish",
+    "clues": ["The sender domain isn't the bank's real domain (northvalebank.com); it just contains the brand name", "Generic greeting: 'Dear Customer'", "Fear plus a deadline: suspended, 12 hours, permanently closed", "The link uses plain http and goes to the look-alike domain"]
+  },
+  {
+    "fromName": "ParcelPoint",
+    "fromAddr": "noreply@parcelpoint-delivery.info",
+    "subject": "Your parcel is on hold – £1.45 redelivery fee",
+    "body": ["We attempted to deliver your parcel today but no one was available.", "To schedule a redelivery please pay the outstanding fee of £1.45. Unpaid parcels are returned to sender after 48 hours."],
+    "link": { "text": "Pay & reschedule", "href": "https://parcelpoint-delivery.info/pay?ref=88213" },
+    "verdict": "phish",
+    "clues": ["Tiny fee scams are designed to collect your full card details", "A .info domain that isn't the courier's real site", "No tracking number, item or sender mentioned", "Deadline pressure: 48 hours"]
+  },
+  {
+    "fromName": "Brightdesk",
+    "fromAddr": "no-reply@brightdesk.com",
+    "subject": "Your Brightdesk invoice for October",
+    "body": ["Hi Jordan,", "Your monthly invoice for the Team plan (5 seats) is ready. The amount of $60.00 will be charged to the card ending 4417 on 1 November.", "You can view or download invoices any time from Settings → Billing in your account."],
+    "link": { "text": "View invoice", "href": "https://app.brightdesk.com/settings/billing" },
+    "verdict": "legit",
+    "clues": ["Sender and link both use the company's real domain", "It uses your name and specific details you can check (plan, seats, last 4 digits)", "No urgency or threats", "It tells you how to get there yourself without the link. Doing that is always the safest option."]
+  },
+  {
+    "fromName": "IT Service Desk",
+    "fromAddr": "it-support@halcyonlabs-helpdesk.com",
+    "subject": "Action required: mailbox storage full",
+    "body": ["Your mailbox has exceeded its storage limit (99.8%). You will no longer be able to send or receive emails.", "Re-validate your email username and password below to receive an additional 50GB of free storage."],
+    "link": { "text": "Re-validate now", "href": "https://halcyonlabs-helpdesk.com/m365/auth" },
+    "verdict": "phish",
+    "clues": ["Internal IT would email from your company's own domain, not a '-helpdesk' look-alike", "Asking you to 're-validate credentials' is a classic password harvest", "Free storage reward plus a threat of losing email", "Check with IT directly through your usual ticket system"]
+  },
+  {
+    "fromName": "Riverton City Council",
+    "fromAddr": "bins@riverton.gov.uk",
+    "subject": "Bin collection changes over the holidays",
+    "body": ["Hello,", "Collections during the week of 22 December will move one day later than usual. Garden waste collections will pause until 6 January.", "Full dates for your street are on our website."],
+    "link": { "text": "Check your collection day", "href": "https://www.riverton.gov.uk/bins/collection-day" },
+    "verdict": "legit",
+    "clues": ["Official government domain for sender and link", "Purely informational: no login, payment or personal data requested", "Nothing urgent or threatening"]
+  },
+  {
+    "fromName": "Alex Morgan (CEO)",
+    "fromAddr": "alex.morgan.ceo@gmail.com",
+    "subject": "Quick favour",
+    "body": ["Are you at your desk? I'm in back-to-back meetings and need you to handle something discreetly.", "I need 6 x $200 gift cards for a client appreciation surprise. Buy them and send me the codes by email. I'll reimburse you later today. Please keep this between us."],
+    "link": null,
+    "verdict": "phish",
+    "clues": ["The CEO writing from a personal Gmail address", "Gift cards are untraceable, which is why scammers love them", "Secrecy ('keep this between us') stops you checking with anyone", "Busy-boss pretext so you won't call. Call them anyway."]
+  },
+  {
+    "fromName": "Streamly",
+    "fromAddr": "info@streamly.com",
+    "subject": "New this week: 3 shows we think you'll like",
+    "body": ["Hi Sam,", "Based on what you've been watching, here are this week's picks.", "Manage email preferences or unsubscribe at the bottom of this message."],
+    "link": { "text": "Browse picks", "href": "https://www.streamly.com/browse/picks" },
+    "verdict": "legit",
+    "clues": ["Real company domain for sender and link", "Marketing content with no request for login or payment", "Standard unsubscribe option"]
+  },
+  {
+    "fromName": "CloudVault",
+    "fromAddr": "share@cloudvault.com",
+    "subject": "Priya Shah shared \"Q3 Salary Review.xlsx\" with you",
+    "body": ["Priya Shah (priya.shah@halcyon-labs.co) has shared a file with you.", "Q3 Salary Review.xlsx", "Sign in with your work email and password to view."],
+    "link": { "text": "Open file", "href": "https://cloudvault-docs.web.app/view?id=q3" },
+    "verdict": "phish",
+    "clues": ["The sender looks real, but the link goes to a free hosting domain (web.app), not cloudvault.com", "The colleague's domain is subtly wrong (halcyon-labs.co vs halcyonlabs.com)", "A juicy file name (salary review) to spark curiosity", "Asks you to type your work password into the page"]
+  },
+  {
+    "fromName": "Northvale Bank",
+    "fromAddr": "notifications@northvalebank.com",
+    "subject": "Your statement is ready",
+    "body": ["Your October statement is now available.", "For your security, we never include links to sign in. Open the Northvale app or type northvalebank.com into your browser to view it."],
+    "link": null,
+    "verdict": "legit",
+    "clues": ["Real bank domain", "Deliberately contains no login link and tells you to go there yourself", "No urgency, no request for information"]
+  },
+  {
+    "fromName": "Payroll Team",
+    "fromAddr": "payroll@halcyonlabs.com",
+    "subject": "RE: Update to your direct deposit details",
+    "body": ["Hi,", "Following up on your request to change your bank account for payroll. Please confirm by replying with your new account and sort code before Friday's cut-off so your salary isn't delayed."],
+    "link": null,
+    "verdict": "phish",
+    "clues": ["You never asked to change your bank details. The 'RE:' fakes an existing conversation.", "Even from a real-looking address, the account could be compromised or spoofed", "Asks you to send banking details by email", "Deadline plus fear of a delayed salary. Confirm in person or through the HR portal."]
+  }
+]

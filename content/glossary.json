@@ -1,0 +1,2906 @@
+[
+ {
+  "id": "vulnerability",
+  "term": "Vulnerability",
+  "kind": "Concept",
+  "aliases": [
+   "vulnerability",
+   "vulnerabilities",
+   "flaw",
+   "flaws"
+  ],
+  "auto": false,
+  "short": "A weakness in software, hardware or a process that an attacker could use to do something they shouldn't.",
+  "lesson": "vuln-management",
+  "see": [
+   "exploit",
+   "cve",
+   "patch"
+  ]
+ },
+ {
+  "id": "exploit",
+  "term": "Exploit",
+  "kind": "Concept",
+  "aliases": [
+   "exploit",
+   "exploits",
+   "exploited",
+   "exploitation"
+  ],
+  "auto": false,
+  "short": "Code or a technique that takes advantage of a vulnerability. 'Exploited in the wild' means real attackers are using it, not just researchers.",
+  "see": [
+   "vulnerability",
+   "poc",
+   "zero-day"
+  ]
+ },
+ {
+  "id": "patch",
+  "term": "Patch",
+  "kind": "Defence",
+  "aliases": [
+   "patch",
+   "patches",
+   "patched",
+   "security update"
+  ],
+  "auto": false,
+  "short": "A software update that fixes a bug or vulnerability. Most attacks use flaws that already have a patch nobody installed.",
+  "lesson": "vuln-management",
+  "see": [
+   "mitigation",
+   "patch-tuesday"
+  ]
+ },
+ {
+  "id": "mitigation",
+  "term": "Mitigation / workaround",
+  "kind": "Defence",
+  "aliases": [
+   "mitigation",
+   "mitigations",
+   "workaround",
+   "workarounds"
+  ],
+  "short": "A temporary way to reduce risk (turning off a feature, blocking a port) when a full patch isn't available or can't be installed yet.",
+  "see": [
+   "patch"
+  ]
+ },
+ {
+  "id": "patch-tuesday",
+  "term": "Patch Tuesday",
+  "kind": "Concept",
+  "aliases": [
+   "Patch Tuesday"
+  ],
+  "short": "The second Tuesday of each month, when Microsoft (and others such as Adobe and SAP) release their security updates together.",
+  "see": [
+   "patch"
+  ]
+ },
+ {
+  "id": "zero-day",
+  "term": "Zero-day",
+  "kind": "Attack",
+  "aliases": [
+   "zero-day",
+   "zero-days",
+   "0-day",
+   "0-days",
+   "zero day"
+  ],
+  "short": "A vulnerability attackers are using before the vendor has a fix. The vendor has had 'zero days' to patch it.",
+  "lesson": "zero-day",
+  "see": [
+   "n-day",
+   "exploit"
+  ]
+ },
+ {
+  "id": "n-day",
+  "term": "N-day",
+  "kind": "Attack",
+  "aliases": [
+   "n-day",
+   "n-days"
+  ],
+  "short": "A vulnerability that already has a public patch. Attackers race to exploit it on systems that haven't updated yet.",
+  "see": [
+   "zero-day",
+   "patch"
+  ]
+ },
+ {
+  "id": "poc",
+  "term": "Proof of concept (PoC)",
+  "kind": "Concept",
+  "aliases": [
+   "PoC",
+   "PoCs",
+   "proof-of-concept",
+   "proof of concept"
+  ],
+  "short": "Example code showing a vulnerability really works. A public PoC often triggers a wave of real attacks within days.",
+  "see": [
+   "exploit"
+  ]
+ },
+ {
+  "id": "exploit-chain",
+  "term": "Exploit chain",
+  "kind": "Attack",
+  "aliases": [
+   "exploit chain",
+   "chained",
+   "chaining"
+  ],
+  "short": "Several vulnerabilities used one after another, e.g. one to get in and a second to gain admin rights. Each bug alone might look minor.",
+  "see": [
+   "exploit",
+   "privilege-escalation"
+  ]
+ },
+ {
+  "id": "rce",
+  "term": "Remote code execution (RCE)",
+  "kind": "Attack",
+  "aliases": [
+   "RCE",
+   "remote code execution",
+   "code execution",
+   "arbitrary code"
+  ],
+  "short": "The attacker can run their own commands on a system over the network. This is usually the worst outcome a bug can have, since it often means full takeover.",
+  "see": [
+   "unauthenticated",
+   "exploit"
+  ]
+ },
+ {
+  "id": "unauthenticated",
+  "term": "Unauthenticated",
+  "kind": "Concept",
+  "aliases": [
+   "unauthenticated",
+   "pre-auth",
+   "pre-authentication",
+   "without authentication"
+  ],
+  "short": "The attack works without logging in. Anyone who can reach the system over the network can try it, which makes the bug far more dangerous.",
+  "see": [
+   "auth-bypass",
+   "rce"
+  ]
+ },
+ {
+  "id": "auth-bypass",
+  "term": "Authentication bypass",
+  "kind": "Attack",
+  "aliases": [
+   "authentication bypass",
+   "auth bypass",
+   "bypass authentication"
+  ],
+  "short": "A bug that lets someone skip the login check entirely and act as a legitimate (often admin) user.",
+  "lesson": "identity",
+  "see": [
+   "unauthenticated"
+  ]
+ },
+ {
+  "id": "privilege-escalation",
+  "term": "Privilege escalation",
+  "kind": "Attack",
+  "aliases": [
+   "privilege escalation",
+   "elevation of privilege",
+   "LPE",
+   "escalate privileges",
+   "EoP"
+  ],
+  "short": "Going from limited access to more powerful access, like from normal user to administrator or root. Usually the second step after getting in.",
+  "see": [
+   "exploit-chain",
+   "lateral-movement"
+  ]
+ },
+ {
+  "id": "ssrf",
+  "term": "Server-side request forgery (SSRF)",
+  "kind": "Attack",
+  "aliases": [
+   "SSRF",
+   "server-side request forgery"
+  ],
+  "short": "Tricking a server into making web requests for the attacker, often to internal systems or cloud credential services it can reach but outsiders can't.",
+  "lesson": "cloud"
+ },
+ {
+  "id": "xss",
+  "term": "Cross-site scripting (XSS)",
+  "kind": "Attack",
+  "aliases": [
+   "XSS",
+   "cross-site scripting"
+  ],
+  "short": "Getting a website to run the attacker's JavaScript in other visitors' browsers, letting them act as those users.",
+  "lesson": "web-xss"
+ },
+ {
+  "id": "sqli",
+  "term": "SQL injection",
+  "kind": "Attack",
+  "aliases": [
+   "SQL injection",
+   "SQLi"
+  ],
+  "short": "Sneaking database commands into input fields so the site's database runs them, often to dump or change data.",
+  "lesson": "web-sqli"
+ },
+ {
+  "id": "path-traversal",
+  "term": "Path traversal",
+  "kind": "Attack",
+  "aliases": [
+   "path traversal",
+   "directory traversal"
+  ],
+  "short": "Using ../ tricks in file names to read or write files outside the folder an app is supposed to use.",
+  "see": [
+   "rce"
+  ]
+ },
+ {
+  "id": "memory-corruption",
+  "term": "Memory corruption",
+  "kind": "Attack",
+  "aliases": [
+   "memory corruption",
+   "buffer overflow",
+   "heap overflow",
+   "out-of-bounds write",
+   "use-after-free",
+   "use after free",
+   "type confusion"
+  ],
+  "short": "Bugs where a program writes to or uses memory it shouldn't. Skilled attackers turn them into running their own code. Common in browsers and operating systems written in C/C++.",
+  "see": [
+   "rce"
+  ]
+ },
+ {
+  "id": "deserialization",
+  "term": "Deserialization flaw",
+  "kind": "Attack",
+  "aliases": [
+   "deserialization",
+   "deserialisation",
+   "insecure deserialization"
+  ],
+  "short": "An app rebuilds objects from data it received, and crafted data makes it run attacker code during that process.",
+  "see": [
+   "rce"
+  ]
+ },
+ {
+  "id": "zero-click",
+  "term": "Zero-click",
+  "kind": "Attack",
+  "aliases": [
+   "zero-click",
+   "0-click",
+   "zero click"
+  ],
+  "short": "An attack that needs no action from the victim, e.g. just receiving a message triggers it. Often used by commercial spyware.",
+  "see": [
+   "spyware",
+   "zero-day"
+  ]
+ },
+ {
+  "id": "dos",
+  "term": "Denial of service (DoS)",
+  "kind": "Attack",
+  "aliases": [
+   "denial of service",
+   "denial-of-service",
+   "DoS"
+  ],
+  "short": "Crashing or overloading a system so legitimate users can't use it. A DDoS uses many machines at once.",
+  "lesson": "ddos",
+  "see": [
+   "ddos"
+  ]
+ },
+ {
+  "id": "ddos",
+  "term": "DDoS",
+  "kind": "Attack",
+  "aliases": [
+   "DDoS",
+   "distributed denial of service",
+   "distributed denial-of-service"
+  ],
+  "short": "Distributed denial of service: flooding a target with traffic from thousands of hijacked devices until it falls over.",
+  "lesson": "ddos",
+  "see": [
+   "botnet"
+  ]
+ },
+ {
+  "id": "malware",
+  "term": "Malware",
+  "kind": "Malware",
+  "aliases": [
+   "malware"
+  ],
+  "auto": false,
+  "short": "Any software built to do harm: steal data, spy, encrypt files, or give an attacker control.",
+  "lesson": "malware"
+ },
+ {
+  "id": "ransomware",
+  "term": "Ransomware",
+  "kind": "Malware",
+  "aliases": [
+   "ransomware"
+  ],
+  "auto": false,
+  "short": "Malware that encrypts files and demands payment for the key, usually after stealing a copy to threaten a leak.",
+  "lesson": "ransomware",
+  "see": [
+   "double-extortion",
+   "raas"
+  ]
+ },
+ {
+  "id": "raas",
+  "term": "Ransomware-as-a-service (RaaS)",
+  "kind": "Concept",
+  "aliases": [
+   "RaaS",
+   "ransomware-as-a-service",
+   "affiliate",
+   "affiliates"
+  ],
+  "short": "Ransomware developers rent their tools to 'affiliates' who carry out the break-ins, and the two split the ransom. It's why one gang name can appear in very different attacks.",
+  "lesson": "ransomware",
+  "see": [
+   "iab"
+  ]
+ },
+ {
+  "id": "double-extortion",
+  "term": "Double extortion",
+  "kind": "Attack",
+  "aliases": [
+   "double extortion",
+   "double-extortion",
+   "data leak site",
+   "leak site"
+  ],
+  "short": "Encrypting a victim's files and threatening to publish stolen data on a 'leak site'. Even good backups don't solve the second threat.",
+  "lesson": "ransomware"
+ },
+ {
+  "id": "extortion",
+  "term": "Data extortion",
+  "kind": "Attack",
+  "aliases": [
+   "extortion"
+  ],
+  "short": "Stealing data and demanding money not to leak or sell it, sometimes without encrypting anything at all.",
+  "lesson": "ransomware",
+  "see": [
+   "double-extortion"
+  ]
+ },
+ {
+  "id": "wiper",
+  "term": "Wiper",
+  "kind": "Malware",
+  "aliases": [
+   "wiper",
+   "wipers"
+  ],
+  "short": "Malware that destroys data permanently. Sometimes disguised as ransomware, but there's no way to get files back. Often used in wartime cyberattacks.",
+  "see": [
+   "ransomware"
+  ]
+ },
+ {
+  "id": "infostealer",
+  "term": "Infostealer",
+  "kind": "Malware",
+  "aliases": [
+   "infostealer",
+   "infostealers",
+   "stealer",
+   "stealers",
+   "info-stealer"
+  ],
+  "short": "Malware that grabs saved passwords, browser cookies, crypto wallets and files, then sends them to the attacker. Stolen cookies can let them skip MFA.",
+  "lesson": "malware",
+  "see": [
+   "session-hijacking"
+  ]
+ },
+ {
+  "id": "loader",
+  "term": "Loader / dropper",
+  "kind": "Malware",
+  "aliases": [
+   "loader",
+   "loaders",
+   "dropper",
+   "droppers"
+  ],
+  "short": "Small malware whose only job is to sneak onto a machine and download the real payload (a stealer, RAT or ransomware).",
+  "lesson": "malware"
+ },
+ {
+  "id": "rat",
+  "term": "RAT (remote access trojan)",
+  "kind": "Malware",
+  "aliases": [
+   "RAT",
+   "RATs",
+   "remote access trojan"
+  ],
+  "short": "Malware that gives an attacker remote control of the infected computer: files, keyboard, screen, sometimes camera and microphone.",
+  "lesson": "malware"
+ },
+ {
+  "id": "trojan",
+  "term": "Trojan",
+  "kind": "Malware",
+  "aliases": [
+   "trojan",
+   "trojans",
+   "trojanized",
+   "trojanised"
+  ],
+  "short": "Malware disguised as something legitimate, like a fake app, a cracked game or a booby-trapped installer.",
+  "lesson": "malware"
+ },
+ {
+  "id": "backdoor",
+  "term": "Backdoor",
+  "kind": "Malware",
+  "aliases": [
+   "backdoor",
+   "backdoors",
+   "backdoored"
+  ],
+  "short": "A hidden way into a system that skips normal security, planted by attackers so they can come back later.",
+  "see": [
+   "persistence",
+   "web-shell"
+  ]
+ },
+ {
+  "id": "web-shell",
+  "term": "Web shell",
+  "kind": "Malware",
+  "aliases": [
+   "web shell",
+   "webshell",
+   "web shells",
+   "webshells"
+  ],
+  "short": "A small script uploaded to a hacked web server that lets the attacker run commands through a browser. A classic sign of server compromise.",
+  "see": [
+   "backdoor"
+  ]
+ },
+ {
+  "id": "rootkit",
+  "term": "Rootkit / bootkit",
+  "kind": "Malware",
+  "aliases": [
+   "rootkit",
+   "rootkits",
+   "bootkit",
+   "bootkits"
+  ],
+  "short": "Malware that hides deep in the operating system (or starts before it boots) to stay invisible to security tools.",
+  "see": [
+   "uefi"
+  ]
+ },
+ {
+  "id": "botnet",
+  "term": "Botnet",
+  "kind": "Malware",
+  "aliases": [
+   "botnet",
+   "botnets"
+  ],
+  "short": "A network of hacked devices (PCs, routers, cameras) controlled together. Used for DDoS, spam or hiding attackers' traffic.",
+  "lesson": "ddos",
+  "see": [
+   "c2"
+  ]
+ },
+ {
+  "id": "worm",
+  "term": "Worm",
+  "kind": "Malware",
+  "aliases": [
+   "worm",
+   "worms",
+   "wormable",
+   "self-replicating",
+   "self-propagating"
+  ],
+  "short": "Malware that spreads to other systems by itself, without anyone clicking anything.",
+  "lesson": "malware"
+ },
+ {
+  "id": "spyware",
+  "term": "Spyware",
+  "kind": "Malware",
+  "aliases": [
+   "spyware",
+   "stalkerware",
+   "commercial spyware"
+  ],
+  "short": "Software that secretly monitors someone. Commercial spyware like Pegasus is sold to governments and has been used against journalists and activists.",
+  "see": [
+   "zero-click"
+  ]
+ },
+ {
+  "id": "keylogger",
+  "term": "Keylogger",
+  "kind": "Malware",
+  "aliases": [
+   "keylogger",
+   "keyloggers"
+  ],
+  "short": "Malware that records everything you type, including passwords.",
+  "lesson": "malware"
+ },
+ {
+  "id": "cryptominer",
+  "term": "Cryptominer / cryptojacking",
+  "kind": "Malware",
+  "aliases": [
+   "cryptominer",
+   "cryptominers",
+   "cryptojacking",
+   "coinminer"
+  ],
+  "short": "Malware that secretly uses a victim's computing power to mine cryptocurrency for the attacker.",
+  "lesson": "malware"
+ },
+ {
+  "id": "drainer",
+  "term": "Crypto drainer",
+  "kind": "Malware",
+  "aliases": [
+   "drainer",
+   "drainers",
+   "wallet drainer"
+  ],
+  "short": "A scam site or script that tricks crypto users into approving a transaction that empties their wallet.",
+  "see": [
+   "phishing"
+  ]
+ },
+ {
+  "id": "c2",
+  "term": "Command and control (C2)",
+  "kind": "Concept",
+  "aliases": [
+   "C2",
+   "C&C",
+   "command-and-control",
+   "command and control"
+  ],
+  "short": "The attacker's server that infected machines check in with for instructions. Finding and blocking C2 traffic is a key defence.",
+  "see": [
+   "botnet",
+   "ioc"
+  ]
+ },
+ {
+  "id": "payload",
+  "term": "Payload",
+  "kind": "Concept",
+  "aliases": [
+   "payload",
+   "payloads"
+  ],
+  "short": "The part of an attack that does the damage, like the ransomware or backdoor delivered once the attacker gets in.",
+  "see": [
+   "loader"
+  ]
+ },
+ {
+  "id": "clickfix",
+  "term": "ClickFix",
+  "kind": "Attack",
+  "aliases": [
+   "ClickFix",
+   "FileFix"
+  ],
+  "short": "A social engineering trick: a fake error or 'prove you're human' page tells you to copy a command and paste it into Windows Run or a terminal. Doing so installs malware.",
+  "lesson": "phishing",
+  "see": [
+   "infostealer"
+  ]
+ },
+ {
+  "id": "phishing",
+  "term": "Phishing",
+  "kind": "Attack",
+  "aliases": [
+   "phishing"
+  ],
+  "auto": false,
+  "short": "Fake messages that trick people into clicking, opening files, giving passwords or sending money.",
+  "lesson": "phishing"
+ },
+ {
+  "id": "spear-phishing",
+  "term": "Spear phishing",
+  "kind": "Attack",
+  "aliases": [
+   "spear phishing",
+   "spear-phishing",
+   "spearphishing"
+  ],
+  "short": "Phishing tailored to a specific person using details about them, which makes it far more convincing than mass spam.",
+  "lesson": "phishing"
+ },
+ {
+  "id": "bec",
+  "term": "Business email compromise (BEC)",
+  "kind": "Attack",
+  "aliases": [
+   "BEC",
+   "business email compromise"
+  ],
+  "short": "Scammers pose as a boss, supplier or colleague by email to get staff to pay fake invoices or change bank details. Causes bigger losses than ransomware.",
+  "lesson": "phishing"
+ },
+ {
+  "id": "vishing",
+  "term": "Vishing / smishing",
+  "kind": "Attack",
+  "aliases": [
+   "vishing",
+   "smishing",
+   "voice phishing",
+   "callback phishing"
+  ],
+  "short": "Phishing by phone call (vishing) or text message (smishing). Fake IT help desk calls are a favourite way into companies.",
+  "lesson": "phishing"
+ },
+ {
+  "id": "social-engineering",
+  "term": "Social engineering",
+  "kind": "Attack",
+  "aliases": [
+   "social engineering",
+   "social-engineering",
+   "pretexting"
+  ],
+  "short": "Manipulating people rather than technology: using trust, urgency or authority to get them to hand over access.",
+  "lesson": "phishing"
+ },
+ {
+  "id": "aitm",
+  "term": "Adversary-in-the-middle (AiTM)",
+  "kind": "Attack",
+  "aliases": [
+   "AiTM",
+   "adversary-in-the-middle",
+   "MitM",
+   "man-in-the-middle",
+   "phishing kit",
+   "phishing kits"
+  ],
+  "short": "A fake login page that sits between you and the real site, passing everything through, including your MFA code, and stealing your session.",
+  "lesson": "identity",
+  "see": [
+   "session-hijacking",
+   "passkey"
+  ]
+ },
+ {
+  "id": "credential-stuffing",
+  "term": "Credential stuffing",
+  "kind": "Attack",
+  "aliases": [
+   "credential stuffing"
+  ],
+  "short": "Trying usernames and passwords leaked from one site on many other sites, which works because people reuse passwords.",
+  "lesson": "data-breach"
+ },
+ {
+  "id": "password-spraying",
+  "term": "Password spraying / brute force",
+  "kind": "Attack",
+  "aliases": [
+   "password spraying",
+   "password-spraying",
+   "brute force",
+   "brute-force",
+   "brute-forcing"
+  ],
+  "short": "Guessing passwords at scale. Spraying tries a few common passwords against many accounts to avoid lockouts.",
+  "lesson": "identity"
+ },
+ {
+  "id": "account-takeover",
+  "term": "Account takeover",
+  "kind": "Attack",
+  "aliases": [
+   "account takeover",
+   "ATO",
+   "hijacked account",
+   "hijacked accounts"
+  ],
+  "short": "An attacker gains control of someone's account, using stolen passwords, session cookies or a SIM swap.",
+  "lesson": "identity"
+ },
+ {
+  "id": "session-hijacking",
+  "term": "Session / token theft",
+  "kind": "Attack",
+  "aliases": [
+   "session hijacking",
+   "session token",
+   "session tokens",
+   "session cookie",
+   "session cookies",
+   "token theft",
+   "stolen tokens",
+   "access token",
+   "access tokens"
+  ],
+  "short": "Stealing the token a site gives you after logging in. With it, the attacker is already logged in, with no password or MFA needed.",
+  "lesson": "identity",
+  "see": [
+   "infostealer",
+   "aitm"
+  ]
+ },
+ {
+  "id": "sim-swap",
+  "term": "SIM swapping",
+  "kind": "Attack",
+  "aliases": [
+   "SIM swap",
+   "SIM swapping",
+   "SIM-swapping",
+   "SIM swaps"
+  ],
+  "short": "Tricking a mobile carrier into moving your phone number to the attacker's SIM, so your SMS codes go to them.",
+  "lesson": "identity"
+ },
+ {
+  "id": "mfa",
+  "term": "MFA / 2FA",
+  "kind": "Defence",
+  "aliases": [
+   "MFA",
+   "2FA",
+   "multi-factor authentication",
+   "multifactor authentication",
+   "two-factor authentication"
+  ],
+  "short": "Needing a second proof (a code, an app prompt, a security key) as well as a password. It blocks most account takeovers, but some types can be phished.",
+  "lesson": "identity",
+  "see": [
+   "mfa-fatigue",
+   "passkey"
+  ]
+ },
+ {
+  "id": "mfa-fatigue",
+  "term": "MFA fatigue",
+  "kind": "Attack",
+  "aliases": [
+   "MFA fatigue",
+   "MFA bombing",
+   "push bombing",
+   "prompt bombing"
+  ],
+  "short": "Spamming someone with login approval prompts until they tap 'Approve' just to make them stop.",
+  "lesson": "identity"
+ },
+ {
+  "id": "passkey",
+  "term": "Passkey / security key",
+  "kind": "Defence",
+  "aliases": [
+   "passkey",
+   "passkeys",
+   "security key",
+   "security keys",
+   "FIDO2",
+   "FIDO",
+   "YubiKey"
+  ],
+  "short": "A login method that uses cryptography instead of a password. It only works on the genuine website, so it can't be phished.",
+  "lesson": "identity"
+ },
+ {
+  "id": "sso",
+  "term": "Single sign-on (SSO)",
+  "kind": "Technology",
+  "aliases": [
+   "SSO",
+   "single sign-on",
+   "SAML",
+   "OAuth",
+   "OpenID Connect",
+   "OIDC"
+  ],
+  "short": "One login that gives access to many apps (SAML and OAuth are the standards behind it). Convenient, but one compromised account unlocks everything.",
+  "lesson": "identity",
+  "see": [
+   "okta",
+   "entra-id"
+  ]
+ },
+ {
+  "id": "credentials",
+  "term": "Credentials",
+  "kind": "Concept",
+  "aliases": [
+   "credentials",
+   "creds"
+  ],
+  "auto": false,
+  "short": "Anything that proves who you are to a system: usernames and passwords, API keys, tokens or certificates.",
+  "lesson": "identity"
+ },
+ {
+  "id": "api-key",
+  "term": "API key / secret",
+  "kind": "Concept",
+  "aliases": [
+   "API key",
+   "API keys",
+   "hardcoded credentials",
+   "hard-coded credentials",
+   "leaked secrets"
+  ],
+  "short": "A password for software. Keys accidentally left in public code are scanned for and abused within minutes.",
+  "lesson": "cloud"
+ },
+ {
+  "id": "appliance",
+  "term": "Appliance",
+  "kind": "Technology",
+  "aliases": [
+   "appliance",
+   "appliances",
+   "virtual appliance"
+  ],
+  "short": "A dedicated box (physical or virtual) that does one network job, such as a firewall, VPN gateway or load balancer. Hard to monitor and often internet-facing, which makes appliances a top target.",
+  "see": [
+   "edge-device",
+   "vpn"
+  ]
+ },
+ {
+  "id": "edge-device",
+  "term": "Edge device",
+  "kind": "Technology",
+  "aliases": [
+   "edge device",
+   "edge devices",
+   "network edge",
+   "perimeter device",
+   "perimeter devices",
+   "internet-facing"
+  ],
+  "short": "Equipment that sits between an organisation's network and the internet: firewalls, VPNs, routers. Attackers love them because they're exposed, powerful and rarely run security software.",
+  "see": [
+   "appliance",
+   "vpn"
+  ]
+ },
+ {
+  "id": "vpn",
+  "term": "VPN / SSL VPN",
+  "kind": "Technology",
+  "aliases": [
+   "VPN",
+   "VPNs",
+   "SSL VPN",
+   "SSL-VPN",
+   "remote access"
+  ],
+  "short": "Lets remote staff connect securely to the company network. A hacked VPN gateway hands attackers the front door, so these are among the most attacked products.",
+  "lesson": "networking",
+  "see": [
+   "edge-device"
+  ]
+ },
+ {
+  "id": "firewall",
+  "term": "Firewall",
+  "kind": "Defence",
+  "aliases": [
+   "firewall",
+   "firewalls",
+   "next-generation firewall",
+   "NGFW"
+  ],
+  "short": "Controls which network traffic is allowed in or out. Ironically, bugs in firewalls themselves are a common way in.",
+  "lesson": "networking",
+  "see": [
+   "edge-device"
+  ]
+ },
+ {
+  "id": "waf",
+  "term": "Web application firewall (WAF)",
+  "kind": "Defence",
+  "aliases": [
+   "WAF",
+   "web application firewall"
+  ],
+  "short": "A filter in front of a website that blocks common attacks like SQL injection. A safety net, not a fix for buggy code."
+ },
+ {
+  "id": "edr",
+  "term": "EDR / XDR",
+  "kind": "Defence",
+  "aliases": [
+   "EDR",
+   "XDR",
+   "MDR",
+   "endpoint detection and response",
+   "endpoint detection"
+  ],
+  "short": "Security software on laptops and servers that watches behaviour and can isolate infected machines. XDR extends this across email, cloud and network; MDR is a managed service that runs it for you.",
+  "lesson": "soc",
+  "see": [
+   "byovd"
+  ]
+ },
+ {
+  "id": "siem",
+  "term": "SIEM",
+  "kind": "Defence",
+  "aliases": [
+   "SIEM",
+   "SOAR"
+  ],
+  "short": "The system a security team uses to collect logs from everywhere, search them and raise alerts. SOAR automates the response steps.",
+  "lesson": "soc"
+ },
+ {
+  "id": "soc",
+  "term": "SOC",
+  "kind": "Defence",
+  "aliases": [
+   "SOC",
+   "security operations center",
+   "security operations centre"
+  ],
+  "short": "Security Operations Center: the team that monitors for and responds to attacks, often 24/7. Where many cyber careers start.",
+  "lesson": "soc"
+ },
+ {
+  "id": "ioc",
+  "term": "Indicators of compromise (IOCs)",
+  "kind": "Defence",
+  "aliases": [
+   "IOC",
+   "IOCs",
+   "IoC",
+   "IoCs",
+   "indicators of compromise",
+   "indicator of compromise"
+  ],
+  "short": "Clues that an attack happened: malicious IP addresses, domains, file hashes. Advisories publish them so defenders can search their own logs.",
+  "lesson": "soc",
+  "see": [
+   "ttp"
+  ]
+ },
+ {
+  "id": "ttp",
+  "term": "TTPs",
+  "kind": "Concept",
+  "aliases": [
+   "TTP",
+   "TTPs",
+   "tactics, techniques and procedures",
+   "tactics, techniques, and procedures"
+  ],
+  "short": "Tactics, techniques and procedures: how an attacker operates. Harder for them to change than IP addresses, so detecting TTPs lasts longer than blocking IOCs.",
+  "lesson": "nation-state",
+  "see": [
+   "mitre-attack"
+  ]
+ },
+ {
+  "id": "mitre-attack",
+  "term": "MITRE ATT&CK",
+  "kind": "Defence",
+  "aliases": [
+   "MITRE ATT&CK",
+   "ATT&CK"
+  ],
+  "short": "A free, huge catalogue of real attacker techniques, used by defenders to check what they can and can't detect.",
+  "lesson": "nation-state"
+ },
+ {
+  "id": "threat-intel",
+  "term": "Threat intelligence",
+  "kind": "Defence",
+  "aliases": [
+   "threat intelligence",
+   "threat intel",
+   "CTI"
+  ],
+  "short": "Research into who is attacking, how and why, turned into information defenders can act on."
+ },
+ {
+  "id": "threat-hunting",
+  "term": "Threat hunting",
+  "kind": "Defence",
+  "aliases": [
+   "threat hunting",
+   "threat hunt",
+   "threat hunters"
+  ],
+  "short": "Proactively searching your systems for attackers who slipped past alerts, assuming you're already breached.",
+  "lesson": "soc"
+ },
+ {
+  "id": "incident-response",
+  "term": "Incident response (IR)",
+  "kind": "Defence",
+  "aliases": [
+   "incident response",
+   "incident responders",
+   "DFIR",
+   "digital forensics"
+  ],
+  "short": "The process of handling an attack: contain it, investigate, remove the attacker, recover and learn. DFIR adds digital forensics.",
+  "lesson": "incident-response"
+ },
+ {
+  "id": "zero-trust",
+  "term": "Zero trust",
+  "kind": "Defence",
+  "aliases": [
+   "zero trust",
+   "zero-trust",
+   "ZTNA"
+  ],
+  "short": "A security approach that never trusts a user or device just because it's 'inside' the network. Every request is verified.",
+  "lesson": "identity"
+ },
+ {
+  "id": "least-privilege",
+  "term": "Least privilege",
+  "kind": "Defence",
+  "aliases": [
+   "least privilege",
+   "least-privilege"
+  ],
+  "short": "Giving every person and program only the access they truly need, so a compromise does less damage.",
+  "lesson": "cloud"
+ },
+ {
+  "id": "segmentation",
+  "term": "Network segmentation",
+  "kind": "Defence",
+  "aliases": [
+   "segmentation",
+   "network segmentation",
+   "air-gapped",
+   "air gap",
+   "air-gap"
+  ],
+  "short": "Splitting a network into zones so an attacker who gets into one part can't reach everything. Air-gapped means not connected at all.",
+  "lesson": "iot-ot"
+ },
+ {
+  "id": "sandbox",
+  "term": "Sandbox",
+  "kind": "Defence",
+  "aliases": [
+   "sandbox",
+   "sandboxes",
+   "sandbox escape"
+  ],
+  "short": "An isolated space where code runs without being able to touch the rest of the system. A 'sandbox escape' breaks out of it, often the second bug in a browser attack."
+ },
+ {
+  "id": "bug-bounty",
+  "term": "Bug bounty",
+  "kind": "Defence",
+  "aliases": [
+   "bug bounty",
+   "bug bounties",
+   "Pwn2Own"
+  ],
+  "short": "A programme that pays researchers for responsibly reporting vulnerabilities. Pwn2Own is a famous hacking contest with cash prizes.",
+  "see": [
+   "responsible-disclosure"
+  ]
+ },
+ {
+  "id": "responsible-disclosure",
+  "term": "Coordinated disclosure",
+  "kind": "Concept",
+  "aliases": [
+   "responsible disclosure",
+   "coordinated disclosure",
+   "coordinated vulnerability disclosure"
+  ],
+  "short": "Reporting a bug privately to the vendor and giving them time to fix it before going public. Usually 90 days.",
+  "see": [
+   "bug-bounty"
+  ]
+ },
+ {
+  "id": "pentest",
+  "term": "Penetration test / red team",
+  "kind": "Defence",
+  "aliases": [
+   "penetration test",
+   "penetration testing",
+   "pentest",
+   "pentesting",
+   "pentester",
+   "red team",
+   "red teaming",
+   "blue team",
+   "purple team"
+  ],
+  "short": "Authorised attacks to find weaknesses before criminals do. Red teams play attacker; blue teams defend; purple teams combine both to improve detection."
+ },
+ {
+  "id": "ctf",
+  "term": "CTF",
+  "kind": "Concept",
+  "aliases": [
+   "CTF",
+   "CTFs",
+   "capture the flag"
+  ],
+  "short": "Capture the Flag: hacking competitions where you solve security puzzles to find hidden 'flags'. A great, legal way to learn."
+ },
+ {
+  "id": "sbom",
+  "term": "SBOM",
+  "kind": "Defence",
+  "aliases": [
+   "SBOM",
+   "SBOMs",
+   "software bill of materials"
+  ],
+  "short": "Software Bill of Materials: an ingredients list of every component inside a piece of software, so you can tell fast if you're affected by a new bug.",
+  "lesson": "supply-chain"
+ },
+ {
+  "id": "eol",
+  "term": "End of life (EOL)",
+  "kind": "Concept",
+  "aliases": [
+   "end-of-life",
+   "end of life",
+   "EOL",
+   "end-of-support",
+   "end of support",
+   "unsupported"
+  ],
+  "short": "Products the vendor no longer updates. New vulnerabilities in them will never be patched, so the only fix is replacing them."
+ },
+ {
+  "id": "supply-chain",
+  "term": "Supply chain attack",
+  "kind": "Attack",
+  "aliases": [
+   "supply chain attack",
+   "supply-chain attack",
+   "supply chain attacks",
+   "supply-chain attacks"
+  ],
+  "short": "Compromising something many organisations trust (a vendor, update or open-source package) to reach all their customers at once.",
+  "lesson": "supply-chain"
+ },
+ {
+  "id": "typosquatting",
+  "term": "Typosquatting",
+  "kind": "Attack",
+  "aliases": [
+   "typosquatting",
+   "typosquat",
+   "typosquatted",
+   "slopsquatting",
+   "lookalike domain",
+   "look-alike domain"
+  ],
+  "short": "Registering names one typo away from a real package or website (reqeusts vs requests) so mistakes deliver malware. Slopsquatting targets package names AI assistants make up.",
+  "lesson": "supply-chain"
+ },
+ {
+  "id": "npm",
+  "term": "npm / PyPI",
+  "kind": "Technology",
+  "aliases": [
+   "npm",
+   "PyPI",
+   "RubyGems",
+   "crates.io",
+   "NuGet",
+   "package registry",
+   "package registries"
+  ],
+  "short": "Public libraries of open-source code packages (npm for JavaScript, PyPI for Python). Developers install from them constantly, so attackers upload malicious look-alikes.",
+  "lesson": "supply-chain"
+ },
+ {
+  "id": "open-source",
+  "term": "Open source (OSS)",
+  "kind": "Concept",
+  "aliases": [
+   "open source",
+   "open-source",
+   "OSS"
+  ],
+  "auto": false,
+  "short": "Software whose code is public and free to reuse. Most modern apps are built mostly from open-source parts, often maintained by unpaid volunteers.",
+  "lesson": "supply-chain"
+ },
+ {
+  "id": "ci-cd",
+  "term": "CI/CD pipeline",
+  "kind": "Technology",
+  "aliases": [
+   "CI/CD",
+   "GitHub Actions",
+   "build system"
+  ],
+  "short": "Automated systems that build, test and deploy code. They hold powerful secrets, which makes them a prized supply-chain target.",
+  "lesson": "supply-chain"
+ },
+ {
+  "id": "shai-hulud",
+  "term": "Shai-Hulud",
+  "kind": "Malware",
+  "aliases": [
+   "Shai-Hulud",
+   "Shai Hulud"
+  ],
+  "short": "A self-spreading worm found in npm packages in 2025. It steals developers' tokens, then uses them to publish infected versions of their other packages.",
+  "lesson": "supply-chain",
+  "see": [
+   "npm",
+   "worm"
+  ]
+ },
+ {
+  "id": "apt",
+  "term": "APT",
+  "kind": "Threat group",
+  "aliases": [
+   "APT",
+   "APTs",
+   "advanced persistent threat"
+  ],
+  "short": "Advanced persistent threat: a skilled, well-resourced hacking group, usually government-backed, that stays hidden in networks for long periods. Many have numbered names like APT28.",
+  "lesson": "nation-state"
+ },
+ {
+  "id": "nation-state",
+  "term": "Nation-state actor",
+  "kind": "Threat group",
+  "aliases": [
+   "nation-state",
+   "nation state",
+   "state-sponsored",
+   "state-backed",
+   "state-linked"
+  ],
+  "short": "Hackers working for or on behalf of a government, usually for spying, sabotage or (for North Korea) stealing money.",
+  "lesson": "nation-state",
+  "see": [
+   "apt",
+   "espionage"
+  ]
+ },
+ {
+  "id": "threat-actor",
+  "term": "Threat actor",
+  "kind": "Threat group",
+  "aliases": [
+   "threat actor",
+   "threat actors",
+   "threat group"
+  ],
+  "short": "Security-speak for whoever is behind an attack: a person, gang or government unit."
+ },
+ {
+  "id": "espionage",
+  "term": "Cyber espionage",
+  "kind": "Attack",
+  "aliases": [
+   "espionage",
+   "cyberespionage",
+   "cyber-espionage"
+  ],
+  "short": "Hacking to steal secrets: government plans, research, trade secrets or communications. Quiet, long-term and usually state-backed.",
+  "lesson": "nation-state"
+ },
+ {
+  "id": "hacktivist",
+  "term": "Hacktivist",
+  "kind": "Threat group",
+  "aliases": [
+   "hacktivist",
+   "hacktivists",
+   "hacktivism"
+  ],
+  "short": "Hackers driven by politics or a cause. Usually DDoS and defacements, though some state-linked groups pretend to be hacktivists.",
+  "lesson": "ddos"
+ },
+ {
+  "id": "iab",
+  "term": "Initial access broker",
+  "kind": "Threat group",
+  "aliases": [
+   "initial access broker",
+   "initial access brokers",
+   "IAB",
+   "IABs",
+   "initial access"
+  ],
+  "short": "Criminals who break into companies and sell that access to others, often ransomware gangs.",
+  "lesson": "ransomware"
+ },
+ {
+  "id": "lotl",
+  "term": "Living off the land",
+  "kind": "Attack",
+  "aliases": [
+   "living off the land",
+   "living-off-the-land",
+   "LOTL",
+   "LOLBins",
+   "LOLBAS"
+  ],
+  "short": "Using a system's own built-in tools (PowerShell, admin utilities) instead of malware, so the attacker blends in with normal IT activity.",
+  "lesson": "nation-state"
+ },
+ {
+  "id": "lateral-movement",
+  "term": "Lateral movement",
+  "kind": "Attack",
+  "aliases": [
+   "lateral movement",
+   "move laterally",
+   "moved laterally"
+  ],
+  "short": "Spreading from the first hacked machine to others in the network, hunting for admin accounts and valuable data.",
+  "see": [
+   "segmentation"
+  ]
+ },
+ {
+  "id": "persistence",
+  "term": "Persistence",
+  "kind": "Attack",
+  "aliases": [
+   "persistence",
+   "persistent access"
+  ],
+  "short": "Tricks attackers use to keep their access after reboots, password changes or patches, like scheduled tasks, new accounts and backdoors.",
+  "see": [
+   "backdoor"
+  ]
+ },
+ {
+  "id": "exfiltration",
+  "term": "Data exfiltration",
+  "kind": "Attack",
+  "aliases": [
+   "exfiltration",
+   "exfiltrate",
+   "exfiltrated",
+   "data theft"
+  ],
+  "short": "Secretly copying data out of a victim's network to the attacker.",
+  "lesson": "data-breach"
+ },
+ {
+  "id": "data-breach",
+  "term": "Data breach",
+  "kind": "Attack",
+  "aliases": [
+   "data breach",
+   "data breaches"
+  ],
+  "auto": false,
+  "short": "When information is accessed or stolen by someone who shouldn't have it.",
+  "lesson": "data-breach"
+ },
+ {
+  "id": "byovd",
+  "term": "BYOVD",
+  "kind": "Attack",
+  "aliases": [
+   "BYOVD",
+   "bring your own vulnerable driver",
+   "EDR killer",
+   "EDR killers"
+  ],
+  "short": "Bring your own vulnerable driver: attackers install a legitimate but buggy driver, then abuse it to switch off security tools.",
+  "see": [
+   "edr"
+  ]
+ },
+ {
+  "id": "rmm",
+  "term": "RMM tools",
+  "kind": "Technology",
+  "aliases": [
+   "RMM",
+   "remote monitoring and management",
+   "remote access tool",
+   "remote access tools",
+   "remote desktop software"
+  ],
+  "short": "Remote monitoring and management software that IT teams use to control computers. Attackers install the same legitimate tools to keep access without triggering antivirus.",
+  "see": [
+   "anydesk",
+   "lotl"
+  ]
+ },
+ {
+  "id": "money-mule",
+  "term": "Money mule / laundering",
+  "kind": "Concept",
+  "aliases": [
+   "money mule",
+   "money mules",
+   "mule",
+   "mules",
+   "money laundering",
+   "laundering",
+   "crypto mixer",
+   "mixer"
+  ],
+  "short": "Ways criminals clean stolen money: mules move it through their own bank accounts, and mixers blur cryptocurrency trails."
+ },
+ {
+  "id": "dark-web",
+  "term": "Dark web",
+  "kind": "Concept",
+  "aliases": [
+   "dark web",
+   "darknet",
+   "Tor",
+   "onion"
+  ],
+  "short": "Websites reachable only through anonymity networks like Tor. Home to criminal forums, leak sites and marketplaces, and to whistle-blowers and privacy users too."
+ },
+ {
+  "id": "deepfake",
+  "term": "Deepfake",
+  "kind": "Attack",
+  "aliases": [
+   "deepfake",
+   "deepfakes",
+   "voice cloning",
+   "voice clone"
+  ],
+  "short": "AI-generated fake video or audio of a real person. Used for fraud, like fake CEO video calls requesting payments.",
+  "lesson": "ai-security"
+ },
+ {
+  "id": "llm",
+  "term": "LLM",
+  "kind": "Technology",
+  "aliases": [
+   "LLM",
+   "LLMs",
+   "large language model",
+   "large language models"
+  ],
+  "short": "Large language model: the kind of AI behind chatbots like ChatGPT, Claude and Gemini. It predicts text and can now write code and use tools.",
+  "lesson": "ai-security",
+  "see": [
+   "prompt-injection",
+   "ai-agent"
+  ]
+ },
+ {
+  "id": "ai-agent",
+  "term": "AI agent",
+  "kind": "Technology",
+  "aliases": [
+   "AI agent",
+   "AI agents",
+   "agentic",
+   "agentic AI"
+  ],
+  "short": "An AI that can take actions (browse, run code, send email) rather than just chat. More useful, and a bigger risk if it's tricked.",
+  "lesson": "ai-security",
+  "see": [
+   "prompt-injection",
+   "mcp"
+  ]
+ },
+ {
+  "id": "prompt-injection",
+  "term": "Prompt injection",
+  "kind": "Attack",
+  "aliases": [
+   "prompt injection",
+   "prompt-injection",
+   "indirect prompt injection"
+  ],
+  "short": "Hiding instructions in content an AI reads (a web page, email or file) to make it do something its user never asked for.",
+  "lesson": "ai-security"
+ },
+ {
+  "id": "jailbreak",
+  "term": "Jailbreak",
+  "kind": "Attack",
+  "aliases": [
+   "jailbreak",
+   "jailbreaks",
+   "jailbreaking",
+   "jailbroken"
+  ],
+  "short": "For AI: tricking a model into ignoring its safety rules. For phones: removing the manufacturer's restrictions.",
+  "lesson": "ai-security"
+ },
+ {
+  "id": "mcp",
+  "term": "MCP",
+  "kind": "Technology",
+  "aliases": [
+   "MCP",
+   "Model Context Protocol",
+   "MCP server",
+   "MCP servers"
+  ],
+  "short": "Model Context Protocol: a standard way to connect AI assistants to tools and data. A malicious or compromised MCP server can feed an AI harmful instructions.",
+  "lesson": "ai-security",
+  "see": [
+   "ai-agent"
+  ]
+ },
+ {
+  "id": "ai",
+  "term": "AI",
+  "kind": "Technology",
+  "aliases": [
+   "AI",
+   "artificial intelligence",
+   "machine learning"
+  ],
+  "auto": false,
+  "short": "Artificial intelligence. In security news, usually large language models used by attackers, by defenders, or as a new target in their own right.",
+  "lesson": "ai-security"
+ },
+ {
+  "id": "cloud",
+  "term": "Cloud",
+  "kind": "Technology",
+  "aliases": [
+   "cloud"
+  ],
+  "auto": false,
+  "short": "Computing rented from providers like AWS, Azure and Google Cloud. You're still responsible for configuring it securely.",
+  "lesson": "cloud"
+ },
+ {
+  "id": "saas",
+  "term": "SaaS",
+  "kind": "Technology",
+  "aliases": [
+   "SaaS",
+   "software-as-a-service"
+  ],
+  "short": "Software-as-a-service: apps you use in the browser and someone else hosts (Salesforce, Microsoft 365, Slack). Data theft from SaaS accounts is now a major attack trend.",
+  "lesson": "cloud"
+ },
+ {
+  "id": "misconfiguration",
+  "term": "Misconfiguration",
+  "kind": "Concept",
+  "aliases": [
+   "misconfiguration",
+   "misconfigurations",
+   "misconfigured",
+   "exposed database",
+   "publicly exposed"
+  ],
+  "short": "A security setting left wrong, like a database open to the internet or a storage bucket set to public. Behind a huge share of breaches.",
+  "lesson": "cloud"
+ },
+ {
+  "id": "aws",
+  "term": "AWS",
+  "kind": "Product",
+  "aliases": [
+   "AWS",
+   "Amazon Web Services",
+   "S3 bucket",
+   "S3 buckets",
+   "Amazon S3"
+  ],
+  "short": "Amazon Web Services, the biggest cloud provider. S3 is its file storage. 'Leaky S3 buckets' are storage accidentally set to public.",
+  "lesson": "cloud"
+ },
+ {
+  "id": "azure",
+  "term": "Microsoft Azure",
+  "kind": "Product",
+  "aliases": [
+   "Azure"
+  ],
+  "short": "Microsoft's cloud platform, tightly linked to Microsoft 365 and Entra ID accounts.",
+  "lesson": "cloud",
+  "see": [
+   "entra-id"
+  ]
+ },
+ {
+  "id": "iam",
+  "term": "IAM",
+  "kind": "Defence",
+  "aliases": [
+   "IAM",
+   "identity and access management"
+  ],
+  "short": "Identity and access management: the systems and rules deciding who can access what. In the cloud, IAM mistakes are a top cause of breaches.",
+  "lesson": "cloud"
+ },
+ {
+  "id": "kubernetes",
+  "term": "Kubernetes / containers",
+  "kind": "Technology",
+  "aliases": [
+   "Kubernetes",
+   "K8s",
+   "Docker",
+   "container",
+   "containers",
+   "containerized"
+  ],
+  "short": "Containers package an app with everything it needs; Kubernetes runs thousands of them. Exposed dashboards and APIs are common targets."
+ },
+ {
+  "id": "vm",
+  "term": "Virtual machine / hypervisor",
+  "kind": "Technology",
+  "aliases": [
+   "VM",
+   "VMs",
+   "virtual machine",
+   "virtual machines",
+   "hypervisor",
+   "hypervisors"
+  ],
+  "short": "A hypervisor runs many virtual computers (VMs) on one physical server. Ransomware gangs target hypervisors to encrypt hundreds of servers in one go.",
+  "see": [
+   "vmware"
+  ]
+ },
+ {
+  "id": "api",
+  "term": "API",
+  "kind": "Technology",
+  "aliases": [
+   "API",
+   "APIs"
+  ],
+  "short": "Application programming interface: how programs talk to each other. Poorly protected APIs leak data without anyone 'hacking' a login page.",
+  "lesson": "web-access"
+ },
+ {
+  "id": "ide",
+  "term": "IDE / code editor",
+  "kind": "Technology",
+  "aliases": [
+   "IDE",
+   "IDEs",
+   "VS Code",
+   "Visual Studio Code"
+  ],
+  "short": "The app programmers write code in. Malicious editor extensions can steal source code and keys from developers.",
+  "lesson": "supply-chain"
+ },
+ {
+  "id": "cli",
+  "term": "CLI",
+  "kind": "Technology",
+  "aliases": [
+   "CLI",
+   "command line",
+   "command-line",
+   "PowerShell"
+  ],
+  "short": "Command-line interface: controlling a computer by typing commands. PowerShell (Windows) and Bash (Linux) are favourites of admins and attackers alike.",
+  "lesson": "linux"
+ },
+ {
+  "id": "ip-address",
+  "term": "IP address",
+  "kind": "Technology",
+  "aliases": [
+   "IP address",
+   "IP addresses",
+   "IPv4",
+   "IPv6",
+   "IP"
+  ],
+  "short": "A device's address on a network. Attack reports list malicious IPs so defenders can block them.",
+  "lesson": "networking"
+ },
+ {
+  "id": "port",
+  "term": "Port",
+  "kind": "Technology",
+  "aliases": [
+   "port",
+   "ports",
+   "open port",
+   "open ports"
+  ],
+  "auto": false,
+  "short": "A numbered 'door' on a networked device for a specific service, e.g. 443 for HTTPS, 22 for SSH, 3389 for Remote Desktop.",
+  "lesson": "networking"
+ },
+ {
+  "id": "dns",
+  "term": "DNS",
+  "kind": "Technology",
+  "aliases": [
+   "DNS",
+   "domain name system",
+   "DNS hijacking"
+  ],
+  "short": "The internet's phone book, turning names like example.com into IP addresses. Hijacking it can silently send users to fake sites.",
+  "lesson": "networking"
+ },
+ {
+  "id": "tls",
+  "term": "TLS / HTTPS",
+  "kind": "Technology",
+  "aliases": [
+   "TLS",
+   "SSL",
+   "HTTPS",
+   "SSL/TLS"
+  ],
+  "short": "The encryption that protects web traffic (the padlock in your browser). It protects the connection, not whether the site itself is honest.",
+  "lesson": "encryption"
+ },
+ {
+  "id": "certificate",
+  "term": "Certificate (TLS)",
+  "kind": "Technology",
+  "aliases": [
+   "certificate",
+   "certificates",
+   "rogue certificate",
+   "rogue certificates",
+   "certificate authority",
+   "certificate authorities",
+   "code-signing",
+   "code signing"
+  ],
+  "short": "A digital ID proving a website or program is genuine, issued by a certificate authority (CA). Rogue or stolen certificates let fakes look trusted.",
+  "lesson": "encryption"
+ },
+ {
+  "id": "encryption",
+  "term": "Encryption",
+  "kind": "Defence",
+  "aliases": [
+   "encryption",
+   "encrypted",
+   "end-to-end encryption",
+   "E2EE"
+  ],
+  "auto": false,
+  "short": "Scrambling data so only someone with the key can read it. End-to-end encryption means even the service provider can't read your messages.",
+  "lesson": "encryption"
+ },
+ {
+  "id": "hash",
+  "term": "Hash",
+  "kind": "Concept",
+  "aliases": [
+   "hash",
+   "hashes",
+   "hashed",
+   "SHA-256",
+   "MD5",
+   "password hash",
+   "password hashes"
+  ],
+  "short": "A one-way fingerprint of data. Used to store passwords safely and to identify malware files without sharing them.",
+  "lesson": "encryption"
+ },
+ {
+  "id": "email-auth",
+  "term": "SPF, DKIM & DMARC",
+  "kind": "Defence",
+  "aliases": [
+   "SPF",
+   "DKIM",
+   "DMARC",
+   "SMTP"
+  ],
+  "short": "Email security standards that let receiving servers check a message really came from the domain it claims, which helps block spoofing. SMTP is the protocol that sends email.",
+  "lesson": "phishing"
+ },
+ {
+  "id": "rdp",
+  "term": "RDP",
+  "kind": "Technology",
+  "aliases": [
+   "RDP",
+   "Remote Desktop",
+   "Remote Desktop Protocol"
+  ],
+  "short": "Windows Remote Desktop (port 3389). Exposed to the internet with weak passwords, it's one of ransomware's favourite doors.",
+  "lesson": "networking"
+ },
+ {
+  "id": "ssh",
+  "term": "SSH",
+  "kind": "Technology",
+  "aliases": [
+   "SSH",
+   "OpenSSH"
+  ],
+  "short": "Secure Shell: the standard encrypted way to log in to and manage Linux servers remotely (port 22).",
+  "lesson": "linux"
+ },
+ {
+  "id": "smb",
+  "term": "SMB",
+  "kind": "Technology",
+  "aliases": [
+   "SMB"
+  ],
+  "short": "Windows file-sharing protocol (port 445). WannaCry spread through a flaw in it.",
+  "lesson": "networking"
+ },
+ {
+  "id": "uefi",
+  "term": "UEFI / Secure Boot",
+  "kind": "Technology",
+  "aliases": [
+   "UEFI",
+   "Secure Boot",
+   "BIOS"
+  ],
+  "short": "The low-level software that starts a computer before the operating system. Malware here survives reinstalling Windows.",
+  "see": [
+   "rootkit"
+  ]
+ },
+ {
+  "id": "usb",
+  "term": "USB attacks",
+  "kind": "Attack",
+  "aliases": [
+   "USB drive",
+   "USB drives",
+   "USB stick",
+   "USB sticks"
+  ],
+  "short": "Malware spread by infected USB drives. Still effective against air-gapped industrial networks.",
+  "lesson": "iot-ot"
+ },
+ {
+  "id": "ot",
+  "term": "OT / ICS",
+  "kind": "Technology",
+  "aliases": [
+   "OT",
+   "ICS",
+   "operational technology",
+   "industrial control system",
+   "industrial control systems"
+  ],
+  "short": "The computers that run physical things: factories, power grids, water plants, pipelines. Attacks here can cause real-world damage.",
+  "lesson": "iot-ot",
+  "see": [
+   "scada",
+   "plc"
+  ]
+ },
+ {
+  "id": "scada",
+  "term": "SCADA",
+  "kind": "Technology",
+  "aliases": [
+   "SCADA",
+   "HMI",
+   "HMIs"
+  ],
+  "short": "Supervisory control and data acquisition: software operators use to monitor and control industrial processes across a site or a whole grid. An HMI is the operator's screen.",
+  "lesson": "iot-ot"
+ },
+ {
+  "id": "plc",
+  "term": "PLC / RTU",
+  "kind": "Technology",
+  "aliases": [
+   "PLC",
+   "PLCs",
+   "RTU",
+   "RTUs",
+   "programmable logic controller",
+   "remote terminal unit"
+  ],
+  "short": "Small rugged computers that directly control machinery (PLCs) or relay data from remote sites like substations (RTUs).",
+  "lesson": "iot-ot"
+ },
+ {
+  "id": "iot",
+  "term": "IoT",
+  "kind": "Technology",
+  "aliases": [
+   "IoT",
+   "internet of things",
+   "smart device",
+   "smart devices"
+  ],
+  "short": "Internet of Things: everyday connected devices like cameras, routers and smart TVs. Often insecure and rarely updated.",
+  "lesson": "iot-ot"
+ },
+ {
+  "id": "critical-infrastructure",
+  "term": "Critical infrastructure",
+  "kind": "Concept",
+  "aliases": [
+   "critical infrastructure",
+   "critical national infrastructure",
+   "CNI"
+  ],
+  "short": "Services society can't function without: energy, water, healthcare, transport, telecoms, finance. Attacks on them are treated as national security issues.",
+  "lesson": "iot-ot"
+ },
+ {
+  "id": "cve",
+  "term": "CVE",
+  "kind": "Concept",
+  "aliases": [
+   "CVE",
+   "CVEs"
+  ],
+  "short": "Common Vulnerabilities and Exposures: the global ID system for security bugs, e.g. CVE-2021-44228 (Log4Shell).",
+  "lesson": "vuln-management",
+  "see": [
+   "cvss",
+   "kev"
+  ]
+ },
+ {
+  "id": "cvss",
+  "term": "CVSS",
+  "kind": "Concept",
+  "aliases": [
+   "CVSS",
+   "CVSS score",
+   "severity score"
+  ],
+  "short": "A 0–10 score for how bad a vulnerability could be. 9.0+ is critical. It measures potential damage, not whether anyone is attacking.",
+  "lesson": "vuln-management",
+  "see": [
+   "epss",
+   "kev"
+  ]
+ },
+ {
+  "id": "epss",
+  "term": "EPSS",
+  "kind": "Concept",
+  "aliases": [
+   "EPSS"
+  ],
+  "short": "Exploit Prediction Scoring System: the estimated chance a CVE will be exploited in the next 30 days.",
+  "lesson": "vuln-management"
+ },
+ {
+  "id": "kev",
+  "term": "KEV",
+  "kind": "Concept",
+  "aliases": [
+   "KEV",
+   "Known Exploited Vulnerabilities"
+  ],
+  "short": "CISA's list of vulnerabilities confirmed to be exploited in real attacks. If it's on KEV, patch it first.",
+  "lesson": "vuln-management",
+  "see": [
+   "cisa"
+  ]
+ },
+ {
+  "id": "cwe",
+  "term": "CWE",
+  "kind": "Concept",
+  "aliases": [
+   "CWE"
+  ],
+  "short": "Common Weakness Enumeration: categories of coding mistakes (SQL injection, buffer overflow) that cause vulnerabilities.",
+  "lesson": "vuln-management"
+ },
+ {
+  "id": "csaf",
+  "term": "CSAF",
+  "kind": "Concept",
+  "aliases": [
+   "CSAF"
+  ],
+  "short": "Common Security Advisory Framework: a machine-readable format for security advisories, so tools can check automatically whether you're affected."
+ },
+ {
+  "id": "tlp",
+  "term": "TLP",
+  "kind": "Concept",
+  "aliases": [
+   "TLP",
+   "Traffic Light Protocol",
+   "TLP:CLEAR",
+   "TLP:AMBER"
+  ],
+  "short": "Traffic Light Protocol: labels saying how widely threat information may be shared, from TLP:RED (named recipients only) to TLP:CLEAR (public)."
+ },
+ {
+  "id": "advisory",
+  "term": "Security advisory",
+  "kind": "Concept",
+  "aliases": [
+   "advisory",
+   "advisories",
+   "security bulletin",
+   "bulletin"
+  ],
+  "auto": false,
+  "short": "An official notice from a vendor or agency describing a vulnerability or threat and what to do about it."
+ },
+ {
+  "id": "data-protection",
+  "term": "GDPR / data protection law",
+  "kind": "Concept",
+  "aliases": [
+   "GDPR",
+   "data protection authority",
+   "privacy regulator",
+   "data protection law"
+  ],
+  "short": "Laws controlling how organisations handle personal data. Europe's GDPR allows big fines for misuse or poor protection."
+ },
+ {
+  "id": "cisa",
+  "term": "CISA",
+  "kind": "Organisation",
+  "aliases": [
+   "CISA",
+   "Cybersecurity and Infrastructure Security Agency"
+  ],
+  "short": "The US government's cyber defence agency. It publishes the KEV list and orders federal agencies to patch.",
+  "see": [
+   "kev"
+  ]
+ },
+ {
+  "id": "ncsc",
+  "term": "NCSC",
+  "kind": "Organisation",
+  "aliases": [
+   "NCSC",
+   "National Cyber Security Centre",
+   "National Cyber Security Center"
+  ],
+  "short": "The UK's National Cyber Security Centre (part of GCHQ) advises organisations and responds to major incidents. Several other countries have an NCSC too."
+ },
+ {
+  "id": "cert",
+  "term": "CERT / CSIRT",
+  "kind": "Organisation",
+  "aliases": [
+   "CERT",
+   "CSIRT",
+   "CERT-UA",
+   "JPCERT",
+   "JPCERT/CC",
+   "CERT/CC"
+  ],
+  "short": "Computer emergency response teams, national or company-level, that coordinate responses to incidents and vulnerabilities (e.g. JPCERT in Japan, CERT-UA in Ukraine)."
+ },
+ {
+  "id": "fbi",
+  "term": "FBI",
+  "kind": "Organisation",
+  "aliases": [
+   "FBI",
+   "IC3"
+  ],
+  "short": "The US Federal Bureau of Investigation leads investigations into major cybercrime. Its IC3 unit takes public reports of online fraud."
+ },
+ {
+  "id": "nsa",
+  "term": "NSA / GCHQ",
+  "kind": "Organisation",
+  "aliases": [
+   "NSA",
+   "GCHQ"
+  ],
+  "short": "US and UK signals intelligence agencies. Both spy on foreign targets and also publish defensive guidance."
+ },
+ {
+  "id": "europol",
+  "term": "Europol",
+  "kind": "Organisation",
+  "aliases": [
+   "Europol",
+   "Interpol"
+  ],
+  "short": "International police bodies that coordinate cross-border operations to take down botnets, ransomware gangs and criminal markets."
+ },
+ {
+  "id": "nist",
+  "term": "NIST",
+  "kind": "Organisation",
+  "aliases": [
+   "NIST",
+   "NVD"
+  ],
+  "short": "The US National Institute of Standards and Technology writes widely used security frameworks and runs the NVD vulnerability database."
+ },
+ {
+  "id": "sans",
+  "term": "SANS",
+  "kind": "Organisation",
+  "aliases": [
+   "SANS",
+   "SANS ISC",
+   "Internet Storm Center",
+   "ISC"
+  ],
+  "short": "A major cyber security training organisation. Its Internet Storm Center (ISC) publishes daily analysis from working defenders."
+ },
+ {
+  "id": "mitre",
+  "term": "MITRE",
+  "kind": "Organisation",
+  "aliases": [
+   "MITRE"
+  ],
+  "short": "A US non-profit that runs the CVE programme, the CWE list and the ATT&CK knowledge base."
+ },
+ {
+  "id": "owasp",
+  "term": "OWASP",
+  "kind": "Organisation",
+  "aliases": [
+   "OWASP",
+   "OWASP Top 10"
+  ],
+  "short": "Open Worldwide Application Security Project: a community best known for the OWASP Top 10 list of web app risks.",
+  "lesson": "web-access"
+ },
+ {
+  "id": "ciso",
+  "term": "CISO",
+  "kind": "Concept",
+  "aliases": [
+   "CISO",
+   "CISOs",
+   "chief information security officer"
+  ],
+  "short": "Chief Information Security Officer: the executive in charge of an organisation's security."
+ },
+ {
+  "id": "ms-weather",
+  "term": "Microsoft's threat actor names",
+  "kind": "Threat group",
+  "aliases": [
+   "Typhoon",
+   "Blizzard",
+   "Sandstorm",
+   "Sleet",
+   "Tempest"
+  ],
+  "short": "Microsoft names hacking groups after weather: Typhoon = China, Blizzard = Russia, Sandstorm = Iran, Sleet = North Korea, Tempest = financially motivated criminals.",
+  "lesson": "nation-state",
+  "see": [
+   "volt-typhoon",
+   "apt"
+  ]
+ },
+ {
+  "id": "volt-typhoon",
+  "term": "Volt & Salt Typhoon",
+  "kind": "Threat group",
+  "aliases": [
+   "Volt Typhoon",
+   "Salt Typhoon",
+   "Flax Typhoon",
+   "Silk Typhoon",
+   "HAFNIUM",
+   "Hafnium"
+  ],
+  "short": "China-linked state groups. Volt Typhoon pre-positions inside critical infrastructure, Salt Typhoon broke into telecom networks, and Silk Typhoon (formerly HAFNIUM) is known for mass exploitation of Microsoft Exchange.",
+  "lesson": "nation-state",
+  "see": [
+   "ms-weather",
+   "lotl"
+  ]
+ },
+ {
+  "id": "fancy-bear",
+  "term": "Russian state hackers",
+  "kind": "Threat group",
+  "aliases": [
+   "Fancy Bear",
+   "APT28",
+   "Cozy Bear",
+   "APT29",
+   "Sandworm",
+   "Midnight Blizzard",
+   "Forest Blizzard",
+   "Seashell Blizzard"
+  ],
+  "short": "Groups tied to Russian intelligence. APT28/Fancy Bear (GRU) does espionage and influence operations, APT29/Cozy Bear (SVR) did SolarWinds, and Sandworm attacks Ukraine's power grid.",
+  "lesson": "nation-state"
+ },
+ {
+  "id": "lazarus",
+  "term": "Lazarus Group",
+  "kind": "Threat group",
+  "aliases": [
+   "Lazarus",
+   "Lazarus Group",
+   "APT38",
+   "Kimsuky",
+   "DPRK",
+   "North Korean IT workers"
+  ],
+  "short": "North Korean state hackers who steal billions in cryptocurrency to fund the regime. North Korea also places fake remote IT workers inside Western companies.",
+  "lesson": "nation-state"
+ },
+ {
+  "id": "unc",
+  "term": "Researcher naming (UNC, TA, Storm)",
+  "kind": "Threat group",
+  "aliases": [],
+  "regex": "\\b(?:UNC\\d{3,5}|TA\\d{3,4}|Storm-\\d{3,4}|UAC-\\d{4})\\b",
+  "short": "Placeholder names for groups researchers haven't fully identified: UNC#### (Google Mandiant), TA### (Proofpoint), Storm-#### (Microsoft), UAC-#### (Ukraine's CERT-UA).",
+  "see": [
+   "threat-actor"
+  ]
+ },
+ {
+  "id": "scattered-spider",
+  "term": "Scattered Spider",
+  "kind": "Threat group",
+  "aliases": [
+   "Scattered Spider",
+   "UNC3944",
+   "Octo Tempest",
+   "The Com"
+  ],
+  "short": "A loose group of mostly young English-speaking hackers famous for calling help desks to reset passwords. Hit MGM, Caesars and UK retailers like M&S.",
+  "lesson": "phishing",
+  "see": [
+   "vishing",
+   "shinyhunters"
+  ]
+ },
+ {
+  "id": "shinyhunters",
+  "term": "ShinyHunters",
+  "kind": "Threat group",
+  "aliases": [
+   "ShinyHunters",
+   "Shiny Hunters"
+  ],
+  "short": "A data-theft and extortion crew behind huge breaches, including mass theft from Salesforce and Snowflake customer accounts. Overlaps with Scattered Spider.",
+  "lesson": "data-breach",
+  "see": [
+   "extortion",
+   "saas"
+  ]
+ },
+ {
+  "id": "lockbit",
+  "term": "Major ransomware gangs",
+  "kind": "Threat group",
+  "aliases": [
+   "LockBit",
+   "Cl0p",
+   "Clop",
+   "Akira",
+   "Qilin",
+   "BlackCat",
+   "ALPHV",
+   "Play ransomware",
+   "Black Basta",
+   "RansomHub",
+   "Medusa",
+   "Conti",
+   "DragonForce"
+  ],
+  "short": "The ransomware brand names that dominate headlines. Gangs often rebrand after police takedowns, and affiliates hop between them.",
+  "lesson": "ransomware",
+  "see": [
+   "raas",
+   "double-extortion"
+  ]
+ },
+ {
+  "id": "sonicwall-sma",
+  "term": "SonicWall SMA",
+  "kind": "Product",
+  "aliases": [
+   "SMA 1000",
+   "SMA1000",
+   "SMA 100",
+   "SMA100",
+   "SMA"
+  ],
+  "short": "SonicWall Secure Mobile Access: remote-access (SSL VPN) appliances that let employees connect to their company network from outside. SMA 100 is for small businesses, SMA 1000 for large enterprises.",
+  "more": "Because they sit on the internet and guard the way into the network, bugs in them are quickly exploited.",
+  "see": [
+   "vpn",
+   "appliance",
+   "sonicwall"
+  ]
+ },
+ {
+  "id": "sonicwall",
+  "term": "SonicWall",
+  "kind": "Product",
+  "aliases": [
+   "SonicWall",
+   "SonicOS"
+  ],
+  "short": "A US maker of firewalls and remote-access appliances, used heavily by small and mid-sized businesses. Its devices are frequent targets for ransomware gangs.",
+  "see": [
+   "firewall",
+   "edge-device"
+  ]
+ },
+ {
+  "id": "fortinet",
+  "term": "Fortinet (FortiGate)",
+  "kind": "Product",
+  "aliases": [
+   "Fortinet",
+   "FortiGate",
+   "FortiOS",
+   "FortiWeb",
+   "FortiManager",
+   "FortiClient",
+   "FortiProxy"
+  ],
+  "short": "One of the biggest firewall and VPN vendors. FortiGate firewalls are everywhere, so their vulnerabilities are prime targets for state hackers and ransomware gangs.",
+  "see": [
+   "firewall",
+   "vpn"
+  ]
+ },
+ {
+  "id": "ivanti",
+  "term": "Ivanti",
+  "kind": "Product",
+  "aliases": [
+   "Ivanti",
+   "Connect Secure",
+   "Pulse Secure",
+   "Ivanti EPMM"
+  ],
+  "short": "Maker of VPN (Connect Secure, formerly Pulse Secure) and device management products that have suffered repeated zero-day attacks.",
+  "see": [
+   "vpn",
+   "zero-day"
+  ]
+ },
+ {
+  "id": "citrix",
+  "term": "Citrix NetScaler",
+  "kind": "Product",
+  "aliases": [
+   "Citrix",
+   "NetScaler",
+   "NetScaler ADC",
+   "NetScaler Gateway",
+   "ADC",
+   "CitrixBleed"
+  ],
+  "short": "NetScaler ADC and Gateway are appliances that manage and secure remote access to company apps. Bugs like 'CitrixBleed' let attackers steal live login sessions.",
+  "see": [
+   "appliance",
+   "session-hijacking"
+  ]
+ },
+ {
+  "id": "palo-alto",
+  "term": "Palo Alto Networks",
+  "kind": "Product",
+  "aliases": [
+   "Palo Alto Networks",
+   "PAN-OS",
+   "GlobalProtect"
+  ],
+  "short": "A leading firewall vendor. PAN-OS runs its firewalls; GlobalProtect is its VPN. Both are high-value targets.",
+  "see": [
+   "firewall",
+   "vpn"
+  ]
+ },
+ {
+  "id": "cisco",
+  "term": "Cisco",
+  "kind": "Product",
+  "aliases": [
+   "Cisco",
+   "Cisco ASA",
+   "Cisco IOS",
+   "IOS XE",
+   "Firepower",
+   "Cisco ISE"
+  ],
+  "short": "The world's biggest networking company: routers, switches, firewalls (ASA/Firepower). Its gear underpins much of the internet, which makes it a target for state hackers.",
+  "see": [
+   "edge-device"
+  ]
+ },
+ {
+  "id": "f5",
+  "term": "F5 BIG-IP",
+  "kind": "Product",
+  "aliases": [
+   "F5",
+   "BIG-IP"
+  ],
+  "short": "Load balancers and application gateways that sit in front of big websites and apps. Exploited bugs can expose everything behind them.",
+  "see": [
+   "appliance"
+  ]
+ },
+ {
+  "id": "juniper",
+  "term": "Juniper",
+  "kind": "Product",
+  "aliases": [
+   "Juniper",
+   "Junos"
+  ],
+  "short": "Major maker of routers and firewalls used by internet providers and large organisations.",
+  "see": [
+   "edge-device"
+  ]
+ },
+ {
+  "id": "vmware",
+  "term": "VMware (ESXi, vCenter)",
+  "kind": "Product",
+  "aliases": [
+   "VMware",
+   "ESXi",
+   "vCenter",
+   "vSphere"
+  ],
+  "short": "Virtualisation software (now owned by Broadcom) that runs many company servers. ESXi is the hypervisor and vCenter manages it. Ransomware gangs build special versions to encrypt ESXi.",
+  "see": [
+   "vm"
+  ]
+ },
+ {
+  "id": "veeam",
+  "term": "Veeam",
+  "kind": "Product",
+  "aliases": [
+   "Veeam"
+  ],
+  "short": "Popular backup software. Attackers target backup servers first so victims can't recover without paying.",
+  "lesson": "ransomware"
+ },
+ {
+  "id": "exchange",
+  "term": "Microsoft Exchange",
+  "kind": "Product",
+  "aliases": [
+   "Microsoft Exchange",
+   "Exchange Server",
+   "Exchange Online",
+   "ProxyLogon",
+   "ProxyShell"
+  ],
+  "short": "Microsoft's email server. On-premises Exchange servers were mass-hacked in 2021 (ProxyLogon), and old unpatched ones remain a target.",
+  "see": [
+   "volt-typhoon"
+  ]
+ },
+ {
+  "id": "sharepoint",
+  "term": "Microsoft SharePoint",
+  "kind": "Product",
+  "aliases": [
+   "SharePoint",
+   "ToolShell"
+  ],
+  "short": "Microsoft's document and intranet platform. A 2025 zero-day chain in self-hosted SharePoint ('ToolShell') was exploited against hundreds of organisations.",
+  "see": [
+   "zero-day"
+  ]
+ },
+ {
+  "id": "active-directory",
+  "term": "Active Directory",
+  "kind": "Product",
+  "aliases": [
+   "Active Directory",
+   "domain controller",
+   "domain controllers",
+   "Kerberos"
+  ],
+  "short": "The Windows system that manages users, passwords and permissions across a company network. Taking over a domain controller is like getting keys to every door.",
+  "lesson": "identity",
+  "see": [
+   "entra-id",
+   "lateral-movement"
+  ]
+ },
+ {
+  "id": "entra-id",
+  "term": "Microsoft Entra ID",
+  "kind": "Product",
+  "aliases": [
+   "Entra ID",
+   "Entra",
+   "Azure AD",
+   "Azure Active Directory",
+   "Microsoft 365",
+   "M365",
+   "Office 365",
+   "Microsoft Teams"
+  ],
+  "short": "Entra ID (formerly Azure AD) handles logins for Microsoft 365 apps like Outlook and Teams. A hijacked account gives access to email, files and chat.",
+  "lesson": "identity",
+  "see": [
+   "sso"
+  ]
+ },
+ {
+  "id": "windows",
+  "term": "Windows",
+  "kind": "Product",
+  "aliases": [
+   "Windows",
+   "Windows 10",
+   "Windows 11",
+   "Windows Server"
+  ],
+  "auto": false,
+  "short": "Microsoft's operating system, the most widely targeted desktop platform."
+ },
+ {
+  "id": "uac",
+  "term": "UAC (Windows)",
+  "kind": "Defence",
+  "aliases": [
+   "UAC",
+   "User Account Control"
+  ],
+  "short": "Windows User Account Control: the 'Do you want to allow this app to make changes?' prompt. Malware tries to bypass it to gain admin rights silently.",
+  "see": [
+   "privilege-escalation"
+  ]
+ },
+ {
+  "id": "okta",
+  "term": "Okta",
+  "kind": "Product",
+  "aliases": [
+   "Okta"
+  ],
+  "short": "A major identity provider: the login system many companies use for single sign-on to all their apps.",
+  "lesson": "identity",
+  "see": [
+   "sso"
+  ]
+ },
+ {
+  "id": "salesforce",
+  "term": "Salesforce / Snowflake",
+  "kind": "Product",
+  "aliases": [
+   "Salesforce",
+   "Snowflake"
+  ],
+  "short": "Cloud platforms holding huge amounts of customer data. Recent mass data thefts came from stolen logins and connected apps, not bugs in the platforms themselves.",
+  "see": [
+   "saas",
+   "shinyhunters"
+  ]
+ },
+ {
+  "id": "github",
+  "term": "GitHub / GitLab",
+  "kind": "Product",
+  "aliases": [
+   "GitHub",
+   "GitLab",
+   "Bitbucket",
+   "repository",
+   "repositories",
+   "repo",
+   "repos"
+  ],
+  "short": "Platforms where developers store and share code. Leaked secrets in repositories and poisoned projects are common attack routes.",
+  "lesson": "supply-chain"
+ },
+ {
+  "id": "wordpress",
+  "term": "WordPress plugins",
+  "kind": "Product",
+  "aliases": [
+   "WordPress",
+   "WordPress plugin",
+   "WordPress plugins",
+   "WooCommerce"
+  ],
+  "short": "WordPress runs a large share of all websites. Its thousands of third-party plugins are the usual weak spot, with constant bugs that bots scan for automatically.",
+  "lesson": "web-access"
+ },
+ {
+  "id": "atlassian",
+  "term": "Atlassian (Confluence, Jira)",
+  "kind": "Product",
+  "aliases": [
+   "Atlassian",
+   "Confluence",
+   "Jira",
+   "Bamboo"
+  ],
+  "short": "Workplace tools for wikis (Confluence) and project tracking (Jira). Self-hosted servers have suffered critical, widely exploited bugs."
+ },
+ {
+  "id": "jenkins",
+  "term": "Jenkins",
+  "kind": "Product",
+  "aliases": [
+   "Jenkins",
+   "TeamCity"
+  ],
+  "short": "Automation servers that build and deploy software. A compromise can poison everything they ship.",
+  "lesson": "supply-chain"
+ },
+ {
+  "id": "moveit",
+  "term": "MOVEit",
+  "kind": "Product",
+  "aliases": [
+   "MOVEit",
+   "GoAnywhere",
+   "Cleo",
+   "file transfer",
+   "managed file transfer",
+   "MFT"
+  ],
+  "short": "Managed file transfer products move sensitive files between organisations. The Cl0p gang mass-exploited MOVEit, GoAnywhere and Cleo to steal data from thousands of victims.",
+  "lesson": "data-breach"
+ },
+ {
+  "id": "screenconnect",
+  "term": "ScreenConnect / AnyDesk",
+  "kind": "Product",
+  "aliases": [
+   "ScreenConnect",
+   "ConnectWise",
+   "TeamViewer",
+   "SimpleHelp"
+  ],
+  "short": "Legitimate remote-support tools. Attackers abuse them for hands-on access, and bugs in them have been exploited against IT providers' customers.",
+  "see": [
+   "rmm"
+  ]
+ },
+ {
+  "id": "anydesk",
+  "term": "AnyDesk",
+  "kind": "Product",
+  "aliases": [
+   "AnyDesk"
+  ],
+  "short": "Popular remote desktop software. Scammers and ransomware gangs install it to control victims' machines.",
+  "see": [
+   "rmm"
+  ]
+ },
+ {
+  "id": "log4j",
+  "term": "Log4j / Log4Shell",
+  "kind": "Product",
+  "aliases": [
+   "Log4j",
+   "Log4Shell"
+  ],
+  "short": "A Java logging library used almost everywhere. Its 2021 'Log4Shell' bug let attackers run code by getting an app to log a crafted message.",
+  "lesson": "zero-day"
+ },
+ {
+  "id": "openssl",
+  "term": "OpenSSL",
+  "kind": "Product",
+  "aliases": [
+   "OpenSSL",
+   "Heartbleed"
+  ],
+  "short": "The open-source library that provides encryption for much of the internet. 2014's Heartbleed bug leaked secrets from its memory.",
+  "lesson": "encryption"
+ },
+ {
+  "id": "apache",
+  "term": "Apache",
+  "kind": "Product",
+  "aliases": [
+   "Apache",
+   "Tomcat",
+   "Struts",
+   "Apache HTTP Server"
+  ],
+  "short": "A foundation behind many open-source server projects, like the Apache web server, Tomcat and Struts. The Equifax breach came through an unpatched Struts bug.",
+  "lesson": "vuln-management"
+ },
+ {
+  "id": "linux",
+  "term": "Linux kernel",
+  "kind": "Product",
+  "aliases": [
+   "Linux kernel"
+  ],
+  "short": "The core of the Linux operating system, running most servers, Android phones and countless devices. Kernel bugs often let attackers become root.",
+  "lesson": "linux",
+  "see": [
+   "privilege-escalation"
+  ]
+ },
+ {
+  "id": "chrome",
+  "term": "Chrome / Chromium",
+  "kind": "Product",
+  "aliases": [
+   "Chrome",
+   "Chromium",
+   "V8",
+   "Microsoft Edge"
+  ],
+  "short": "Google's browser. Chromium is the open-source base that Edge, Brave and Opera share too. V8 is its JavaScript engine, a frequent zero-day target.",
+  "see": [
+   "memory-corruption",
+   "sandbox"
+  ]
+ },
+ {
+  "id": "webkit",
+  "term": "WebKit / Safari",
+  "kind": "Product",
+  "aliases": [
+   "WebKit",
+   "Safari"
+  ],
+  "short": "Apple's browser engine. Every iPhone browser has to use it, so a WebKit bug affects all of them.",
+  "see": [
+   "zero-click"
+  ]
+ },
+ {
+  "id": "ios",
+  "term": "iOS / Android",
+  "kind": "Product",
+  "aliases": [
+   "iOS",
+   "iPadOS",
+   "macOS",
+   "Android"
+  ],
+  "auto": false,
+  "short": "Phone and computer operating systems. Updates often fix bugs already used by spyware, so install them promptly."
+ },
+ {
+  "id": "hitachi-energy",
+  "term": "Industrial equipment makers",
+  "kind": "Product",
+  "aliases": [
+   "Hitachi Energy",
+   "Siemens",
+   "Schneider Electric",
+   "Rockwell Automation",
+   "ABB"
+  ],
+  "short": "Big makers of industrial and power-grid equipment. Their security advisories cover gear that runs substations and factories, where patching needs careful planning.",
+  "lesson": "iot-ot",
+  "see": [
+   "ot",
+   "plc"
+  ]
+ },
+ {
+  "id": "ledger",
+  "term": "Hardware wallet",
+  "kind": "Product",
+  "aliases": [
+   "hardware wallet",
+   "hardware wallets",
+   "Ledger",
+   "Trezor",
+   "seed phrase",
+   "recovery phrase"
+  ],
+  "short": "A small device that stores cryptocurrency keys offline. The seed phrase is the master backup: anyone who has it owns the funds."
+ },
+ {
+  "id": "ai-labs",
+  "term": "AI companies (OpenAI, Anthropic, Google)",
+  "kind": "Organisation",
+  "aliases": [
+   "OpenAI",
+   "ChatGPT",
+   "Anthropic",
+   "Claude",
+   "Gemini",
+   "Copilot",
+   "DeepSeek"
+  ],
+  "short": "The companies and chatbots behind today's large language models. In security news they appear as tools attackers misuse, as defenders' helpers, and as targets of research into AI safety and prompt injection.",
+  "lesson": "ai-security",
+  "see": [
+   "llm",
+   "prompt-injection"
+  ]
+ },
+ {
+  "id": "doj",
+  "term": "DOJ",
+  "kind": "Organisation",
+  "aliases": [
+   "DOJ",
+   "DoJ",
+   "Department of Justice",
+   "Justice Department"
+  ],
+  "short": "The US Department of Justice prosecutes cybercriminals and announces indictments, arrests and seizures of criminal infrastructure.",
+  "see": [
+   "fbi"
+  ]
+ },
+ {
+  "id": "easm",
+  "term": "Attack surface management (EASM)",
+  "kind": "Defence",
+  "aliases": [
+   "EASM",
+   "attack surface",
+   "attack surface management",
+   "external attack surface"
+  ],
+  "short": "Continuously finding everything an organisation exposes to the internet (forgotten servers, test sites, open ports) before attackers do.",
+  "see": [
+   "edge-device",
+   "misconfiguration"
+  ]
+ }
+]

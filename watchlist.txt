@@ -1,0 +1,8 @@
+# One vendor or product per line. CVEs mentioning these get flagged.
+# Tip: list the software you (or a company you'd like to work for) actually run.
+microsoft
+apple
+google chrome
+fortinet
+cisco
+linux kernel

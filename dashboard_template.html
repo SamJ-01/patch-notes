@@ -1,0 +1,546 @@
+<title>CVE Field Guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one bulletin column (max 980px). Masthead -> this week at a glance -> primer (5 terms) -> filters -> advisory cards with a severity stripe. */
+:root {
+  --bg: #EDF1F5;
+  --surface: #FFFFFF;
+  --ink: #142133;
+  --muted: #56647A;
+  --line: #D3DCE6;
+  --accent: #1D5FA6;
+  --accent-soft: #E0EBF7;
+
+  --exploited: #BF2430;  --exploited-tint: #FBE6E7;
+  --likely:    #A85400;  --likely-tint:    #FCEEDD;
+  --critical:  #7339B0;  --critical-tint:  #F0E7FA;
+  --high:      #1B6BAE;  --high-tint:      #E2EEF9;
+  --other:     #6E7B8F;  --other-tint:     #ECEFF3;
+
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E151E; --surface: #16202C; --ink: #E5ECF4; --muted: #9AA9BC; --line: #283646;
+    --accent: #7FB4EE; --accent-soft: #1A2C42;
+    --exploited: #FF7378; --exploited-tint: #3A1C21;
+    --likely: #F2A34E;    --likely-tint: #3A2A16;
+    --critical: #BE93FF;  --critical-tint: #2D2142;
+    --high: #72B2F0;      --high-tint: #182D44;
+    --other: #93A0B2;     --other-tint: #222D3A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E151E; --surface: #16202C; --ink: #E5ECF4; --muted: #9AA9BC; --line: #283646;
+  --accent: #7FB4EE; --accent-soft: #1A2C42;
+  --exploited: #FF7378; --exploited-tint: #3A1C21;
+  --likely: #F2A34E;    --likely-tint: #3A2A16;
+  --critical: #BE93FF;  --critical-tint: #2D2142;
+  --high: #72B2F0;      --high-tint: #182D44;
+  --other: #93A0B2;     --other-tint: #222D3A;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.55 var(--font-body);
+  padding-inline: 16px;
+}
+.wrap { max-width: 980px; margin: 0 auto; padding-block: 32px 64px; display: grid; gap: 36px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h2 { font-size: 1.45rem; font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 700; }
+p { margin: 0; }
+a { color: var(--accent); }
+.mono { font-family: var(--font-mono); }
+.eyebrow { font: 600 0.72rem/1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--muted); max-width: 65ch; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Masthead */
+.masthead { display: grid; gap: 10px; }
+.masthead h1 { font-size: clamp(2.1rem, 6vw, 3.2rem); font-weight: 800; line-height: 1.02; }
+.masthead h1 span { color: var(--accent); }
+.stamp { display: flex; flex-wrap: wrap; gap: 6px 16px; font: 0.8rem/1.4 var(--font-mono); color: var(--muted); }
+
+/* At a glance */
+.glance { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.tile {
+  text-align: left; cursor: pointer; font: inherit; color: inherit;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 16px; display: grid; gap: 6px; align-content: start; border-top: 4px solid var(--tile, var(--other));
+}
+.tile:hover { border-color: var(--tile, var(--accent)); }
+.tile[aria-pressed="true"] { background: var(--tile-tint, var(--accent-soft)); }
+.tile .n { font: 800 2rem/1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--tile, var(--ink)); }
+.tile .what { font-weight: 700; }
+.tile .why { font-size: 0.85rem; color: var(--muted); }
+
+/* Primer */
+.primer { display: grid; gap: 16px; }
+.terms { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.term { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 6px; align-content: start; }
+.term .abbr { font: 600 0.95rem var(--font-mono); color: var(--accent); }
+.term .ex { font-size: 0.85rem; color: var(--muted); }
+.ladder { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+.rung { padding: 12px 14px; display: grid; gap: 4px; align-content: start; border-left: 1px solid var(--line); }
+.rung:first-child { border-left: 0; }
+.rung b { font: 700 0.95rem var(--font-display); color: var(--c); }
+.rung span { font-size: 0.82rem; color: var(--muted); }
+.ladder-note { font-size: 0.9rem; color: var(--muted); max-width: 70ch; }
+
+/* Filters */
+.controls { display: grid; gap: 12px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; background: var(--bg); padding-block: 12px; border-bottom: 1px solid var(--line); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+input[type="search"], select, .watch-add input {
+  font: inherit; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; min-width: 0;
+}
+input[type="search"] { flex: 1 1 260px; }
+.chip {
+  font: 600 0.85rem var(--font-body); cursor: pointer; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px;
+}
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.watch { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 0.85rem; color: var(--muted); }
+.wterm { display: inline-flex; gap: 4px; align-items: center; background: var(--accent-soft); color: var(--ink); border-radius: 999px; padding: 3px 4px 3px 10px; font-weight: 700; }
+.wterm button { border: 0; background: none; color: var(--muted); cursor: pointer; font: inherit; padding: 0 6px; }
+.watch-add { display: inline-flex; gap: 4px; }
+.watch-add input { padding: 4px 10px; width: 9rem; font-size: 0.85rem; }
+.watch-add button { font: 600 0.85rem var(--font-body); border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 4px 10px; cursor: pointer; }
+.count { font-size: 0.85rem; color: var(--muted); }
+
+/* Cards */
+.list { display: grid; gap: 12px; }
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  border-left: 5px solid var(--c); padding: 16px 18px; display: grid; gap: 10px; min-width: 0;
+}
+.card-top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pill { font: 700 0.75rem/1 var(--font-body); letter-spacing: 0.04em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; color: var(--c); background: var(--t); }
+.tag { font: 600 0.72rem/1 var(--font-mono); padding: 5px 8px; border-radius: 6px; border: 1px solid var(--line); color: var(--muted); }
+.tag.new { color: var(--accent); border-color: var(--accent); }
+.tag.watch { color: var(--ink); background: var(--accent-soft); border-color: transparent; }
+.cid { font: 600 0.9rem var(--font-mono); color: var(--muted); margin-left: auto; }
+.headline { font: 700 1.12rem/1.3 var(--font-display); overflow-wrap: anywhere; }
+.desc { color: var(--muted); font-size: 0.95rem; overflow-wrap: anywhere; max-width: 75ch; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 0.85rem; }
+.facts div { display: grid; }
+.facts dt { font: 600 0.68rem var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.meter { display: inline-block; width: 56px; height: 6px; border-radius: 3px; background: var(--line); vertical-align: middle; margin-left: 6px; overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--c); }
+
+details.explain { border-top: 1px dashed var(--line); padding-top: 8px; }
+details.explain summary { cursor: pointer; font-weight: 700; color: var(--accent); width: fit-content; }
+.lesson { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 12px; }
+.lesson section { display: grid; gap: 6px; align-content: start; min-width: 0; }
+.lesson h4 { margin: 0; font: 600 0.72rem var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.lesson p, .lesson li { font-size: 0.93rem; }
+.lesson ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
+.defend { background: var(--accent-soft); border-radius: 8px; padding: 8px 10px; font-size: 0.9rem; }
+.kevbox { background: var(--exploited-tint); border-radius: 8px; padding: 10px 12px; font-size: 0.9rem; grid-column: 1 / -1; }
+.links { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.88rem; grid-column: 1 / -1; }
+.vector { font: 0.75rem var(--font-mono); color: var(--muted); overflow-wrap: anywhere; }
+
+.more { justify-self: center; font: 700 0.95rem var(--font-body); padding: 10px 22px; border-radius: 999px; border: 1px solid var(--ink); background: var(--surface); color: var(--ink); cursor: pointer; }
+.empty { text-align: center; color: var(--muted); padding: 32px; background: var(--surface); border-radius: var(--radius); border: 1px dashed var(--line); }
+footer { font-size: 0.85rem; color: var(--muted); display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 18px; }
+
+/* Priority colour wiring */
+.p1 { --c: var(--exploited); --t: var(--exploited-tint); }
+.p2 { --c: var(--likely);    --t: var(--likely-tint); }
+.p3 { --c: var(--critical);  --t: var(--critical-tint); }
+.p4 { --c: var(--high);      --t: var(--high-tint); }
+.p5 { --c: var(--other);     --t: var(--other-tint); }
+
+@media (max-width: 760px) {
+  .glance { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ladder { grid-template-columns: 1fr; }
+  .rung { border-left: 0; border-top: 1px solid var(--line); }
+  .rung:first-child { border-top: 0; }
+  .cid { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">Vulnerability bulletin</div>
+    <h1>CVE <span>Field Guide</span></h1>
+    <p class="lede">Every week thousands of new security bugs are published. Most won't affect you. This guide sorts them by how likely they are to be used against real systems and explains each one in plain English.</p>
+    <div class="stamp" id="stamp"></div>
+  </header>
+
+  <section class="glance" id="glance" aria-label="This week at a glance"></section>
+
+  <section class="primer" aria-labelledby="primer-h">
+    <div style="display:grid;gap:6px">
+      <div class="eyebrow">Start here</div>
+      <h2 id="primer-h">Five terms that unlock this page</h2>
+    </div>
+    <div class="terms">
+      <div class="term">
+        <div class="abbr">CVE</div>
+        <h3>The bug's ID number</h3>
+        <p>Common Vulnerabilities and Exposures. A public catalogue where each known security bug gets a unique ID, so everyone can talk about the same problem.</p>
+        <p class="ex">CVE-2021-44228 is Log4Shell. "2021" is the year the ID was reserved.</p>
+      </div>
+      <div class="term">
+        <div class="abbr">CWE</div>
+        <h3>The type of mistake</h3>
+        <p>Common Weakness Enumeration. If a CVE is one specific broken lock, the CWE is the category of lock flaw. Learning the common CWEs teaches you how most bugs happen.</p>
+        <p class="ex">CWE-89 is SQL injection. CWE-79 is cross-site scripting.</p>
+      </div>
+      <div class="term">
+        <div class="abbr">CVSS</div>
+        <h3>How bad it could be</h3>
+        <p>A 0–10 severity score based on how the bug is reached and what an attacker gains. It measures worst-case damage, not whether anyone is actually attacking.</p>
+        <p class="ex">9.0–10 Critical · 7.0–8.9 High · 4.0–6.9 Medium · below 4 Low</p>
+      </div>
+      <div class="term">
+        <div class="abbr">EPSS</div>
+        <h3>How likely it gets used</h3>
+        <p>Exploit Prediction Scoring System. A model from FIRST that estimates the chance a CVE will be exploited in the next 30 days, using real attack data.</p>
+        <p class="ex">Most CVEs sit below 1%. Anything above 10% stands out.</p>
+      </div>
+      <div class="term">
+        <div class="abbr">KEV</div>
+        <h3>Confirmed in the wild</h3>
+        <p>CISA's Known Exploited Vulnerabilities catalogue. A CVE goes on this list only when there's evidence attackers are using it. US federal agencies must patch these by a deadline.</p>
+        <p class="ex">Old CVEs get added too, when attackers rediscover them.</p>
+      </div>
+    </div>
+    <div style="display:grid;gap:10px">
+      <h3>Why this page doesn't just sort by CVSS</h3>
+      <p class="ladder-note">Security teams can't patch everything at once. A "critical" bug nobody is attacking can matter less than a "medium" one that ransomware gangs are using today. So every CVE here gets one of five priority levels, checked in this order:</p>
+      <div class="ladder">
+        <div class="rung p1"><b>1 · Exploited</b><span>On CISA's KEV list. Patch now.</span></div>
+        <div class="rung p2"><b>2 · Likely</b><span>EPSS of 10% or more. Attackers are expected to use it.</span></div>
+        <div class="rung p3"><b>3 · Critical</b><span>CVSS 9.0+. Severe if used, no attacks seen yet.</span></div>
+        <div class="rung p4"><b>4 · High</b><span>CVSS 7.0–8.9.</span></div>
+        <div class="rung p5"><b>5 · Other</b><span>Lower scores or not scored yet.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:grid;gap:14px" aria-labelledby="list-h">
+    <div style="display:grid;gap:6px">
+      <div class="eyebrow">The bulletin</div>
+      <h2 id="list-h">This period's vulnerabilities</h2>
+    </div>
+    <div class="controls">
+      <div class="row">
+        <label for="q" class="eyebrow" style="position:absolute;left:-9999px">Search</label>
+        <input id="q" type="search" placeholder="Search a product, vendor, CVE or bug type (e.g. apple, SQL injection)">
+        <label for="sort" class="eyebrow" style="position:absolute;left:-9999px">Sort</label>
+        <select id="sort">
+          <option value="priority">Sort: priority</option>
+          <option value="epss">Sort: likelihood (EPSS)</option>
+          <option value="cvss">Sort: severity (CVSS)</option>
+          <option value="newest">Sort: newest</option>
+        </select>
+      </div>
+      <div class="row" id="prio-chips"></div>
+      <div class="watch" id="watch"></div>
+      <div class="count" id="count" aria-live="polite"></div>
+    </div>
+    <div class="list" id="list"></div>
+    <button class="more" id="more" hidden>Show more</button>
+  </section>
+
+  <footer>
+    <div><strong>Sources:</strong> <a href="https://nvd.nist.gov/" target="_blank" rel="noopener">NIST National Vulnerability Database</a> · <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" target="_blank" rel="noopener">CISA KEV catalogue</a> · <a href="https://www.first.org/epss/" target="_blank" rel="noopener">FIRST EPSS</a> · <a href="https://cwe.mitre.org/" target="_blank" rel="noopener">MITRE CWE</a></div>
+    <div id="foot-meta"></div>
+    <div>For learning and awareness. Always confirm details and fixes with the vendor's own advisory before acting.</div>
+  </footer>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+
+// Plain-English lessons for the most common weakness types.
+const LESSONS = {
+  "CWE-20":  { name: "Improper input validation", plain: "The software trusts data it receives without checking it's the right type, size or format. Many other bug types start here.", defend: "Check every input against what's allowed (type, length, format) and reject anything else." },
+  "CWE-22":  { name: "Path traversal", plain: "An attacker puts sequences like ../ in a file name to climb out of the folder they're meant to stay in, then reads or overwrites other files.", defend: "Resolve the full path and confirm it's still inside the allowed folder before opening it." },
+  "CWE-74":  { name: "Injection", plain: "Attacker input is passed to another system (a database, shell or template) and gets treated as instructions instead of plain data.", defend: "Keep data and commands separate: use parameterised APIs and encode output." },
+  "CWE-77":  { name: "Command injection", plain: "User input ends up inside a system command, so an attacker can add their own commands and run them on the server.", defend: "Avoid the shell. Pass arguments as a list to safe APIs and allow-list expected values." },
+  "CWE-78":  { name: "OS command injection", plain: "User input ends up inside an operating-system command, so an attacker can tack on their own commands (e.g. ; rm -rf) and run them on the server.", defend: "Avoid the shell. Pass arguments as a list to safe APIs and allow-list expected values." },
+  "CWE-79":  { name: "Cross-site scripting (XSS)", plain: "The site shows attacker-supplied text as live code in other people's browsers. The attacker can then act as those users: steal sessions, change settings, show fake login forms.", defend: "Encode output for where it appears (HTML, attribute, JavaScript) and add a Content Security Policy." },
+  "CWE-89":  { name: "SQL injection", plain: "Input is pasted straight into a database query, so an attacker can rewrite the query to read, change or delete data they shouldn't touch.", defend: "Use parameterised queries (prepared statements) every time. Never build SQL by joining strings." },
+  "CWE-94":  { name: "Code injection", plain: "The application runs attacker-controlled input as program code.", defend: "Never eval() user input. Use safe parsers and run risky code in a sandbox." },
+  "CWE-119": { name: "Memory buffer error", plain: "The program reads or writes outside the block of memory it was given. This can crash it, leak secrets, or let an attacker run their own code.", defend: "Bounds-check every buffer, prefer memory-safe languages, keep mitigations like ASLR and DEP enabled." },
+  "CWE-120": { name: "Buffer overflow", plain: "Data is copied into a fixed-size space without checking it fits, so it spills over and overwrites whatever is next in memory.", defend: "Use length-checked copy functions and memory-safe languages." },
+  "CWE-121": { name: "Stack buffer overflow", plain: "Too much data is written into a buffer on the stack, which can overwrite the return address and hijack the program's flow.", defend: "Bounds checks, stack canaries and compiler hardening flags." },
+  "CWE-122": { name: "Heap buffer overflow", plain: "Too much data is written into a buffer on the heap, corrupting nearby data structures that an attacker can then abuse.", defend: "Bounds checks, hardened allocators and memory-safe languages." },
+  "CWE-125": { name: "Out-of-bounds read", plain: "The program reads past the end of a block of memory. That can leak secrets (Heartbleed was one of these) or crash the program.", defend: "Validate lengths and indexes before reading." },
+  "CWE-190": { name: "Integer overflow", plain: "A number grows bigger than its type can hold and wraps around, like a car odometer rolling over to zero. The wrong number then leads to memory bugs.", defend: "Check arithmetic before using the result for sizes or indexes." },
+  "CWE-200": { name: "Information exposure", plain: "The software reveals information to someone who shouldn't see it, such as internal paths, user records or keys. Attackers use these leaks to plan the next step.", defend: "Return generic errors, limit what APIs return, and review what's logged or exposed." },
+  "CWE-269": { name: "Improper privilege management", plain: "The software hands out, keeps or fails to drop privileges properly, so a normal user can climb to admin.", defend: "Least privilege: give each user and process only the access it needs." },
+  "CWE-276": { name: "Incorrect default permissions", plain: "Files or settings are installed with permissions that let too many people read or change them.", defend: "Ship locked-down defaults and audit permissions after install." },
+  "CWE-284": { name: "Improper access control", plain: "The rules about who can do what are missing or broken.", defend: "Enforce access checks on the server for every request." },
+  "CWE-287": { name: "Improper authentication", plain: "The software doesn't properly prove you are who you say you are, so an attacker can log in as someone else.", defend: "Use well-tested login frameworks, MFA and secure session handling." },
+  "CWE-295": { name: "Improper certificate validation", plain: "The software doesn't properly check HTTPS certificates, so someone in the middle of the connection can pretend to be the real server.", defend: "Use the platform's default TLS validation and never disable it in production." },
+  "CWE-306": { name: "Missing authentication", plain: "An important function works with no login at all. Anyone who can reach it can use it.", defend: "Require authentication on every sensitive function, including admin and API endpoints." },
+  "CWE-312": { name: "Cleartext storage of sensitive data", plain: "Passwords, keys or personal data are stored unencrypted, so anyone who gets the file or database can read them.", defend: "Encrypt sensitive data at rest and hash passwords with a slow algorithm like bcrypt or Argon2." },
+  "CWE-327": { name: "Broken or risky cryptography", plain: "The software uses an outdated or weak encryption method that attackers know how to break.", defend: "Use modern, well-reviewed libraries and algorithms (AES-GCM, SHA-256 or better)." },
+  "CWE-347": { name: "Improper signature verification", plain: "The software doesn't properly check digital signatures, so tampered files or tokens are accepted as genuine.", defend: "Always verify signatures with a trusted library and reject anything unsigned." },
+  "CWE-352": { name: "Cross-site request forgery (CSRF)", plain: "A malicious website makes your browser send a request to another site where you're already logged in, like changing your email or password, without you knowing.", defend: "Use anti-CSRF tokens and SameSite cookies." },
+  "CWE-362": { name: "Race condition", plain: "Two things happen at almost the same time and the software doesn't handle the overlap, letting an attacker slip in between a check and an action.", defend: "Use proper locking and make check-and-act steps atomic." },
+  "CWE-400": { name: "Uncontrolled resource consumption", plain: "An attacker can make the software use up memory, CPU or disk until it slows down or falls over. This is a denial-of-service bug.", defend: "Set limits, timeouts and rate limiting on expensive operations." },
+  "CWE-416": { name: "Use after free", plain: "The program keeps using a piece of memory after it has given it back. If an attacker fills that spot with their own data, they can often take control.", defend: "Clear pointers after freeing, use smart pointers or memory-safe languages." },
+  "CWE-427": { name: "Uncontrolled search path", plain: "The program looks for libraries or files in folders an attacker can write to, so it loads the attacker's planted file instead (DLL hijacking).", defend: "Load from absolute, trusted paths only." },
+  "CWE-434": { name: "Unrestricted file upload", plain: "The site accepts uploaded files without checking what they are, so an attacker can upload a script (a web shell) and run it on the server.", defend: "Allow-list file types, rename uploads, and store them where they can't be executed." },
+  "CWE-476": { name: "NULL pointer dereference", plain: "The program tries to use something that doesn't exist and crashes. Usually a denial-of-service bug.", defend: "Check for null before use; memory-safe languages prevent most of these." },
+  "CWE-502": { name: "Deserialisation of untrusted data", plain: "The app rebuilds objects from data it received. Crafted data can make it run attacker code while rebuilding them.", defend: "Never deserialise untrusted data with native formats; use simple formats like JSON with strict schemas." },
+  "CWE-522": { name: "Weakly protected credentials", plain: "Passwords or keys are stored or sent in a way that's easy to steal.", defend: "Hash passwords properly, encrypt secrets, and send them only over TLS." },
+  "CWE-532": { name: "Sensitive data in log files", plain: "Passwords, tokens or personal data get written into logs, where far more people and systems can read them.", defend: "Scrub secrets before logging and restrict who can read logs." },
+  "CWE-601": { name: "Open redirect", plain: "A link on a trusted site can be made to forward visitors anywhere. Phishers use it so their links look legitimate.", defend: "Only redirect to allow-listed destinations." },
+  "CWE-639": { name: "Insecure direct object reference (IDOR)", plain: "Changing an ID in a request (like /invoice/1001 to /invoice/1002) shows someone else's data because the app never checks who owns it.", defend: "Check ownership on the server for every object a user requests." },
+  "CWE-732": { name: "Incorrect permission assignment", plain: "A critical file, folder or resource can be changed by users who shouldn't have that power.", defend: "Apply least privilege to files and services and audit them regularly." },
+  "CWE-770": { name: "No limits on resource allocation", plain: "The software lets a request reserve as much memory or as many connections as it asks for, so an attacker can exhaust them.", defend: "Cap sizes, counts and time per request." },
+  "CWE-787": { name: "Out-of-bounds write", plain: "The program writes past the end of a block of memory, corrupting nearby data. Skilled attackers turn this into running their own code. It's #1 on MITRE's most dangerous list.", defend: "Bounds-check writes, prefer memory-safe languages, keep exploit mitigations on." },
+  "CWE-798": { name: "Hard-coded credentials", plain: "A password or key is baked into the software itself. Anyone who finds it can log in to every device running that version.", defend: "Never ship built-in passwords; force unique credentials on setup." },
+  "CWE-862": { name: "Missing authorisation", plain: "The app checks that you're logged in, but not whether you're allowed to do this particular thing.", defend: "Check permissions on the server for every action, not just login." },
+  "CWE-863": { name: "Incorrect authorisation", plain: "A permission check exists but gets it wrong, so some users can do things they shouldn't.", defend: "Centralise permission checks and test them with different user roles." },
+  "CWE-917": { name: "Expression language injection", plain: "Input is evaluated by a template or expression engine, letting attackers run code. This was the root cause of Log4Shell.", defend: "Never evaluate user input as an expression; disable lookups you don't need." },
+  "CWE-918": { name: "Server-side request forgery (SSRF)", plain: "The attacker makes the server send web requests for them, often to internal systems or cloud metadata services that aren't reachable from outside.", defend: "Allow-list destinations and block internal IP ranges from server-side fetches." },
+  "CWE-1321": { name: "Prototype pollution", plain: "In JavaScript, attacker input changes the base object that all other objects inherit from, which can change app behaviour or lead to code execution.", defend: "Freeze prototypes, validate keys like __proto__, and use Map for user-keyed data." },
+  "CWE-1333": { name: "Inefficient regular expression (ReDoS)", plain: "A badly written pattern can take forever on a crafted input, freezing the app.", defend: "Use linear-time regex engines or limit input length and matching time." },
+};
+
+const PRIO = {
+  1: { label: "Exploited", tile: "being exploited", why: "On CISA's KEV list. Attackers are using these now." },
+  2: { label: "Likely", tile: "likely to be exploited", why: "EPSS 10%+ chance of attack in 30 days." },
+  3: { label: "Critical", tile: "critical, not yet attacked", why: "CVSS 9.0+ but no attacks seen." },
+  4: { label: "High", tile: "high severity", why: "CVSS 7.0–8.9." },
+  5: { label: "Other", tile: "other", why: "Lower or no score yet." },
+};
+
+const esc = s => String(s ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+const pct = x => x == null ? "—" : (x * 100 < 1 ? (x * 100).toFixed(2) : (x * 100).toFixed(1)) + "%";
+const $ = id => document.getElementById(id);
+
+const STORE_KEY = "cve-field-guide-watch";
+function loadWatch() {
+  try { const saved = JSON.parse(localStorage.getItem(STORE_KEY)); if (Array.isArray(saved)) return saved; } catch (e) {}
+  return (DATA && DATA.meta.watchlist) || [];
+}
+function saveWatch() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state.watch)); } catch (e) {} }
+
+const state = { q: "", prio: "all", onlyNew: false, onlyWatch: false, sort: "priority", shown: 30, watch: loadWatch() };
+
+function haystack(c) {
+  if (!c._hay) {
+    const cweText = c.cwes.map(id => id + " " + (LESSONS[id]?.name || "")).join(" ");
+    c._hay = [c.id, c.description, c.products.join(" "), cweText, c.kev?.name || ""].join(" ").toLowerCase();
+  }
+  return c._hay;
+}
+const watchHits = c => state.watch.filter(t => haystack(c).includes(t));
+
+function headline(c) {
+  const lesson = c.cwes.map(id => LESSONS[id]).find(Boolean);
+  const product = c.products[0];
+  if (c.kev?.name) return c.kev.name;
+  if (lesson && product) return `${lesson.name} in ${product}`;
+  if (lesson) return lesson.name;
+  const first = c.description.split(/(?<=\.)\s/)[0];
+  return first.length > 110 ? first.slice(0, 107) + "…" : first;
+}
+
+// Turn a CVSS vector string into sentences a beginner can follow.
+function decodeVector(vec) {
+  if (!vec) return null;
+  const m = Object.fromEntries(vec.split("/").map(p => p.split(":")));
+  const out = [];
+  const av = { N: "over the network, potentially from anywhere on the internet", A: "from the same local network (e.g. same Wi-Fi)", L: "only with access to the machine itself", P: "only with physical access to the device" }[m.AV];
+  if (av) out.push(`An attacker can reach it ${av}.`);
+  const pr = { N: "No login is needed.", L: "They need an ordinary user account.", H: "They need an admin-level account." }[m.PR];
+  if (pr) out.push(pr);
+  if (m.Au) out.push(m.Au === "N" ? "No login is needed." : "They need to log in first.");
+  const ui = { N: "No one has to click or open anything.", R: "A user must do something, like open a file or click a link.", P: "A user must do something, like open a file or click a link.", A: "A user must actively interact with the attack." }[m.UI];
+  if (ui) out.push(ui);
+  if (m.AC === "H") out.push("It only works under specific conditions, which makes it harder to pull off.");
+  const c = m.VC || m.C, i = m.VI || m.I, a = m.VA || m.A;
+  const impact = [];
+  if (c === "H" || c === "C") impact.push("read sensitive data");
+  else if (c === "L" || c === "P") impact.push("see some data");
+  if (i === "H" || i === "C") impact.push("change or plant data");
+  else if (i === "L" || i === "P") impact.push("change some data");
+  if (a === "H" || a === "C") impact.push("crash or shut down the service");
+  if (impact.length) out.push(`If it works, they could ${impact.join(", ").replace(/, ([^,]*)$/, " and $1")}.`);
+  return out;
+}
+
+function worry(c) {
+  const lines = [];
+  if (c.kev) {
+    lines.push(`<strong>Attackers are already using this.</strong> CISA added it to the KEV list on ${esc(c.kev.added)} and requires US federal agencies to fix it by ${esc(c.kev.due)}.`);
+    if (c.kev.ransomware) lines.push("It has been used in ransomware campaigns.");
+  }
+  if (c.epss != null) {
+    lines.push(`EPSS gives it a <strong>${pct(c.epss)}</strong> chance of being exploited in the next 30 days. That's higher than ${Math.round(c.epss_pct * 100)}% of all scored CVEs.`);
+  } else {
+    lines.push("No EPSS score yet. Brand-new CVEs often take a day or two to be scored.");
+  }
+  if (c.cvss != null) lines.push(`Its CVSS ${esc(c.cvss_version || "")} severity is <strong>${c.cvss}/10 (${esc(c.severity.toLowerCase())})</strong>.`);
+  else lines.push("It has no CVSS severity score yet. NVD often scores new CVEs later.");
+  return lines;
+}
+
+function card(c) {
+  const hits = watchHits(c);
+  const lessons = c.cwes.map(id => ({ id, ...(LESSONS[id] || {}) }));
+  const known = lessons.filter(l => l.name);
+  const vector = decodeVector(c.vector);
+  const desc = c.description.length > 320 ? c.description.slice(0, 317) + "…" : c.description;
+
+  const lessonHtml = known.length
+    ? known.map(l => `<p><strong>${esc(l.name)}</strong> <span class="mono" style="color:var(--muted)">(${esc(l.id)})</span>. ${esc(l.plain)}</p><p class="defend"><strong>How it's prevented:</strong> ${esc(l.defend)}</p>`).join("")
+    : lessons.length
+      ? `<p>This is classified as ${lessons.map(l => `<a href="https://cwe.mitre.org/data/definitions/${l.id.slice(4)}.html" target="_blank" rel="noopener">${esc(l.id)}</a>`).join(", ")}. Follow the link to read MITRE's description.</p>`
+      : `<p>No weakness type has been assigned yet. Read the description above for clues: words like "injection", "overflow" or "bypass" usually point to the category.</p>`;
+
+  return `<article class="card p${c.priority}">
+    <div class="card-top">
+      <span class="pill">${PRIO[c.priority].label}</span>
+      ${c.new ? '<span class="tag new">New</span>' : ""}
+      ${c.kev?.ransomware ? '<span class="tag" style="color:var(--exploited);border-color:var(--exploited)">Ransomware</span>' : ""}
+      ${hits.map(h => `<span class="tag watch">Watching: ${esc(h)}</span>`).join("")}
+      <span class="cid">${esc(c.id)}</span>
+    </div>
+    <h3 class="headline">${esc(headline(c))}</h3>
+    <p class="desc">${esc(desc)}</p>
+    <dl class="facts">
+      <div><dt>Severity · CVSS</dt><dd>${c.cvss != null ? `${c.cvss} <span style="font-weight:400;color:var(--muted)">${esc(c.severity.toLowerCase())}</span>` : "Not scored yet"}</dd></div>
+      <div><dt>Likelihood · EPSS</dt><dd>${pct(c.epss)}${c.epss != null ? `<span class="meter" aria-hidden="true"><i style="width:${Math.max(2, Math.round(c.epss_pct * 100))}%"></i></span>` : ""}</dd></div>
+      <div><dt>Affects</dt><dd>${esc(c.products.slice(0, 2).join(", ") || "See description")}${c.products.length > 2 ? ` +${c.products.length - 2}` : ""}</dd></div>
+      <div><dt>${c.published ? "Published" : "Added to KEV"}</dt><dd>${esc(c.published || c.kev?.added || "")}</dd></div>
+    </dl>
+    <details class="explain">
+      <summary>Explain this in plain English</summary>
+      <div class="lesson">
+        ${c.kev ? `<div class="kevbox"><strong>What defenders are told to do:</strong> ${esc(c.kev.action)}</div>` : ""}
+        <section><h4>What kind of bug is this?</h4>${lessonHtml}</section>
+        <section><h4>How would an attacker use it?</h4>${vector ? `<ul>${vector.map(s => `<li>${esc(s)}</li>`).join("")}</ul><p class="vector">${esc(c.vector)}</p>` : "<p>No CVSS vector yet, so the attack path hasn't been formally described. Check the vendor advisory.</p>"}</section>
+        <section><h4>How worried should you be?</h4>${worry(c).map(l => `<p>${l}</p>`).join("")}</section>
+        <div class="links">
+          <a href="https://nvd.nist.gov/vuln/detail/${esc(c.id)}" target="_blank" rel="noopener">Full NVD record</a>
+          <a href="https://www.cve.org/CVERecord?id=${esc(c.id)}" target="_blank" rel="noopener">CVE.org</a>
+          ${c.cwes.map(id => `<a href="https://cwe.mitre.org/data/definitions/${id.slice(4)}.html" target="_blank" rel="noopener">${esc(id)} on MITRE</a>`).join("")}
+        </div>
+      </div>
+    </details>
+  </article>`;
+}
+
+function filtered() {
+  const q = state.q.trim().toLowerCase();
+  let rows = DATA.cves.filter(c =>
+    (state.prio === "all" || c.priority === Number(state.prio)) &&
+    (!state.onlyNew || c.new) &&
+    (!state.onlyWatch || watchHits(c).length) &&
+    (!q || q.split(/\s+/).every(w => haystack(c).includes(w)))
+  );
+  const by = {
+    priority: (a, b) => a.priority - b.priority || (b.epss || 0) - (a.epss || 0) || (b.cvss || 0) - (a.cvss || 0),
+    epss: (a, b) => (b.epss ?? -1) - (a.epss ?? -1),
+    cvss: (a, b) => (b.cvss ?? -1) - (a.cvss ?? -1),
+    newest: (a, b) => String(b.published || b.kev?.added).localeCompare(String(a.published || a.kev?.added)),
+  }[state.sort];
+  return rows.slice().sort(by);
+}
+
+function renderGlance() {
+  const counts = { 1: 0, 2: 0, 3: 0 };
+  DATA.cves.forEach(c => { if (counts[c.priority] != null) counts[c.priority]++; });
+  const watchCount = DATA.cves.filter(c => watchHits(c).length).length;
+  const tiles = [
+    { key: "all", n: DATA.cves.length, what: "vulnerabilities", why: `Published in the last ${DATA.meta.days} days, plus recent KEV additions.`, color: "var(--accent)", tint: "var(--accent-soft)" },
+    { key: "1", n: counts[1], what: PRIO[1].tile, why: PRIO[1].why, color: "var(--exploited)", tint: "var(--exploited-tint)" },
+    { key: "2", n: counts[2], what: PRIO[2].tile, why: PRIO[2].why, color: "var(--likely)", tint: "var(--likely-tint)" },
+    { key: "watch", n: watchCount, what: "match your watchlist", why: state.watch.length ? `Mentions ${state.watch.slice(0, 3).join(", ")}${state.watch.length > 3 ? "…" : ""}.` : "Add vendors you use below.", color: "var(--ink)", tint: "var(--accent-soft)" },
+  ];
+  $("glance").innerHTML = tiles.map(t => {
+    const pressed = t.key === "watch" ? state.onlyWatch : (!state.onlyWatch && state.prio === t.key);
+    return `<button class="tile" data-key="${t.key}" aria-pressed="${pressed}" style="--tile:${t.color};--tile-tint:${t.tint}">
+      <span class="n">${t.n.toLocaleString()}</span><span class="what">${esc(t.what)}</span><span class="why">${esc(t.why)}</span></button>`;
+  }).join("");
+}
+
+function renderChips() {
+  const opts = [["all", "All"], ...Object.entries(PRIO).map(([k, v]) => [k, v.label])];
+  $("prio-chips").innerHTML = opts.map(([k, label]) =>
+    `<button class="chip" data-prio="${k}" aria-pressed="${state.prio === k}">${label}</button>`).join("") +
+    `<button class="chip" data-toggle="onlyNew" aria-pressed="${state.onlyNew}">New since last run</button>` +
+    `<button class="chip" data-toggle="onlyWatch" aria-pressed="${state.onlyWatch}">Watchlist only</button>`;
+}
+
+function renderWatch() {
+  $("watch").innerHTML = `<span>Your watchlist:</span>` +
+    state.watch.map((t, i) => `<span class="wterm">${esc(t)}<button data-rm="${i}" aria-label="Remove ${esc(t)}">×</button></span>`).join("") +
+    `<form class="watch-add" id="watch-form"><label for="watch-input" style="position:absolute;left:-9999px">Add a vendor or product</label><input id="watch-input" placeholder="add vendor/product" autocomplete="off"><button type="submit">Add</button></form>`;
+}
+
+function renderList() {
+  const rows = filtered();
+  $("count").textContent = `Showing ${Math.min(state.shown, rows.length).toLocaleString()} of ${rows.length.toLocaleString()} matching vulnerabilities`;
+  $("list").innerHTML = rows.length
+    ? rows.slice(0, state.shown).map(card).join("")
+    : `<div class="empty">Nothing matches these filters. Try a broader search or choose "All".</div>`;
+  $("more").hidden = rows.length <= state.shown;
+  $("more").textContent = `Show ${Math.min(30, rows.length - state.shown)} more`;
+}
+
+function renderAll() { renderGlance(); renderChips(); renderWatch(); renderList(); }
+
+function boot() {
+  if (!DATA) {
+    $("list").innerHTML = `<div class="empty">No data yet. Run <span class="mono">python3 cve_watch.py</span> to build this page.</div>`;
+    return;
+  }
+  const m = DATA.meta;
+  $("stamp").innerHTML = `<span>Updated ${esc(m.generated)}</span><span>Covers the last ${m.days} days</span><span>${m.new.toLocaleString()} new since the previous run</span>`;
+  $("foot-meta").textContent = `Snapshot generated ${m.generated} by cve_watch.py.`;
+
+  $("q").addEventListener("input", e => { state.q = e.target.value; state.shown = 30; renderList(); });
+  $("sort").addEventListener("change", e => { state.sort = e.target.value; renderList(); });
+  $("more").addEventListener("click", () => { state.shown += 30; renderList(); });
+
+  $("glance").addEventListener("click", e => {
+    const t = e.target.closest(".tile"); if (!t) return;
+    if (t.dataset.key === "watch") { state.onlyWatch = !state.onlyWatch; state.prio = "all"; }
+    else { state.prio = t.dataset.key; state.onlyWatch = false; }
+    state.shown = 30; renderAll();
+    $("list-h").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  });
+  $("prio-chips").addEventListener("click", e => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    if (b.dataset.prio) state.prio = b.dataset.prio;
+    if (b.dataset.toggle) state[b.dataset.toggle] = !state[b.dataset.toggle];
+    state.shown = 30; renderAll();
+  });
+  $("watch").addEventListener("click", e => {
+    const rm = e.target.closest("[data-rm]"); if (!rm) return;
+    state.watch.splice(Number(rm.dataset.rm), 1); saveWatch(); renderAll();
+  });
+  $("watch").addEventListener("submit", e => {
+    e.preventDefault();
+    const v = $("watch-input").value.trim().toLowerCase();
+    if (v && !state.watch.includes(v)) { state.watch.push(v); saveWatch(); }
+    renderAll(); $("watch-input").focus();
+  });
+  renderAll();
+}
+boot();
+</script>

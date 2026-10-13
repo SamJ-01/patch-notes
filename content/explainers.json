@@ -1,0 +1,6 @@
+{
+ "https://www.darkreading.com/vulnerabilities-threats/max-severity-ssrf-flaw-sonicwall-sma-devices-under-attack": {
+  "text": "SonicWall's SMA 1000 boxes are the doorway employees use to log in to their company network from home. A flaw rated the maximum severity lets attackers trick the device into sending requests on their behalf (SSRF), which can expose internal systems the device can reach. Because criminals are already exploiting it, organisations using these appliances should apply SonicWall's fix immediately and check for signs of compromise. This is a classic pattern: internet-facing VPN appliances are among the most targeted products because one bug can open the whole network.",
+  "date": "2026-10-13"
+ }
+}
