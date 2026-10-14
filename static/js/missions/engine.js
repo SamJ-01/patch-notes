@@ -1,0 +1,141 @@
+// Mission Engine: the rules of a mission, with no DOM code.
+//
+// A mission is data (content/missions/*.json): devices, messages, and per-mode behaviour.
+// Every function takes the scenario and the current state and returns { state, events }:
+// a fresh state (the input is never mutated) and a list of things that happened, which the
+// UI turns into animations, narration and text. Because the engine is pure, every learner
+// path (right answers, wrong answers, workarounds, resets) can be tested without a browser.
+
+const clone = value => JSON.parse(JSON.stringify(value));
+
+export const get = (obj, path) => path.split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
+
+function set(obj, path, value) {
+  const keys = path.split(".");
+  const last = keys.pop();
+  const target = keys.reduce((o, k) => (o[k] ??= {}), obj);
+  target[last] = value;
+}
+
+const applyEffects = (devices, effects = {}) => Object.entries(effects).forEach(([path, v]) => set(devices, path, v));
+
+// A condition matches when every path equals its value, or satisfies { startsWith }.
+export function matches(when = {}, devices) {
+  return Object.entries(when).every(([path, want]) => {
+    const have = get(devices, path);
+    if (want && typeof want === "object" && "startsWith" in want) return String(have ?? "").startsWith(want.startsWith);
+    return have === want;
+  });
+}
+
+// Fill "{pc.ip}"-style placeholders from the current device state.
+export const fill = (text, devices) => String(text || "").replace(/\{([\w.]+)\}/g, (_, p) => String(get(devices, p) ?? ""));
+
+export function start(scenario, mode) {
+  const m = scenario.modes[mode];
+  if (!m) throw new Error(`Unknown mode: ${mode}`);
+  const devices = clone(scenario.devices);
+  applyEffects(devices, m.start);
+  return {
+    mode, devices,
+    pos: 0, pending: null, answered: {}, tries: {},
+    evidence: [], toolsUsed: [], hintsUsed: 0, mistakes: 0,
+    goalMet: false, workaroundSeen: false, complete: false,
+  };
+}
+
+const sequence = (scenario, state) => scenario.modes[state.mode].sequence || [];
+
+// Guided / practice: play the next message, or stop at a prediction checkpoint first.
+export function next(scenario, state) {
+  const seq = sequence(scenario, state);
+  if (state.complete || state.pending || state.pos >= seq.length) return { state, events: [] };
+  const s = clone(state);
+  const id = seq[s.pos];
+  const checkpoint = (scenario.modes[s.mode].checkpoints || {})[id];
+  if (checkpoint && !s.answered[id]) {
+    s.pending = id;
+    return { state: s, events: [{ type: "question", id, ...checkpoint }] };
+  }
+  const msg = scenario.messages[id];
+  applyEffects(s.devices, msg.effects);
+  s.pos += 1;
+  const events = [{ type: "message", id, msg }];
+  if (s.pos >= seq.length) {
+    s.complete = true;
+    events.push({ type: "complete", debrief: scenario.modes[s.mode].debrief });
+  }
+  return { state: s, events };
+}
+
+export function answer(scenario, state, choice) {
+  if (!state.pending) return { state, events: [] };
+  const s = clone(state);
+  const q = scenario.modes[s.mode].checkpoints[s.pending];
+  s.tries[s.pending] = (s.tries[s.pending] || 0) + 1;
+  if (choice === q.answer) {
+    s.answered[s.pending] = true;
+    const id = s.pending;
+    s.pending = null;
+    return { state: s, events: [{ type: "answer", id, correct: true, why: q.why }] };
+  }
+  s.mistakes += 1;
+  // After two wrong tries, explain the answer rather than leaving the learner stuck.
+  const reveal = s.tries[s.pending] >= 2;
+  return { state: s, events: [{ type: "answer", id: s.pending, correct: false, reveal, why: reveal ? q.why : null, correctIndex: reveal ? q.answer : null }] };
+}
+
+// Challenge: run a tool. Its first matching outcome decides the output, effects and any messages.
+export function useTool(scenario, state, toolId) {
+  const mode = scenario.modes[state.mode];
+  const tool = (mode.tools || []).find(t => t.id === toolId);
+  if (!tool || state.complete) return { state, events: [] };
+  const s = clone(state);
+  const outcome = tool.outcomes.find(o => matches(o.when, s.devices));
+  const events = [];
+  const played = [];
+  for (const id of outcome.play || []) {
+    const msg = scenario.messages[id];
+    applyEffects(s.devices, msg.effects);
+    played.push({ id, msg });
+  }
+  if (outcome.noReply) {
+    // The request went out but nothing answered: undo the "searching" status the Discover set.
+    s.devices.pc.status = state.devices.pc.status;
+  }
+  applyEffects(s.devices, outcome.set);
+  s.toolsUsed.push(toolId);
+  if (outcome.finding && !s.evidence.some(e => e.finding === outcome.finding)) s.evidence.push({ tool: toolId, finding: outcome.finding });
+  events.push({ type: "tool", tool, output: fill(outcome.output, s.devices), finding: outcome.finding || "", played, noReply: !!outcome.noReply });
+
+  if (mode.workaround && !s.workaroundSeen && matches(mode.workaround, s.devices)) {
+    s.workaroundSeen = true;
+    events.push({ type: "workaround" });
+  }
+  if (!s.goalMet && matches(mode.goal, s.devices)) {
+    s.goalMet = true;
+    events.push({ type: "goal", ...mode.rootCause });
+  }
+  return { state: s, events };
+}
+
+export function answerRootCause(scenario, state, choice) {
+  const rc = scenario.modes[state.mode].rootCause;
+  if (!state.goalMet || state.complete) return { state, events: [] };
+  const s = clone(state);
+  if (choice === rc.answer) {
+    s.complete = true;
+    return { state: s, events: [{ type: "answer", id: "rootCause", correct: true, why: rc.why }, { type: "complete", debrief: scenario.modes[s.mode].debrief }] };
+  }
+  s.mistakes += 1;
+  return { state: s, events: [{ type: "answer", id: "rootCause", correct: false, why: null }] };
+}
+
+export function hint(scenario, state) {
+  const hints = scenario.modes[state.mode].hints || [];
+  if (!hints.length) return { state, events: [] };
+  const s = clone(state);
+  const text = hints[Math.min(s.hintsUsed, hints.length - 1)];
+  s.hintsUsed += 1;
+  return { state: s, events: [{ type: "hint", text, last: s.hintsUsed >= hints.length }] };
+}

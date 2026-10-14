@@ -230,6 +230,9 @@ class ContentIntegrity(unittest.TestCase):
                     self.assertIn(step["id"], self.lessons, p["id"])
                 if step["type"] == "lab":
                     self.assertIn(step["id"], self.labs, p["id"])
+                if step["type"] == "mission":
+                    mission = json.loads((CONTENT / "missions" / f"{step['id']}.json").read_text())
+                    self.assertIn(step["mode"], mission["modes"], p["id"])
 
     def test_lab_answers_are_in_the_evidence(self):
         for lab in self.labs.values():

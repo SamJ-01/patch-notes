@@ -1,10 +1,148 @@
 [
- { "id": "awareness", "title": "Security basics for everyone", "blurb": "Spot scams, protect your accounts and understand the headlines. Start here if you're brand new.", "career": null,
-   "steps": [ {"type": "lesson", "id": "phishing"}, {"type": "lesson", "id": "identity"}, {"type": "lesson", "id": "data-breach"}, {"type": "lesson", "id": "ransomware"}, {"type": "lesson", "id": "ai-security"}, {"type": "game", "id": "phish", "min": 7} ] },
- { "id": "soc", "title": "Path to SOC Analyst", "blurb": "The most common first job in security: watching alerts, investigating and responding.", "career": "soc",
-   "steps": [ {"type": "lesson", "id": "networking"}, {"type": "lesson", "id": "linux"}, {"type": "lesson", "id": "soc"}, {"type": "lab", "id": "log-detective"}, {"type": "lesson", "id": "phishing"}, {"type": "lab", "id": "header-inspector"}, {"type": "lesson", "id": "malware"}, {"type": "lesson", "id": "incident-response"} ] },
- { "id": "pentest", "title": "Path to Web Pentester", "blurb": "Learn how web apps break, how to score what you find, and the habits of a tester.", "career": "pentest",
-   "steps": [ {"type": "lesson", "id": "networking"}, {"type": "lesson", "id": "osint"}, {"type": "lesson", "id": "web-sqli"}, {"type": "lesson", "id": "web-xss"}, {"type": "lesson", "id": "web-access"}, {"type": "lab", "id": "cvss-builder"}, {"type": "flags", "min": 3} ] },
- { "id": "cloud", "title": "Path to Cloud Defender", "blurb": "Identity, cloud configuration and the software supply chain: where modern breaches happen.", "career": "cloud",
-   "steps": [ {"type": "lesson", "id": "identity"}, {"type": "lesson", "id": "cloud"}, {"type": "lesson", "id": "encryption"}, {"type": "lesson", "id": "supply-chain"}, {"type": "lesson", "id": "vuln-management"}, {"type": "lab", "id": "cvss-builder"} ] }
+ {
+  "id": "awareness",
+  "title": "Security basics for everyone",
+  "blurb": "Spot scams, protect your accounts and understand the headlines. Start here if you're brand new.",
+  "career": null,
+  "steps": [
+   {
+    "type": "lesson",
+    "id": "phishing"
+   },
+   {
+    "type": "lesson",
+    "id": "identity"
+   },
+   {
+    "type": "lesson",
+    "id": "data-breach"
+   },
+   {
+    "type": "lesson",
+    "id": "ransomware"
+   },
+   {
+    "type": "lesson",
+    "id": "ai-security"
+   },
+   {
+    "type": "game",
+    "id": "phish",
+    "min": 7
+   }
+  ]
+ },
+ {
+  "id": "soc",
+  "title": "Path to SOC Analyst",
+  "blurb": "The most common first job in security: watching alerts, investigating and responding.",
+  "career": "soc",
+  "steps": [
+   {
+    "type": "lesson",
+    "id": "networking"
+   },
+   {
+    "type": "mission",
+    "id": "dhcp",
+    "mode": "practice"
+   },
+   {
+    "type": "lesson",
+    "id": "linux"
+   },
+   {
+    "type": "lesson",
+    "id": "soc"
+   },
+   {
+    "type": "lab",
+    "id": "log-detective"
+   },
+   {
+    "type": "lesson",
+    "id": "phishing"
+   },
+   {
+    "type": "lab",
+    "id": "header-inspector"
+   },
+   {
+    "type": "lesson",
+    "id": "malware"
+   },
+   {
+    "type": "lesson",
+    "id": "incident-response"
+   }
+  ]
+ },
+ {
+  "id": "pentest",
+  "title": "Path to Web Pentester",
+  "blurb": "Learn how web apps break, how to score what you find, and the habits of a tester.",
+  "career": "pentest",
+  "steps": [
+   {
+    "type": "lesson",
+    "id": "networking"
+   },
+   {
+    "type": "lesson",
+    "id": "osint"
+   },
+   {
+    "type": "lesson",
+    "id": "web-sqli"
+   },
+   {
+    "type": "lesson",
+    "id": "web-xss"
+   },
+   {
+    "type": "lesson",
+    "id": "web-access"
+   },
+   {
+    "type": "lab",
+    "id": "cvss-builder"
+   },
+   {
+    "type": "flags",
+    "min": 3
+   }
+  ]
+ },
+ {
+  "id": "cloud",
+  "title": "Path to Cloud Defender",
+  "blurb": "Identity, cloud configuration and the software supply chain: where modern breaches happen.",
+  "career": "cloud",
+  "steps": [
+   {
+    "type": "lesson",
+    "id": "identity"
+   },
+   {
+    "type": "lesson",
+    "id": "cloud"
+   },
+   {
+    "type": "lesson",
+    "id": "encryption"
+   },
+   {
+    "type": "lesson",
+    "id": "supply-chain"
+   },
+   {
+    "type": "lesson",
+    "id": "vuln-management"
+   },
+   {
+    "type": "lab",
+    "id": "cvss-builder"
+   }
+  ]
+ }
 ]

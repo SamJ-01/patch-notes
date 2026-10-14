@@ -56,7 +56,7 @@ python3 build.py                        # full refresh (a few minutes: NVD rate 
 python3 build.py --reuse-cves --serve   # refresh news only, then preview at http://localhost:8000
 python3 build.py --offline --serve      # rebuild from saved data (for editing content/design)
 python3 -m unittest discover -s tests   # Python tests
-node --test tests/page.test.mjs         # page logic tests (CVSS maths, glossary matching)
+node --test tests/page.test.mjs tests/missions.test.mjs   # page logic + Mission Engine tests
 ```
 
 A free [NVD API key](https://nvd.nist.gov/developers/request-an-api-key) makes CVE fetching about 10× faster: `export NVD_API_KEY=...`

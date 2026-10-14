@@ -306,6 +306,7 @@ def main():
         "trends": trends(rows, cwe),
         "lessons": lessons,
         "labs": load("labs.json"),
+        "missions": [json.loads(p.read_text()) for p in sorted((CONTENT / "missions").glob("*.json"))],
         "paths": load("paths.json"),
         "stack": load("stack.json"),
         "quiz": load("quiz.json"),
@@ -342,7 +343,7 @@ def main():
     kev = len(data["kev"])
     print(f"\nBuilt {out}  ({out.stat().st_size / 1e6:.1f} MB page + {(SITE_DIR / 'data' / 'cves.json').stat().st_size / 1e6:.1f} MB CVE data)")
     print(f"  {len(stories)} stories · {len(rows)} CVEs ({kev} exploited) · {len(lessons)} lessons + pages · "
-          f"{len(data['labs'])} labs · {len(data['paths'])} paths · {len(explainers)} story explanations")
+          f"{len(data['missions'])} missions · {len(data['labs'])} labs · {len(data['paths'])} paths · {len(explainers)} story explanations")
     gaps = unexplained(stories, data["glossary"], cwe)
     if gaps:
         DATA_DIR.mkdir(exist_ok=True)

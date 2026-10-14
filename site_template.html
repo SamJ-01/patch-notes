@@ -88,7 +88,11 @@ kbd { font: 500 0.72rem var(--font-mono); border: 1px solid var(--line); border-
 .cmd-btn::before { content: "$"; color: var(--sun); }
 .cmd-btn:hover { border-color: var(--brand); color: var(--ink); }
 nav.tabs { border-top: 1px solid var(--line); }
-.tabs-inner { max-width: 1120px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 2px; padding-block: 6px; }
+.tabs-inner { max-width: 1120px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 4px 14px; padding-block: 6px; align-items: center; }
+.tab-group { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; }
+.tab-group + .tab-group { border-left: 1px solid var(--line); padding-left: 12px; }
+.tab-group.updates { margin-left: auto; }
+.tab-label { font: 500 0.66rem var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
 nav.tabs a { text-decoration: none; color: var(--muted); font: 500 0.88rem var(--font-mono); padding: 6px 12px; border-radius: 4px; display: inline-flex; gap: 8px; align-items: center; border: 1px solid transparent; }
 nav.tabs a kbd { font-size: 0.66rem; padding: 0 4px; }
 nav.tabs a:hover { color: var(--ink); background: var(--surface); border-color: var(--line); }
@@ -433,6 +437,58 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .flag-form input { flex: 1 1 240px; font: 0.9rem var(--font-mono); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 9px 12px; min-width: 0; }
 
 
+/* ---------- Missions ---------- */
+.mission { display: grid; gap: 18px; }
+.mode-tabs .chip[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand); border-color: rgba(63, 224, 232, 0.5); }
+.mode-intro { color: var(--muted); max-width: 75ch; }
+.mission-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.stage-box { position: relative; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.stage-box svg { width: 100%; height: auto; display: block; }
+.m-link { stroke: #2A3A50; stroke-width: 3; }
+.m-dev rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: stroke 0.2s; }
+.m-dev.talk rect { stroke: var(--brand); stroke-width: 2.5; }
+.m-dev.ok rect { stroke: var(--good); }
+.m-dev.bad rect { stroke: var(--exploited); }
+.m-dev text { fill: var(--ink); font-family: var(--font-mono); }
+.m-ico { font-size: 13px; font-weight: 600; fill: var(--sun) !important; }
+.m-name { font-size: 14px; font-family: var(--font-body) !important; font-weight: 600; }
+.m-ip { font-size: 13.5px; fill: var(--brand) !important; }
+.m-status { font-size: 12.5px; fill: var(--muted) !important; }
+.m-pkt { cursor: pointer; }
+.m-pkt rect { fill: var(--sun); }
+.m-pkt text { fill: var(--sun-ink); font: 600 12.5px var(--font-mono); }
+.m-pkt:focus-visible rect { stroke: var(--ink); stroke-width: 2; }
+.bubbles { position: absolute; inset: 0; pointer-events: none; }
+.bubble { position: absolute; max-width: 42%; background: var(--surface-2); color: var(--ink); border: 1px solid rgba(63, 224, 232, 0.45); border-radius: 8px; padding: 6px 9px; font-size: 0.78rem; line-height: 1.35; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45); }
+.bubble.say { border-color: var(--sun); }
+.bubble.quiet { opacity: 0.75; border-style: dashed; border-color: var(--line); }
+.m-controls { margin-top: 10px; }
+.m-speed { font: 0.8rem var(--font-mono); color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+.m-speed select { padding: 6px 8px; }
+.simplification { margin-top: 10px; }
+.simplification p { font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
+.m-toggle { font: 0.78rem var(--font-mono); color: var(--muted); display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.fields { margin: 0; display: grid; gap: 8px; }
+.fields div { display: grid; gap: 2px; border-left: 2px solid var(--line); padding-left: 10px; }
+.fields dt { font: 500 0.7rem var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.fields dd { margin: 0; display: grid; gap: 2px; font-size: 0.88rem; }
+.fields code { font-family: var(--font-mono); color: var(--sun); overflow-wrap: anywhere; }
+.transcript { margin: 0; padding-left: 22px; display: grid; gap: 6px; font-size: 0.9rem; }
+.transcript:empty::before { content: "Nothing yet. Press Play or Step, or use a tool."; color: var(--muted); }
+.warnline { color: var(--likely); }
+.tool-group { display: grid; gap: 6px; margin-top: 8px; }
+.tool-group .chip { font-size: 0.76rem; text-align: left; }
+.console { max-height: 220px; margin-top: 10px; }
+.findings { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 0.88rem; }
+.rc { border-top: 1px dashed var(--line); padding-top: 10px; margin-top: 6px; display: grid; gap: 8px; }
+.debrief { border-color: rgba(61, 220, 151, 0.45); }
+@media (max-width: 900px) { .mission-grid { grid-template-columns: 1fr; } .bubble { max-width: 60%; font-size: 0.7rem; } }
+
+/* ---------- Dashboard ---------- */
+.view-head h1 .accent { font-style: normal; color: var(--brand); }
+.continue { border-color: rgba(63, 224, 232, 0.4); }
+.changelog h2 { font: 700 clamp(1.3rem, 3.4vw, 1.8rem)/1.1 var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; }
+
 /* ---------- Welcome ---------- */
 .welcome { border-color: rgba(63, 224, 232, 0.4); }
 .welcome-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
@@ -504,6 +560,8 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
   .xp-log li .mono { display: none; }
   body.has-status { padding-bottom: 0; }
   nav.tabs a kbd { display: none; }
+  .tab-group.updates { margin-left: 0; }
+  .tab-group + .tab-group { border-left: 0; padding-left: 0; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .toast { animation: pop 0.25s ease-out; }
@@ -520,14 +578,21 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
     <div class="xp" id="xp" title="Earn XP by finishing lessons, games, flags and the daily challenge"></div>
   </div>
   <nav class="tabs" aria-label="Sections"><div class="tabs-inner">
-    <a href="#today" data-tab="today"><kbd>1</kbd>today</a>
-    <a href="#news" data-tab="news"><kbd>2</kbd>news</a>
-    <a href="#cves" data-tab="cves"><kbd>3</kbd>cve-radar</a>
-    <a href="#learn" data-tab="learn"><kbd>4</kbd>learn</a>
-    <a href="#labs" data-tab="labs"><kbd>5</kbd>labs</a>
-    <a href="#play" data-tab="play"><kbd>6</kbd>play</a>
-    <a href="#careers" data-tab="careers"><kbd>7</kbd>careers</a>
-    <a href="#progress" data-tab="progress"><kbd>8</kbd>progress</a>
+    <div class="tab-group" role="group" aria-label="Learn">
+      <a href="#today" data-tab="today"><kbd>1</kbd>home</a>
+      <a href="#missions" data-tab="missions"><kbd>2</kbd>missions</a>
+      <a href="#learn" data-tab="learn"><kbd>3</kbd>learn</a>
+      <a href="#play" data-tab="play"><kbd>4</kbd>play</a>
+    </div>
+    <div class="tab-group" role="group" aria-label="You">
+      <a href="#careers" data-tab="careers"><kbd>5</kbd>careers</a>
+      <a href="#progress" data-tab="progress"><kbd>6</kbd>progress</a>
+    </div>
+    <div class="tab-group updates" role="group" aria-label="Updates">
+      <span class="tab-label" aria-hidden="true">updates</span>
+      <a href="#news" data-tab="news"><kbd>7</kbd>news</a>
+      <a href="#cves" data-tab="cves"><kbd>8</kbd>cve-radar</a>
+    </div>
   </div></nav>
 </header>
 
@@ -687,7 +752,7 @@ function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0;
 /* ---------- progress & XP (stored only in this browser) ---------- */
 const PKEY = "patch-notes-progress";
 const RANKS = [[0, "guest"], [100, "intern"], [300, "analyst"], [700, "hunter"], [1500, "responder"], [3000, "root"]];
-const FRESH = () => ({ xp: 0, done: {}, daily: null, streak: 0, lastDaily: null, best: {}, flags: {}, labs: {}, labSteps: {}, paths: {}, terms: {}, read: {}, badges: {}, stack: null, log: [] });
+const FRESH = () => ({ xp: 0, done: {}, daily: null, streak: 0, lastDaily: null, best: {}, flags: {}, labs: {}, labSteps: {}, paths: {}, terms: {}, read: {}, badges: {}, stack: null, log: [], days: {}, missions: {} });
 let P = FRESH();
 try { P = Object.assign(P, JSON.parse(localStorage.getItem(PKEY)) || {}); } catch (e) {}
 const saveP = () => { try { localStorage.setItem(PKEY, JSON.stringify(P)); } catch (e) {} };
@@ -719,7 +784,7 @@ function showToast() {
   document.body.appendChild(t);
   setTimeout(() => { t.remove(); toasts.shift(); showToast(); }, 2300);
 }
-function gain(n, why) { P.xp += n; P.log.unshift({ d: todayStr(), n, why }); P.log = P.log.slice(0, 40); }
+function gain(n, why) { P.xp += n; P.days = P.days || {}; P.days[todayStr()] = 1; P.log.unshift({ d: todayStr(), n, why }); P.log = P.log.slice(0, 40); }
 function award(n, why, { quiet = false } = {}) {
   const before = rank().name;
   gain(n, why);
@@ -740,8 +805,9 @@ const BADGES = [
   { id: "ctf", name: "CTF champion", desc: "Capture all 3 flags", test: () => count(P.flags) >= 3 },
   { id: "phish-proof", name: "Phish-proof", desc: "Spot every email in Phish or Legit", test: () => (P.best.phish || 0) >= DATA.phish.length },
   { id: "quiz-ace", name: "Quiz ace", desc: "Score 10/10 in the quiz", test: () => (P.best.quiz || 0) >= 10 },
-  { id: "streak-3", name: "On a roll", desc: "3-day challenge streak", test: () => (P.streak || 0) >= 3 },
-  { id: "streak-7", name: "Habit formed", desc: "7-day challenge streak", test: () => (P.streak || 0) >= 7 },
+  { id: "returning", name: "Returning learner", desc: "Practise on 3 different days", test: () => count(P.days) >= 3 },
+  { id: "regular", name: "Regular", desc: "Practise on 7 different days", test: () => count(P.days) >= 7 },
+  { id: "first-mission", name: "Mission complete", desc: "Finish any mission mode", test: () => Object.values(P.missions || {}).some(m => count(m) > 0) },
   { id: "pathfinder", name: "Pathfinder", desc: "Complete a learning path", test: () => count(P.paths) >= 1 },
   { id: "word-nerd", name: "Word nerd", desc: "Look up 25 glossary terms", test: () => count(P.terms) >= 25 },
   { id: "informed", name: "Informed", desc: "Read 10 story explanations", test: () => count(P.read) >= 10 },
@@ -755,6 +821,7 @@ function pathSteps(p) {
   return p.steps.map(st => {
     if (st.type === "lesson") return { ...st, label: LESSON[st.id]?.title || st.id, href: "#lesson-" + st.id, done: !!P.done[st.id], kind: "lesson" };
     if (st.type === "lab") { const l = DATA.labs.find(x => x.id === st.id); return { ...st, label: l ? l.title : st.id, href: "#lab-" + st.id, done: !!P.labs[st.id], kind: "lab" }; }
+    if (st.type === "mission") { const m = MISSION(st.id); return { ...st, label: m ? `${m.title} (${m.modes[st.mode]?.label || st.mode} mode)` : st.id, href: "#mission-" + st.id, done: !!(P.missions && P.missions[st.id] && P.missions[st.id][st.mode]), kind: "mission" }; }
     if (st.type === "game") return { ...st, label: `Score ${st.min}+ in Phish or Legit`, href: "#play", done: (P.best.phish || 0) >= st.min, kind: "game" };
     if (st.type === "flags") return { ...st, label: `Capture ${st.min} hidden flag${st.min > 1 ? "s" : ""}`, href: "#play", done: count(P.flags) >= st.min, kind: "ctf", flags: true };
     return { ...st, label: st.type, href: "#learn", done: false, kind: st.type };
@@ -806,55 +873,50 @@ VIEWS.today = () => {
   const trend = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   const top = trend[0];
   const lesson = DATA.lessons[dayNumber() % DATA.lessons.length];
-  const featured = news.filter(n => n.topics.length).slice(0, 7);
+  const featured = news.filter(n => n.topics.length);
 
   main.innerHTML = `<div class="view">
     ${P.intro ? "" : welcomeHtml()}
-    <section class="changelog" aria-labelledby="today-h">
-      <div class="win-bar"><b>today.log</b><span>v${esc(m.version)} · ${esc(m.dateLong)}</span></div>
-      <div class="win-body">
-      <div class="ver"><span class="ps">guest@patchnotes</span>:<i style="font-style:normal;color:var(--sun)">~$</i> patchnotes --since ${m.days}d --explain</div>
-      <h1 id="today-h">What changed on <em>the internet</em> this week</h1>
-      <ul>
-        <li><span class="mk add">+</span><span><a href="#news">${news.length} stories</a> from ${sources} security outlets, each linked to a lesson that explains it.</span></li>
-        <li><span class="mk warn">!</span><span><a href="#cves" data-radar-prio="1">${kev.length} ${kev.length === 1 ? "vulnerability" : "vulnerabilities"}</a> newly confirmed as actively exploited. These get patched first.</span></li>
-        <li><span class="mk add">+</span><span><a href="#cves">${m.cveCount.toLocaleString()} new CVEs</a> published in the last ${m.days} days.</span></li>
-        ${top ? `<li><span class="mk trend">~</span><span>Most-covered topic: <a href="#lesson-${esc(top[0])}">${esc(TOPIC_NAME(top[0]))}</a>, in ${top[1]} stories.</span></li>` : ""}
-        <li><span class="mk trend">?</span><span>New here? Press <kbd>/</kbd> and type <a href="#" data-cmd="help">help</a>. There are 3 hidden flags on this site.</span></li>
-      </ul>
-      <div class="ver"><span class="ps">guest@patchnotes</span>:<i style="font-style:normal;color:var(--sun)">~$</i> <span class="caret"></span></div>
-      </div>
-    </section>
-
+    <div class="view-head"><div class="eyebrow">Home</div><h1>Learn it. Break it. <em class="accent">Understand it.</em></h1>
+      <p>Visual, hands-on cyber security: simulations you can poke at, plain-English lessons, and this week's news explained.</p></div>
     <div class="split">
-      <div class="stack" style="gap:28px">
-        <section class="panel">
-          <div class="panel-title"><h2>Top stories</h2><a class="link-btn" href="#news">All ${news.length} stories →</a></div>
-          <p class="hint">New to this? Hover over or tap any <span class="term">dotted word</span> for a plain-English explanation.</p>
-          <div class="stories">${featured.map(storyHtml).join("")}</div>
+      <div class="stack" style="gap:18px">
+        ${continueCard()}
+        ${missionSuggestionCard()}
+        <section class="changelog" aria-labelledby="today-h">
+          <div class="win-bar"><b>this-week.log</b><span>v${esc(m.version)} · ${esc(m.dateLong)}</span></div>
+          <div class="win-body">
+          <div class="ver"><span class="ps">guest@patchnotes</span>:<i style="font-style:normal;color:var(--sun)">~$</i> patchnotes --since ${m.days}d --explain</div>
+          <h2 id="today-h">This week in security</h2>
+          <ul>
+            <li><span class="mk add">+</span><span><a href="#news">${news.length} stories</a> from ${sources} outlets, each linked to a lesson that explains it.</span></li>
+            <li><span class="mk warn">!</span><span><a href="#cves" data-radar-prio="1">${kev.length} ${kev.length === 1 ? "vulnerability" : "vulnerabilities"}</a> newly confirmed as actively exploited. These get patched first.</span></li>
+            <li><span class="mk add">+</span><span><a href="#cves">${m.cveCount.toLocaleString()} new CVEs</a> published in the last ${m.days} days.</span></li>
+            ${top ? `<li><span class="mk trend">~</span><span>Most-covered topic: <a href="#lesson-${esc(top[0])}">${esc(TOPIC_NAME(top[0]))}</a>, in ${top[1]} stories.</span></li>` : ""}
+          </ul>
+          </div>
         </section>
         <section class="panel">
-          <div class="panel-title"><h2>Trending this week</h2><span class="eyebrow">stories per topic</span></div>
-          <div class="bars">${trend.slice(0, 8).map(([t, n]) => `
-            <button class="bar-row" data-news-topic="${esc(t)}"><span class="lbl">${esc(TOPIC_NAME(t))}</span>
-            <span class="trk" aria-hidden="true"><i style="width:${Math.round(n / trend[0][1] * 100)}%"></i></span><span class="v">${n}</span></button>`).join("")}</div>
+          <div class="panel-title"><h2>Top stories</h2><a class="link-btn" href="#news">All ${news.length} stories →</a></div>
+          <p class="hint">Hover over or tap any <span class="term">dotted word</span> for a plain-English explanation.</p>
+          <div class="stories">${featured.slice(0, 5).map(storyHtml).join("")}</div>
         </section>
       </div>
       <aside class="stack" style="gap:18px">
-        ${stackCard()}
         <section class="panel" id="daily"></section>
-        ${nextStepCard()}
+        ${stackCard()}
         <section class="panel">
           <div class="eyebrow">Concept of the day · ${lesson.minutes} min</div>
           <h2>${esc(lesson.title)}</h2>
           <p class="muted">${esc(lesson.hook)}</p>
-          <a class="btn brand" href="#lesson-${esc(lesson.id)}" style="justify-self:start">Learn it</a>
+          <a class="btn" href="#lesson-${esc(lesson.id)}" style="justify-self:start">Learn it</a>
         </section>
         <section class="panel">
           <div class="panel-title"><h2>Patch these first</h2><a class="link-btn" href="#cves" data-radar-prio="1">Radar →</a></div>
           <p class="muted" style="font-size:0.88rem">Added to CISA's Known Exploited list in the last ${m.days} days.</p>
-          <div class="kev-list">${kev.slice(0, 6).map(c => `<div class="kev-item"><b>${esc(c.kev.name)}</b><span>${esc(c.id)} · added ${esc(c.kev.added)}${c.kev.ransomware ? " · used by ransomware" : ""}</span></div>`).join("") || '<p class="muted">None this week.</p>'}</div>
+          <div class="kev-list">${kev.slice(0, 5).map(c => `<div class="kev-item"><b>${esc(c.kev.name)}</b><span>${esc(c.id)} · added ${esc(c.kev.added)}${c.kev.ransomware ? " · used by ransomware" : ""}</span></div>`).join("") || '<p class="muted">None this week.</p>'}</div>
         </section>
+        <p class="hint">Tip: press <kbd>/</kbd> to search or type commands. There are 3 hidden flags on this site.</p>
       </aside>
     </div>
   </div>`;
@@ -905,14 +967,25 @@ function stackCard() {
     ${advice || `<p class="muted" style="font-size:0.9rem">No exploited or critical vulnerabilities for your stack ${CVES_READY ? "this week" : "in the exploited list"}. Nice.</p>`}
   </section>`;
 }
-function nextStepCard() {
-  const p = DATA.paths.find(p => !P.paths[p.id] && pathSteps(p).some(s => s.done)) || DATA.paths.find(p => !P.paths[p.id]);
+function continueCard() {
+  const started = DATA.paths.find(p => !P.paths[p.id] && pathSteps(p).some(st => st.done));
+  const p = started || DATA.paths.find(p => p.id === "soc" && !P.paths[p.id]) || DATA.paths.find(p => !P.paths[p.id]);
   if (!p) return "";
-  const steps = pathSteps(p), next = steps.find(s => !s.done), done = steps.filter(s => s.done).length;
-  return `<section class="panel"><div class="eyebrow">Your path · ${done}/${steps.length}</div><h2>${esc(p.title)}</h2>
-    <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(done / steps.length * 100)}%"></i></span></div>
-    <p class="muted" style="font-size:0.9rem">Next: ${esc(next.label)}</p>
-    <div class="row"><a class="btn brand" href="${next.href}">Continue</a><a class="link-btn" href="#path-${esc(p.id)}">See path</a></div></section>`;
+  const steps = pathSteps(p), next = steps.find(st => !st.done), done = steps.filter(st => st.done).length;
+  return `<section class="panel continue"><div class="eyebrow">${started ? "Pick up where you left off" : "Suggested path"} · ${done}/${steps.length}</div>
+    <h2>${esc(p.title)}</h2>
+    <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(done / steps.length * 100)}%"></i></span></div>
+    <p>Next: <strong>${esc(next.label)}</strong> <span class="muted">(${esc(next.kind)})</span></p>
+    <div class="row"><a class="btn brand" href="${next.href}">${started ? "Continue" : "Start"}</a><a class="link-btn" href="#path-${esc(p.id)}">See the whole path</a></div></section>`;
+}
+function missionSuggestionCard() {
+  const m = DATA.missions.find(x => !count((P.missions || {})[x.id])) || DATA.missions[0];
+  if (!m) return "";
+  const modesDone = Object.keys((P.missions || {})[m.id] || {});
+  return `<section class="panel"><div class="eyebrow">Mission · ${m.minutes} min · ${esc(m.topic)}</div>
+    <h2>${esc(m.title)}</h2><p class="muted">${esc(m.summary)}</p>
+    <div class="row">${Object.keys(m.modes).map(k => `<span class="pchip">${modesDone.includes(k) ? "✓ " : ""}${esc(m.modes[k].label)}</span>`).join("")}</div>
+    <a class="btn brand" href="#mission-${esc(m.id)}" style="justify-self:start">Open mission</a></section>`;
 }
 VIEWS.stack = () => {
   const chosen = new Set(P.stack || []);
@@ -939,7 +1012,7 @@ function renderDaily() {
   const q = DATA.quiz[dayNumber() % DATA.quiz.length];
   const today = todayStr();
   const answered = P.daily && P.daily.date === today ? P.daily.choice : null;
-  box.innerHTML = `<div class="panel-title"><div class="eyebrow">Daily challenge</div><span class="eyebrow">Streak: ${P.streak || 0} day${P.streak === 1 ? "" : "s"}</span></div>`;
+  box.innerHTML = `<div class="panel-title"><div class="eyebrow">Daily challenge</div><span class="eyebrow">Days practised: ${count(P.days)}</span></div>`;
   box.appendChild(quizBlock(q, {
     answered,
     onAnswer: (choice, correct) => {
@@ -949,7 +1022,7 @@ function renderDaily() {
       P.lastDaily = today; P.daily = { date: today, choice };
       saveP();
       if (correct) award(20, "Daily challenge"); else renderXP();
-      box.querySelector(".eyebrow:last-child").textContent = `Streak: ${P.streak} day${P.streak === 1 ? "" : "s"}`;
+      box.querySelector(".eyebrow:last-child").textContent = `Days practised: ${count(P.days)}`;
       const more = document.createElement("p");
       more.className = "muted"; more.style.fontSize = "0.88rem";
       more.innerHTML = `New question tomorrow. ${LESSON[q.topic] ? `Brush up: <a href="#lesson-${esc(q.topic)}">${esc(LESSON[q.topic].title)}</a>` : ""}`;
@@ -1336,6 +1409,7 @@ function lessonView(id) {
     <section><h2>What it is</h2><p>${gloss(l.what, 6, lseen)}</p></section>
     <section class="case"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h3>${esc(l.example.title)}</h3><p>${gloss(l.example.text, 4, lseen)}</p>${l.example.source ? `<p class="muted" style="font-size:0.85rem">Source: <a href="${esc(l.example.source.url)}" target="_blank" rel="noopener">${esc(l.example.source.label)} ↗</a></p>` : ""}</section>
     <section><h2>How defenders stop it</h2><ul class="checklist">${l.defend.map(d => `<li>${esc(d)}</li>`).join("")}</ul></section>
+    ${DATA.missions.filter(m => m.lesson === l.id).map(m => `<section class="panel continue"><div class="eyebrow">Interactive mission · ${m.minutes} min</div><h2>${esc(m.title)}</h2><p class="muted">${esc(m.summary)}</p><a class="btn brand" href="#mission-${esc(m.id)}" style="justify-self:start">Open the mission</a></section>`).join("")}
     <section><h2>Try it yourself</h2><p><a class="btn brand" href="${esc(l.practice.url)}" ${internal ? "" : 'target="_blank" rel="noopener"'}>${esc(l.practice.label)}${internal ? "" : " ↗"}</a></p></section>
     <section class="panel" id="lcheck"><div class="panel-title"><h2>Check yourself</h2>${P.done[id] ? '<span class="eyebrow" style="color:var(--good)">Completed</span>' : '<span class="eyebrow">+25 XP</span>'}</div></section>
     ${related.length ? `<section class="panel"><h2>In the news this week</h2><div class="stories">${related.map(storyHtml).join("")}</div></section>` : ""}
@@ -1396,25 +1470,53 @@ VIEWS.glossary = () => {
 
 /* LABS */
 const LAB = Object.fromEntries(DATA.labs.map(l => [l.id, l]));
-VIEWS.labs = () => {
+VIEWS.missions = () => {
   main.innerHTML = `<div class="view">
-    <div class="view-head"><div class="eyebrow">Labs</div><h1>Hands-on practice</h1>
-      <p>Real tasks security analysts do every day, with realistic (made-up) evidence. Finish a lab for +${LAB_XP} XP. Everything runs in your browser.</p></div>
+    <div class="view-head"><div class="eyebrow">Missions</div><h1>Learn it. Break it. Understand it.</h1>
+      <p>Interactive simulations of real systems: watch what happens, change things, diagnose problems. They run entirely in your browser; nothing real is attacked or executed.</p></div>
+    ${DATA.missions.length ? `<section class="stack"><h2 class="eyebrow" style="font-size:0.8rem">Simulations</h2><div class="lessons">${DATA.missions.map(missionCard).join("")}</div></section>` : ""}
+    <section class="stack"><h2 class="eyebrow" style="font-size:0.8rem">Investigation labs</h2><p class="muted" style="font-size:0.9rem">Work through realistic (made-up) evidence. +${LAB_XP} XP each.</p>
     <div class="lessons">${DATA.labs.map(l => `<a class="lcard" href="#lab-${esc(l.id)}">${P.labs[l.id] ? '<span class="done">DONE</span>' : ""}
-      <span class="eyebrow">${esc(l.track)}</span><h3>${esc(l.title)}</h3><p>${esc(l.skill)}</p><span class="lmeta"><span>${l.minutes} min</span><span>+${LAB_XP} XP</span></span></a>`).join("")}</div>
+      <span class="eyebrow">${esc(l.track)}</span><h3>${esc(l.title)}</h3><p>${esc(l.skill)}</p><span class="lmeta"><span>${l.minutes} min</span><span>+${LAB_XP} XP</span></span></a>`).join("")}</div></section>
   </div>`;
 };
+function missionCard(m) {
+  const done = Object.keys((P.missions || {})[m.id] || {});
+  const all = Object.keys(m.modes);
+  return `<a class="lcard mission-card" href="#mission-${esc(m.id)}">${done.length === all.length ? '<span class="done">DONE</span>' : ""}
+    <span class="eyebrow">${esc(m.topic)}</span><h3>${esc(m.title)}</h3><p>${esc(m.summary)}</p>
+    <span class="lmeta"><span>${m.minutes} min</span><span>${all.map(k => (done.includes(k) ? "✓ " : "") + esc(m.modes[k].label)).join(" · ")}</span></span></a>`;
+}
+const MISSION = id => DATA.missions.find(x => x.id === id);
+function missionView(id) {
+  const m = MISSION(id); if (!m) return VIEWS.missions();
+  main.innerHTML = `<div class="view" id="mission-root"><div class="empty">Loading mission…</div></div>`;
+  import("./js/missions/ui.js").then(ui => {
+    if (parseRoute().path !== "missions/" + id) return;  // the learner navigated away while it loaded
+    ui.mount($("mission-root"), m, {
+      doneModes: Object.keys((P.missions || {})[id] || {}),
+      onComplete: mode => {
+        P.missions = P.missions || {}; P.missions[id] = P.missions[id] || {};
+        if (P.missions[id][mode]) return;
+        P.missions[id][mode] = todayStr();
+        award(m.modes[mode].xp, `Mission: ${m.title} (${m.modes[mode].label})`);
+      },
+    });
+  }).catch(() => {
+    $("mission-root").innerHTML = `<div class="empty">Couldn't load the mission code (js/missions/ui.js). If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`;
+  });
+}
 function completeLab(l) {
   if (P.labs[l.id]) return;
   P.labs[l.id] = todayStr(); award(LAB_XP, `Lab complete: ${l.title}`);
 }
 const norm = v => String(v || "").trim().toLowerCase().replace(/^["'<]+|[">']+$/g, "");
 function labView(id) {
-  const l = LAB[id]; if (!l) return VIEWS.labs();
+  const l = LAB[id]; if (!l) return VIEWS.missions();
   if (l.kind === "cvss") return cvssLab(l);
   const solved = new Set(P.labSteps[id] || []);
   main.innerHTML = `<div class="view"><article class="article" style="max-width:900px">
-    <a class="link-btn" href="#labs">← Labs</a>
+    <a class="link-btn" href="#missions">← Missions</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${l.minutes} min · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.intro)}</p></div>
     <section class="panel"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
       ${l.artifact.kind === "log" ? `<div class="row"><label class="sr" for="lab-f">Filter lines</label><span class="mono" style="color:var(--sun)">grep</span><input id="lab-f" type="search" placeholder="e.g. Failed password" autocomplete="off" spellcheck="false"></div>` : ""}
@@ -1488,7 +1590,7 @@ function cvssLab(l) {
   const draw = () => {
     const sc = l.scenarios[cur], score = cvss31(pick), vec = CVSS_METRICS.map(([k]) => `${k}:${pick[k]}`).join("/");
     main.innerHTML = `<div class="view"><article class="article" style="max-width:900px">
-      <a class="link-btn" href="#labs">← Labs</a>
+      <a class="link-btn" href="#missions">← Missions</a>
       <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${done.size}/${l.scenarios.length} scenarios · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.intro)}</p></div>
       <div class="row">${l.scenarios.map((x, i) => `<button class="chip" data-sc="${i}" aria-pressed="${i === cur}">${done.has(i) ? "✓ " : ""}${esc(x.title)}</button>`).join("")}</div>
       <section class="case"><div class="eyebrow">Scenario ${cur + 1}</div><h3>${esc(sc.title)}</h3><p>${esc(sc.text)}</p></section>
@@ -1521,10 +1623,11 @@ function cvssLab(l) {
 let resetArmed = 0;
 VIEWS.progress = () => {
   const r = rank(), prog = r.next ? (P.xp - r.floor) / (r.next - r.floor) : 1;
-  const stats = [["XP", P.xp], ["Lessons", `${count(P.done)}/${DATA.lessons.length}`], ["Labs", `${count(P.labs)}/${DATA.labs.length}`], ["Flags", `${count(P.flags)}/3`], ["Paths", `${count(P.paths)}/${DATA.paths.length}`], ["Streak", `${P.streak || 0}d`], ["Terms", count(P.terms)], ["Badges", `${count(P.badges)}/${BADGES.length}`]];
+  const stats = [["XP", P.xp], ["Lessons", `${count(P.done)}/${DATA.lessons.length}`], ["Labs", `${count(P.labs)}/${DATA.labs.length}`], ["Flags", `${count(P.flags)}/3`], ["Paths", `${count(P.paths)}/${DATA.paths.length}`], ["Days practised", count(P.days)], ["Terms", count(P.terms)], ["Badges", `${count(P.badges)}/${BADGES.length}`]];
   main.innerHTML = `<div class="view">
     <div class="view-head"><div class="eyebrow">Progress</div><h1>uid=${esc(r.name)}</h1>
-      <p>${r.next ? `${(r.next - P.xp).toLocaleString()} XP to <strong>${esc(r.nextName)}</strong>.` : "Top access level reached. You are root."} Progress is saved in this browser only.</p></div>
+      <p>${r.next ? `${(r.next - P.xp).toLocaleString()} XP to <strong>${esc(r.nextName)}</strong>.` : "Top access level reached. You are root."} Progress is saved in this browser only.</p>
+      <p class="hint">Levels and badges track your practice on Patch Notes. They aren't qualifications or certifications.</p></div>
     <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(prog * 100)}%;background:var(--sun)"></i></span><span class="mono">${RANKS.map(x => x[1]).join(" → ")}</span></div>
     <div class="stat-row">${stats.map(([k, v]) => `<div class="stat"><span class="eyebrow">${k}</span><b>${v}</b></div>`).join("")}</div>
     <section class="stack"><h2 class="eyebrow" style="font-size:0.8rem">Badges</h2>
@@ -1675,7 +1778,7 @@ function renderStatus() {
   bar.innerHTML = `<span class="mode">${esc(mode)}</span>
     <span class="live">${new Set(DATA.news.map(n => n.source)).size} feeds · ${DATA.news.length} stories · ${kev} KEV · updated ${esc(DATA.meta.generated)}</span>
     <span class="grow"></span>
-    <span>flags ${flags}/3</span><span>badges ${count(P.badges)}/${BADGES.length}</span><span>streak ${P.streak || 0}d</span>
+    <span>flags ${flags}/3</span><span>badges ${count(P.badges)}/${BADGES.length}</span>
     <span class="lvl">uid=${esc(r.name)} · ${P.xp} xp</span>
     <span><button type="button" data-cmd="help">? help</button></span>`;
 }
@@ -1707,11 +1810,11 @@ try {
 /* ---------- command palette ---------- */
 const cmdk = $("cmdk"), cmdIn = $("cmdk-input"), cmdOut = $("cmdk-out");
 let cmdLog = [], cmdSel = 0, cmdItems = [], sudoTried = false;
-const SECTIONS = [["today", "Daily briefing"], ["news", "Security news, explained"], ["cves", "CVE Radar"], ["learn", "Lessons & paths"], ["glossary", "Glossary A–Z"], ["labs", "Hands-on labs"], ["play", "Games & flag hunt"], ["careers", "Career paths & resources"], ["progress", "Your XP, badges & level"], ["stack", "Am I affected? (your tech)"]];
+const SECTIONS = [["today", "Daily briefing"], ["news", "Security news, explained"], ["cves", "CVE Radar"], ["learn", "Lessons & paths"], ["glossary", "Glossary A–Z"], ["missions", "Missions & labs"], ["play", "Games & flag hunt"], ["careers", "Career paths & resources"], ["progress", "Your XP, badges & level"], ["stack", "Am I affected? (your tech)"]];
 const HELP = [
   ["help", "show this list"], ["ls", "list sections"], ["cd <section>", "go to a section, e.g. cd news"],
   ["open <lesson>", "open a lesson, e.g. open ransomware"], ["define <term>", "explain a term, e.g. define rce"],
-  ["lab <name>", "open a lab, e.g. lab log"], ["path <name>", "open a learning path, e.g. path soc"], ["news <words>", "search headlines"], ["cve <id|product>", "search the CVE radar"], ["whoami", "your level, XP and progress"],
+  ["mission <name>", "open a mission, e.g. mission dhcp"], ["lab <name>", "open a lab, e.g. lab log"], ["path <name>", "open a learning path, e.g. path soc"], ["news <words>", "search headlines"], ["cve <id|product>", "search the CVE radar"], ["whoami", "your level, XP and progress"],
   ["flags", "hints for the 3 hidden flags"], ["submit flag{...}", "check a flag"], ["clear", "clear this screen"], ["exit", "close (or Esc)"],
 ];
 function openCmd(prefill = "", run = false) {
@@ -1726,6 +1829,7 @@ function searchAll(q) {
   q = q.toLowerCase(); const out = [];
   const hit = (str) => str.toLowerCase().includes(q);
   SECTIONS.forEach(([id, label]) => { if (hit(id) || hit(label)) out.push({ k: "section", t: label, h: "#" + id, go: () => go(id) }); });
+  DATA.missions.forEach(m => { if (hit(m.title) || hit(m.topic) || hit(m.summary)) out.push({ k: "mission", t: m.title, h: m.minutes + " min", go: () => go("mission-" + m.id) }); });
   DATA.labs.forEach(l => { if (hit(l.title) || hit(l.skill)) out.push({ k: "lab", t: l.title, h: l.minutes + " min", go: () => go("lab-" + l.id) }); });
   DATA.paths.forEach(p => { if (hit(p.title) || hit(p.id)) out.push({ k: "path", t: p.title, h: p.steps.length + " steps", go: () => go("path-" + p.id) }); });
   DATA.lessons.forEach(l => { if (hit(l.title) || hit(l.id) || hit(l.hook)) out.push({ k: "lesson", t: l.title, h: l.minutes + " min", go: () => go("lesson-" + l.id) }); });
@@ -1762,9 +1866,13 @@ async function runCmd(raw) {
     const g = DATA.glossary.find(g => g.term.toLowerCase() === m || g.aliases.some(a => a.toLowerCase() === m)) || DATA.glossary.find(g => g.term.toLowerCase().includes(m));
     if (m && g) define(g.id); else say(`No glossary entry for "${arg}" yet.`, "err");
   }
+  else if (c === "mission" || c === "missions") {
+    const ms = arg && DATA.missions.find(x => (x.id + " " + x.title).toLowerCase().includes(arg.toLowerCase()));
+    if (ms) go("mission-" + ms.id); else if (!arg) go("missions"); else say(`No mission matches "${arg}". Missions: ${DATA.missions.map(x => x.id).join(", ")}`, "err");
+  }
   else if (c === "lab" || c === "labs") {
     const l = arg && DATA.labs.find(l => (l.id + " " + l.title).toLowerCase().includes(arg.toLowerCase()));
-    if (l) go("lab-" + l.id); else if (!arg) go("labs"); else say(`No lab matches "${arg}". Labs: ${DATA.labs.map(l => l.id).join(", ")}`, "err");
+    if (l) go("lab-" + l.id); else if (!arg) go("missions"); else say(`No lab matches "${arg}". Labs: ${DATA.labs.map(l => l.id).join(", ")}`, "err");
   }
   else if (c === "path" || c === "paths") {
     const p = arg && DATA.paths.find(p => (p.id + " " + p.title).toLowerCase().includes(arg.toLowerCase()));
@@ -1776,7 +1884,7 @@ async function runCmd(raw) {
   else if (c === "whoami" || c === "id") {
     const r = rank();
     say(`uid=${r.name}  xp=${P.xp}${r.next ? `  next=${r.nextName} at ${r.next}` : ""}`, "ok");
-    say(`lessons ${Object.keys(P.done).length}/${DATA.lessons.length} · flags ${Object.keys(P.flags || {}).length}/3 · daily streak ${P.streak || 0}`);
+    say(`lessons ${Object.keys(P.done).length}/${DATA.lessons.length} · flags ${Object.keys(P.flags || {}).length}/3 · days practised ${count(P.days)}`);
   }
   else if (c === "flags" || c === "hint" || c === "hints") FLAG_INFO.forEach((f, i) => say(`${(P.flags || {})[i] ? "[x]" : "[ ]"} flag ${i + 1} · ${f.name}: ${f.hint}`));
   else if (c === "submit" || c.startsWith("flag{")) { const r = await checkFlag(c === "submit" ? arg : line); say(r.msg, r.ok ? "ok" : "err"); }
@@ -1798,7 +1906,7 @@ async function runCmd(raw) {
 function drawCmd() {
   const q = cmdIn.value.trim();
   const firstWord = q.split(/\s+/)[0].toLowerCase();
-  const isCmd = ["help", "ls", "cd", "open", "man", "define", "whatis", "news", "cve", "whoami", "flags", "submit", "sudo", "clear", "exit", "lab", "labs", "path", "paths", "progress", "badges"].includes(firstWord);
+  const isCmd = ["help", "ls", "cd", "open", "man", "define", "whatis", "news", "cve", "whoami", "flags", "submit", "sudo", "clear", "exit", "lab", "labs", "mission", "missions", "path", "paths", "progress", "badges"].includes(firstWord);
   cmdItems = q && !isCmd ? searchAll(q) : [];
   if (cmdSel >= cmdItems.length) cmdSel = 0;
   const log = cmdLog.map(l => `<div class="cmdk-line ${l.cls}">${esc(l.text).replace(/→ open (\S+)/, '→ <b>open $1</b>')}</div>`).join("");
@@ -1829,7 +1937,7 @@ document.addEventListener("keydown", e => {
   if (typing || !cmdk.hidden || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === "/") { e.preventDefault(); openCmd(); }
   else if (e.key === "?") { e.preventDefault(); openCmd("help", true); }
-  else if (/^[1-8]$/.test(e.key)) { const tabs = ["today", "news", "cves", "learn", "labs", "play", "careers", "progress"]; location.hash = tabs[Number(e.key) - 1]; }
+  else if (/^[1-8]$/.test(e.key)) { const tabs = ["today", "missions", "learn", "play", "careers", "progress", "news", "cves"]; location.hash = tabs[Number(e.key) - 1]; }
 });
 
 /* ---------- router ---------- */
@@ -1838,7 +1946,9 @@ function parseRoute() {
   const h = (location.hash || "#today").slice(1);
   if (h.startsWith("lesson-")) return { tab: "learn", path: "learn/" + h.slice(7), draw: () => lessonView(h.slice(7)) };
   if (h.startsWith("path-")) return { tab: "learn", path: "learn/paths/" + h.slice(5), draw: () => pathView(h.slice(5)) };
-  if (h.startsWith("lab-")) return { tab: "labs", path: "labs/" + h.slice(4), draw: () => labView(h.slice(4)) };
+  if (h.startsWith("lab-")) return { tab: "missions", path: "missions/" + h.slice(4), draw: () => labView(h.slice(4)) };
+  if (h.startsWith("mission-")) return { tab: "missions", path: "missions/" + h.slice(8), draw: () => missionView(h.slice(8)) };
+  if (h === "labs") return { tab: "missions", path: "missions", draw: VIEWS.missions };
   if (h === "glossary") return { tab: "learn", path: "learn/glossary", draw: VIEWS.glossary };
   if (h === "stack") return { tab: "today", path: "today/stack", draw: VIEWS.stack };
   const tab = VIEWS[h] ? h : "today";

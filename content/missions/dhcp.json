@@ -1,0 +1,656 @@
+{
+ "id": "dhcp",
+ "title": "Where do IP addresses come from?",
+ "topic": "Networking · DHCP",
+ "minutes": 15,
+ "lesson": "networking",
+ "summary": "Watch a PC get its IP address with DHCP, inspect every message, then fix a network where it's gone wrong.",
+ "simplification": "Simplified simulation: real DHCP messages carry more fields, and clients differ in small details (for example, some ask the server to reply directly instead of by broadcast). The four-step exchange, ports, addresses and options shown here are accurate.",
+ "devices": {
+  "pc": {
+   "label": "Your PC",
+   "kind": "pc",
+   "x": 90,
+   "y": 160,
+   "ip": "none yet",
+   "mask": "—",
+   "gateway": "—",
+   "dns": "—",
+   "dhcpEnabled": "Yes",
+   "method": "dhcp",
+   "mac": "3c:52:82:4a:10:7e",
+   "status": "No address yet"
+  },
+  "switch": {
+   "label": "Switch",
+   "kind": "switch",
+   "x": 320,
+   "y": 160,
+   "status": ""
+  },
+  "server": {
+   "label": "DHCP server",
+   "kind": "server",
+   "x": 555,
+   "y": 70,
+   "ip": "192.168.1.2",
+   "service": "running",
+   "status": "Ready to lease addresses"
+  },
+  "router": {
+   "label": "Router (gateway)",
+   "kind": "router",
+   "x": 555,
+   "y": 250,
+   "ip": "192.168.1.1",
+   "status": ""
+  }
+ },
+ "links": [
+  [
+   "pc",
+   "switch"
+  ],
+  [
+   "switch",
+   "server"
+  ],
+  [
+   "switch",
+   "router"
+  ]
+ ],
+ "messages": {
+  "discover": {
+   "name": "DHCP Discover",
+   "from": "pc",
+   "path": [
+    "pc",
+    "switch"
+   ],
+   "flood": [
+    "server",
+    "router"
+   ],
+   "say": "Is there a DHCP server out there? I need an IP address!",
+   "explain": "The PC has no address and doesn't know where the DHCP server is, so it shouts to everyone on the local network. The switch copies broadcasts out of every port.",
+   "reactions": {
+    "server": "A Discover! I'll offer an address.",
+    "router": "A broadcast. Routers don't pass these on to other networks, so I ignore it."
+   },
+   "fields": [
+    {
+     "name": "Message type",
+     "value": "DHCPDISCOVER (option 53 = 1)",
+     "explain": "Which of the four DHCP steps this is.",
+     "level": 1
+    },
+    {
+     "name": "Source IP",
+     "value": "0.0.0.0",
+     "explain": "The PC has no address yet, so it uses 'nobody'.",
+     "level": 1
+    },
+    {
+     "name": "Destination IP",
+     "value": "255.255.255.255",
+     "explain": "Broadcast: delivered to every device on this local network.",
+     "level": 1
+    },
+    {
+     "name": "Source MAC",
+     "value": "3c:52:82:4a:10:7e",
+     "explain": "The PC's network card's hardware address. This is how the server will recognise it.",
+     "level": 2
+    },
+    {
+     "name": "Destination MAC",
+     "value": "ff:ff:ff:ff:ff:ff",
+     "explain": "The broadcast MAC address. Every device's network card accepts it.",
+     "level": 2
+    },
+    {
+     "name": "UDP ports",
+     "value": "68 → 67",
+     "explain": "DHCP clients send from port 68 to servers on port 67.",
+     "level": 2
+    },
+    {
+     "name": "Transaction ID",
+     "value": "0x3903F326",
+     "explain": "A random number. Replies carry the same ID so the PC can match them to its request.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "pc.status": "Searching for a DHCP server…"
+   }
+  },
+  "offer": {
+   "name": "DHCP Offer",
+   "from": "server",
+   "path": [
+    "server",
+    "switch"
+   ],
+   "flood": [
+    "pc",
+    "router"
+   ],
+   "say": "You can have 192.168.1.50 for 24 hours. Here are the settings you'll need.",
+   "explain": "The server picks a free address from its pool and offers it, together with the subnet mask, default gateway and DNS server the PC needs.",
+   "reactions": {
+    "pc": "An offer! Let me take a look.",
+    "router": "Another broadcast. Ignoring it."
+   },
+   "fields": [
+    {
+     "name": "Message type",
+     "value": "DHCPOFFER (option 53 = 2)",
+     "explain": "Step 2: an offer.",
+     "level": 1
+    },
+    {
+     "name": "Offered address",
+     "value": "192.168.1.50",
+     "explain": "The 'your IP address' (yiaddr) field: the address being offered.",
+     "level": 1
+    },
+    {
+     "name": "Lease time",
+     "value": "86400 s (24 hours)",
+     "explain": "Option 51. How long the PC may use the address before renewing.",
+     "level": 1
+    },
+    {
+     "name": "Subnet mask",
+     "value": "255.255.255.0",
+     "explain": "Option 1. Which addresses count as 'local' (192.168.1.x).",
+     "level": 1
+    },
+    {
+     "name": "Router (gateway)",
+     "value": "192.168.1.1",
+     "explain": "Option 3. Where to send traffic for other networks, like the internet.",
+     "level": 1
+    },
+    {
+     "name": "DNS server",
+     "value": "192.168.1.1",
+     "explain": "Option 6. Who to ask to turn names into IP addresses.",
+     "level": 1
+    },
+    {
+     "name": "Server identifier",
+     "value": "192.168.1.2",
+     "explain": "Option 54. Which server made this offer.",
+     "level": 2
+    },
+    {
+     "name": "Destination IP",
+     "value": "255.255.255.255",
+     "explain": "Broadcast here. Some clients ask for a direct (unicast) reply instead; either way it's aimed at the PC's MAC address.",
+     "level": 2
+    },
+    {
+     "name": "UDP ports",
+     "value": "67 → 68",
+     "explain": "Server port 67 back to client port 68.",
+     "level": 2
+    },
+    {
+     "name": "Transaction ID",
+     "value": "0x3903F326",
+     "explain": "Same as the Discover, so the PC knows this answers its question.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "pc.status": "Offer received: 192.168.1.50",
+    "server.status": "Reserving 192.168.1.50 for this PC"
+   }
+  },
+  "request": {
+   "name": "DHCP Request",
+   "from": "pc",
+   "path": [
+    "pc",
+    "switch"
+   ],
+   "flood": [
+    "server",
+    "router"
+   ],
+   "say": "Yes please! I'll take 192.168.1.50 from server 192.168.1.2.",
+   "explain": "The PC accepts the offer. It still broadcasts, so that if several servers made offers, they all learn which one was chosen and the others can release their addresses.",
+   "reactions": {
+    "server": "It accepted my offer. Let me confirm it.",
+    "router": "Still not for me."
+   },
+   "fields": [
+    {
+     "name": "Message type",
+     "value": "DHCPREQUEST (option 53 = 3)",
+     "explain": "Step 3: accepting an offer.",
+     "level": 1
+    },
+    {
+     "name": "Requested address",
+     "value": "192.168.1.50",
+     "explain": "Option 50. The address the PC wants.",
+     "level": 1
+    },
+    {
+     "name": "Server identifier",
+     "value": "192.168.1.2",
+     "explain": "Option 54. Which server's offer was accepted. Any other server that made an offer now knows to release it.",
+     "level": 1
+    },
+    {
+     "name": "Source IP",
+     "value": "0.0.0.0",
+     "explain": "Still no address: it isn't the PC's until the server confirms.",
+     "level": 2
+    },
+    {
+     "name": "Destination IP",
+     "value": "255.255.255.255",
+     "explain": "Broadcast, so every DHCP server hears the decision.",
+     "level": 2
+    },
+    {
+     "name": "Transaction ID",
+     "value": "0x3903F326",
+     "explain": "Same conversation, same ID.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "pc.status": "Requesting 192.168.1.50…"
+   }
+  },
+  "ack": {
+   "name": "DHCP Acknowledge",
+   "from": "server",
+   "path": [
+    "server",
+    "switch"
+   ],
+   "flood": [
+    "pc",
+    "router"
+   ],
+   "say": "Confirmed: 192.168.1.50 is yours for 24 hours.",
+   "explain": "The server records the lease and confirms it. The PC configures its network card and can now talk to the gateway and beyond.",
+   "reactions": {
+    "pc": "I have an address! Setting up 192.168.1.50 now.",
+    "router": "Ignoring the broadcast, but I'll see this PC's traffic soon."
+   },
+   "fields": [
+    {
+     "name": "Message type",
+     "value": "DHCPACK (option 53 = 5)",
+     "explain": "Step 4: the lease is confirmed.",
+     "level": 1
+    },
+    {
+     "name": "Your address",
+     "value": "192.168.1.50",
+     "explain": "Now officially the PC's for the lease time.",
+     "level": 1
+    },
+    {
+     "name": "Lease time",
+     "value": "86400 s (24 hours)",
+     "explain": "The PC will try to renew it after about half the lease time.",
+     "level": 1
+    },
+    {
+     "name": "Subnet mask / gateway / DNS",
+     "value": "255.255.255.0 / 192.168.1.1 / 192.168.1.1",
+     "explain": "The settings the PC now applies.",
+     "level": 1
+    },
+    {
+     "name": "Next step (not shown)",
+     "value": "ARP probe",
+     "explain": "Many clients then quickly check that no other device is already using the address before they start using it.",
+     "level": 2
+    },
+    {
+     "name": "Transaction ID",
+     "value": "0x3903F326",
+     "explain": "Matches the whole conversation.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "pc.ip": "192.168.1.50",
+    "pc.mask": "255.255.255.0",
+    "pc.gateway": "192.168.1.1",
+    "pc.dns": "192.168.1.1",
+    "pc.status": "Lease granted for 24 hours",
+    "server.status": "Leased 192.168.1.50 to this PC"
+   }
+  }
+ },
+ "modes": {
+  "guided": {
+   "label": "Guided",
+   "xp": 30,
+   "intro": "Press Play (or Step) and watch the PC get an address. Click any message to inspect it. Turn on protocol details for the technical fields.",
+   "sequence": [
+    "discover",
+    "offer",
+    "request",
+    "ack"
+   ],
+   "debrief": "That's the whole of DHCP: Discover, Offer, Request, Acknowledge (often remembered as DORA). The PC started with no address, found a server by broadcasting, and left with an IP address, subnet mask, gateway and DNS server: everything it needs to use the network. Next, try Practice mode and predict each step before it happens."
+  },
+  "practice": {
+   "label": "Practice",
+   "xp": 40,
+   "intro": "Same network, but now you predict what happens before each message is sent. Get it right to continue.",
+   "sequence": [
+    "discover",
+    "offer",
+    "request",
+    "ack"
+   ],
+   "checkpoints": {
+    "discover": {
+     "q": "The PC has no IP address yet. Who does it send its first DHCP message to?",
+     "options": [
+      "The DHCP server's IP address, 192.168.1.2",
+      "Everyone on the local network (a broadcast)",
+      "The router, which forwards it to the internet"
+     ],
+     "answer": 1,
+     "why": "It doesn't know where any server is yet, so it broadcasts to 255.255.255.255 and the switch floods it out of every port."
+    },
+    "offer": {
+     "q": "What will the server's Offer contain?",
+     "options": [
+      "A password to join the network",
+      "A proposed IP address plus settings like the subnet mask, gateway and DNS server",
+      "A list of websites the PC is allowed to visit"
+     ],
+     "answer": 1,
+     "why": "The offer is a complete network configuration: address, mask, gateway, DNS and how long the lease lasts."
+    },
+    "request": {
+     "q": "The PC has an offer from 192.168.1.2. Why does it broadcast its Request instead of sending it only to that server?",
+     "options": [
+      "So every DHCP server learns which offer was accepted and others can release theirs",
+      "Because broadcasts are faster than direct messages",
+      "It doesn't: the Request goes only to the router"
+     ],
+     "answer": 0,
+     "why": "Networks can have more than one DHCP server. Broadcasting the decision (with the chosen server's identifier) lets the others release the addresses they offered."
+    },
+    "ack": {
+     "q": "What happens after the server sends its Acknowledge?",
+     "options": [
+      "The PC must restart to use the address",
+      "The PC starts using the address for the length of the lease",
+      "The server waits for another Discover before confirming"
+     ],
+     "answer": 1,
+     "why": "The ACK confirms the lease. The PC applies the address and settings, and later renews the lease before it expires."
+    }
+   },
+   "debrief": "You predicted every step of DORA. The key ideas: the PC broadcasts because it has no address and doesn't know where the server is; the offer is a full configuration; the Request is broadcast so every server hears the decision; the ACK makes it official. Ready for Challenge mode?"
+  },
+  "challenge": {
+   "label": "Challenge",
+   "xp": 60,
+   "intro": "Monday, 9am. A user says their PC 'has no internet'. Other people are starting to complain too. Use the tools to find out why, fix it properly, then explain the root cause.",
+   "start": {
+    "pc.ip": "169.254.23.7",
+    "pc.mask": "255.255.0.0",
+    "pc.gateway": "—",
+    "pc.dns": "—",
+    "pc.status": "Self-assigned address",
+    "server.service": "stopped",
+    "server.status": "Status unknown"
+   },
+   "hints": [
+    "Start with the PC itself: what IP address does it have?",
+    "An address starting 169.254 means the PC asked DHCP for an address and nobody answered. Who should have answered?",
+    "Check the DHCP server, fix what you find, then make the PC ask again."
+   ],
+   "tools": [
+    {
+     "id": "ipconfig",
+     "label": "Check the PC's IP settings (ipconfig)",
+     "kind": "Investigate",
+     "outcomes": [
+      {
+       "when": {
+        "pc.ip": {
+         "startsWith": "169.254."
+        }
+       },
+       "output": "Ethernet adapter Ethernet:\n   DHCP Enabled. . . . . . . : {pc.dhcpEnabled}\n   Autoconfiguration IPv4 Address: {pc.ip}\n   Subnet Mask . . . . . . . : {pc.mask}\n   Default Gateway . . . . . : {pc.gateway}",
+       "finding": "The PC has a 169.254.x.x address. That's a self-assigned (APIPA) address: Windows and macOS pick one when they ask DHCP for an address and get no reply."
+      },
+      {
+       "when": {},
+       "output": "Ethernet adapter Ethernet:\n   DHCP Enabled. . . . . . . : {pc.dhcpEnabled}\n   IPv4 Address. . . . . . . : {pc.ip}\n   Subnet Mask . . . . . . . : {pc.mask}\n   Default Gateway . . . . . : {pc.gateway}\n   DNS Servers . . . . . . . : {pc.dns}",
+       "finding": "The PC has a proper 192.168.1.x address with a gateway and DNS server."
+      }
+     ]
+    },
+    {
+     "id": "link",
+     "label": "Check the cable and network link",
+     "kind": "Investigate",
+     "outcomes": [
+      {
+       "when": {},
+       "output": "Link status: Connected (1 Gbps)\nSwitch port 3: up",
+       "finding": "The physical connection is fine, so the problem is higher up than cables."
+      }
+     ]
+    },
+    {
+     "id": "ping",
+     "label": "Ping the gateway (ping 192.168.1.1)",
+     "kind": "Investigate",
+     "outcomes": [
+      {
+       "when": {
+        "pc.ip": {
+         "startsWith": "169.254."
+        }
+       },
+       "output": "Pinging 192.168.1.1 with 32 bytes of data:\nRequest timed out.\nRequest timed out.\nRequest timed out.\nRequest timed out.",
+       "finding": "No reply. With a 169.254 address the PC isn't part of the 192.168.1.x network at all, so it can't reach the gateway."
+      },
+      {
+       "when": {},
+       "output": "Pinging 192.168.1.1 with 32 bytes of data:\nReply from 192.168.1.1: bytes=32 time<1ms TTL=64\nReply from 192.168.1.1: bytes=32 time<1ms TTL=64",
+       "finding": "The gateway replies, so the PC is on the network."
+      }
+     ]
+    },
+    {
+     "id": "renew",
+     "label": "Ask for a new address (ipconfig /renew)",
+     "kind": "Test",
+     "outcomes": [
+      {
+       "when": {
+        "pc.method": "static"
+       },
+       "output": "The operation failed: DHCP is not enabled on this adapter (it has a manually set address).",
+       "finding": "Renewing does nothing while the address is set by hand."
+      },
+      {
+       "when": {
+        "server.service": "stopped"
+       },
+       "play": [
+        "discover"
+       ],
+       "noReply": true,
+       "output": "Sending DHCP Discover…\nNo DHCP server responded. Keeping address {pc.ip}.",
+       "finding": "The Discover goes out, but nothing answers it. The PC is asking correctly; the problem is on the server side."
+      },
+      {
+       "when": {},
+       "play": [
+        "discover",
+        "offer",
+        "request",
+        "ack"
+       ],
+       "output": "Lease obtained.\nIPv4 Address: {pc.ip}",
+       "finding": "The full DORA exchange worked and the PC got a proper address."
+      }
+     ]
+    },
+    {
+     "id": "service",
+     "label": "Check the DHCP service on the server",
+     "kind": "Investigate",
+     "outcomes": [
+      {
+       "when": {
+        "server.service": "stopped"
+       },
+       "output": "Service: DHCP Server\nStatus: Stopped",
+       "finding": "The DHCP service is stopped, so nobody is answering Discover messages. That explains why every PC is getting 169.254 addresses.",
+       "set": {
+        "server.status": "DHCP service stopped"
+       }
+      },
+      {
+       "when": {},
+       "output": "Service: DHCP Server\nStatus: Running",
+       "finding": "The DHCP service is running."
+      }
+     ]
+    },
+    {
+     "id": "start",
+     "label": "Start the DHCP service",
+     "kind": "Fix",
+     "outcomes": [
+      {
+       "when": {
+        "server.service": "stopped"
+       },
+       "set": {
+        "server.service": "running",
+        "server.status": "Ready to lease addresses"
+       },
+       "output": "Starting DHCP Server service… done.\nStatus: Running",
+       "finding": "The service is running again, but the PC won't notice until it asks for an address again."
+      },
+      {
+       "when": {},
+       "output": "The service is already running.",
+       "finding": ""
+      }
+     ]
+    },
+    {
+     "id": "static",
+     "label": "Type in a fixed IP address on the PC",
+     "kind": "Fix",
+     "outcomes": [
+      {
+       "when": {},
+       "set": {
+        "pc.method": "static",
+        "pc.dhcpEnabled": "No",
+        "pc.ip": "192.168.1.99",
+        "pc.mask": "255.255.255.0",
+        "pc.gateway": "192.168.1.1",
+        "pc.dns": "192.168.1.1",
+        "pc.status": "Fixed address, set by hand"
+       },
+       "output": "Adapter set to: 192.168.1.99 / 255.255.255.0, gateway 192.168.1.1, DNS 192.168.1.1",
+       "finding": "This PC can reach the network now, but this is a workaround, not a fix. Everyone else still gets 169.254 addresses, and hand-picked addresses can clash with ones DHCP hands out later."
+      }
+     ]
+    },
+    {
+     "id": "auto",
+     "label": "Set the PC back to automatic (DHCP)",
+     "kind": "Fix",
+     "outcomes": [
+      {
+       "when": {
+        "pc.method": "static"
+       },
+       "set": {
+        "pc.method": "dhcp",
+        "pc.dhcpEnabled": "Yes",
+        "pc.ip": "169.254.23.7",
+        "pc.mask": "255.255.0.0",
+        "pc.gateway": "—",
+        "pc.dns": "—",
+        "pc.status": "Self-assigned address"
+       },
+       "output": "Adapter set to obtain an address automatically.",
+       "finding": "Back on DHCP. Ask for a new address to get one."
+      },
+      {
+       "when": {},
+       "output": "The adapter is already set to obtain an address automatically.",
+       "finding": ""
+      }
+     ]
+    }
+   ],
+   "goal": {
+    "pc.method": "dhcp",
+    "pc.ip": {
+     "startsWith": "192.168.1."
+    },
+    "server.service": "running"
+   },
+   "workaround": {
+    "pc.method": "static"
+   },
+   "rootCause": {
+    "q": "What was the root cause?",
+    "options": [
+     "The PC's network cable was unplugged",
+     "The DHCP service on the server had stopped",
+     "The DNS server was down",
+     "The PC's firewall was blocking the internet"
+    ],
+    "answer": 1,
+    "why": "The link was up, the PC was sending Discovers, and nothing answered because the DHCP service was stopped. DNS and firewalls can't explain a 169.254 address."
+   },
+   "debrief": "Root cause: the DHCP service had stopped, so every PC that asked for an address got silence and fell back to a 169.254 self-assigned address. The evidence chain was: a 169.254 address (no DHCP answer), a working link (not a cable problem), a Discover that went out with no reply (the server side), and finally a stopped service. Restarting it fixed every PC at once. Typing in a fixed address would have fixed just one PC and hidden the real problem. In a real job you'd also ask why the service stopped and set up monitoring so you hear about it before users do."
+  }
+ },
+ "narrow": {
+  "w": 360,
+  "h": 470,
+  "dw": 170,
+  "dh": 78,
+  "pos": {
+   "pc": [
+    180,
+    55
+   ],
+   "switch": [
+    180,
+    215
+   ],
+   "server": [
+    90,
+    400
+   ],
+   "router": [
+    270,
+    400
+   ]
+  }
+ }
+}
