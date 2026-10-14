@@ -45,6 +45,8 @@ These are investigations of logs and timelines rather than packet journeys. They
 |---|---|---|
 | **The OSI model, layer by layer** ✅ | `osi.js` | Encapsulation down and up the stack, each layer's job, PDU, devices and protocols, mnemonics, TCP/IP mapping; a sorting game including real problems |
 | **Network topologies: break them** ✅ | `topology.js` | Star, bus, ring, full/partial mesh, hub and spoke, spine and leaf, three-tier; break cables or devices; single points of failure computed from the graph |
-| **Linux terminal basics** ✅ | `terminal.js` | `pwd`, `whoami`, `ls -a/-l`, `cd`, `cat`, `grep`, `find`, `chmod`, `mkdir`, `touch`, `rm` and running scripts over a simulated file system; 10 objectives |
+| **Linux terminal basics** ✅ | `terminal.js` | `pwd`, `whoami`, `ls -a/-l`, `cd`, `cat`, `grep`, `find`, `chmod`, `mkdir`, `touch`, `rm`, pipes into `head`, `tail`, `wc`, `sort`, `uniq`, `cut`, and running scripts over a simulated file system; 11 objectives |
+| **Ports and protocols** ✅ | `ports.js` | 24 flip cards for the Network+ port list, insecure-to-secure pairs, and a 12-question drill (port, protocol, TCP/UDP, secure swap) |
+| **Subnetting trainer** ✅ | `subnet.js` | Live binary view of the network/host split, mask, network, broadcast, host range and block size; typed practice with worked answers |
 
-Next for Network+ (Oct 2026 focus): hub vs switch vs router (MAC tables, collision and broadcast domains), DNS (mission #2 above), ports and protocols drill, subnetting trainer.
+Next for Network+ (Oct 2026 focus): hub vs switch vs router (MAC tables, collision and broadcast domains), DNS (mission #2 above).

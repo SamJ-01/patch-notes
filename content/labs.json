@@ -1252,6 +1252,311 @@
   "exploreGoal": 4
  },
  {
+  "id": "ports-protocols",
+  "title": "Ports and protocols",
+  "kind": "ports",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 12,
+  "lesson": "networking",
+  "skill": "The Network+ port list: flip the cards, then beat the quick-fire drill",
+  "intro": "A port number tells a computer which program a message is for, like a flat number on a block of flats. Flip the cards to learn them, then take the drill.",
+  "protocols": [
+   {
+    "id": "ftp",
+    "name": "FTP",
+    "full": "File Transfer Protocol",
+    "ports": [
+     20,
+     21
+    ],
+    "transport": "TCP",
+    "group": "File transfer",
+    "what": "Moves files between computers. Logins and data travel in plain text.",
+    "secure": "sftp"
+   },
+   {
+    "id": "ssh",
+    "name": "SSH",
+    "full": "Secure Shell",
+    "ports": [
+     22
+    ],
+    "transport": "TCP",
+    "group": "Remote access",
+    "what": "An encrypted command line on a remote machine. How admins manage Linux servers and network kit."
+   },
+   {
+    "id": "sftp",
+    "name": "SFTP",
+    "full": "SSH File Transfer Protocol",
+    "ports": [
+     22
+    ],
+    "transport": "TCP",
+    "group": "File transfer",
+    "what": "File transfer that runs inside SSH, so it's encrypted. Same port as SSH."
+   },
+   {
+    "id": "telnet",
+    "name": "Telnet",
+    "full": "Telnet",
+    "ports": [
+     23
+    ],
+    "transport": "TCP",
+    "group": "Remote access",
+    "what": "An old remote command line with no encryption: passwords cross the wire in plain text.",
+    "secure": "ssh"
+   },
+   {
+    "id": "smtp",
+    "name": "SMTP",
+    "full": "Simple Mail Transfer Protocol",
+    "ports": [
+     25
+    ],
+    "transport": "TCP",
+    "group": "Email",
+    "what": "Sends email between mail servers.",
+    "secure": "smtps"
+   },
+   {
+    "id": "dns",
+    "name": "DNS",
+    "full": "Domain Name System",
+    "ports": [
+     53
+    ],
+    "transport": "TCP/UDP",
+    "group": "Network services",
+    "what": "Turns names like example.com into IP addresses. UDP for normal lookups, TCP for big replies and zone transfers."
+   },
+   {
+    "id": "dhcp",
+    "name": "DHCP",
+    "full": "Dynamic Host Configuration Protocol",
+    "ports": [
+     67,
+     68
+    ],
+    "transport": "UDP",
+    "group": "Network services",
+    "what": "Hands out IP addresses automatically. Server listens on 67, clients on 68."
+   },
+   {
+    "id": "tftp",
+    "name": "TFTP",
+    "full": "Trivial File Transfer Protocol",
+    "ports": [
+     69
+    ],
+    "transport": "UDP",
+    "group": "File transfer",
+    "what": "A tiny file transfer with no login, used to load configs and firmware onto network devices."
+   },
+   {
+    "id": "http",
+    "name": "HTTP",
+    "full": "Hypertext Transfer Protocol",
+    "ports": [
+     80
+    ],
+    "transport": "TCP",
+    "group": "Web",
+    "what": "Web pages, unencrypted.",
+    "secure": "https"
+   },
+   {
+    "id": "pop3",
+    "name": "POP3",
+    "full": "Post Office Protocol v3",
+    "ports": [
+     110
+    ],
+    "transport": "TCP",
+    "group": "Email",
+    "what": "Downloads email to one device and usually deletes it from the server.",
+    "secure": "pop3s"
+   },
+   {
+    "id": "ntp",
+    "name": "NTP",
+    "full": "Network Time Protocol",
+    "ports": [
+     123
+    ],
+    "transport": "UDP",
+    "group": "Network services",
+    "what": "Keeps every clock in sync. Logs are useless for an investigation if the times disagree."
+   },
+   {
+    "id": "imap",
+    "name": "IMAP",
+    "full": "Internet Message Access Protocol",
+    "ports": [
+     143
+    ],
+    "transport": "TCP",
+    "group": "Email",
+    "what": "Reads email while it stays on the server, so every device sees the same inbox.",
+    "secure": "imaps"
+   },
+   {
+    "id": "snmp",
+    "name": "SNMP",
+    "full": "Simple Network Management Protocol",
+    "ports": [
+     161,
+     162
+    ],
+    "transport": "UDP",
+    "group": "Network services",
+    "what": "Monitors network devices. 161 for polling, 162 for traps (alerts). Use SNMPv3 for encryption."
+   },
+   {
+    "id": "ldap",
+    "name": "LDAP",
+    "full": "Lightweight Directory Access Protocol",
+    "ports": [
+     389
+    ],
+    "transport": "TCP",
+    "group": "Directory and databases",
+    "what": "Looks up users and groups in a directory such as Active Directory.",
+    "secure": "ldaps"
+   },
+   {
+    "id": "https",
+    "name": "HTTPS",
+    "full": "HTTP Secure",
+    "ports": [
+     443
+    ],
+    "transport": "TCP",
+    "group": "Web",
+    "what": "Web pages encrypted with TLS. The padlock in your browser."
+   },
+   {
+    "id": "smb",
+    "name": "SMB",
+    "full": "Server Message Block",
+    "ports": [
+     445
+    ],
+    "transport": "TCP",
+    "group": "File transfer",
+    "what": "Windows file and printer sharing. A favourite target for ransomware worms."
+   },
+   {
+    "id": "syslog",
+    "name": "Syslog",
+    "full": "Syslog",
+    "ports": [
+     514
+    ],
+    "transport": "UDP",
+    "group": "Network services",
+    "what": "Sends log messages from devices to a central log server, often feeding a SIEM."
+   },
+   {
+    "id": "smtps",
+    "name": "SMTPS",
+    "full": "SMTP Secure (submission)",
+    "ports": [
+     587
+    ],
+    "transport": "TCP",
+    "group": "Email",
+    "what": "Encrypted email sending from your mail app to your provider."
+   },
+   {
+    "id": "ldaps",
+    "name": "LDAPS",
+    "full": "LDAP over SSL/TLS",
+    "ports": [
+     636
+    ],
+    "transport": "TCP",
+    "group": "Directory and databases",
+    "what": "Encrypted directory lookups."
+   },
+   {
+    "id": "imaps",
+    "name": "IMAPS",
+    "full": "IMAP over SSL/TLS",
+    "ports": [
+     993
+    ],
+    "transport": "TCP",
+    "group": "Email",
+    "what": "Encrypted IMAP."
+   },
+   {
+    "id": "pop3s",
+    "name": "POP3S",
+    "full": "POP3 over SSL/TLS",
+    "ports": [
+     995
+    ],
+    "transport": "TCP",
+    "group": "Email",
+    "what": "Encrypted POP3."
+   },
+   {
+    "id": "sql",
+    "name": "SQL Server",
+    "full": "Microsoft SQL Server",
+    "ports": [
+     1433
+    ],
+    "transport": "TCP",
+    "group": "Directory and databases",
+    "what": "Microsoft's database server. Should never face the internet."
+   },
+   {
+    "id": "rdp",
+    "name": "RDP",
+    "full": "Remote Desktop Protocol",
+    "ports": [
+     3389
+    ],
+    "transport": "TCP",
+    "group": "Remote access",
+    "what": "A full Windows desktop over the network. Exposed RDP is a top way into companies."
+   },
+   {
+    "id": "sip",
+    "name": "SIP",
+    "full": "Session Initiation Protocol",
+    "ports": [
+     5060,
+     5061
+    ],
+    "transport": "TCP/UDP",
+    "group": "Voice",
+    "what": "Sets up VoIP phone calls. 5061 is the encrypted (TLS) version."
+   }
+  ],
+  "flipGoal": 10,
+  "drillLength": 12,
+  "passScore": 10
+ },
+ {
+  "id": "subnetting",
+  "title": "Subnetting trainer",
+  "kind": "subnet",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 15,
+  "lesson": "networking",
+  "skill": "See the network/host split in binary, then work out networks, broadcasts and host counts",
+  "intro": "A subnet mask splits an IP address into two parts: which network you're on, and which device you are. Drag the prefix and watch the bits move.",
+  "exploreGoal": 4,
+  "practiceLength": 8,
+  "passScore": 6
+ },
+ {
   "id": "linux-terminal",
   "title": "Linux terminal basics",
   "kind": "terminal",
@@ -1424,6 +1729,17 @@
       "file": "/var/log/auth.log",
       "match": "Failed"
      }
+    }
+   },
+   {
+    "id": "count",
+    "text": "Count the failed logins with a pipe (|), which sends one command's output into the next.",
+    "hint": "grep Failed auth.log | wc -l",
+    "check": {
+     "piped": [
+      "grep",
+      "wc"
+     ]
     }
    },
    {

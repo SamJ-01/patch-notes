@@ -1,49 +1,82 @@
 # Patch Notes
 
-**Cyber security news, explained.** A free site where people come for the day's security news and learn the concepts behind every headline.
+**Learn it. Break it. Understand it.** A free site for people getting into IT and cyber security: hands-on Network+ labs, plus the day's security news with every headline explained.
 
-Security news sites are written for people already in the industry, and courses aren't connected to what's happening this week. Patch Notes joins the two: every story is tagged with what it's about and links to a plain-English lesson on that topic.
+**Live:** https://samj-01.github.io/patch-notes/
 
-## What's on the site
+![Home page: the animated network hero, suggested learning path and daily challenge](docs/screenshots/today.png)
+
+Most security news is written for people already in the industry, and most courses aren't connected to what's happening this week. Patch Notes joins the two, and teaches by letting you poke at things: break a network cable and see who loses connection, drag a subnet mask and watch the bits move, run real Linux commands against a log file.
+
+## Missions and labs
+
+Everything runs in the browser. Nothing is installed and no real network traffic is sent.
+
+| | What you do | Network+ topic |
+|---|---|---|
+| **DHCP mission** | Watch a PC get its IP address packet by packet (Discover, Offer, Request, Acknowledge), inspect every message, then fix a broken network. Guided, Practice and Challenge modes | IP addressing, DHCP |
+| **The OSI model, layer by layer** | Follow one web request down all 7 layers and back up as headers are added and removed, then sort real things into the right layer | OSI model |
+| **Network topologies: break them** | Eight topologies (star, bus, ring, mesh, spine-and-leaf…). Click a cable or device to break it and see who's cut off; reveal the single points of failure | Topologies |
+| **Ports and protocols** | 24 flip cards for the exam port list, insecure-to-secure swaps, then a quick-fire drill | Ports and protocols |
+| **Subnetting trainer** | A live binary view of the network/host split, the block-size shortcut, and typed practice questions with worked answers | Subnetting |
+| **Linux terminal** | A simulated shell: navigate, read logs, `grep` with pipes (`\| wc -l`, `\| sort \| uniq -c`), fix a script's permissions | Linux CLI |
+| **Log detective, Header inspector, CVSS builder** | Investigate an SSH brute force, read a spoofed email's headers, score a vulnerability with CVSS 3.1 | Security operations |
+
+<table>
+<tr>
+<td><img src="docs/screenshots/lab-subnetting.png" alt="Subnetting trainer showing the IP and mask in binary"></td>
+<td><img src="docs/screenshots/lab-topologies.png" alt="Topology lab with a broken link"></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/mission-dhcp.png" alt="DHCP mission simulation"></td>
+<td><img src="docs/screenshots/lab-linux-terminal.png" alt="Simulated Linux terminal"></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/lab-osi-model.png" alt="OSI model walkthrough"></td>
+<td><img src="docs/screenshots/lab-ports-protocols.png" alt="Ports and protocols flip cards"></td>
+</tr>
+</table>
+
+Wrong answers never end a lab: every quiz offers a retry of the questions you missed, and every lab has a reset button.
+
+## The rest of the site
 
 | Section | What it does |
 |---|---|
-| **Today** | A daily changelog for the internet: top stories, trending topics, newly exploited vulnerabilities, your next learning step and a daily challenge with a streak |
-| **News** | Headlines from 12 outlets, auto-tagged by topic, with links to lessons, CVEs and "What this means" explanations (AI-drafted, human-approved) |
-| **CVE Radar** | Every new CVE, enriched with CISA KEV and FIRST EPSS, prioritised by real-world risk, with trend charts and plain-English explanations |
-| **Am I affected?** | Pick the tech you use (phone, browser, router, work apps) for personal alerts on news and vulnerabilities |
-| **Learn** | 22 lessons with sourced real-world cases, 4 learning paths (e.g. Path to SOC Analyst) and a 250+ term glossary |
-| **Labs** | Hands-on practice in the browser: investigate an SSH brute-force in auth.log, read spoofed email headers, build CVSS 3.1 scores |
-| **Play** | "Phish or Legit?", a quick-fire quiz and a 3-flag CTF hunt |
-| **Careers** | Five entry paths with skills, certs and first job titles, plus a curated directory of free resources |
-| **Progress** | XP, access levels (guest → root), 16 badges, path progress and an XP history |
+| **Home** | Your next learning step, a daily challenge, this week in security and the vulnerabilities to patch first |
+| **News** | Headlines from 12 outlets, auto-tagged by topic, linked to lessons and CVEs, with "What this means" explanations (AI-drafted, human-approved) |
+| **CVE Radar** | Every new CVE, enriched with CISA KEV and FIRST EPSS, prioritised by real-world risk, with trend charts |
+| **Am I affected?** | Pick the tech you use (phone, browser, router, work apps) for personal alerts |
+| **Learn** | 22 lessons with sourced real-world cases, 4 learning paths (e.g. Path to SOC Analyst) and a 208-term glossary |
+| **Play** | "Phish or Legit?", a quick-fire quiz and a 3-flag CTF hunt hidden in the site itself |
+| **Careers** | Five entry paths with skills, certs and first job titles, plus a directory of free resources |
+| **Progress** | XP, access levels (guest → root), 17 badges and an XP history |
 
-Everywhere: jargon has a dotted underline (hover or tap for an explanation), and a command palette (`/` or `Ctrl+K`) lets you navigate like a terminal.
+Everywhere: jargon has a dotted underline (hover or tap for an explanation), a command palette (`/` or `Ctrl+K`) lets you navigate like a terminal, and there's a light and a dark theme.
 
 ### Points system
 
 | Action | XP |
 |---|---|
-| Daily challenge (correct) | +20 |
-| Finish a lesson | +25 |
+| Complete a mission | +30 to +60 (by mode) |
 | Complete a lab | +30 |
+| Finish a lesson | +25 |
+| Daily challenge (correct) | +20 |
 | Capture a hidden flag | +50 |
 | Complete a learning path | +100 |
 | Unlock a badge | +20 |
-| Correct quiz answer / spotted phish | +10 / +15 |
-| Set up "Am I affected?" | +10 |
-| New glossary term / story explanation read | +2 |
 
-Progress is stored only in the visitor's browser (no accounts, no tracking).
+Progress is stored only in the visitor's browser (no accounts, no tracking). Finishing anything sets off fireworks (or a quiet card, if you've asked your device for reduced motion).
 
 ## How it works
 
 ```
 news.py        12 RSS/Atom feeds ─► de-dupe ─► topic tagging ─► CVE ID extraction
 cve_watch.py   NVD API ─► CISA KEV ─► FIRST EPSS ─► risk priority ─► SQLite (what's new)
-content/       lessons, quiz, phishing emails, careers, CWE glossary (plain JSON, easy to edit)
+content/       lessons, labs, missions, quiz, phishing emails, careers, glossary (plain JSON, easy to edit)
+static/js/     the Mission Engine and lab modules (OSI, topology, terminal, ports, subnetting), loaded on demand
 build.py       builds site/: the app, lazily loaded CVE data, a page per lesson, RSS feed and sitemap
-tests/         Python unit tests + Node tests of the page's own scoring and matching logic
+tests/         Python unit tests + Node tests of the page logic, Mission Engine and every lab
 .github/       GitHub Actions rebuilds and redeploys the site every morning
 ```
 
@@ -101,8 +134,11 @@ If the Mac is off, step 1 still runs: news and CVEs stay current, only new expla
 - Vulnerability management: CVE, CWE, CVSS v2/v3/v4, EPSS, KEV, risk-based prioritisation
 - Automation and CI/CD with GitHub Actions and Pages
 - Security awareness content design: phishing simulation, plain-language explanations
+- Networking (CompTIA Network+): DHCP, the OSI model, topologies and failure analysis, ports and protocols, IPv4 subnetting maths
+- Linux: a simulated shell with pipes, permissions and log analysis
 - Hands-on training design: log analysis, email header forensics, CVSS 3.1 scoring (implemented from the FIRST spec and tested)
 - Automated testing in CI: a failing test blocks the deploy
+- Accessibility: keyboard support, screen-reader labels, reduced motion, contrast-checked light and dark themes (no axe-core violations across every view, in both themes)
 - Accessible, tested data visualisation (colour palette validated for colour-blind readers)
 
 ## Copyright

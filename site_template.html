@@ -175,7 +175,7 @@ main { padding-inline: 16px; }
 /* Chips & pills */
 .chip { font: 700 0.82rem var(--font-body); cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; color: var(--ink); }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.chip .n { font-family: var(--font-mono); font-weight: 400; opacity: 0.7; margin-left: 4px; }
+.chip .n { font-family: var(--font-mono); font-weight: 400; margin-left: 4px; }
 .topic { font: 700 0.75rem var(--font-body); text-decoration: none; color: var(--brand); background: var(--brand-soft); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
 .topic:hover { text-decoration: underline; }
 .cvetag { font: 600 0.72rem var(--font-mono); text-decoration: none; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px; cursor: pointer; background: none; }
@@ -810,6 +810,61 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .theme-btn { display: grid; place-items: center; width: 34px; height: 34px; cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--muted); padding: 0; flex: none; }
 .theme-btn:hover { color: var(--ink); border-color: var(--brand); }
 .theme-btn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* Ports and protocols lab */
+.ports, .subnet { display: grid; gap: 18px; }
+.ports .panel > h3.eyebrow { margin: 8px 0 0; }
+.port-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 8px; }
+.port-card { display: grid; min-height: 118px; text-align: left; cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; color: var(--ink); font: inherit; }
+.port-card:hover { border-color: var(--brand); }
+.port-card > span { grid-area: 1 / 1; display: grid; gap: 4px; align-content: start; min-width: 0; }
+.port-card .pc-back { visibility: hidden; }
+.port-card.open .pc-front { visibility: hidden; }
+.port-card.open .pc-back { visibility: visible; }
+.port-card.open { border-color: var(--brand); background: var(--brand-soft); }
+.pc-front b { font: 700 1.15rem var(--font-display); }
+.pc-front span, .pc-what { font-size: 0.82rem; color: var(--muted); }
+.pc-num { font: 700 1.5rem/1.1 var(--font-mono); color: var(--brand); }
+.pc-name { font: 600 0.78rem var(--font-mono); color: var(--ink); }
+.pc-tr { font: 600 0.7rem var(--font-mono); color: var(--sun); letter-spacing: 0.08em; }
+@media (prefers-reduced-motion: no-preference) { .port-card.open .pc-back { animation: pc-in 0.25s ease-out; } @keyframes pc-in { from { opacity: 0; transform: translateY(4px); } } }
+.pair-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 8px; }
+.pair { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); font-family: var(--font-mono); font-size: 0.85rem; }
+.pair i { font-style: normal; color: var(--muted); }
+.pair .bad-p { color: var(--bad); } .pair .good-p { color: var(--good); }
+/* Subnetting lab */
+.sn-controls { display: grid; grid-template-columns: minmax(0, 240px) minmax(0, 1fr); gap: 12px 24px; align-items: end; }
+.sn-field { display: grid; gap: 6px; min-width: 0; }
+.sn-input { font: 1rem var(--font-mono); background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; width: 100%; min-width: 0; box-sizing: border-box; }
+.sn-input:focus { border-color: var(--brand); outline: none; box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.25); }
+#sp-form .sn-input { width: auto; flex: 1 1 200px; }
+.sn-slide input { width: 100%; margin: 0; accent-color: var(--brand); }
+.sn-key { font: 600 0.78rem var(--font-mono); padding: 1px 6px; border-radius: 3px; }
+.sn-key.net, .sn-cells i.net { background: rgba(var(--brand-rgb), 0.18); color: var(--brand); }
+.sn-key.host, .sn-cells i.host { background: rgba(var(--sun-rgb), 0.16); color: var(--sun); }
+.sn-bits { display: grid; gap: 10px; }
+.sn-row { display: grid; grid-template-columns: 3.2rem minmax(0, 1fr); gap: 8px; align-items: start; }
+.sn-lbl { font: 600 0.75rem var(--font-mono); color: var(--muted); padding-top: 4px; }
+.sn-octets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.sn-oct { display: grid; gap: 4px; justify-items: center; padding: 4px; border-radius: 6px; border: 1px solid transparent; min-width: 0; }
+.sn-oct.hot { border-color: var(--line); background: var(--surface-2); }
+.sn-cells { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 2px; width: 100%; }
+.sn-cells i { font: 600 0.8rem/1.9 var(--font-mono); font-style: normal; text-align: center; border-radius: 2px; min-width: 0; }
+@media (prefers-reduced-motion: no-preference) { .sn-cells i { transition: background-color 0.2s, color 0.2s; } }
+.sn-dec { font: 600 0.85rem var(--font-mono); }
+.subnet .stat-row { grid-template-columns: repeat(auto-fill, minmax(min(100%, 165px), 1fr)); }
+.subnet .stat b { font-size: 1.05rem; overflow-wrap: anywhere; line-height: 1.3; }
+.sn-given { font-size: 1.3rem; color: var(--brand); margin: 0; }
+.table-wrap { overflow-x: auto; }
+.sn-table { width: 100%; border-collapse: collapse; font: 0.88rem var(--font-mono); }
+.sn-table th, .sn-table td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.sn-table th { color: var(--muted); font-weight: 500; }
+@media (max-width: 760px) {
+  .sn-controls { grid-template-columns: minmax(0, 1fr); }
+  .sn-octets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sn-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+}
 </style>
 
 <!-- recon complete. you found flag 1 of 3: flag{v1ew_s0urce_is_r3con}  (submit it in the command palette: press / then type "submit" and the flag) -->
@@ -872,7 +927,8 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<":
 const pct = x => x == null ? "—" : (x * 100 < 1 ? (x * 100).toFixed(2) : (x * 100).toFixed(1)) + "%";
 DATA.cves = DATA.kev.slice();  // replaced by the full list once data/cves.json arrives
 let CVES_READY = false, CVES_FAILED = false;
-const CVE_IDS = new Set(DATA.cves.map(c => c.id));
+// IDs the news links to are inlined, so story chips work without downloading the full list.
+const CVE_IDS = new Set([...DATA.cves.map(c => c.id), ...(DATA.newsCves || [])]);
 const LESSON = Object.fromEntries(DATA.lessons.map(l => [l.id, l]));
 const TOPIC_NAME = id => (LESSON[id] ? LESSON[id].title.split(" & ")[0].split(" (")[0] : id);
 const dateStr = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -1299,7 +1355,7 @@ VIEWS.stack = () => {
   const groups = [...new Set(DATA.stack.map(s => s.group))];
   main.innerHTML = `<div class="view"><div class="view-head"><a class="link-btn" href="#today">← Today</a><div class="eyebrow">Am I affected?</div><h1>What do you use?</h1>
 </div>
-    <div class="stack" id="stack-pick">${groups.map(g => `<section class="stack" style="gap:8px"><h3 class="eyebrow">${esc(g)}</h3><div class="row">${DATA.stack.filter(s => s.group === g).map(s => `<button class="chip" data-stack="${esc(s.id)}" aria-pressed="${chosen.has(s.id)}">${esc(s.label)}</button>`).join("")}</div></section>`).join("")}</div>
+    <div class="stack" id="stack-pick">${groups.map(g => `<section class="stack" style="gap:8px"><h2 class="eyebrow">${esc(g)}</h2><div class="row">${DATA.stack.filter(s => s.group === g).map(s => `<button class="chip" data-stack="${esc(s.id)}" aria-pressed="${chosen.has(s.id)}">${esc(s.label)}</button>`).join("")}</div></section>`).join("")}</div>
     <div class="row"><button class="btn brand" id="stack-save">Save my stack</button><span class="muted" id="stack-n">${chosen.size} selected</span></div></div>`;
   $("stack-pick").addEventListener("click", e => {
     const b = e.target.closest("[data-stack]"); if (!b) return;
@@ -1368,7 +1424,7 @@ VIEWS.news = () => {
         ${topics.map(([t, n]) => `<button class="chip" data-t="${esc(t)}" aria-pressed="${NS.topic === t}">${esc(TOPIC_NAME(t))}<span class="n">${n}</span></button>`).join("")}
       </div>
     </div>
-    <section class="panel"><div class="eyebrow" id="ncount" aria-live="polite"></div><div class="stories" id="nlist"></div></section>
+    <section class="panel"><h2 class="sr-only">Stories</h2><div class="eyebrow" id="ncount" aria-live="polite"></div><div class="stories" id="nlist"></div></section>
     <button class="btn ghost more" id="nmore" hidden>Show more</button>
   </div>`;
   const draw = () => {
@@ -1611,7 +1667,7 @@ function dailyChart(daily) {
     if (i % every === 0 || i === daily.length - 1) svg += `<text x="${x + bw / 2}" y="${H - 8}" class="axis" text-anchor="middle">${esc(fmtDay(d.date))}</text>`;
   });
   return `<div class="legend">${keys.slice().reverse().map(k => `<span><i style="background:${SEV_COLORS[k]}"></i>${SEV_LABEL[k]}</span>`).join("")}</div>
-    <div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="New CVEs per day by severity">${svg}</svg></div>
+    <div class="chart" tabindex="0" role="region" aria-label="New CVEs per day chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="New CVEs per day by severity">${svg}</svg></div>
     <details class="tbl"><summary>View as table</summary><div class="tbl-wrap"><table><thead><tr><th>Day</th><th>Critical</th><th>High</th><th>Other</th><th>Total</th></tr></thead><tbody>${daily.map(d => `<tr><td>${esc(fmtDay(d.date))}</td><td>${d.critical}</td><td>${d.high}</td><td>${d.other}</td><td>${total(d)}</td></tr>`).join("")}</tbody></table></div></details>`;
 }
 function rankChart(items, label, linkFn) {
@@ -1626,7 +1682,7 @@ function rankChart(items, label, linkFn) {
       <text x="${L + w + 6}" y="${y + 13}" class="axis val">${it.n.toLocaleString()}</text>
       <rect x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent" data-tip="${esc(`${it.label}: ${it.n.toLocaleString()} CVEs`)}"${linkFn ? ` data-chart-q="${esc(linkFn(it))}"` : ""} style="cursor:${linkFn ? "pointer" : "default"}"/>`;
   });
-  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${svg}</svg></div>
+  return `<div class="chart" tabindex="0" role="region" aria-label="${esc(label)} chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${svg}</svg></div>
     <details class="tbl"><summary>View as table</summary><div class="tbl-wrap"><table><tbody>${items.map(it => `<tr><td>${esc(it.label)}</td><td>${it.n}</td></tr>`).join("")}</tbody></table></div></details>`;
 }
 function trendsHtml() {
@@ -1751,7 +1807,7 @@ VIEWS.glossary = () => {
       <div class="row" id="glk">${kinds.map(k => `<button class="chip" data-k="${esc(k)}" aria-pressed="${GLS.kind === k}">${esc(k)}</button>`).join("")}</div>
     </div>
     <div class="eyebrow" id="glc" aria-live="polite"></div>
-    <div class="gl-list" id="gll"></div>
+    <h2 class="sr-only">Terms</h2><div class="gl-list" id="gll"></div>
   </div>`;
   const draw = () => {
     const q = GLS.q.trim().toLowerCase();
@@ -1792,8 +1848,10 @@ const ART = {  // simple line icons, drawn in the category colour
   search: '<circle cx="20" cy="20" r="11"/><path d="M28 28l12 12"/><path d="M15 17h10M15 22h7"/>',
   mail: '<rect x="5" y="11" width="38" height="27" rx="3"/><path d="M6 13l18 13 18-13"/><circle cx="38" cy="35" r="7" fill="var(--surface)"/><path d="M38 31v4M38 38v.5"/>',
   gauge: '<path d="M8 34a16 16 0 1132 0"/><path d="M24 34l9-11"/><circle cx="24" cy="34" r="3"/>',
+  ports: '<rect x="5" y="12" width="38" height="24" rx="3"/><rect x="11" y="19" width="7" height="8" rx="1"/><rect x="21" y="19" width="7" height="8" rx="1"/><rect x="31" y="19" width="7" height="8" rx="1"/><path d="M14 36v5M24 36v5M34 36v5"/>',
+  subnet: '<path d="M5 14h38M5 24h38M5 34h38"/><path d="M28 9v30" stroke-dasharray="3 3"/><path d="M10 14v0M16 24v0M22 34v0" stroke-width="4"/>',
 };
-const ITEM_ART = { dhcp: "network", "osi-model": "layers", topologies: "graph", "linux-terminal": "terminal", "log-detective": "search", "header-inspector": "mail", "cvss-builder": "gauge" };
+const ITEM_ART = { dhcp: "network", "osi-model": "layers", topologies: "graph", "linux-terminal": "terminal", "log-detective": "search", "header-inspector": "mail", "cvss-builder": "gauge", "ports-protocols": "ports", subnetting: "subnet" };
 const cardArt = (id, cat) => `<span class="card-art" style="--cat:${CAT_COLOR[cat] || "var(--brand)"}"><svg viewBox="0 0 48 48" aria-hidden="true">${ART[ITEM_ART[id]] || ART.network}</svg></span>`;
 const CATEGORY_ORDER = ["Networking", "Linux", "Security operations", "Ethical hacking"];
 VIEWS.missions = () => {
@@ -1839,7 +1897,7 @@ function missionView(id) {
     $("mission-root").innerHTML = `<div class="empty">Couldn't load the mission code (js/missions/ui.js). If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`;
   });
 }
-const MODULE_LABS = ["osi", "terminal", "topology"];  // labs with their own module in static/js/labs/<kind>.js
+const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet"];  // labs with their own module in static/js/labs/<kind>.js
 function moduleLab(l) {
   main.innerHTML = `<div class="view" id="lab-root"><div class="empty">Loading lab…</div></div>`;
   import(`./js/labs/${l.kind}.js`).then(mod => {
@@ -1870,7 +1928,7 @@ function labView(id) {
     <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${l.minutes} min · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.intro)}</p></div>
     <section class="panel"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
       ${l.artifact.kind === "log" ? `<div class="row"><label class="sr" for="lab-f">Filter lines</label><span class="mono" style="color:var(--sun)">grep</span><input id="lab-f" type="search" placeholder="e.g. Failed password" autocomplete="off" spellcheck="false"></div>` : ""}
-      <pre class="evidence" id="lab-pre"></pre></section>
+      <pre class="evidence" id="lab-pre" tabindex="0" aria-label="Evidence"></pre></section>
     <section class="stack" id="lab-steps">${l.steps.map((st, i) => `<div class="panel lab-step ${solved.has(i) ? "got" : ""}" data-i="${i}">
       <div class="panel-title"><h2>Question ${i + 1}</h2>${solved.has(i) ? '<span class="eyebrow" style="color:var(--good)">Solved</span>' : ""}</div>
       <p class="q">${esc(st.q)}</p>
@@ -1943,7 +2001,7 @@ function cvssLab(l) {
       <a class="link-btn" href="#missions">← Missions</a>
       <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${done.size}/${l.scenarios.length} scenarios · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.intro)}</p></div>
       <div class="row">${l.scenarios.map((x, i) => `<button class="chip" data-sc="${i}" aria-pressed="${i === cur}">${done.has(i) ? "✓ " : ""}${esc(x.title)}</button>`).join("")}</div>
-      <section class="case"><div class="eyebrow">Scenario ${cur + 1}</div><h3>${esc(sc.title)}</h3><p>${esc(sc.text)}</p></section>
+      <section class="case"><h2 class="eyebrow">Scenario ${cur + 1}</h2><h3>${esc(sc.title)}</h3><p>${esc(sc.text)}</p></section>
       <div class="cvss-grid">${CVSS_METRICS.map(([k, label, opts]) => `<fieldset class="metric"><legend>${esc(label)}</legend><div class="row">${opts.map(([v, t]) => `<button class="chip" data-m="${k}" data-v="${v}" aria-pressed="${pick[k] === v}">${esc(t)}</button>`).join("")}</div></fieldset>`).join("")}</div>
       <section class="panel score-panel"><div><div class="eyebrow">Your score</div><div class="score-big">${score.toFixed(1)}</div><div class="mono muted">${esc(cvssSeverity(score))} · CVSS:3.1/${esc(vec)}</div></div>
         <div class="stack" style="gap:8px"><button class="btn brand" id="cvss-check">${done.has(cur) ? "Solved ✓" : "Check my vector"}</button><div id="cvss-fb"></div></div></section>
@@ -2108,7 +2166,7 @@ VIEWS.careers = () => {
   main.innerHTML = `<div class="view">
     <div class="view-head"><h1>Find your way into cyber</h1>
       <p>Most people start in IT support or a SOC.</p></div>
-    <div class="paths">${C.paths.map(p => `<article class="path">
+    <h2 class="sr-only">Entry paths</h2><div class="paths">${C.paths.map(p => `<article class="path">
       <h3>${esc(p.role)}</h3><p class="tl">${esc(p.tagline)}</p><p>${gloss(p.what, 3)}</p>
       <h4>Skills</h4><div class="pchips">${p.skills.map(s => `<span class="pchip">${esc(s)}</span>`).join("")}</div>
       <h4>Certifications</h4><div class="pchips">${p.certs.map(s => `<span class="pchip">${esc(s)}</span>`).join("")}</div>
@@ -2172,12 +2230,14 @@ const HELP = [
   ["flags", "hints for the 3 hidden flags"], ["submit flag{...}", "check a flag"], ["clear", "clear this screen"], ["exit", "close (or Esc)"],
 ];
 function openCmd(prefill = "", run = false) {
+  if (cmdk.hidden) cmdReturn = document.activeElement !== document.body ? document.activeElement : null;
   cmdk.hidden = false; closePop();
   cmdIn.value = prefill; cmdIn.focus();
   if (run) { runCmd(prefill); cmdIn.value = ""; }
   drawCmd();
 }
-function closeCmd() { cmdk.hidden = true; }
+let cmdReturn = null;
+function closeCmd() { if (cmdk.hidden) return; cmdk.hidden = true; if (cmdReturn && cmdReturn.isConnected) cmdReturn.focus(); cmdReturn = null; }
 function say(text, cls = "") { cmdLog.push({ text, cls }); if (cmdLog.length > 60) cmdLog.shift(); }
 function searchAll(q) {
   q = q.toLowerCase(); const out = [];
@@ -2296,6 +2356,7 @@ document.addEventListener("keydown", e => {
 
 /* ---------- router ---------- */
 // Which tab each route lives under, and what draws it.
+const CVE_VIEWS = ["cves", "today/stack"];
 function parseRoute() {
   const h = (location.hash || "#today").slice(1);
   if (h.startsWith("lesson-")) return { tab: "learn", path: "learn/" + h.slice(7), draw: () => lessonView(h.slice(7)) };
@@ -2316,6 +2377,7 @@ function route() {
   $("cwd").textContent = "~/" + r.path;
   renderStatus();
   window.scrollTo(0, 0);
+  if (CVE_VIEWS.includes(r.path)) loadCves();
   r.draw();
 }
 // Redraw the current view in place (no scroll jump), e.g. when the CVE list finishes loading.
@@ -2340,11 +2402,16 @@ $("foot-meta").textContent = `Updated ${DATA.meta.generated}.` + (DATA.site.auth
 $("xp").addEventListener("click", () => { location.hash = "progress"; });
 $("xp").style.cursor = "pointer";
 if (DATA.site.url) $("lessons-link").href = DATA.site.url + "lessons/";
+// The full CVE list (~600 KB) is only fetched by the views that use it.
+let cvesLoading = null;
+function loadCves() {
+  if (cvesLoading) return;
+  cvesLoading = fetch("data/cves.json")
+    .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+    .then(rows => { DATA.cves = rows; rows.forEach(c => CVE_IDS.add(c.id)); CVES_READY = true; })
+    .catch(() => { CVES_FAILED = true; })
+    .finally(() => { if (CVE_VIEWS.includes(parseRoute().path)) rerender(); renderStatus(); });
+}
 renderXP();
 route();
-fetch("data/cves.json")
-  .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
-  .then(rows => { DATA.cves = rows; rows.forEach(c => CVE_IDS.add(c.id)); CVES_READY = true; })
-  .catch(() => { CVES_FAILED = true; })
-  .finally(() => { if (["cves", "today", "news"].includes(parseRoute().tab)) rerender(); renderStatus(); });
 </script>

@@ -6,6 +6,8 @@ import { readFileSync } from "node:fs";
 import * as osi from "../static/js/labs/osi.js";
 import * as term from "../static/js/labs/terminal.js";
 import * as topo from "../static/js/labs/topology.js";
+import * as ports from "../static/js/labs/ports.js";
+import * as subnet from "../static/js/labs/subnet.js";
 
 const labs = JSON.parse(readFileSync(new URL("../content/labs.json", import.meta.url), "utf8"));
 const lab = id => labs.find(l => l.id === id);
@@ -78,7 +80,7 @@ test("terminal: grep, find, chmod and running a script", () => {
 test("terminal: every objective can be completed, and a wrong delete fails the tidy task", () => {
   const L = lab("linux-terminal");
   const sh = term.createShell(L);
-  for (const c of ["whoami", "pwd", "ls -a", "cat notes.txt", "cd /var/log", 'grep "Failed password" auth.log', "find / -name backup.sh",
+  for (const c of ["whoami", "pwd", "ls -a", "cat notes.txt", "cd /var/log", 'grep "Failed password" auth.log', "grep Failed auth.log | wc -l", "find / -name backup.sh",
     "/opt/backup/backup.sh", "chmod +x /opt/backup/backup.sh", "/opt/backup/backup.sh", "mkdir ~/reports", "touch ~/reports/incident.txt", "rm /tmp/old.tmp"]) sh.run(c);
   for (const t of L.tasks) assert.ok(sh.isDone(t.check), t.id);
   const careless = term.createShell(L);
@@ -91,6 +93,18 @@ test("terminal: tab completion and quoting", () => {
   assert.equal(sh.complete("cat no").line, "cat notes.txt");
   assert.equal(sh.complete("cd /var/l").line, "cd /var/log/");
   assert.deepEqual(term.tokenize('grep "Failed password" auth.log'), ["grep", "Failed password", "auth.log"]);
+});
+
+test("terminal: pipes feed one command's output into the next", () => {
+  const sh = term.createShell(lab("linux-terminal"));
+  sh.run("cd /var/log");
+  assert.equal(sh.run("grep Failed auth.log | wc -l").out, "4");
+  assert.equal(sh.run("grep -i failed auth.log | head -n 1").out.split("\n").length, 1);
+  assert.equal(sh.run("ls | wc -l").out, "2");
+  assert.match(sh.run("grep Failed auth.log | cut -d ' ' -f 11 | sort | uniq -c | sort -rn").out, /^\s+3 203\.0\.113\.45/);
+  assert.match(sh.run("grep x |").out, /syntax error/);
+  assert.match(sh.run("head").out, /no input/);
+  assert.deepEqual(term.splitPipes('grep "a|b" f | wc -l'), ['grep "a|b" f ', " wc -l"]);
 });
 
 test("topologies: failures cut off the right devices", () => {
@@ -122,4 +136,62 @@ test("topologies: single points of failure match the teaching", () => {
   assert.equal(T("mesh").links.length, 5 * 4 / 2);
   assert.ok(topo.singlePoints(T("spine-leaf")).nodes.every(n => n !== "s1" && n !== "s2"), "losing a spine shouldn't cut anyone off");
   for (const q of lab("topologies").quiz) assert.ok(T(q.answer), q.answer);
+});
+
+// Deterministic random numbers so generated questions are repeatable.
+const seeded = seed => () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+
+test("ports: every drill question has one right answer among unique options", () => {
+  const P = lab("ports-protocols").protocols;
+  for (let s = 1; s <= 40; s++) {
+    const round = ports.makeRound(P, 12, seeded(s));
+    assert.equal(round.length, 12);
+    assert.equal(new Set(round.map(q => q.id)).size, 12, "no protocol twice in a drill");
+    for (const q of round) {
+      assert.equal(new Set(q.options).size, q.options.length, q.q);
+      assert.equal(q.options.filter(o => o === q.answer).length, 1, q.q);
+      if (q.type === "proto") {  // no other option may also use the asked port
+        const port = Number(q.q.match(/Port (\d+)/)[1]);
+        assert.deepEqual(P.filter(p => q.options.includes(p.name) && p.ports.includes(port)).map(p => p.name), [q.answer]);
+      }
+    }
+  }
+});
+
+test("ports: data is complete and secure swaps point at real protocols", () => {
+  const P = lab("ports-protocols").protocols, ids = new Set(P.map(p => p.id));
+  for (const p of P) {
+    assert.ok(p.name && p.full && p.what && p.group && p.ports.length, p.id);
+    assert.ok(["TCP", "UDP", "TCP/UDP"].includes(p.transport), p.id);
+    if (p.secure) assert.ok(ids.has(p.secure), p.id);
+  }
+  const by = id => P.find(p => p.id === id);
+  assert.deepEqual([by("ssh").ports, by("https").ports, by("rdp").ports, by("dns").ports], [[22], [443], [3389], [53]]);
+});
+
+test("subnetting: the maths matches worked examples", () => {
+  const i = subnet.subnetInfo("192.168.10.77", 26);
+  assert.deepEqual([i.mask, i.network, i.broadcast, i.first, i.last, i.hosts, i.block], ["255.255.255.192", "192.168.10.64", "192.168.10.127", "192.168.10.65", "192.168.10.126", 62, 64]);
+  const j = subnet.subnetInfo("172.16.45.9", 20);
+  assert.deepEqual([j.mask, j.network, j.broadcast, j.hosts, j.block, j.octet], ["255.255.240.0", "172.16.32.0", "172.16.47.255", 4094, 16, 2]);
+  const k = subnet.subnetInfo("10.1.2.3", 24);
+  assert.deepEqual([k.network, k.broadcast, k.hosts], ["10.1.2.0", "10.1.2.255", 254]);
+  assert.equal(subnet.subnetInfo("10.0.0.5", 30).last, "10.0.0.6");
+  assert.equal(subnet.ipToInt("256.1.1.1"), null);
+  assert.equal(subnet.ipToInt("10.0.0"), null);
+  assert.deepEqual([50, 60, 100, 500].map(subnet.prefixFor), [26, 26, 25, 23]);
+});
+
+test("subnetting: generated questions check their own answers", () => {
+  const rng = seeded(7);
+  for (let n = 0; n < 300; n++) {
+    const q = subnet.makeQuestion(rng);
+    assert.ok(subnet.check(q, q.answer), JSON.stringify(q));
+    assert.ok(!subnet.check(q, "nope"));
+    assert.ok(subnet.explain(q).length > 20);
+  }
+  const needs = subnet.makeQuestion(seeded(1), "needs");
+  assert.ok(subnet.check(needs, needs.answer.slice(1)), "accepts 26 as well as /26");
+  const hosts = { type: "hosts", answer: "4094" };
+  assert.ok(subnet.check(hosts, "4,094"));
 });

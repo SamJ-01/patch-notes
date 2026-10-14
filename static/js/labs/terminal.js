@@ -21,6 +21,12 @@ const MAN = {
   history: "history: list the commands you've typed",
   clear: "clear: clear the screen",
   man: "man command: a one-line manual for a command",
+  head: "head [-n N] [file]: print the first N lines (default 10). Often used after a pipe: grep Failed auth.log | head -n 3",
+  tail: "tail [-n N] [file]: print the last N lines (default 10). Logs grow at the bottom, so tail shows the newest entries",
+  wc: "wc -l [file]: count lines. grep Failed auth.log | wc -l counts the failed logins",
+  sort: "sort [-r] [-n] [file]: sort lines (-r reverses, -n sorts by number)",
+  uniq: "uniq [-c] [file]: collapse repeated neighbouring lines (-c counts them). Run sort first so repeats sit together",
+  cut: "cut -d ' ' -f N [file]: print field N of each line, splitting on the -d character",
 };
 
 export const normalize = parts => {
@@ -41,6 +47,18 @@ export function tokenize(line) {
     cur += ch;
   }
   if (cur || has) out.push(cur);
+  return out;
+}
+
+// Split on | outside quotes: "grep x f | head" -> ["grep x f ", " head"].
+export function splitPipes(line) {
+  const out = [""]; let q = null;
+  for (const ch of line) {
+    if (q) { if (ch === q) q = null; }
+    else if (ch === '"' || ch === "'") q = ch;
+    else if (ch === "|") { out.push(""); continue; }
+    out[out.length - 1] += ch;
+  }
   return out;
 }
 
@@ -80,14 +98,51 @@ export function createShell(lab) {
   const sizeOf = n => (n.type === "dir" ? 4096 : (n.content || "").length);
   const longLine = (p, n) => `${n.type === "dir" ? "d" : "-"}${n.mode} 1 ${n.owner.padEnd(7)} ${n.owner.padEnd(7)} ${String(sizeOf(n)).padStart(5)} Oct 14 09:12 ${base(p)}`;
 
+  const err = msg => ({ out: msg, error: true });
+
+  // A pipeline runs left to right; each command's output becomes the next one's input (stdin).
   function run(line) {
     const raw = line.trim();
     if (!raw) return { out: "" };
     state.history.push(raw);
+    const segs = splitPipes(raw).map(x => x.trim());
+    if (segs.some(x => !x)) return err("bash: syntax error near unexpected token `|'");
+    let res = null;
+    for (let i = 0; i < segs.length; i++) {
+      res = exec(segs[i], i ? res.out : null, i < segs.length - 1);
+      if (res.error || res.clear) return res;
+    }
+    if (segs.length > 1) log({ cmd: "pipe", cmds: segs.map(x => tokenize(x)[0]) });
+    return res;
+  }
+
+  // Text to filter: piped input if there is no file argument, otherwise the file(s).
+  function input(name, files, stdin) {
+    if (!files.length) return stdin === null ? err(`${name}: no input. Give a file, or pipe something in: cat file | ${name}`) : { text: stdin };
+    const outs = [];
+    for (const w of files) {
+      const p = resolve(w), n = node(p);
+      if (!n) return err(`${name}: ${w}: No such file or directory`);
+      if (n.type === "dir") return err(`${name}: ${w}: Is a directory`);
+      if (n.mode[0] !== "r" && n.owner !== user) return err(`${name}: ${w}: Permission denied`);
+      outs.push(n.content || "");
+    }
+    return { text: outs.join("\n") };
+  }
+  const lines = t => (t === "" ? [] : t.replace(/\n$/, "").split("\n"));
+  // -n 5, -n5 or -5
+  function count(args, dflt) {
+    const i = args.indexOf("-n");
+    if (i >= 0) return { n: Number(args[i + 1]), rest: args.filter((_, j) => j !== i && j !== i + 1) };
+    const short = args.find(a => /^-n?\d+$/.test(a));
+    if (short) return { n: Number(short.replace(/^-n?/, "")), rest: args.filter(a => a !== short) };
+    return { n: dflt, rest: args };
+  }
+
+  function exec(raw, stdin, piped = false) {
     const [cmd, ...args] = tokenize(raw);
     const flags = args.filter(a => /^-[a-zA-Z]+$/.test(a)).join("").replace(/-/g, "");
     const words = args.filter(a => !/^-[a-zA-Z]+$/.test(a));
-    const err = msg => ({ out: msg, error: true });
 
     // Running a program by path: ./script.sh or /opt/backup/backup.sh
     if (cmd.includes("/")) {
@@ -129,7 +184,7 @@ export function createShell(lab) {
         if (!flags.includes("a")) names = names.filter(p => !base(p).startsWith("."));
         if (flags.includes("l")) return { out: [`total ${names.length * 4}`, ...(flags.includes("a") ? [longLine(".", n).replace(/ \.$/, " ."), longLine("..", node(parent(target))).replace(/ \.\.$/, " ..")] : []), ...names.map(p => longLine(p, node(p)))].join("\n"), dirs: names.filter(p => node(p).type === "dir").map(base) };
         const listed = (flags.includes("a") ? [".", ".."] : []).concat(names.map(base));
-        return { out: listed.join("  "), dirs: [".", "..", ...names.filter(p => node(p).type === "dir").map(base)] };
+        return { out: listed.join(piped ? "\n" : "  "), dirs: [".", "..", ...names.filter(p => node(p).type === "dir").map(base)] };
       }
       case "cat": {
         if (!words.length) return err("cat: missing file name");
@@ -144,13 +199,17 @@ export function createShell(lab) {
         return { out: outs.join("\n") };
       }
       case "grep": {
-        if (words.length < 2) return err("Usage: grep [-i] [-n] pattern file");
+        if (words.length < (stdin === null ? 2 : 1)) return err("Usage: grep [-i] [-n] pattern file");
         const [pattern, file] = words;
-        const p = resolve(file), n = node(p);
-        if (!n) return err(`grep: ${file}: No such file or directory`);
-        if (n.type === "dir") return err(`grep: ${file}: Is a directory`);
+        let text, p = null;
+        if (file) {
+          p = resolve(file); const n = node(p);
+          if (!n) return err(`grep: ${file}: No such file or directory`);
+          if (n.type === "dir") return err(`grep: ${file}: Is a directory`);
+          text = n.content || "";
+        } else text = stdin;
         const ci = flags.includes("i");
-        const hits = (n.content || "").split("\n").map((l, i) => [i + 1, l]).filter(([, l]) => (ci ? l.toLowerCase().includes(pattern.toLowerCase()) : l.includes(pattern)));
+        const hits = text.split("\n").map((l, i) => [i + 1, l]).filter(([, l]) => (ci ? l.toLowerCase().includes(pattern.toLowerCase()) : l.includes(pattern)));
         log({ cmd, path: p, pattern, ci, matched: hits.length });
         return { out: hits.map(([i, l]) => (flags.includes("n") ? `${i}:` : "") + l).join("\n"), highlight: pattern, ci };
       }
@@ -208,6 +267,40 @@ export function createShell(lab) {
         n.mode = mode; log({ cmd, path: p, mode });
         return { out: "" };
       }
+      case "head": case "tail": {
+        const { n, rest } = count(args, 10);
+        if (!Number.isInteger(n) || n < 0) return err(`${cmd}: invalid number of lines`);
+        const inp = input(cmd, rest, stdin); if (inp.error) return inp;
+        const ls = lines(inp.text); log({ cmd, n });
+        return { out: (cmd === "head" ? ls.slice(0, n) : ls.slice(Math.max(0, ls.length - n))).join("\n") };
+      }
+      case "wc": {
+        const inp = input(cmd, words, stdin); if (inp.error) return inp;
+        const ls = lines(inp.text); log({ cmd });
+        const w = inp.text.split(/\s+/).filter(Boolean).length, c = inp.text.length;
+        return { out: flags.includes("l") ? String(ls.length) : `${ls.length} ${w} ${c}` };
+      }
+      case "sort": {
+        const inp = input(cmd, words, stdin); if (inp.error) return inp;
+        let ls = lines(inp.text).slice();
+        ls.sort(flags.includes("n") ? (a, b) => parseFloat(a) - parseFloat(b) : (a, b) => (a < b ? -1 : a > b ? 1 : 0));
+        if (flags.includes("r")) ls.reverse();
+        log({ cmd }); return { out: ls.join("\n") };
+      }
+      case "uniq": {
+        const inp = input(cmd, words, stdin); if (inp.error) return inp;
+        const groups = [];
+        for (const l of lines(inp.text)) { const g = groups[groups.length - 1]; if (g && g[0] === l) g[1]++; else groups.push([l, 1]); }
+        log({ cmd }); return { out: groups.map(([l, k]) => (flags.includes("c") ? `${String(k).padStart(7)} ` : "") + l).join("\n") };
+      }
+      case "cut": {
+        const di = args.indexOf("-d"), fi = args.indexOf("-f");
+        if (fi < 0 || !/^\d+$/.test(args[fi + 1] || "")) return err("Usage: cut -d ' ' -f N file (e.g. cut -d ' ' -f 11)");
+        const delim = di >= 0 ? (args[di + 1] ?? "\t") : "\t", f = Number(args[fi + 1]);
+        const files = args.filter((_, j) => ![di, di + 1, fi, fi + 1].includes(j));
+        const inp = input(cmd, files, stdin); if (inp.error) return inp;
+        log({ cmd }); return { out: lines(inp.text).map(l => l.split(delim)[f - 1] ?? "").join("\n") };
+      }
       default: return err(`${cmd}: command not found. Type help to see the commands this terminal supports.`);
     }
   }
@@ -220,6 +313,7 @@ export function createShell(lab) {
     if (check.read) return ev.some(e => e.cmd === "cat" && e.path === check.read);
     if (check.cwd) return state.cwd === check.cwd;
     if (check.grep) return ev.some(e => e.cmd === "grep" && e.path === check.grep.file && e.matched > 0 && (e.ci ? check.grep.match.toLowerCase().includes(e.pattern.toLowerCase()) || e.pattern.toLowerCase().includes(check.grep.match.toLowerCase()) : e.pattern.includes(check.grep.match)));
+    if (check.piped) return ev.some(e => e.cmd === "pipe" && check.piped.every((c, i) => e.cmds[i] === c));
     if (check.found) return ev.some(e => e.cmd === "find" && e.found.includes(check.found));
     if (check.tried) return ev.some(e => e.cmd === "exec" && e.path === check.tried);
     if (check.executed) return ev.some(e => e.cmd === "exec" && e.path === check.executed && e.ok);

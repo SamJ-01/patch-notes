@@ -302,7 +302,8 @@ def main():
         },
         "site": site,
         "news": stories,
-        "kev": [r for r in rows if r["kev"]],  # small and needed for the first screen; the full list loads after
+        "kev": [r for r in rows if r["kev"]],
+        "newsCves": sorted({c for s in stories for c in s.get("cves", [])} & {r["id"] for r in rows}),  # small and needed for the first screen; the full list loads after
         "trends": trends(rows, cwe),
         "lessons": lessons,
         "labs": load("labs.json"),
