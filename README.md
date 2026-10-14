@@ -105,6 +105,10 @@ If the Mac is off, step 1 still runs: news and CVEs stay current, only new expla
 - Automated testing in CI: a failing test blocks the deploy
 - Accessible, tested data visualisation (colour palette validated for colour-blind readers)
 
+## Copyright
+
+© 2026 SamJ-01. All rights reserved: no licence is granted to reuse the code or original content (see [COPYRIGHT](COPYRIGHT)). Third-party data, fonts and feeds are listed in [THIRD_PARTY.md](THIRD_PARTY.md).
+
 ## Responsible publishing
 
 - Headlines link to the original publishers. Only a title and a short snippet are shown.
