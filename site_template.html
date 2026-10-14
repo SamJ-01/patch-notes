@@ -442,26 +442,38 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .mode-tabs .chip[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand); border-color: rgba(63, 224, 232, 0.5); }
 .mode-intro { color: var(--muted); max-width: 75ch; }
 .mission-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 18px; align-items: start; }
-.stage-box { position: relative; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.stage-box { position: relative; background-color: var(--bg); background-image: radial-gradient(rgba(127, 144, 168, 0.16) 1px, transparent 1.2px); background-size: 18px 18px; background-position: 9px 9px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
 .stage-box svg { width: 100%; height: auto; display: block; }
-.m-link { stroke: #2A3A50; stroke-width: 3; }
-.m-dev rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: stroke 0.2s; }
-.m-dev.talk rect { stroke: var(--brand); stroke-width: 2.5; }
-.m-dev.ok rect { stroke: var(--good); }
-.m-dev.bad rect { stroke: var(--exploited); }
+.m-link { fill: none; stroke: #2B3D55; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.m-box { fill: var(--surface); stroke: #24344A; stroke-width: 1.25; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45)); }
+.m-dev.talk .m-box { stroke: var(--brand); stroke-width: 2; filter: drop-shadow(0 0 10px rgba(63, 224, 232, 0.35)); }
+.m-dev.ok .m-box { stroke: var(--good); }
+.m-dev.bad .m-box { stroke: var(--exploited); }
 .m-dev text { fill: var(--ink); font-family: var(--font-mono); }
-.m-ico { font-size: 13px; font-weight: 600; fill: var(--sun) !important; }
+.m-badge { fill: rgba(255, 176, 0, 0.1); stroke: rgba(255, 176, 0, 0.35); stroke-width: 1; }
+.m-ico { font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; fill: var(--sun) !important; }
 .m-name { font-size: 14px; font-family: var(--font-body) !important; font-weight: 600; }
-.m-ip { font-size: 13.5px; fill: var(--brand) !important; }
-.m-status { font-size: 12.5px; fill: var(--muted) !important; }
+.m-ip { font-size: 13px; }
+.m-ip .m-k { fill: var(--muted); font-size: 11px; letter-spacing: 0.06em; }
+.m-ip .m-v { fill: var(--brand); }
+.m-status { font-size: 12px; font-family: var(--font-body) !important; fill: var(--muted) !important; }
+.m-dot { fill: #2B3D55; }
+.m-dev.talk .m-dot { fill: var(--brand); }
+.m-dev.ok .m-dot { fill: var(--good); }
+.m-dev.bad .m-dot { fill: var(--exploited); }
+.m-dev.ok .m-status { fill: var(--good) !important; }
+.m-dev.bad .m-status { fill: var(--exploited) !important; }
 .m-pkt { cursor: pointer; }
 .m-pkt rect { fill: var(--sun); }
 .m-pkt text { fill: var(--sun-ink); font: 600 12.5px var(--font-mono); }
 .m-pkt:focus-visible rect { stroke: var(--ink); stroke-width: 2; }
 .bubbles { position: absolute; inset: 0; pointer-events: none; }
-.bubble { position: absolute; max-width: 42%; background: var(--surface-2); color: var(--ink); border: 1px solid rgba(63, 224, 232, 0.45); border-radius: 8px; padding: 6px 9px; font-size: 0.78rem; line-height: 1.35; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45); }
-.bubble.say { border-color: var(--sun); }
-.bubble.quiet { opacity: 0.75; border-style: dashed; border-color: var(--line); }
+.bubble { --bc: rgba(63, 224, 232, 0.45); position: absolute; max-width: 42%; background: var(--surface-2); color: var(--ink); border: 1px solid var(--bc); border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; line-height: 1.35; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45); }
+.bubble::after { content: ""; position: absolute; left: var(--tail, 50%); bottom: -6px; width: 10px; height: 10px; margin-left: -5px; background: var(--surface-2); border: solid var(--bc); border-width: 0 1px 1px 0; transform: rotate(45deg); }
+.bubble.below::after { bottom: auto; top: -6px; border-width: 1px 0 0 1px; }
+.bubble.say { --bc: var(--sun); }
+.bubble.quiet { --bc: var(--line); color: var(--muted); border-style: dashed; }
+.bubble.quiet::after { border-style: dashed; }
 .m-controls { margin-top: 10px; }
 .m-speed { font: 0.8rem var(--font-mono); color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
 .m-speed select { padding: 6px 8px; }
