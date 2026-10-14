@@ -444,6 +444,8 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .mission-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 18px; align-items: start; }
 .stage-box { position: relative; background-color: var(--bg); background-image: radial-gradient(rgba(127, 144, 168, 0.16) 1px, transparent 1.2px); background-size: 18px 18px; background-position: 9px 9px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
 .stage-box svg { width: 100%; height: auto; display: block; }
+.m-zone rect { fill: rgba(63, 224, 232, 0.03); stroke: rgba(63, 224, 232, 0.22); stroke-width: 1.2; stroke-dasharray: 5 5; }
+.m-zone text { fill: var(--brand); font: 500 12px var(--font-mono); letter-spacing: 0.04em; opacity: 0.85; }
 .m-link { fill: none; stroke: #2B3D55; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 .m-box { fill: var(--surface); stroke: #24344A; stroke-width: 1.25; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45)); }
 .m-dev.talk .m-box { stroke: var(--brand); stroke-width: 2; filter: drop-shadow(0 0 10px rgba(63, 224, 232, 0.35)); }
@@ -1560,8 +1562,10 @@ function missionView(id) {
   main.innerHTML = `<div class="view" id="mission-root"><div class="empty">Loading mission…</div></div>`;
   import("./js/missions/ui.js").then(ui => {
     if (parseRoute().path !== "missions/" + id) return;  // the learner navigated away while it loaded
+    const next = m.next && MISSION(m.next);
     ui.mount($("mission-root"), m, {
       doneModes: Object.keys((P.missions || {})[id] || {}),
+      next: next ? { id: next.id, title: next.title } : null,
       onComplete: mode => {
         P.missions = P.missions || {}; P.missions[id] = P.missions[id] || {};
         if (P.missions[id][mode]) return;

@@ -30,7 +30,7 @@ const HW = {
 };
 const STATE_WORDS = { ok: "working", bad: "problem", warn: "warning" };
 
-export function mount(root, scenario, { mode = "guided", doneModes = [], onComplete = () => {}, reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches } = {}) {
+export function mount(root, scenario, { mode = "guided", doneModes = [], next = null, onComplete = () => {}, reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches } = {}) {
   let state, playing = false, speed = 1, details = false, selected = null, busy = false, runId = 0;
   const modes = Object.entries(scenario.modes);
 
@@ -66,7 +66,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], onCompl
   const dev = id => scenario.devices[id];
   // With reduced motion, nothing slides: Step is the main control and Play pauses on each message.
   if (reducedMotion) { $("m-step").classList.add("brand"); $("m-play").classList.remove("brand"); }
-  let L, geo = {};  // current layout and card rectangles
+  let L, geo = {}, zones = [];  // current layout, card rectangles and network zones
   const center = id => layout.centerOf(scenario, L, id);
   const box = id => geo[id];
   const hasIp = id => layout.hasIp(scenario, id);
@@ -99,6 +99,13 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], onCompl
     const m = measurer("m-status");
     geo = layout.cardGeometry(scenario, L, m.width);
     m.done();
+    zones = layout.zoneRects(scenario, L, geo);
+    for (const z of zones) {
+      const g = document.createElementNS(NS, "g");
+      g.setAttribute("class", "m-zone");
+      g.innerHTML = `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="14"/><text x="${z.x + 14}" y="${z.y + 17}">${esc(z.label)}</text>`;
+      svg.appendChild(g);
+    }
     for (const [a, b] of scenario.links) {
       const l = document.createElementNS(NS, "path");
       l.setAttribute("d", layout.roundedPath(route(a, b)));
@@ -157,7 +164,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], onCompl
     const area = bubbles.getBoundingClientRect(), k = area.width / (L.w + MARGIN * 2);
     const px = v => (v + MARGIN) * k;
     const rectOf = g => ({ l: px(g.x), t: px(g.y), r: px(g.x + g.w), b: px(g.y + g.h) });
-    const obstacles = [...Object.values(geo).map(rectOf),
+    const obstacles = [...Object.values(geo).map(rectOf), ...zones.map(z => rectOf(z.labelBox)),
       ...[...bubbles.children].filter(o => o !== b).map(o => ({ l: o.offsetLeft, t: o.offsetTop, r: o.offsetLeft + o.offsetWidth, b: o.offsetTop + o.offsetHeight }))];
     const spot = layout.placeBubble({ w: b.offsetWidth, h: b.offsetHeight }, rectOf(d), obstacles, { width: area.width, height: area.height });
     b.classList.add(spot.side);
@@ -419,7 +426,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], onCompl
     d.hidden = false;
     d.innerHTML = `<div class="eyebrow">Debrief</div><h2 tabindex="-1" id="m-debrief-title">${esc(scenario.modes[state.mode].label)} mode complete</h2><p>${esc(ev.debrief)}</p>
       ${isToolMode(scenario.modes[state.mode]) ? `<p class="muted">Tools used: ${state.toolsUsed.length} · hints: ${state.hintsUsed} · wrong answers: ${state.mistakes}${state.evidenceTries ? ` · reasoning checked ${state.evidenceTries === 1 ? "first time" : `in ${state.evidenceTries} tries`}` : ""}</p>` : ""}
-      <div class="row">${modes.filter(([k]) => k !== state.mode).map(([k, m]) => `<button class="btn" data-goto="${k}">Try ${esc(m.label)} mode</button>`).join("")}<a class="btn ghost" href="#lesson-${esc(scenario.lesson)}">Related lesson</a></div>`;
+      <div class="row">${next ? `<a class="btn brand" href="#mission-${esc(next.id)}">Next mission: ${esc(next.title)}</a>` : ""}${modes.filter(([k]) => k !== state.mode).map(([k, m]) => `<button class="btn" data-goto="${k}">Try ${esc(m.label)} mode</button>`).join("")}<a class="btn ghost" href="#lesson-${esc(scenario.lesson)}">Related lesson</a></div>`;
     d.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => setMode(b.dataset.goto)));
     onComplete(state.mode);
     const tab = root.querySelector(`[data-mode="${state.mode}"]`);

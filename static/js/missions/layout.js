@@ -76,6 +76,19 @@ export function cardGeometry(scenario, layout, width) {
   return geo;
 }
 
+// Network zones (e.g. "Office network 192.168.1.0/24"): a labelled area drawn behind the cards of the
+// devices that share a network, sized to fit them with `pad` around and a label strip on top.
+export const ZONE_LABEL = 22;
+export function zoneRects(scenario, layout, geo) {
+  const pad = layout.zonePad ?? 18;
+  return (scenario.zones || []).map(z => {
+    const cards = z.devices.map(id => geo[id]);
+    const l = Math.min(...cards.map(c => c.x)) - pad, r = Math.max(...cards.map(c => c.x + c.w)) + pad;
+    const t = Math.min(...cards.map(c => c.y)) - pad - ZONE_LABEL, b = Math.max(...cards.map(c => c.y + c.h)) + pad;
+    return { label: z.label, devices: z.devices, x: l, y: t, w: r - l, h: b - t, labelBox: { x: l, y: t, w: r - l, h: ZONE_LABEL + 6 } };
+  });
+}
+
 // Cables run at right angles: across then down when the gap is mostly sideways, otherwise down then across.
 export function route(p, q) {
   if (p.x === q.x || p.y === q.y) return [p, q];
