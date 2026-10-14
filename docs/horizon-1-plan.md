@@ -58,7 +58,7 @@ No step needs a backend, an external paid service or a security review. Hosted r
 | 5. First mission | ✅ DHCP in Guided / Practice / Challenge. Next: a broader "Something isn't right…" troubleshooting mission |
 | 6. Linux permissions reuse test | ⏳ Next |
 | 7. Gamification tone | ✅ Done: practice days instead of streaks, badges labelled as practice |
-| 8. Evidence | ⏳ 17 engine + 10 layout tests in CI; learner feedback still to gather |
+| 8. Evidence | ⏳ 15 engine + 10 layout tests in CI; learner feedback still to gather |
 
 ### Increment 1 (from the 14 Oct audit): make the engine reusable ✅
 
