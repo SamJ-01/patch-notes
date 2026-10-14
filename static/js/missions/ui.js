@@ -248,8 +248,27 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], onCompl
     $("m-inspect").innerHTML = `<div class="panel-title"><h2>${esc(msg.name)}</h2><label class="m-toggle"><input type="checkbox" id="m-details" ${details ? "checked" : ""}> Protocol details</label></div>
       <p>${esc(msg.explain)}</p>
       <dl class="fields">${fields.map(f => `<div><dt>${esc(f.name)}</dt><dd><code>${esc(f.value)}</code><span>${esc(f.explain)}</span></dd></div>`).join("")}</dl>
-      ${details ? "" : `<p class="muted" style="font-size:0.85rem">${msg.fields.length - fields.length} more technical fields: tick “Protocol details”.</p>`}`;
+      ${details ? wiresharkView(msg) : `<p class="muted" style="font-size:0.85rem">${msg.fields.length - fields.length} more technical fields${msg.wireshark ? ", and how this message looks in Wireshark" : ""}: tick “Protocol details”.</p>`}`;
     $("m-details").addEventListener("change", e => { details = e.target.checked; inspect(id); $("m-details").focus(); });
+  }
+  // The advanced layer: the same message as Wireshark's packet list and packet details would show it,
+  // one protocol layer per row. Clearly labelled as an illustration, with a safe way to see the real thing.
+  function wiresharkView(msg) {
+    const w = msg.wireshark, meta = scenario.wireshark || {};
+    if (!w) return "";
+    const layer = l => `<li><code class="ws-line">${esc(l.line)}</code>${l.note ? `<p>${esc(l.note)}</p>` : ""}
+      ${l.children?.length ? `<ul class="ws-children">${l.children.map(c => `<li><code>${esc(c)}</code></li>`).join("")}</ul>` : ""}</li>`;
+    return `<section class="ws" aria-labelledby="ws-title">
+      <div class="ws-head"><span class="sim-tag">Illustration</span><h3 id="ws-title">What you'd see in Wireshark</h3></div>
+      ${meta.filter ? `<p class="ws-filter">Display filter <code>${esc(meta.filter)}</code>${meta.filterNote ? ` <span class="muted">${esc(meta.filterNote)}</span>` : ""}</p>` : ""}
+      <h4 class="eyebrow">Packet list</h4>
+      <dl class="ws-row"><div><dt>Source</dt><dd><code>${esc(w.src)}</code></dd></div><div><dt>Destination</dt><dd><code>${esc(w.dst)}</code></dd></div>
+        <div><dt>Protocol</dt><dd><code>${esc(w.protocol)}</code></dd></div><div class="wide"><dt>Info</dt><dd><code>${esc(w.info)}</code></dd></div></dl>
+      <h4 class="eyebrow">Packet details, outermost layer first</h4>
+      <ol class="ws-tree">${w.layers.map(layer).join("")}</ol>
+      ${meta.honesty ? `<p class="ws-note">${esc(meta.honesty)}</p>` : ""}
+      ${meta.tryIt ? `<details class="tbl"><summary>See it for real</summary><p class="ws-note">${esc(meta.tryIt)}</p></details>` : ""}
+    </section>`;
   }
   function logLine(html, msgId) {
     const li = document.createElement("li");
@@ -276,6 +295,8 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], onCompl
       else if (ev.type === "tool") await showTool(ev);
       else if (ev.type === "workaround") logLine(`<span class="warnline">Workaround applied. It looks fixed for this device, but is it really solved?</span>`);
       else if (ev.type === "goal") showRootCause(ev);
+      else if (ev.type === "evidenceCheck") showEvidenceCheck(ev);
+      else if (ev.type === "evidenceResult") showEvidenceResult(ev);
       else if (ev.type === "hint") showHint(ev);
       else if (ev.type === "complete") finish(ev);
     }
@@ -357,6 +378,39 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], onCompl
     $("m-rc").querySelectorAll("[data-rc]").forEach(b => b.addEventListener("click", () => run(engine.answerRootCause(scenario, state, Number(b.dataset.rc)))));
     $("m-rc").querySelector(".opt")?.focus();
   }
+  // After the right answer, the learner shows why: tick the evidence that supports it.
+  function showEvidenceCheck(ev) {
+    const box = document.createElement("div");
+    box.className = "ev";
+    box.innerHTML = `<fieldset class="ev-set"><legend class="q">${esc(ev.q)}</legend>
+      ${ev.items.map((it, i) => `<div class="ev-item" id="m-ev-${i}"><label><input type="checkbox" value="${i}"><span>${esc(it.text)}</span></label>
+        ${it.tool && state.toolsUsed.includes(it.tool) ? `<span class="tag">you ran the related check</span>` : ""}<p class="ev-why" hidden></p></div>`).join("")}
+      </fieldset>
+      <div class="row"><button class="btn brand" id="m-ev-go">Check my reasoning</button></div><div id="m-ev-fb" aria-live="polite"></div>`;
+    $("m-rc").querySelector(".rc").appendChild(box);
+    $("m-ev-go").addEventListener("click", () => {
+      const chosen = [...box.querySelectorAll("input:checked")].map(i => Number(i.value));
+      run(engine.answerEvidence(scenario, state, chosen));
+    });
+    box.querySelector("input")?.focus();
+  }
+  function showEvidenceResult(ev) {
+    for (const r of ev.items) {
+      const el = $(`m-ev-${r.index}`), why = el.querySelector(".ev-why");
+      el.classList.toggle("right", r.ok);
+      el.classList.toggle("wrong", !r.ok);
+      const verdict = r.ok
+        ? (r.supports ? (r.selected ? "Supports it." : "Supports it, but optional.") : "Right to leave out.")
+        : (r.supports ? "Missed: this is key evidence." : "Not evidence for this.");
+      why.innerHTML = `<b>${verdict}</b> ${esc(r.why)}`;
+      why.hidden = false;
+    }
+    const wrong = ev.items.filter(r => !r.ok).length;
+    $("m-ev-fb").innerHTML = ev.pass
+      ? `<div class="feedback"><b class="ok">Your reasoning holds up.</b> Every piece you ticked supports the diagnosis, and you left out what doesn't.</div>`
+      : `<div class="feedback"><b class="no">${wrong === 1 ? "One choice needs" : `${wrong} choices need`} another look.</b> Read the notes under each item, change your ticks, then check again.</div>`;
+    if (ev.pass) { $("m-rc").querySelectorAll(".ev input, #m-ev-go").forEach(i => i.disabled = true); }
+  }
 
   // ---------- completion, controls, modes
   function finish(ev) {
@@ -364,7 +418,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], onCompl
     const d = $("m-debrief");
     d.hidden = false;
     d.innerHTML = `<div class="eyebrow">Debrief</div><h2 tabindex="-1" id="m-debrief-title">${esc(scenario.modes[state.mode].label)} mode complete</h2><p>${esc(ev.debrief)}</p>
-      ${isToolMode(scenario.modes[state.mode]) ? `<p class="muted">Tools used: ${state.toolsUsed.length} · hints: ${state.hintsUsed} · wrong answers: ${state.mistakes}</p>` : ""}
+      ${isToolMode(scenario.modes[state.mode]) ? `<p class="muted">Tools used: ${state.toolsUsed.length} · hints: ${state.hintsUsed} · wrong answers: ${state.mistakes}${state.evidenceTries ? ` · reasoning checked ${state.evidenceTries === 1 ? "first time" : `in ${state.evidenceTries} tries`}` : ""}</p>` : ""}
       <div class="row">${modes.filter(([k]) => k !== state.mode).map(([k, m]) => `<button class="btn" data-goto="${k}">Try ${esc(m.label)} mode</button>`).join("")}<a class="btn ghost" href="#lesson-${esc(scenario.lesson)}">Related lesson</a></div>`;
     d.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => setMode(b.dataset.goto)));
     onComplete(state.mode);

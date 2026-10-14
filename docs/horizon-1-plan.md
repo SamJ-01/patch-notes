@@ -58,14 +58,14 @@ No step needs a backend, an external paid service or a security review. Hosted r
 | 5. First mission | ✅ DHCP in Guided / Practice / Challenge. Next: a broader "Something isn't right…" troubleshooting mission |
 | 6. Linux permissions reuse test | ⏳ Next |
 | 7. Gamification tone | ✅ Done: practice days instead of streaks, badges labelled as practice |
-| 8. Evidence | ⏳ 13 engine + 10 layout tests in CI; learner feedback still to gather |
+| 8. Evidence | ⏳ 17 engine + 10 layout tests in CI; learner feedback still to gather |
 
 ### Increment 1 (from the 14 Oct audit): make the engine reusable ✅
 
 - **No protocol knowledge in code.** Device looks (`appearance` rules), packet labels (`short`), bystander reactions (`{ text, tone: "quiet" }`) and how a challenge opens (`opening`) now live in the scenario JSON. Modes are recognised by what they contain (`tools` or `checkpoints`), not by name. A "no reply" outcome undoes whatever its messages changed, for any scenario.
 - **Geometry is testable.** `static/js/missions/layout.js` holds card sizes, cable routes, text wrapping and bubble placement as pure functions. `tests/layout.test.mjs` checks them, and checks that every mission's cards fit the stage with room between them.
 - **Honest labelling.** A visible "Simulation" tag above every stage and "Simulated output" above every console.
-- **Accessibility.** The diagram is a group of labelled devices (each read as one sentence, including its state), so packets can be reached by keyboard and screen reader. Mode buttons are a pressed/not-pressed button group. With reduced motion, Step is the main control and Play pauses 2.5 s on each message. Answer feedback is announced, and focus moves to the debrief when a challenge ends.
+- **Accessibility (Increment 1).** The diagram is a group of labelled devices (each read as one sentence, including its state), so packets can be reached by keyboard and screen reader. Mode buttons are a pressed/not-pressed button group. With reduced motion, Step is the main control and Play pauses 2.5 s on each message. Answer feedback is announced, and focus moves to the debrief when a challenge ends.
 
 ## 3. Constraint: Claude usage
 
@@ -90,3 +90,8 @@ On 14 Oct the daily drafting task hit the plan's weekly usage limit. Building th
   GitHub Pages from a private repo needs a paid GitHub plan. Hosts like Cloudflare Pages can deploy private repos on a free tier, but that's a new external service and needs your decision. *Not legal advice.*
 - **C. Gamification:** tone down as in step 7, or keep as is?
 - **D. First audience** to get the deepest experience: complete beginners, or aspiring SOC analysts?
+
+### Increment 2: assess reasoning, connect to real tools ✅
+
+- **Reasoning check.** Naming the right root cause no longer ends the challenge. The learner then ticks which evidence supports the diagnosis, from a list that mixes key evidence, optional evidence, a symptom that isn't evidence (the failed ping) and claims their own checks contradict. It passes when every key item is ticked and nothing that isn't evidence is. Every item explains itself after each attempt, and the debrief records how many tries the reasoning took. Data: `modes.challenge.rootCause.evidence` (`text`, `supports`, `required`, `tool`, `why`); rules: `engine.answerEvidence`.
+- **"What you'd see in Wireshark".** With Protocol details ticked, each message shows Wireshark's display filter (`dhcp`), its packet-list row, and its packet details layer by layer (Ethernet → IPv4 → UDP → DHCP), each with a one-line explanation. It's labelled as an illustration, not a capture, and ends with how to see the real thing on a network you're allowed to monitor. Tests check every view agrees with the message's own fields (addresses, ports, transaction ID, message type).

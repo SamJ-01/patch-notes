@@ -93,9 +93,56 @@ test("challenge: fix the service, renew, then justify the root cause", () => {
   let rc = run(engine.answerRootCause, r.state, 2);
   assert.equal(rc.events[0].correct, false);
   rc = run(engine.answerRootCause, rc.state, 1);
-  assert.ok(rc.state.complete);
-  assert.equal(rc.events.at(-1).type, "complete");
+  assert.equal(rc.events.at(-1).type, "evidenceCheck", "the right answer opens the reasoning check");
+  assert.ok(!rc.state.complete, "naming the cause isn't enough: the learner must back it with evidence");
   assert.equal(rc.state.evidence.length, 5);
+  const done = run(engine.answerEvidence, rc.state, required());
+  assert.ok(done.state.complete);
+  assert.equal(done.events.at(-1).type, "complete");
+});
+
+// Indexes of the evidence items a learner must tick, and of the ones that aren't evidence.
+const items = dhcp.modes.challenge.rootCause.evidence;
+const required = () => items.flatMap((e, i) => (e.required ? [i] : []));
+const notEvidence = () => items.flatMap((e, i) => (e.supports ? [] : [i]));
+function atReasoningCheck() {
+  let s = engine.start(dhcp, "challenge");
+  for (const t of ["ipconfig", "link", "service", "start", "renew"]) s = run(engine.useTool, s, t).state;
+  return run(engine.answerRootCause, s, dhcp.modes.challenge.rootCause.answer).state;
+}
+
+test("reasoning check: ticking something that isn't evidence fails, with feedback on every item", () => {
+  const s = atReasoningCheck();
+  const r = run(engine.answerEvidence, s, [...required(), notEvidence()[0]]);
+  const [res] = r.events;
+  assert.equal(res.type, "evidenceResult");
+  assert.equal(res.pass, false);
+  assert.equal(res.items.length, items.length, "every item gets a verdict");
+  assert.ok(res.items.every(i => i.why), "every verdict explains itself");
+  assert.equal(res.items.filter(i => !i.ok).length, 1);
+  assert.ok(!r.state.complete);
+  assert.equal(r.state.mistakes, s.mistakes + 1);
+});
+
+test("reasoning check: missing key evidence fails; optional evidence can be left out", () => {
+  const s = atReasoningCheck();
+  const missing = run(engine.answerEvidence, s, required().slice(1));
+  assert.equal(missing.events[0].pass, false);
+  const optional = items.flatMap((e, i) => (e.supports && !e.required ? [i] : []));
+  assert.ok(optional.length, "the scenario has optional evidence");
+  const withOptional = run(engine.answerEvidence, missing.state, [...required(), ...optional]);
+  assert.equal(withOptional.events[0].pass, true);
+  assert.equal(withOptional.state.evidenceTries, 2);
+  assert.ok(withOptional.state.complete);
+});
+
+test("reasoning check can't be answered early, twice, or by re-answering the root cause", () => {
+  const before = engine.start(dhcp, "challenge");
+  assert.deepEqual(run(engine.answerEvidence, before, required()).events, []);
+  const s = atReasoningCheck();
+  assert.deepEqual(run(engine.answerRootCause, s, 1).events, [], "root cause is already settled");
+  const done = run(engine.answerEvidence, s, required()).state;
+  assert.deepEqual(run(engine.answerEvidence, done, required()).events, []);
 });
 
 test("challenge: undoing a static workaround puts the PC back on DHCP", () => {
@@ -139,6 +186,36 @@ test("scenario data is internally consistent", () => {
   }
   for (const [k, m] of Object.entries(dhcp.modes)) if (m.opening) assert.ok(dhcp.devices[m.opening.device], `${k}: opening from unknown device`);
   for (const L of [dhcp.wide, dhcp.narrow].filter(Boolean)) for (const id of Object.keys(dhcp.devices)) assert.ok(L.pos[id], `layout is missing ${id}`);
+  const tools = new Set(dhcp.modes.challenge.tools.map(t => t.id));
+  assert.ok(items.some(e => e.required) && items.some(e => !e.supports), "evidence needs key items and items that aren't evidence");
+  for (const e of items) {
+    assert.ok(e.text && e.why, "every evidence item has text and an explanation");
+    assert.ok(!e.required || e.supports, `${e.text}: only supporting evidence can be required`);
+    if (e.tool) assert.ok(tools.has(e.tool), `${e.text}: unknown tool ${e.tool}`);
+  }
+});
+
+test("each Wireshark view agrees with the message's own fields", () => {
+  assert.equal(dhcp.wireshark.filter, "dhcp");
+  for (const [id, msg] of Object.entries(dhcp.messages)) {
+    const w = msg.wireshark;
+    assert.ok(w, `${id} needs a Wireshark view`);
+    const [eth, ip, udp, app] = w.layers.map(l => l.line);
+    assert.match(eth, /^Ethernet II/); assert.match(ip, /^Internet Protocol Version 4/); assert.match(udp, /^User Datagram Protocol/);
+    assert.match(app, /^Dynamic Host Configuration Protocol/);
+    const field = name => msg.fields.find(f => f.name === name)?.value;
+    const xid = field("Transaction ID").toLowerCase();
+    assert.ok(w.info.endsWith(xid), `${id}: info shows transaction ID ${xid}`);
+    assert.ok(w.layers.at(-1).children.includes(`Transaction ID: ${xid}`), `${id}: details show transaction ID`);
+    if (field("Source IP")) assert.equal(w.src, field("Source IP"), `${id}: source IP`);
+    if (field("Destination IP")) assert.equal(w.dst, field("Destination IP"), `${id}: destination IP`);
+    if (field("Source MAC")) assert.ok(eth.includes(`Src: ${field("Source MAC")}`), `${id}: source MAC`);
+    const ports = field("UDP ports");
+    if (ports) { const [a, b] = ports.split(" → "); assert.equal(udp, `User Datagram Protocol, Src Port: ${a}, Dst Port: ${b}`); }
+    const type = { DHCPDISCOVER: "Discover", DHCPOFFER: "Offer", DHCPREQUEST: "Request", DHCPACK: "ACK" }[field("Message type").split(" ")[0]];
+    assert.ok(w.layers.at(-1).children.includes(`Option: (53) DHCP Message Type (${type})`), `${id}: option 53 matches`);
+    assert.ok(w.layers.every(l => l.note), `${id}: every layer is explained`);
+  }
 });
 
 test("appearance comes from the scenario's rules, not from code", () => {

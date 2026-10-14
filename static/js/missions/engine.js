@@ -51,7 +51,7 @@ export function start(scenario, mode) {
     mode, devices,
     pos: 0, pending: null, answered: {}, tries: {},
     evidence: [], toolsUsed: [], hintsUsed: 0, mistakes: 0,
-    goalMet: false, workaroundSeen: false, complete: false,
+    goalMet: false, workaroundSeen: false, rootCauseFound: false, evidenceTries: 0, complete: false,
   };
 }
 
@@ -135,12 +135,40 @@ export function answerRootCause(scenario, state, choice) {
   const rc = scenario.modes[state.mode].rootCause;
   if (!state.goalMet || state.complete) return { state, events: [] };
   const s = clone(state);
+  if (s.rootCauseFound) return { state, events: [] };
   if (choice === rc.answer) {
+    s.rootCauseFound = true;
+    const correct = { type: "answer", id: "rootCause", correct: true, why: rc.why };
+    // With evidence items, the learner must also show which evidence supports the diagnosis.
+    if (rc.evidence?.length) return { state: s, events: [correct, { type: "evidenceCheck", q: rc.evidenceQ || "Which evidence supports this diagnosis?", items: rc.evidence.map(({ text, tool }) => ({ text, tool })) }] };
     s.complete = true;
-    return { state: s, events: [{ type: "answer", id: "rootCause", correct: true, why: rc.why }, { type: "complete", debrief: scenario.modes[s.mode].debrief }] };
+    return { state: s, events: [correct, { type: "complete", debrief: scenario.modes[s.mode].debrief }] };
   }
   s.mistakes += 1;
   return { state: s, events: [{ type: "answer", id: "rootCause", correct: false, why: null }] };
+}
+
+// The reasoning check: `chosen` is the list of evidence indexes the learner ticked.
+// It passes when every required item is ticked and nothing that isn't evidence is. Optional
+// supporting items can be ticked or not. Every item gets feedback either way, so a wrong attempt teaches.
+export function answerEvidence(scenario, state, chosen) {
+  const rc = scenario.modes[state.mode].rootCause;
+  if (!state.rootCauseFound || state.complete || !rc.evidence?.length) return { state, events: [] };
+  const s = clone(state);
+  const picked = new Set(chosen);
+  const items = rc.evidence.map((e, i) => {
+    const selected = picked.has(i);
+    const ok = e.supports ? selected || !e.required : !selected;
+    return { index: i, selected, supports: !!e.supports, required: !!e.required, ok, why: e.why };
+  });
+  const pass = items.every(r => r.ok);
+  s.evidenceTries = (s.evidenceTries || 0) + 1;
+  if (!pass) {
+    s.mistakes += 1;
+    return { state: s, events: [{ type: "evidenceResult", pass, items }] };
+  }
+  s.complete = true;
+  return { state: s, events: [{ type: "evidenceResult", pass, items }, { type: "complete", debrief: scenario.modes[s.mode].debrief }] };
 }
 
 export function hint(scenario, state) {

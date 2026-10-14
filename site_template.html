@@ -498,6 +498,40 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .console-head { margin-top: 12px; }
 .console-head + .console { margin-top: 6px; }
 .sim-tag { font: 600 0.68rem/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--sun); background: rgba(255, 176, 0, 0.1); border: 1px solid rgba(255, 176, 0, 0.4); border-radius: 3px; padding: 4px 7px; white-space: nowrap; }
+/* Wireshark view: packet list summary, then one row per protocol layer. Long lines wrap; nothing scrolls sideways. */
+.ws { display: grid; gap: 10px; margin-top: 6px; padding-top: 14px; border-top: 1px dashed var(--line); }
+.ws-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.ws-head h3 { font: 600 0.82rem var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; }
+.ws h4 { margin-top: 4px; }
+.ws code { font-family: var(--font-mono); overflow-wrap: anywhere; }
+.ws-filter { font-size: 0.85rem; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
+.ws-filter code { color: var(--good); background: var(--good-tint); border: 1px solid rgba(61, 220, 151, 0.4); border-radius: 3px; padding: 1px 7px; }
+.ws-filter .muted { font-size: 0.8rem; }
+.ws-row { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 10px 12px; }
+.ws-row .wide { grid-column: 1 / -1; }
+.ws-row dt { font: 500 0.66rem var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.ws-row dd { margin: 2px 0 0; font-size: 0.82rem; color: var(--ink); }
+.ws-tree { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; counter-reset: layer; }
+.ws-tree > li { display: grid; gap: 4px; border-left: 2px solid var(--brand); padding-left: 10px; }
+.ws-line { font-size: 0.8rem; color: var(--brand); }
+.ws-tree p { font-size: 0.85rem; color: var(--muted); }
+.ws-children { margin: 4px 0 0; padding: 8px 10px 8px 22px; display: grid; gap: 3px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; }
+.ws-children code { font-size: 0.76rem; color: var(--ink); }
+.ws-note { font-size: 0.8rem; color: var(--muted); }
+/* Evidence check: tick what supports the diagnosis; each item then explains itself. */
+.ev { display: grid; gap: 10px; margin-top: 4px; }
+.ev-set { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 0; }
+.ev-set legend { padding: 0; margin-bottom: 8px; }
+.ev-item { display: grid; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+.ev-item label { display: grid; grid-template-columns: 1.1rem minmax(0, 1fr); gap: 10px; align-items: start; cursor: pointer; font-size: 0.92rem; }
+.ev-item input { margin: 3px 0 0; width: 1rem; height: 1rem; accent-color: var(--brand); }
+.ev-item .tag { justify-self: start; margin-left: calc(1.1rem + 10px); font-size: 0.66rem; }
+.ev-why { font-size: 0.84rem; color: var(--muted); margin-left: calc(1.1rem + 10px); }
+.ev-item.right { border-color: rgba(61, 220, 151, 0.5); }
+.ev-item.right .ev-why b { color: var(--good); }
+.ev-item.wrong { border-color: rgba(255, 84, 112, 0.6); background: var(--bad-tint); }
+.ev-item.wrong .ev-why { color: var(--ink); }
+.ev-item.wrong .ev-why b { color: var(--bad); }
 .simplification { margin-top: 10px; }
 .simplification p { font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
 .m-toggle { font: 0.78rem var(--font-mono); color: var(--muted); display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
