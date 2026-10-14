@@ -251,7 +251,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     <div class="view-head"><a class="link-btn" href="#missions">← Missions</a>
       <div class="eyebrow">Lab · ${esc(lab.track)} · ${lab.minutes} min</div><h1>${esc(lab.title)}</h1><p>${esc(lab.intro)}</p></div>
     <div class="term-grid">
-      <section class="term" aria-label="Simulated terminal">
+      <section class="term-shell" aria-label="Simulated terminal">
         <div class="term-bar"><span>${esc(lab.user)}@${esc(lab.host)}</span><span class="tag">Simulated</span></div>
         <div class="term-out" id="t-out" aria-live="polite"></div>
         <form class="term-in" id="t-form"><label class="sr" for="t-in">Command</label><span class="term-ps" id="t-ps"></span><input id="t-in" autocomplete="off" autocapitalize="off" spellcheck="false"></form>

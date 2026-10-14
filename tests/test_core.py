@@ -194,6 +194,15 @@ class ExplainHelper(unittest.TestCase):
         self.assertEqual([d["id"] for d in json.loads(explain.DRAFTS.read_text())], ["dup"])
 
 
+class Styles(unittest.TestCase):
+    def test_glossary_term_style_is_inline_only(self):
+        """Regression: a lab once reused the class name "term", turning every glossary word into a 460px box."""
+        import re
+        css = re.search(r"<style>(.*?)</style>", (ROOT / "site_template.html").read_text(), re.S).group(1)
+        for body in re.findall(r"(?:^|\n)\.term\s*\{([^}]*)\}", css):
+            self.assertNotRegex(body, r"\b(height|display|grid)\s*:", "the glossary .term class must stay an inline text style")
+
+
 class ContentIntegrity(unittest.TestCase):
     """Catch broken cross-references before they reach the live site."""
 

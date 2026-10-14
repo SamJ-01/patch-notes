@@ -71,6 +71,8 @@ def clean(raw, words=32):
     """Strip HTML, collapse whitespace and keep only a short snippet."""
     text = html.unescape(TAG_RE.sub(" ", html.unescape(raw or "")))
     text = re.sub(r"\s+", " ", text.replace("\ufffd", "'")).strip()
+    # WordPress feeds append "The post <title> appeared first on <site>." to every summary.
+    text = re.sub(r"\s*The post .{0,300}? appeared first on [^.]{1,80}\.?\s*$", "", text)
     parts = text.split(" ")
     return text if len(parts) <= words else " ".join(parts[:words]).rstrip(",;:") + "…"
 
