@@ -19,12 +19,13 @@ Everything runs in the browser. Nothing is installed and no real network traffic
 | **Network topologies: break them** | Eight topologies (star, bus, ring, mesh, spine-and-leaf…). Click a cable or device to break it and see who's cut off; reveal the single points of failure | Topologies |
 | **Ports and protocols** | 24 flip cards for the exam port list, insecure-to-secure swaps, then a quick-fire drill | Ports and protocols |
 | **Subnetting trainer** | A live binary view of the network/host split, the block-size shortcut, and typed practice questions with worked answers | Subnetting |
+| **Subnet calculator** (tool) | Type an address, drag the prefix, enter a mask or a host count: a live network diagram grows and shrinks, with class, address type (private, APIPA, loopback…), CIDR, mask, wildcard, ranges, a map of where the subnet sits, the binary AND, and a splitter for dividing a network. Shareable links, and `subnet 10.0.0.0/22` in the command palette | Subnetting, IPv4 addressing |
 | **Linux terminal** | A simulated shell: navigate, read logs, `grep` with pipes (`\| wc -l`, `\| sort \| uniq -c`), fix a script's permissions | Linux CLI |
 | **Log detective, Header inspector, CVSS builder** | Investigate an SSH brute force, read a spoofed email's headers, score a vulnerability with CVSS 3.1 | Security operations |
 
 <table>
 <tr>
-<td><img src="docs/screenshots/lab-subnetting.png" alt="Subnetting trainer showing the IP and mask in binary"></td>
+<td><img src="docs/screenshots/subnet-calc.png" alt="Subnet calculator with a live network diagram, class and address type"></td>
 <td><img src="docs/screenshots/lab-topologies.png" alt="Topology lab with a broken link"></td>
 </tr>
 <tr>

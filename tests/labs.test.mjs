@@ -195,3 +195,34 @@ test("subnetting: generated questions check their own answers", () => {
   const hosts = { type: "hosts", answer: "4094" };
   assert.ok(subnet.check(hosts, "4,094"));
 });
+
+test("subnet calculator: classes, address types, masks and CIDR parsing", () => {
+  const ip = subnet.ipToInt;
+  assert.deepEqual(["10.1.1.1", "172.16.0.1", "192.168.1.1", "224.0.0.5", "250.0.0.1"].map(a => subnet.ipClass(ip(a)).cls), ["A", "B", "C", "D", "E"]);
+  assert.deepEqual([8, 16, 24].map(p => p), ["10.0.0.1", "130.1.1.1", "200.1.1.1"].map(a => subnet.ipClass(ip(a)).defaultPrefix));
+  const kind = a => subnet.classify(ip(a)).label;
+  assert.equal(kind("10.0.0.1"), "Private (RFC 1918)");
+  assert.equal(kind("172.31.255.1"), "Private (RFC 1918)");
+  assert.equal(kind("172.32.0.1"), "Public", "172.32 is outside the private /12");
+  assert.equal(kind("169.254.10.10"), "APIPA / link-local");
+  assert.equal(kind("127.0.0.1"), "Loopback");
+  assert.equal(kind("100.64.0.1"), "Carrier-grade NAT");
+  assert.equal(kind("8.8.8.8"), "Public");
+  assert.deepEqual(["255.255.255.192", "255.255.240.0", "255.0.0.0", "255.255.255.255"].map(subnet.maskToPrefix), [26, 20, 8, 32]);
+  assert.deepEqual(["255.0.255.0", "255.255.255.193", "nope"].map(subnet.maskToPrefix), [null, null, null]);
+  assert.deepEqual(subnet.parseCidr("10.0.0.0/22"), { addr: ip("10.0.0.0"), prefix: 22 });
+  assert.equal(subnet.parseCidr("10.0.0.5").prefix, null);
+  assert.equal(subnet.parseCidr("10.0.0.0/33"), null);
+  const p31 = subnet.subnetInfo("10.0.0.4", 31), p32 = subnet.subnetInfo("10.0.0.4", 32);
+  assert.deepEqual([p31.hosts, p31.first, p31.last, p32.hosts, p32.first], [2, "10.0.0.4", "10.0.0.5", 1, "10.0.0.4"]);
+});
+
+test("subnet calculator: splitting a network borrows the right bits", () => {
+  const r = subnet.splitNetwork(subnet.ipToInt("192.168.1.77"), 24, 6);
+  assert.equal(r.prefix, 27, "6 subnets needs 3 bits (8 subnets)");
+  assert.equal(r.total, 8);
+  assert.deepEqual(r.subnets.map(x => x.network), ["0", "32", "64", "96", "128", "160", "192", "224"].map(n => "192.168.1." + n));
+  assert.equal(r.subnets[7].broadcast, "192.168.1.255");
+  assert.equal(subnet.splitNetwork(subnet.ipToInt("10.0.0.0"), 30, 8), null);
+  assert.equal(subnet.splitNetwork(subnet.ipToInt("10.0.0.0"), 8, 64, 64).subnets.length, 64);
+});

@@ -834,12 +834,10 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .pair i { font-style: normal; color: var(--muted); }
 .pair .bad-p { color: var(--bad); } .pair .good-p { color: var(--good); }
 /* Subnetting lab */
-.sn-controls { display: grid; grid-template-columns: minmax(0, 240px) minmax(0, 1fr); gap: 12px 24px; align-items: end; }
 .sn-field { display: grid; gap: 6px; min-width: 0; }
 .sn-input { font: 1rem var(--font-mono); background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; width: 100%; min-width: 0; box-sizing: border-box; }
 .sn-input:focus { border-color: var(--brand); outline: none; box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.25); }
 #sp-form .sn-input { width: auto; flex: 1 1 200px; }
-.sn-slide input { width: 100%; margin: 0; accent-color: var(--brand); }
 .sn-key { font: 600 0.78rem var(--font-mono); padding: 1px 6px; border-radius: 3px; }
 .sn-key.net, .sn-cells i.net { background: rgba(var(--brand-rgb), 0.18); color: var(--brand); }
 .sn-key.host, .sn-cells i.host { background: rgba(var(--sun-rgb), 0.16); color: var(--sun); }
@@ -853,18 +851,75 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .sn-cells i { font: 600 0.8rem/1.9 var(--font-mono); font-style: normal; text-align: center; border-radius: 2px; min-width: 0; }
 @media (prefers-reduced-motion: no-preference) { .sn-cells i { transition: background-color 0.2s, color 0.2s; } }
 .sn-dec { font: 600 0.85rem var(--font-mono); }
-.subnet .stat-row { grid-template-columns: repeat(auto-fill, minmax(min(100%, 165px), 1fr)); }
-.subnet .stat b { font-size: 1.05rem; overflow-wrap: anywhere; line-height: 1.3; }
+.sc .stat-row { grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); }
+.sc .stat b { font-size: 1rem; overflow-wrap: anywhere; line-height: 1.3; }
+.sc .stat.hl { border-color: rgba(var(--brand-rgb), 0.5); background: var(--brand-soft); }
 .sn-given { font-size: 1.3rem; color: var(--brand); margin: 0; }
-.table-wrap { overflow-x: auto; }
+.table-wrap { overflow-x: auto; position: relative; }
 .sn-table { width: 100%; border-collapse: collapse; font: 0.88rem var(--font-mono); }
 .sn-table th, .sn-table td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 .sn-table th { color: var(--muted); font-weight: 500; }
 @media (max-width: 760px) {
-  .sn-controls { grid-template-columns: minmax(0, 1fr); }
   .sn-octets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sn-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
 }
+
+/* Subnet calculator (static/js/labs/subnet.js mountCalc) */
+.sc { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; min-width: 0; container: calc / inline-size; }
+.sc-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 12px 18px; align-items: end; }
+.sc-pre { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.sc-pre input { flex: 1 1 auto; min-width: 0; margin: 0; accent-color: var(--brand); }
+.sc-step { padding: 4px 0; width: 34px; flex: none; font-size: 1.05rem; line-height: 1.4; }
+.sc-pval { flex: none; min-width: 2.4em; text-align: right; color: var(--brand); font-size: 1.05rem; }
+.sc-msg { margin: 0; font-size: 0.9rem; color: var(--bad); }
+.sc-msg.good { color: var(--good); }
+.sc-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.sc-badge { font: 600 0.76rem/1.3 var(--font-mono); padding: 4px 9px; border-radius: 4px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); }
+.sc-badge.cls { color: var(--sun); border-color: rgba(var(--sun-rgb), 0.45); }
+.sc-badge.k-private { color: var(--good); border-color: rgba(var(--good-rgb), 0.45); }
+.sc-badge.k-public { color: var(--brand); border-color: rgba(var(--brand-rgb), 0.45); }
+.sc-badge.k-special, .sc-badge.k-broadcast { color: var(--likely); }
+.sc-badge.ok { color: var(--good); }
+.sc-badge.warn { color: var(--bad); border-color: rgba(var(--bad-rgb), 0.45); background: var(--bad-tint); }
+.sc-note, .sc-cap { margin: 0; font-size: 0.9rem; color: var(--muted); }
+.sc-h { font: 600 1rem var(--font-display); margin-top: 6px; }
+.sc-net { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 8px; }
+.sc-net svg { width: 100%; height: auto; max-height: 260px; display: block; }
+.sc-trunk line { stroke: var(--dg-strong); stroke-width: 3; }
+.sc-wire { stroke: var(--dg-line); stroke-width: 1.4; opacity: 0; }
+.sc-wire.on { opacity: 1; }
+.sc-router circle { fill: var(--surface-2); stroke: var(--sun); stroke-width: 2; }
+.sc-router.me circle { fill: rgba(var(--sun-rgb), 0.25); }
+.sc-glyph { fill: none; stroke: var(--sun); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.sc-switch > rect:first-child { fill: var(--surface-2); stroke: var(--brand); stroke-width: 2; }
+.sc-port { fill: var(--brand); }
+.sc-dev { opacity: 0; transform: scale(0.3); transform-origin: 0 0; }
+.sc-dev.on { opacity: 1; transform: none; }
+.sc-dev rect { fill: var(--surface-2); stroke: var(--dg-strong); stroke-width: 1.5; }
+.sc-dev .stand { fill: none; stroke: var(--dg-strong); stroke-width: 1.5; }
+.sc-dev.me rect { fill: rgba(var(--sun-rgb), 0.25); stroke: var(--sun); stroke-width: 2.5; }
+.sc-more { font: 600 17px var(--font-mono); fill: var(--muted); }
+@media (prefers-reduced-motion: no-preference) {
+  .sc-dev { transition: opacity 0.3s, transform 0.3s; transition-delay: calc(var(--i) * 12ms); }
+  .sc-wire { transition: opacity 0.3s; }
+  .sc-map i { transition: background-color 0.25s; }
+}
+.sc-map { display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 2px; max-width: 480px; }
+.sc-map i, .sc-legend i { aspect-ratio: 1; border-radius: 2px; background: var(--surface-2); }
+.sc-map i.b1, .sc-legend i.b1 { background: color-mix(in srgb, var(--dg-line) 60%, var(--surface-2)); }
+.sc-map i.cur, .sc-legend i.cur { background: rgba(var(--brand-rgb), 0.55); }
+.sc-map i.nw, .sc-legend i.nw { background: rgba(var(--bad-rgb), 0.6); }
+.sc-map i.me, .sc-legend i.me { box-shadow: inset 0 0 0 2px var(--sun); }
+.sc-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.8rem; color: var(--muted); }
+.sc-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.sc-legend i { display: inline-block; width: 12px; height: 12px; }
+.sc-split summary { cursor: pointer; font-weight: 600; }
+.sc-split[open] { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.sc-splitctl { font-size: 0.92rem; }
+.sc-splitctl select { font: inherit; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; margin-inline: 4px; }
+.sn-table tr.cur td { color: var(--brand); font-weight: 600; }
+@container calc (max-width: 520px) { .sc .stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .sc .stat { padding: 10px; } .sc .stat b { font-size: 0.85rem; } }
+.sn-table .link-btn { background: none; border: 0; padding: 0; cursor: pointer; font: inherit; }
 </style>
 
 <!-- recon complete. you found flag 1 of 3: flag{v1ew_s0urce_is_r3con}  (submit it in the command palette: press / then type "submit" and the flag) -->
@@ -1851,13 +1906,14 @@ const ART = {  // simple line icons, drawn in the category colour
   ports: '<rect x="5" y="12" width="38" height="24" rx="3"/><rect x="11" y="19" width="7" height="8" rx="1"/><rect x="21" y="19" width="7" height="8" rx="1"/><rect x="31" y="19" width="7" height="8" rx="1"/><path d="M14 36v5M24 36v5M34 36v5"/>',
   subnet: '<path d="M5 14h38M5 24h38M5 34h38"/><path d="M28 9v30" stroke-dasharray="3 3"/><path d="M10 14v0M16 24v0M22 34v0" stroke-width="4"/>',
 };
-const ITEM_ART = { dhcp: "network", "osi-model": "layers", topologies: "graph", "linux-terminal": "terminal", "log-detective": "search", "header-inspector": "mail", "cvss-builder": "gauge", "ports-protocols": "ports", subnetting: "subnet" };
+const ITEM_ART = { dhcp: "network", "osi-model": "layers", topologies: "graph", "linux-terminal": "terminal", "log-detective": "search", "header-inspector": "mail", "cvss-builder": "gauge", "ports-protocols": "ports", subnetting: "subnet", "subnet-calc": "subnet" };
 const cardArt = (id, cat) => `<span class="card-art" style="--cat:${CAT_COLOR[cat] || "var(--brand)"}"><svg viewBox="0 0 48 48" aria-hidden="true">${ART[ITEM_ART[id]] || ART.network}</svg></span>`;
 const CATEGORY_ORDER = ["Networking", "Linux", "Security operations", "Ethical hacking"];
 VIEWS.missions = () => {
   const items = [
     ...DATA.missions.map(m => ({ cat: m.category || "Networking", html: missionCard(m) })),
     ...DATA.labs.map(l => ({ cat: l.category || "Security operations", html: labCard(l) })),
+    { cat: "Networking", html: toolCard() },
   ];
   const cats = [...new Set([...CATEGORY_ORDER, ...items.map(i => i.cat)])].filter(c => items.some(i => i.cat === c));
   main.innerHTML = `<div class="view">
@@ -1865,6 +1921,27 @@ VIEWS.missions = () => {
     ${cats.map(c => `<section class="stack"><h2 class="cat-h">${esc(c)}</h2><div class="lessons">${items.filter(i => i.cat === c).map(i => i.html).join("")}</div></section>`).join("")}
   </div>`;
 };
+function toolCard() {
+  return `<a class="lcard art-card" href="#subnet-calc" style="--cat:${CAT_COLOR.Networking || "var(--brand)"}">${cardArt("subnet-calc", "Networking")}
+    <span class="eyebrow">Tool</span><h3>Subnet calculator</h3><p>Type any address and watch the network change: class, CIDR, mask, hosts, ranges and a live diagram</p><span class="lmeta"><span>Use any time</span><span>Shareable links</span></span></a>`;
+}
+// The subnet calculator on its own page. The address lives in the URL (#subnet-calc/10.0.0.0/22) so it can be shared.
+function calcView(h) {
+  const [, ipS = "", preS = ""] = h.match(/^subnet-calc\/?([^/]*)\/?(\d*)/) || [];
+  main.innerHTML = `<div class="view"><div class="view-head"><a class="link-btn" href="#missions">← Missions</a><div class="eyebrow">Tool · Networking</div><h1>Subnet calculator</h1>
+    <p>Type an address, drag the prefix, enter a mask or say how many hosts you need. Everything updates as you go.</p></div>
+    <section class="panel"><div class="panel-title"><h2>Calculator</h2><a class="link-btn" href="#lab-subnetting">Practise in the lab →</a></div><div id="calc-root"><div class="empty">Loading…</div></div></section></div>`;
+  import("./js/labs/subnet.js").then(mod => {
+    if (parseRoute().path !== "tools/subnet-calc") return;
+    const addr = mod.ipToInt(ipS), p = Number(preS);
+    mod.mountCalc($("calc-root"), {
+      ip: addr !== null ? ipS : "192.168.10.77",
+      prefix: preS && p >= 8 && p <= 32 ? p : addr !== null ? (mod.ipClass(addr).defaultPrefix || 24) : 26,
+      share: true,
+      onChange: st => history.replaceState(null, "", `#subnet-calc/${st.addr}/${st.prefix}`),
+    });
+  }).catch(() => { $("calc-root").innerHTML = `<div class="empty">Couldn't load the calculator. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
+}
 function labCard(l) {
   return `<a class="lcard art-card" href="#lab-${esc(l.id)}" style="--cat:${CAT_COLOR[l.category] || "var(--brand)"}">${cardArt(l.id, l.category)}${P.labs[l.id] ? '<span class="done">DONE</span>' : ""}
     <span class="eyebrow">Lab</span><h3>${esc(l.title)}</h3><p>${esc(l.skill)}</p><span class="lmeta"><span>${l.minutes} min</span><span>+${LAB_XP} XP</span></span></a>`;
@@ -2226,7 +2303,7 @@ const SECTIONS = [["today", "Daily briefing"], ["news", "Security news, explaine
 const HELP = [
   ["help", "show this list"], ["ls", "list sections"], ["cd <section>", "go to a section, e.g. cd news"],
   ["open <lesson>", "open a lesson, e.g. open ransomware"], ["define <term>", "explain a term, e.g. define rce"],
-  ["mission <name>", "open a mission, e.g. mission dhcp"], ["lab <name>", "open a lab, e.g. lab log"], ["path <name>", "open a learning path, e.g. path soc"], ["news <words>", "search headlines"], ["cve <id|product>", "search the CVE radar"], ["whoami", "your level, XP and progress"],
+  ["mission <name>", "open a mission, e.g. mission dhcp"], ["lab <name>", "open a lab, e.g. lab log"], ["subnet <ip/cidr>", "subnet calculator, e.g. subnet 10.0.0.0/22"], ["path <name>", "open a learning path, e.g. path soc"], ["news <words>", "search headlines"], ["cve <id|product>", "search the CVE radar"], ["whoami", "your level, XP and progress"],
   ["flags", "hints for the 3 hidden flags"], ["submit flag{...}", "check a flag"], ["clear", "clear this screen"], ["exit", "close (or Esc)"],
 ];
 function openCmd(prefill = "", run = false) {
@@ -2283,6 +2360,11 @@ async function runCmd(raw) {
   else if (c === "mission" || c === "missions") {
     const ms = arg && DATA.missions.find(x => (x.id + " " + x.title).toLowerCase().includes(arg.toLowerCase()));
     if (ms) go("mission-" + ms.id); else if (!arg) go("missions"); else say(`No mission matches "${arg}". Missions: ${DATA.missions.map(x => x.id).join(", ")}`, "err");
+  }
+  else if (c === "subnet" || c === "ipcalc" || c === "calc") {
+    if (!arg) go("subnet-calc");
+    else if (/^\d{1,3}(\.\d{1,3}){3}(\/\d{1,2})?$/.test(arg)) go("subnet-calc/" + arg);
+    else say(`Usage: subnet 192.168.1.10/24`, "err");
   }
   else if (c === "lab" || c === "labs") {
     const l = arg && DATA.labs.find(l => (l.id + " " + l.title).toLowerCase().includes(arg.toLowerCase()));
@@ -2364,6 +2446,7 @@ function parseRoute() {
   if (h.startsWith("lab-")) return { tab: "missions", path: "missions/" + h.slice(4), draw: () => labView(h.slice(4)) };
   if (h.startsWith("mission-")) return { tab: "missions", path: "missions/" + h.slice(8), draw: () => missionView(h.slice(8)) };
   if (h === "labs") return { tab: "missions", path: "missions", draw: VIEWS.missions };
+  if (h === "subnet-calc" || h.startsWith("subnet-calc/")) return { tab: "missions", path: "tools/subnet-calc", draw: () => calcView(h) };
   if (h === "glossary") return { tab: "learn", path: "learn/glossary", draw: VIEWS.glossary };
   if (h === "stack") return { tab: "today", path: "today/stack", draw: VIEWS.stack };
   const tab = VIEWS[h] ? h : "today";
