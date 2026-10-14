@@ -38,3 +38,13 @@ These are investigations of logs and timelines rather than packet journeys. They
 3. Give every message plain-language fields (level 1) and protocol fields (level 2), plus a Wireshark view where packets are involved.
 4. Add the scenario's tests: guided order, practice checkpoints, the challenge's right path, the workaround, and the evidence check.
 5. Run the layout tests: cards, zones and room for speech bubbles at phone and desktop widths.
+
+## Labs (self-contained, one module each in `static/js/labs/`)
+
+| Lab | Module | What it teaches |
+|---|---|---|
+| **The OSI model, layer by layer** ✅ | `osi.js` | Encapsulation down and up the stack, each layer's job, PDU, devices and protocols, mnemonics, TCP/IP mapping; a sorting game including real problems |
+| **Network topologies: break them** ✅ | `topology.js` | Star, bus, ring, full/partial mesh, hub and spoke, spine and leaf, three-tier; break cables or devices; single points of failure computed from the graph |
+| **Linux terminal basics** ✅ | `terminal.js` | `pwd`, `whoami`, `ls -a/-l`, `cd`, `cat`, `grep`, `find`, `chmod`, `mkdir`, `touch`, `rm` and running scripts over a simulated file system; 10 objectives |
+
+Next for Network+ (Oct 2026 focus): hub vs switch vs router (MAC tables, collision and broadcast domains), DNS (mission #2 above), ports and protocols drill, subnetting trainer.

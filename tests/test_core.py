@@ -236,6 +236,8 @@ class ContentIntegrity(unittest.TestCase):
 
     def test_lab_answers_are_in_the_evidence(self):
         for lab in self.labs.values():
+            if lab.get("kind") in ("osi", "terminal", "topology"):
+                continue  # these have their own tests in tests/labs.test.mjs
             if lab.get("kind") == "cvss":
                 for sc in lab["scenarios"]:
                     self.assertEqual(len(sc["target"].split("/")), 8, sc["title"])

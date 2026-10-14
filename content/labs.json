@@ -1,5 +1,1485 @@
 [
  {
+  "id": "osi-model",
+  "title": "The OSI model, layer by layer",
+  "kind": "osi",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 15,
+  "lesson": "networking",
+  "skill": "What each of the 7 layers does, and how data is wrapped and unwrapped",
+  "intro": "Follow one web request down the stack, across the wire and back up. Then sort real things into the right layer.",
+  "mnemonics": [
+   {
+    "dir": "Layer 7 → 1",
+    "phrase": "All People Seem To Need Data Processing"
+   },
+   {
+    "dir": "Layer 1 → 7",
+    "phrase": "Please Do Not Throw Sausage Pizza Away"
+   }
+  ],
+  "tcpip": [
+   {
+    "name": "Application",
+    "covers": [
+     7,
+     6,
+     5
+    ]
+   },
+   {
+    "name": "Transport",
+    "covers": [
+     4
+    ]
+   },
+   {
+    "name": "Internet",
+    "covers": [
+     3
+    ]
+   },
+   {
+    "name": "Link (network access)",
+    "covers": [
+     2,
+     1
+    ]
+   }
+  ],
+  "layers": [
+   {
+    "n": 7,
+    "name": "Application",
+    "job": "Network services that apps use",
+    "pdu": "Data",
+    "color": "#3FE0E8",
+    "protocols": [
+     "HTTP / HTTPS",
+     "DNS",
+     "DHCP",
+     "SMTP",
+     "FTP",
+     "SSH",
+     "SNMP"
+    ],
+    "devices": [
+     "Proxy / web filter",
+     "Layer 7 load balancer"
+    ],
+    "example": "Your browser asks the server for a page: GET /index.html.",
+    "tip": "This is the protocol the app speaks (HTTP, DNS, SMTP), not the app itself.",
+    "header": "HTTP",
+    "headerText": "headers"
+   },
+   {
+    "n": 6,
+    "name": "Presentation",
+    "job": "Formats, encrypts and compresses data",
+    "pdu": "Data",
+    "color": "#5AA9FF",
+    "protocols": [
+     "Encryption (TLS/SSL in exam material)",
+     "Character encoding (ASCII, UTF-8)",
+     "File formats (JPEG, MP3)",
+     "Compression"
+    ],
+    "devices": [],
+    "example": "The request is encrypted so nobody on the path can read it.",
+    "tip": "Think translator: encryption, encoding, compression. Real TLS spans layers 5 to 7, but exams place it here.",
+    "header": "TLS",
+    "headerText": "encrypted"
+   },
+   {
+    "n": 5,
+    "name": "Session",
+    "job": "Starts, manages and ends conversations",
+    "pdu": "Data",
+    "color": "#B794FF",
+    "protocols": [
+     "NetBIOS",
+     "RPC",
+     "Session setup and teardown"
+    ],
+    "devices": [],
+    "example": "Keeps this conversation separate from your other tabs, and closes it when you're done.",
+    "tip": "Dialogue control: open, maintain, close.",
+    "header": "SES",
+    "headerText": "session"
+   },
+   {
+    "n": 4,
+    "name": "Transport",
+    "job": "Delivers to the right app using ports; TCP adds reliability",
+    "pdu": "Segment (TCP) / datagram (UDP)",
+    "color": "#3DDC97",
+    "protocols": [
+     "TCP",
+     "UDP"
+    ],
+    "devices": [
+     "Firewall rules by port",
+     "Layer 4 load balancer"
+    ],
+    "example": "TCP adds ports (51514 → 443), numbers each piece and resends anything lost.",
+    "tip": "TCP: reliable, connection-oriented, three-way handshake. UDP: fast, no connection (DNS, DHCP, VoIP, streaming).",
+    "header": "TCP",
+    "headerText": ":51514 → :443"
+   },
+   {
+    "n": 3,
+    "name": "Network",
+    "job": "IP addresses and routing between networks",
+    "pdu": "Packet",
+    "color": "#FFB000",
+    "protocols": [
+     "IPv4",
+     "IPv6",
+     "ICMP (ping)",
+     "IPsec",
+     "Routing protocols (OSPF, BGP)"
+    ],
+    "devices": [
+     "Router",
+     "Layer 3 switch"
+    ],
+    "example": "IP adds source 192.168.1.50 and destination 203.0.113.10; routers use the destination to pick the next hop.",
+    "tip": "IP addresses and routers mean Layer 3. ping uses ICMP, which is Layer 3.",
+    "header": "IP",
+    "headerText": "192.168.1.50 → 203.0.113.10"
+   },
+   {
+    "n": 2,
+    "name": "Data Link",
+    "job": "Delivery on the local network using MAC addresses",
+    "pdu": "Frame",
+    "color": "#FF8C42",
+    "protocols": [
+     "Ethernet (802.3)",
+     "Wi-Fi (802.11)",
+     "VLANs (802.1Q)",
+     "Spanning Tree (STP)"
+    ],
+    "devices": [
+     "Switch",
+     "Bridge",
+     "Wireless access point",
+     "Network card (NIC)"
+    ],
+    "example": "Ethernet wraps the packet in a frame addressed to the router's MAC address, with an error check (FCS) on the end.",
+    "tip": "MAC addresses and switches mean Layer 2. A frame is the only PDU with a trailer (the FCS).",
+    "header": "ETH",
+    "headerText": "MAC → MAC",
+    "trailer": "FCS"
+   },
+   {
+    "n": 1,
+    "name": "Physical",
+    "job": "Bits as signals: electricity, light or radio",
+    "pdu": "Bits",
+    "color": "#8796AD",
+    "protocols": [
+     "Ethernet cabling (Cat 6)",
+     "Fibre optics",
+     "Wi-Fi radio",
+     "Connectors (RJ45)"
+    ],
+    "devices": [
+     "Hub",
+     "Repeater",
+     "Cables",
+     "Media converter"
+    ],
+    "example": "The frame becomes 1s and 0s: voltage on copper, light in fibre or radio waves.",
+    "tip": "Hubs, repeaters and cables don't read any addresses. They just pass signals on.",
+    "header": "",
+    "headerText": ""
+   }
+  ],
+  "sortItems": [
+   {
+    "text": "Router",
+    "layer": 3,
+    "why": "Routers forward packets between networks using IP addresses."
+   },
+   {
+    "text": "Switch",
+    "layer": 2,
+    "why": "A (layer 2) switch forwards frames using MAC addresses."
+   },
+   {
+    "text": "Hub",
+    "layer": 1,
+    "why": "A hub repeats signals out of every port without reading any address."
+   },
+   {
+    "text": "Ethernet cable",
+    "layer": 1,
+    "why": "Cables carry the raw signals."
+   },
+   {
+    "text": "IP address",
+    "layer": 3,
+    "why": "Logical addressing for routing between networks."
+   },
+   {
+    "text": "MAC address",
+    "layer": 2,
+    "why": "Hardware addresses used for delivery on the local network."
+   },
+   {
+    "text": "Port 443",
+    "layer": 4,
+    "why": "Ports identify which app or service gets the data."
+   },
+   {
+    "text": "TCP",
+    "layer": 4,
+    "why": "Reliable, connection-oriented transport."
+   },
+   {
+    "text": "UDP",
+    "layer": 4,
+    "why": "Fast, connectionless transport."
+   },
+   {
+    "text": "HTTP",
+    "layer": 7,
+    "why": "The web's application protocol."
+   },
+   {
+    "text": "DNS",
+    "layer": 7,
+    "why": "An application-layer service that turns names into IP addresses."
+   },
+   {
+    "text": "SSH",
+    "layer": 7,
+    "why": "An application protocol for secure remote logins."
+   },
+   {
+    "text": "Encryption and compression",
+    "layer": 6,
+    "why": "Presentation translates, encrypts and compresses."
+   },
+   {
+    "text": "Opening and closing a conversation",
+    "layer": 5,
+    "why": "That's the Session layer's dialogue control."
+   },
+   {
+    "text": "Frame",
+    "layer": 2,
+    "why": "Layer 2's PDU (unit of data)."
+   },
+   {
+    "text": "Packet",
+    "layer": 3,
+    "why": "Layer 3's PDU."
+   },
+   {
+    "text": "Segment",
+    "layer": 4,
+    "why": "Layer 4's PDU (with TCP)."
+   },
+   {
+    "text": "Bits",
+    "layer": 1,
+    "why": "Layer 1's PDU: 1s and 0s on the wire."
+   },
+   {
+    "text": "ICMP (ping)",
+    "layer": 3,
+    "why": "ICMP carries error and test messages for IP, at Layer 3."
+   },
+   {
+    "text": "Wireless access point",
+    "layer": 2,
+    "why": "An AP bridges wireless clients onto the network using MAC addresses."
+   },
+   {
+    "text": "VLAN tag (802.1Q)",
+    "layer": 2,
+    "why": "VLAN tags are added to Ethernet frames."
+   },
+   {
+    "text": "Routing table",
+    "layer": 3,
+    "why": "Routers use it to choose where each packet goes next."
+   },
+   {
+    "text": "Problem: the link light is off",
+    "layer": 1,
+    "why": "No signal at all is a physical problem: cable, port or power."
+   },
+   {
+    "text": "Problem: a switching loop floods the network",
+    "layer": 2,
+    "why": "Loops between switches are a Layer 2 problem (that's what STP prevents)."
+   },
+   {
+    "text": "Problem: wrong default gateway",
+    "layer": 3,
+    "why": "The gateway is an IP routing setting."
+   },
+   {
+    "text": "Problem: a firewall blocks TCP port 443",
+    "layer": 4,
+    "why": "Blocking by port is a Transport layer filter."
+   },
+   {
+    "text": "Problem: the site's certificate won't decrypt",
+    "layer": 6,
+    "why": "Encryption problems sit at Presentation in the OSI model."
+   },
+   {
+    "text": "Problem: a website returns 404 Not Found",
+    "layer": 7,
+    "why": "The connection worked; the application (HTTP) says the page doesn't exist."
+   }
+  ],
+  "roundSize": 10,
+  "passScore": 8,
+  "resources": [
+   {
+    "label": "Practise subnetting and ports with Professor Messer's free Network+ course",
+    "url": "https://www.professormesser.com/"
+   }
+  ]
+ },
+ {
+  "id": "topologies",
+  "title": "Network topologies: break them",
+  "kind": "topology",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 12,
+  "lesson": "networking",
+  "skill": "Star, bus, ring, mesh, spine-and-leaf and more: what fails when a cable or device dies",
+  "intro": "Click a cable or a device to break it. Green devices can still reach the target; red ones can't.",
+  "topologies": [
+   {
+    "id": "star",
+    "name": "Star",
+    "where": "Almost every office and home LAN",
+    "nodes": [
+     {
+      "id": "sw",
+      "x": 300,
+      "y": 165,
+      "kind": "switch",
+      "label": "Switch"
+     },
+     {
+      "id": "srv",
+      "x": 120,
+      "y": 270,
+      "kind": "server",
+      "label": "File server"
+     },
+     {
+      "id": "pc1",
+      "x": 110,
+      "y": 70,
+      "kind": "pc"
+     },
+     {
+      "id": "pc2",
+      "x": 300,
+      "y": 45,
+      "kind": "pc"
+     },
+     {
+      "id": "pc3",
+      "x": 490,
+      "y": 70,
+      "kind": "pc"
+     },
+     {
+      "id": "pc4",
+      "x": 510,
+      "y": 230,
+      "kind": "pc"
+     },
+     {
+      "id": "pc5",
+      "x": 330,
+      "y": 295,
+      "kind": "pc"
+     }
+    ],
+    "links": [
+     [
+      "sw",
+      "srv"
+     ],
+     [
+      "sw",
+      "pc1"
+     ],
+     [
+      "sw",
+      "pc2"
+     ],
+     [
+      "sw",
+      "pc3"
+     ],
+     [
+      "sw",
+      "pc4"
+     ],
+     [
+      "sw",
+      "pc5"
+     ]
+    ],
+    "target": "srv",
+    "pros": "A broken cable only affects one device. Easy to add devices and troubleshoot.",
+    "cons": "The central switch is a single point of failure.",
+    "tip": "Physical star is the standard LAN topology on the exam (and in real life)."
+   },
+   {
+    "id": "bus",
+    "name": "Bus",
+    "where": "Old coaxial Ethernet (10BASE2/10BASE5); rare today",
+    "nodes": [
+     {
+      "id": "j1",
+      "x": 80,
+      "y": 165,
+      "kind": "tap"
+     },
+     {
+      "id": "j2",
+      "x": 175,
+      "y": 165,
+      "kind": "tap"
+     },
+     {
+      "id": "j3",
+      "x": 270,
+      "y": 165,
+      "kind": "tap"
+     },
+     {
+      "id": "j4",
+      "x": 365,
+      "y": 165,
+      "kind": "tap"
+     },
+     {
+      "id": "j5",
+      "x": 460,
+      "y": 165,
+      "kind": "tap"
+     },
+     {
+      "id": "j6",
+      "x": 545,
+      "y": 165,
+      "kind": "tap"
+     },
+     {
+      "id": "pc1",
+      "x": 80,
+      "y": 75,
+      "kind": "pc"
+     },
+     {
+      "id": "pc2",
+      "x": 175,
+      "y": 255,
+      "kind": "pc"
+     },
+     {
+      "id": "pc3",
+      "x": 270,
+      "y": 75,
+      "kind": "pc"
+     },
+     {
+      "id": "pc4",
+      "x": 365,
+      "y": 255,
+      "kind": "server",
+      "label": "Server"
+     },
+     {
+      "id": "pc5",
+      "x": 460,
+      "y": 75,
+      "kind": "pc"
+     },
+     {
+      "id": "pc6",
+      "x": 545,
+      "y": 255,
+      "kind": "pc"
+     }
+    ],
+    "links": [
+     [
+      "j1",
+      "j2"
+     ],
+     [
+      "j2",
+      "j3"
+     ],
+     [
+      "j3",
+      "j4"
+     ],
+     [
+      "j4",
+      "j5"
+     ],
+     [
+      "j5",
+      "j6"
+     ],
+     [
+      "j1",
+      "pc1"
+     ],
+     [
+      "j2",
+      "pc2"
+     ],
+     [
+      "j3",
+      "pc3"
+     ],
+     [
+      "j4",
+      "pc4"
+     ],
+     [
+      "j5",
+      "pc5"
+     ],
+     [
+      "j6",
+      "pc6"
+     ]
+    ],
+    "target": "pc4",
+    "backbone": [
+     [
+      "j1",
+      "j2"
+     ],
+     [
+      "j2",
+      "j3"
+     ],
+     [
+      "j3",
+      "j4"
+     ],
+     [
+      "j4",
+      "j5"
+     ],
+     [
+      "j5",
+      "j6"
+     ]
+    ],
+    "terminators": [
+     "j1",
+     "j6"
+    ],
+    "pros": "Cheap and simple: one shared cable.",
+    "cons": "One break in the backbone takes the whole segment down, because signals reflect off the open end. Everyone shares one collision domain.",
+    "tip": "Both ends of the bus need terminators to stop signal reflection."
+   },
+   {
+    "id": "ring",
+    "name": "Ring",
+    "where": "Legacy Token Ring and FDDI; some metro and industrial networks",
+    "nodes": [
+     {
+      "id": "n1",
+      "x": 300,
+      "y": 45,
+      "kind": "pc"
+     },
+     {
+      "id": "n2",
+      "x": 404,
+      "y": 105,
+      "kind": "pc"
+     },
+     {
+      "id": "n3",
+      "x": 404,
+      "y": 225,
+      "kind": "pc"
+     },
+     {
+      "id": "n4",
+      "x": 300,
+      "y": 285,
+      "kind": "server",
+      "label": "Server"
+     },
+     {
+      "id": "n5",
+      "x": 196,
+      "y": 225,
+      "kind": "pc"
+     },
+     {
+      "id": "n6",
+      "x": 196,
+      "y": 105,
+      "kind": "pc"
+     }
+    ],
+    "links": [
+     [
+      "n1",
+      "n2"
+     ],
+     [
+      "n2",
+      "n3"
+     ],
+     [
+      "n3",
+      "n4"
+     ],
+     [
+      "n4",
+      "n5"
+     ],
+     [
+      "n5",
+      "n6"
+     ],
+     [
+      "n6",
+      "n1"
+     ]
+    ],
+    "target": "n4",
+    "pros": "Predictable performance; a dual ring (like FDDI) survives one break by sending traffic the other way.",
+    "cons": "A single (one-direction) ring stops at the first break; two breaks split even a dual ring.",
+    "tip": "This diagram behaves like a dual ring: one break is survivable, two are not."
+   },
+   {
+    "id": "mesh",
+    "name": "Full mesh",
+    "where": "WAN cores between key sites, where uptime matters most",
+    "nodes": [
+     {
+      "id": "r1",
+      "x": 300,
+      "y": 45,
+      "kind": "server",
+      "label": "Data centre"
+     },
+     {
+      "id": "r2",
+      "x": 414,
+      "y": 128,
+      "kind": "router"
+     },
+     {
+      "id": "r3",
+      "x": 371,
+      "y": 262,
+      "kind": "router"
+     },
+     {
+      "id": "r4",
+      "x": 229,
+      "y": 262,
+      "kind": "router"
+     },
+     {
+      "id": "r5",
+      "x": 186,
+      "y": 128,
+      "kind": "router"
+     }
+    ],
+    "links": [
+     [
+      "r1",
+      "r2"
+     ],
+     [
+      "r1",
+      "r3"
+     ],
+     [
+      "r1",
+      "r4"
+     ],
+     [
+      "r1",
+      "r5"
+     ],
+     [
+      "r2",
+      "r3"
+     ],
+     [
+      "r2",
+      "r4"
+     ],
+     [
+      "r2",
+      "r5"
+     ],
+     [
+      "r3",
+      "r4"
+     ],
+     [
+      "r3",
+      "r5"
+     ],
+     [
+      "r4",
+      "r5"
+     ]
+    ],
+    "target": "r1",
+    "pros": "Maximum redundancy: traffic can route around several failures.",
+    "cons": "Expensive and complex: the number of links grows fast.",
+    "tip": "Links in a full mesh = n(n−1)/2. Here 5 × 4 ÷ 2 = 10."
+   },
+   {
+    "id": "partial",
+    "name": "Partial mesh",
+    "where": "Most real WANs and ISP backbones",
+    "nodes": [
+     {
+      "id": "r1",
+      "x": 300,
+      "y": 40,
+      "kind": "server",
+      "label": "Data centre"
+     },
+     {
+      "id": "r2",
+      "x": 408,
+      "y": 102,
+      "kind": "router"
+     },
+     {
+      "id": "r3",
+      "x": 408,
+      "y": 227,
+      "kind": "router"
+     },
+     {
+      "id": "r4",
+      "x": 300,
+      "y": 290,
+      "kind": "router"
+     },
+     {
+      "id": "r5",
+      "x": 192,
+      "y": 228,
+      "kind": "router"
+     },
+     {
+      "id": "r6",
+      "x": 192,
+      "y": 102,
+      "kind": "router"
+     }
+    ],
+    "links": [
+     [
+      "r1",
+      "r2"
+     ],
+     [
+      "r2",
+      "r3"
+     ],
+     [
+      "r3",
+      "r4"
+     ],
+     [
+      "r4",
+      "r5"
+     ],
+     [
+      "r5",
+      "r6"
+     ],
+     [
+      "r6",
+      "r1"
+     ],
+     [
+      "r1",
+      "r4"
+     ],
+     [
+      "r2",
+      "r5"
+     ]
+    ],
+    "target": "r1",
+    "pros": "Redundancy where it matters, without the cost of linking everything.",
+    "cons": "Some paths have less protection than others.",
+    "tip": "A compromise between star (cheap) and full mesh (resilient)."
+   },
+   {
+    "id": "hub-spoke",
+    "name": "Hub and spoke",
+    "where": "Branch offices connected to headquarters over a WAN",
+    "nodes": [
+     {
+      "id": "hq",
+      "x": 300,
+      "y": 165,
+      "kind": "router",
+      "label": "HQ router"
+     },
+     {
+      "id": "dc",
+      "x": 300,
+      "y": 55,
+      "kind": "server",
+      "label": "HQ servers"
+     },
+     {
+      "id": "b1",
+      "x": 100,
+      "y": 95,
+      "kind": "router",
+      "label": "Branch 1"
+     },
+     {
+      "id": "b2",
+      "x": 510,
+      "y": 95,
+      "kind": "router",
+      "label": "Branch 2"
+     },
+     {
+      "id": "b3",
+      "x": 95,
+      "y": 260,
+      "kind": "router",
+      "label": "Branch 3"
+     },
+     {
+      "id": "b4",
+      "x": 300,
+      "y": 295,
+      "kind": "router",
+      "label": "Branch 4"
+     },
+     {
+      "id": "b5",
+      "x": 510,
+      "y": 260,
+      "kind": "router",
+      "label": "Branch 5"
+     }
+    ],
+    "links": [
+     [
+      "hq",
+      "dc"
+     ],
+     [
+      "hq",
+      "b1"
+     ],
+     [
+      "hq",
+      "b2"
+     ],
+     [
+      "hq",
+      "b3"
+     ],
+     [
+      "hq",
+      "b4"
+     ],
+     [
+      "hq",
+      "b5"
+     ]
+    ],
+    "target": "dc",
+    "pros": "Simple and cheap: each branch needs one link.",
+    "cons": "The hub is a single point of failure, and branch-to-branch traffic goes via HQ.",
+    "tip": "It's a star at WAN scale. Adding a second hub improves resilience.",
+    "endpoints": [
+     "b1",
+     "b2",
+     "b3",
+     "b4",
+     "b5"
+    ]
+   },
+   {
+    "id": "spine-leaf",
+    "name": "Spine and leaf",
+    "where": "Modern data centres",
+    "nodes": [
+     {
+      "id": "s1",
+      "x": 200,
+      "y": 55,
+      "kind": "switch",
+      "label": "Spine 1"
+     },
+     {
+      "id": "s2",
+      "x": 400,
+      "y": 55,
+      "kind": "switch",
+      "label": "Spine 2"
+     },
+     {
+      "id": "l1",
+      "x": 90,
+      "y": 170,
+      "kind": "switch",
+      "label": "Leaf 1"
+     },
+     {
+      "id": "l2",
+      "x": 230,
+      "y": 170,
+      "kind": "switch",
+      "label": "Leaf 2"
+     },
+     {
+      "id": "l3",
+      "x": 370,
+      "y": 170,
+      "kind": "switch",
+      "label": "Leaf 3"
+     },
+     {
+      "id": "l4",
+      "x": 510,
+      "y": 170,
+      "kind": "switch",
+      "label": "Leaf 4"
+     },
+     {
+      "id": "v1",
+      "x": 90,
+      "y": 280,
+      "kind": "server"
+     },
+     {
+      "id": "v2",
+      "x": 230,
+      "y": 280,
+      "kind": "server"
+     },
+     {
+      "id": "v3",
+      "x": 370,
+      "y": 280,
+      "kind": "server"
+     },
+     {
+      "id": "v4",
+      "x": 510,
+      "y": 280,
+      "kind": "server",
+      "label": "Database"
+     }
+    ],
+    "links": [
+     [
+      "l1",
+      "s1"
+     ],
+     [
+      "l1",
+      "s2"
+     ],
+     [
+      "l2",
+      "s1"
+     ],
+     [
+      "l2",
+      "s2"
+     ],
+     [
+      "l3",
+      "s1"
+     ],
+     [
+      "l3",
+      "s2"
+     ],
+     [
+      "l4",
+      "s1"
+     ],
+     [
+      "l4",
+      "s2"
+     ],
+     [
+      "l1",
+      "v1"
+     ],
+     [
+      "l2",
+      "v2"
+     ],
+     [
+      "l3",
+      "v3"
+     ],
+     [
+      "l4",
+      "v4"
+     ]
+    ],
+    "target": "v4",
+    "pros": "Every leaf connects to every spine, so any server is two switch hops from any other. Losing a spine just reduces capacity.",
+    "cons": "Lots of cabling between spines and leaves.",
+    "tip": "Built for east-west traffic (server to server) inside a data centre."
+   },
+   {
+    "id": "three-tier",
+    "name": "Three-tier (hierarchical)",
+    "where": "Large campus and enterprise networks",
+    "nodes": [
+     {
+      "id": "dc",
+      "x": 300,
+      "y": 30,
+      "kind": "server",
+      "label": "Data centre"
+     },
+     {
+      "id": "c1",
+      "x": 210,
+      "y": 100,
+      "kind": "router",
+      "label": "Core 1"
+     },
+     {
+      "id": "c2",
+      "x": 390,
+      "y": 100,
+      "kind": "router",
+      "label": "Core 2"
+     },
+     {
+      "id": "d1",
+      "x": 150,
+      "y": 180,
+      "kind": "switch",
+      "label": "Distribution 1"
+     },
+     {
+      "id": "d2",
+      "x": 450,
+      "y": 180,
+      "kind": "switch",
+      "label": "Distribution 2"
+     },
+     {
+      "id": "a1",
+      "x": 70,
+      "y": 255,
+      "kind": "switch",
+      "label": "Access"
+     },
+     {
+      "id": "a2",
+      "x": 230,
+      "y": 255,
+      "kind": "switch",
+      "label": "Access"
+     },
+     {
+      "id": "a3",
+      "x": 370,
+      "y": 255,
+      "kind": "switch",
+      "label": "Access"
+     },
+     {
+      "id": "a4",
+      "x": 530,
+      "y": 255,
+      "kind": "switch",
+      "label": "Access"
+     },
+     {
+      "id": "p1",
+      "x": 70,
+      "y": 315,
+      "kind": "pc"
+     },
+     {
+      "id": "p2",
+      "x": 230,
+      "y": 315,
+      "kind": "pc"
+     },
+     {
+      "id": "p3",
+      "x": 370,
+      "y": 315,
+      "kind": "pc"
+     },
+     {
+      "id": "p4",
+      "x": 530,
+      "y": 315,
+      "kind": "pc"
+     }
+    ],
+    "links": [
+     [
+      "dc",
+      "c1"
+     ],
+     [
+      "dc",
+      "c2"
+     ],
+     [
+      "c1",
+      "c2"
+     ],
+     [
+      "c1",
+      "d1"
+     ],
+     [
+      "c1",
+      "d2"
+     ],
+     [
+      "c2",
+      "d1"
+     ],
+     [
+      "c2",
+      "d2"
+     ],
+     [
+      "d1",
+      "a1"
+     ],
+     [
+      "d1",
+      "a2"
+     ],
+     [
+      "d2",
+      "a3"
+     ],
+     [
+      "d2",
+      "a4"
+     ],
+     [
+      "a1",
+      "p1"
+     ],
+     [
+      "a2",
+      "p2"
+     ],
+     [
+      "a3",
+      "p3"
+     ],
+     [
+      "a4",
+      "p4"
+     ]
+    ],
+    "target": "dc",
+    "pros": "Core (fast backbone), distribution (policy and routing) and access (where users plug in) each have one job, so it scales.",
+    "cons": "More layers of equipment. Here each access switch has one uplink, so a distribution switch failure cuts off two of them.",
+    "tip": "A collapsed core merges the core and distribution layers, common in smaller sites."
+   }
+  ],
+  "quiz": [
+   {
+    "q": "Every device plugs into one central switch. If the switch fails, everyone is offline.",
+    "answer": "star"
+   },
+   {
+    "q": "An old coaxial network with a terminator at each end of a single cable.",
+    "answer": "bus"
+   },
+   {
+    "q": "Every leaf switch connects to every spine switch, so any server is two hops from any other.",
+    "answer": "spine-leaf"
+   },
+   {
+    "q": "Each branch office has one WAN link back to headquarters.",
+    "answer": "hub-spoke"
+   },
+   {
+    "q": "Every router links directly to every other router: maximum redundancy, maximum cabling.",
+    "answer": "mesh"
+   },
+   {
+    "q": "A campus design split into core, distribution and access layers.",
+    "answer": "three-tier"
+   },
+   {
+    "q": "Each device connects to exactly two neighbours, forming a closed loop.",
+    "answer": "ring"
+   }
+  ],
+  "passScore": 5,
+  "exploreGoal": 4
+ },
+ {
+  "id": "linux-terminal",
+  "title": "Linux terminal basics",
+  "kind": "terminal",
+  "category": "Linux",
+  "track": "Linux",
+  "minutes": 15,
+  "lesson": "linux",
+  "skill": "Navigate, read, search and fix files from the command line",
+  "intro": "A simulated Linux server with a small set of real commands. Type help to see them.",
+  "user": "analyst",
+  "host": "web-01",
+  "home": "/home/analyst",
+  "fs": {
+   "/": {
+    "type": "dir",
+    "owner": "root",
+    "mode": "rwxr-xr-x"
+   },
+   "/home": {
+    "type": "dir",
+    "owner": "root",
+    "mode": "rwxr-xr-x"
+   },
+   "/home/analyst": {
+    "type": "dir",
+    "owner": "analyst",
+    "mode": "rwxr-xr-x"
+   },
+   "/home/analyst/notes.txt": {
+    "type": "file",
+    "owner": "analyst",
+    "mode": "rw-r--r--",
+    "content": "Morning! Two things from the night shift:\n1. The backup script in /opt/backup didn't run. I think it's a permissions problem.\n2. Someone was hammering SSH. Check /var/log/auth.log for failed logins.\n- Priya"
+   },
+   "/home/analyst/.bash_history": {
+    "type": "file",
+    "owner": "analyst",
+    "mode": "rw-------",
+    "content": "ls\ncd /var/log\nsudo su\nexit"
+   },
+   "/home/analyst/projects": {
+    "type": "dir",
+    "owner": "analyst",
+    "mode": "rwxr-xr-x"
+   },
+   "/home/analyst/projects/todo.txt": {
+    "type": "file",
+    "owner": "analyst",
+    "mode": "rw-r--r--",
+    "content": "- learn grep\n- study for Network+\n- fix the backup job"
+   },
+   "/var": {
+    "type": "dir",
+    "owner": "root",
+    "mode": "rwxr-xr-x"
+   },
+   "/var/log": {
+    "type": "dir",
+    "owner": "root",
+    "mode": "rwxr-xr-x"
+   },
+   "/var/log/auth.log": {
+    "type": "file",
+    "owner": "root",
+    "mode": "rw-r--r--",
+    "content": "Oct 14 02:13:21 web-01 sshd[1250]: Failed password for root from 203.0.113.45 port 51001 ssh2\nOct 14 02:13:24 web-01 sshd[1250]: Failed password for root from 203.0.113.45 port 51001 ssh2\nOct 14 02:14:02 web-01 sshd[1261]: Failed password for invalid user admin from 203.0.113.45 port 51030 ssh2\nOct 14 02:15:12 web-01 sshd[1274]: Failed password for backup from 203.0.113.45 port 51058 ssh2\nOct 14 02:19:47 web-01 sshd[1296]: Accepted password for backup from 203.0.113.45 port 51122 ssh2\nOct 14 08:47:12 web-01 sshd[1450]: Accepted publickey for analyst from 192.0.2.10 port 50388 ssh2"
+   },
+   "/var/log/syslog": {
+    "type": "file",
+    "owner": "root",
+    "mode": "rw-r--r--",
+    "content": "Oct 14 02:00:01 web-01 CRON[1203]: (root) CMD (/opt/backup/backup.sh)\nOct 14 02:00:01 web-01 CRON[1203]: /bin/sh: 1: /opt/backup/backup.sh: Permission denied"
+   },
+   "/etc": {
+    "type": "dir",
+    "owner": "root",
+    "mode": "rwxr-xr-x"
+   },
+   "/etc/hostname": {
+    "type": "file",
+    "owner": "root",
+    "mode": "rw-r--r--",
+    "content": "web-01"
+   },
+   "/etc/passwd": {
+    "type": "file",
+    "owner": "root",
+    "mode": "rw-r--r--",
+    "content": "root:x:0:0:root:/root:/bin/bash\nbackup:x:34:34:backup:/var/backups:/usr/sbin/nologin\nanalyst:x:1000:1000:Analyst:/home/analyst:/bin/bash"
+   },
+   "/opt": {
+    "type": "dir",
+    "owner": "root",
+    "mode": "rwxr-xr-x"
+   },
+   "/opt/backup": {
+    "type": "dir",
+    "owner": "analyst",
+    "mode": "rwxr-xr-x"
+   },
+   "/opt/backup/backup.sh": {
+    "type": "file",
+    "owner": "analyst",
+    "mode": "rw-r--r--",
+    "content": "#!/bin/bash\necho \"Backing up /home to /opt/backup/archive...\"\necho \"Backup complete.\""
+   },
+   "/tmp": {
+    "type": "dir",
+    "owner": "root",
+    "mode": "rwxrwxrwt"
+   },
+   "/tmp/old.tmp": {
+    "type": "file",
+    "owner": "analyst",
+    "mode": "rw-r--r--",
+    "content": "temporary data"
+   },
+   "/tmp/session.lock": {
+    "type": "file",
+    "owner": "analyst",
+    "mode": "rw-r--r--",
+    "content": ""
+   }
+  },
+  "tasks": [
+   {
+    "id": "where",
+    "text": "Find out who you are and which folder you're in.",
+    "hint": "whoami, then pwd",
+    "check": {
+     "ran": [
+      "whoami",
+      "pwd"
+     ]
+    }
+   },
+   {
+    "id": "hidden",
+    "text": "List everything in your home folder, including hidden files.",
+    "hint": "ls -a",
+    "check": {
+     "ls": {
+      "dir": "/home/analyst",
+      "flag": "a"
+     }
+    }
+   },
+   {
+    "id": "note",
+    "text": "Read the note in notes.txt.",
+    "hint": "cat notes.txt",
+    "check": {
+     "read": "/home/analyst/notes.txt"
+    }
+   },
+   {
+    "id": "logs",
+    "text": "Move to the folder that holds the system logs.",
+    "hint": "cd /var/log",
+    "check": {
+     "cwd": "/var/log"
+    }
+   },
+   {
+    "id": "failed",
+    "text": "Show only the failed login lines in auth.log.",
+    "hint": "grep \"Failed password\" auth.log",
+    "check": {
+     "grep": {
+      "file": "/var/log/auth.log",
+      "match": "Failed"
+     }
+    }
+   },
+   {
+    "id": "find",
+    "text": "Search the whole system for a file called backup.sh.",
+    "hint": "find / -name backup.sh",
+    "check": {
+     "found": "/opt/backup/backup.sh"
+    }
+   },
+   {
+    "id": "tryrun",
+    "text": "Try to run the backup script. What happens?",
+    "hint": "/opt/backup/backup.sh (or cd there and run ./backup.sh)",
+    "check": {
+     "tried": "/opt/backup/backup.sh"
+    }
+   },
+   {
+    "id": "fix",
+    "text": "Make the script executable, then run it successfully.",
+    "hint": "chmod +x /opt/backup/backup.sh, then run it again",
+    "check": {
+     "executed": "/opt/backup/backup.sh"
+    }
+   },
+   {
+    "id": "report",
+    "text": "Create a folder called reports in your home folder, with an empty file incident.txt inside it.",
+    "hint": "mkdir ~/reports, then touch ~/reports/incident.txt",
+    "check": {
+     "exists": "/home/analyst/reports/incident.txt"
+    }
+   },
+   {
+    "id": "tidy",
+    "text": "Delete the old temp file in /tmp, and nothing else.",
+    "hint": "rm /tmp/old.tmp",
+    "check": {
+     "missing": "/tmp/old.tmp",
+     "keep": "/tmp/session.lock"
+    }
+   }
+  ],
+  "next": [
+   {
+    "label": "OverTheWire: Bandit (free, real SSH wargame)",
+    "url": "https://overthewire.org/wargames/bandit/"
+   },
+   {
+    "label": "Install Ubuntu in a free VirtualBox VM",
+    "url": "https://ubuntu.com/tutorials/how-to-run-ubuntu-desktop-on-a-virtual-machine-using-virtualbox"
+   }
+  ]
+ },
+ {
   "id": "log-detective",
   "title": "Log detective",
   "track": "SOC",
@@ -63,7 +1543,8 @@
     "answer": 1,
     "explain": "Contain first: stop the attacker's access and spread, but keep the evidence. 198.51.100.7 was just a user mistyping a password before logging in normally."
    }
-  ]
+  ],
+  "category": "Security operations"
  },
  {
   "id": "header-inspector",
@@ -122,7 +1603,8 @@
     "answer": 1,
     "explain": "DMARC failing means the message didn't prove it came from northvalebank.com. Combined with urgency and a mismatched Reply-To, it's phishing."
    }
-  ]
+  ],
+  "category": "Security operations"
  },
  {
   "id": "cvss-builder",
@@ -149,6 +1631,7 @@
     "text": "Someone who already has a normal user account on a Linux server can run a program that makes them root. They need to be logged in to the machine itself; no other user is involved.",
     "target": "AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
    }
-  ]
+  ],
+  "category": "Security operations"
  }
 ]

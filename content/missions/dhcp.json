@@ -929,5 +929,6 @@
   "filterNote": "Wireshark 3.0 and later. Older versions call it bootp.",
   "honesty": "An illustration of how Wireshark shows this message, built from the simulation. Not a real capture. Exact wording varies between Wireshark versions, and Wireshark may show a manufacturer's name in place of the first half of a MAC address.",
   "tryIt": "On your own computer and a network you're allowed to monitor: start a capture in Wireshark, type dhcp in the filter bar, then renew your address (Windows: ipconfig /release then ipconfig /renew). You should see these four messages appear."
- }
+ },
+ "category": "Networking"
 }

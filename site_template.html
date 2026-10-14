@@ -308,6 +308,12 @@ details.explain summary { cursor: pointer; font-weight: 700; color: var(--brand)
 footer { padding-inline: 16px; border-top: 1px solid var(--line); }
 .foot { max-width: 1120px; margin: 0 auto; padding-block: 22px 40px; display: grid; gap: 6px; font-size: 0.84rem; color: var(--muted); }
 
+.celebrate { position: fixed; inset: 0; z-index: 60; display: grid; place-items: start center; padding-top: 22vh; cursor: pointer; }
+.celebrate canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.cele-card { position: relative; display: grid; gap: 4px; text-align: center; background: var(--surface); border: 2px solid var(--sun); border-radius: 10px; padding: 16px 26px; box-shadow: 0 0 60px rgba(255, 176, 0, 0.35), 0 20px 60px rgba(0, 0, 0, 0.6); }
+.cele-card b { font: 700 1.6rem var(--font-display); text-transform: uppercase; color: var(--sun); letter-spacing: 0.03em; }
+.cele-card span { color: var(--ink); font-family: var(--font-mono); font-size: 0.9rem; }
+@media (prefers-reduced-motion: no-preference) { .cele-card { animation: cele-pop 0.45s cubic-bezier(.2, 1.4, .4, 1); } @keyframes cele-pop { from { transform: scale(0.6); opacity: 0; } } }
 .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--sun); color: var(--sun-ink); font-weight: 700; padding: 10px 18px; border-radius: 999px; box-shadow: 0 6px 24px rgb(0 0 0 / 0.18); z-index: 20; }
 
 /* Glossary terms & popover */
@@ -552,6 +558,106 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .rc { border-top: 1px dashed var(--line); padding-top: 10px; margin-top: 6px; display: grid; gap: 8px; }
 .debrief { border-color: rgba(61, 220, 151, 0.45); }
 @media (max-width: 900px) { .mission-grid { grid-template-columns: 1fr; } .bubble { max-width: 60%; font-size: 0.7rem; } }
+
+/* ---------- Category headings ---------- */
+.cat-h { font: 700 1.05rem var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; display: flex; align-items: center; gap: 10px; }
+.cat-h::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+/* ---------- OSI lab ---------- */
+.osi { display: grid; gap: 18px; }
+.osi-progress .pchip { font-size: 0.8rem; }
+.osi-stage { display: grid; grid-template-columns: minmax(0, 1fr) 60px minmax(0, 1fr); gap: 10px; align-items: stretch; }
+.osi-stack { display: grid; gap: 4px; }
+.osi-host { font: 600 0.78rem var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); text-align: center; }
+.osi-layer { display: flex; gap: 10px; align-items: center; padding: 7px 10px; border-radius: 5px; border: 1px solid var(--line); border-left: 4px solid var(--c); background: var(--surface); font-size: 0.88rem; transition: background 0.2s, opacity 0.2s; }
+.osi-layer b { font-family: var(--font-mono); color: var(--c); }
+.osi-layer.past { opacity: 0.45; }
+.osi-layer.on { background: color-mix(in srgb, var(--c) 18%, var(--surface)); border-color: var(--c); box-shadow: 0 0 18px color-mix(in srgb, var(--c) 30%, transparent); opacity: 1; }
+.osi-wire { align-self: end; height: 6px; margin-bottom: 18px; border-radius: 3px; background: repeating-linear-gradient(90deg, var(--line) 0 8px, transparent 8px 14px); }
+.osi-wire.on { background: repeating-linear-gradient(90deg, var(--sun) 0 8px, transparent 8px 14px); }
+@media (prefers-reduced-motion: no-preference) { .osi-wire.on { animation: wire 0.6s linear infinite; } @keyframes wire { to { background-position: 14px 0; } } }
+.osi-pdu { display: grid; justify-items: center; gap: 6px; margin-top: 14px; min-height: 64px; }
+.pdu-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 0; }
+.pdu-h, .pdu-data { display: grid; padding: 6px 9px; border: 1px solid var(--c); background: color-mix(in srgb, var(--c) 16%, var(--bg)); font: 0.76rem var(--font-mono); text-align: center; }
+.pdu-h b { color: var(--c); font-weight: 600; }
+.pdu-h i { font-style: normal; color: var(--muted); font-size: 0.7rem; }
+.pdu-data { color: var(--ink); align-content: center; }
+.pdu-bits { font: 0.85rem var(--font-mono); color: var(--sun); letter-spacing: 0.1em; overflow-wrap: anywhere; text-align: center; }
+.pdu-name { font: 600 0.72rem var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+.osi-say { text-align: center; max-width: 64ch; justify-self: center; min-height: 3em; }
+.osi-ref { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 14px; }
+.osi-pick { display: grid; gap: 4px; align-content: start; }
+.osi-row { text-align: left; cursor: pointer; padding: 8px 10px; border-radius: 5px; border: 1px solid var(--line); border-left: 4px solid var(--c); background: var(--surface); font-size: 0.9rem; }
+.osi-row b { font-family: var(--font-mono); color: var(--c); margin-right: 6px; }
+.osi-row[aria-pressed="true"] { background: color-mix(in srgb, var(--c) 18%, var(--surface)); border-color: var(--c); }
+.osi-card { border: 1px solid var(--c); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 8px; align-content: start; background: color-mix(in srgb, var(--c) 6%, var(--surface)); }
+.osi-card h3 { font: 700 1.3rem var(--font-display); color: var(--c); }
+.osi-job { font-weight: 600; }
+.osi-facts { margin: 0; display: grid; gap: 6px; font-size: 0.88rem; }
+.osi-facts dt { font: 500 0.68rem var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.osi-facts dd { margin: 0; }
+.osi-tip { font-size: 0.9rem; border-top: 1px dashed var(--line); padding-top: 8px; }
+.osi-mnem { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 6px; }
+.osi-mnem p { font-size: 1rem; }
+.osi-mnem b { color: var(--sun); font-size: 1.15rem; }
+.osi-tcpip > div { display: flex; gap: 4px; margin-top: 6px; }
+.osi-tcpip span:not(.eyebrow) { background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 6px; text-align: center; font-size: 0.8rem; }
+.osi-tcpip i { font-style: normal; color: var(--muted); font-family: var(--font-mono); }
+.osi-item { font: 700 1.25rem var(--font-display); text-align: center; padding: 18px; border: 1px dashed var(--line); border-radius: var(--radius); }
+.osi-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; }
+.osi-choice { border-left: 4px solid var(--c) !important; }
+.osi-choice b { font-family: var(--font-mono); color: var(--c); margin-right: 4px; }
+.osi-missed { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 0.9rem; }
+@media (max-width: 700px) { .osi-ref { grid-template-columns: 1fr; } .osi-pick { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); } .osi-stage { grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr); } .osi-layer span { font-size: 0.74rem; } .osi-layer { padding: 6px; gap: 6px; } }
+
+/* ---------- Topology lab ---------- */
+.topo { display: grid; gap: 18px; }
+.topo-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+#tp-svg { width: 100%; height: auto; display: block; }
+.tp-link { cursor: pointer; }
+.tp-link .hit { stroke: transparent; stroke-width: 16; }
+.tp-link .wire { stroke: #33465F; stroke-width: 3; stroke-linecap: round; }
+.tp-link.backbone .wire { stroke: #4D6280; stroke-width: 5; }
+.tp-link:hover .wire, .tp-link:focus-visible .wire { stroke: var(--brand); }
+.tp-link.broken .wire { stroke: var(--exploited); stroke-dasharray: 6 6; }
+.tp-link.spof .wire { stroke: var(--sun); stroke-width: 4; }
+.tp-link:focus { outline: none; }
+.tp-tap { fill: #4D6280; }
+.tp-term { fill: var(--muted); }
+.tp-node { cursor: pointer; }
+.tp-node rect, .tp-node circle { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
+.tp-node .ico { fill: var(--sun); font: 600 11px var(--font-mono); }
+.tp-node .lbl { fill: var(--muted); font: 11px var(--font-body); }
+.tp-node.ok rect, .tp-node.ok circle { stroke: var(--good); }
+.tp-node.bad rect, .tp-node.bad circle { stroke: var(--exploited); }
+.tp-node.target rect, .tp-node.target circle { stroke: var(--brand); stroke-width: 3; }
+.tp-node.down rect, .tp-node.down circle { stroke: var(--exploited); fill: var(--exploited-tint); }
+.tp-node.down .x { stroke: var(--exploited); stroke-width: 3; }
+.tp-node.spof rect, .tp-node.spof circle { stroke: var(--sun); stroke-width: 3; }
+.tp-node:focus { outline: none; }
+.tp-node:focus-visible rect, .tp-node:focus-visible circle { stroke: var(--ink); }
+.topo-status { min-height: 1.6em; margin-top: 8px; }
+.topo-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-block: 6px; }
+@media (max-width: 860px) { .topo-grid { grid-template-columns: 1fr; } }
+
+/* ---------- Terminal lab ---------- */
+.term-lab { display: grid; gap: 18px; }
+.term-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.term { background: #05080C; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 460px; }
+.term-bar { display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: var(--surface); border-bottom: 1px solid var(--line); font: 0.76rem var(--font-mono); color: var(--muted); }
+.term-out { overflow-y: auto; padding: 12px; font: 0.84rem/1.55 var(--font-mono); color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }
+.term-out mark { background: rgba(255, 176, 0, 0.3); color: var(--ink); }
+.term-out .t-err { color: var(--exploited); }
+.term-out .t-dir { color: var(--high); font-weight: 600; }
+.term-ps { color: var(--good); white-space: nowrap; }
+.term-in { display: flex; gap: 8px; align-items: center; padding: 8px 12px; border-top: 1px solid var(--line); font: 0.84rem var(--font-mono); }
+.term-in input { flex: 1; min-width: 0; background: transparent; border: 0; outline: none; color: var(--ink); font: inherit; caret-color: var(--sun); }
+.term-tasks ol { margin: 0; padding-left: 20px; display: grid; gap: 7px; font-size: 0.9rem; }
+.term-tasks li.got { color: var(--good); }
+.term-tasks li.now { color: var(--ink); font-weight: 600; }
+.term-tasks li:not(.got):not(.now) { color: var(--muted); }
+.term-tasks code { color: var(--sun); }
+@media (max-width: 860px) { .term-grid { grid-template-columns: 1fr; } .term { height: 380px; } }
 
 /* ---------- Dashboard ---------- */
 .view-head h1 .accent { font-style: normal; color: var(--brand); }
@@ -900,6 +1006,7 @@ function checkProgress() {
   DATA.paths.forEach(p => {
     if (!P.paths[p.id] && pathSteps(p).every(st => st.done)) {
       P.paths[p.id] = todayStr(); gain(PATH_XP, `Path complete: ${p.title}`); toast(`Path complete: ${p.title} · +${PATH_XP} XP`);
+      setTimeout(() => celebrate("Path complete!", `${p.title} · +${PATH_XP} XP`), 2400);
     }
   });
   BADGES.forEach(b => {
@@ -907,6 +1014,46 @@ function checkProgress() {
       P.badges[b.id] = todayStr(); gain(BADGE_XP, `Badge: ${b.name}`); toast(`Badge unlocked: ${b.name} · +${BADGE_XP} XP`);
     }
   });
+}
+
+/* ---------- celebration: fireworks when a lab, mission, quiz round or path is finished ---------- */
+function celebrate(title, sub = "") {
+  document.querySelector(".celebrate")?.remove();
+  const wrap = document.createElement("div");
+  wrap.className = "celebrate";
+  wrap.setAttribute("role", "status");
+  wrap.innerHTML = `<canvas aria-hidden="true"></canvas><div class="cele-card"><b>${esc(title)}</b>${sub ? `<span>${esc(sub)}</span>` : ""}</div>`;
+  document.body.appendChild(wrap);
+  const stop = () => wrap.remove();
+  wrap.addEventListener("click", stop);
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) { setTimeout(stop, 2800); return; }
+  const c = wrap.querySelector("canvas"), x = c.getContext("2d"), W = innerWidth, H = innerHeight, dpr = devicePixelRatio || 1;
+  c.width = W * dpr; c.height = H * dpr; x.scale(dpr, dpr);
+  const colors = ["#3FE0E8", "#FFB000", "#3DDC97", "#FF5470", "#B794FF"];
+  const rockets = Array.from({ length: 6 }, (_, i) => ({ x: W * (0.12 + 0.76 * Math.random()), y: H, vy: -(9 + Math.random() * 4), top: H * (0.12 + 0.3 * Math.random()), delay: i * 260, color: colors[i % colors.length] }));
+  const sparks = [];
+  const t0 = performance.now();
+  (function frame(now) {
+    if (!wrap.isConnected) return;
+    const t = now - t0;
+    x.clearRect(0, 0, W, H);
+    for (const r of rockets) {
+      if (r.burst || t < r.delay) continue;
+      r.y += r.vy;
+      x.fillStyle = r.color; x.fillRect(r.x - 1.5, r.y, 3, 12);
+      if (r.y <= r.top) {
+        r.burst = true;
+        for (let k = 0; k < 70; k++) { const a = Math.random() * Math.PI * 2, v = 1.2 + Math.random() * 4.8; sparks.push({ x: r.x, y: r.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, color: r.color }); }
+      }
+    }
+    for (const p of sparks) {
+      p.vy += 0.06; p.vx *= 0.985; p.vy *= 0.985; p.x += p.vx; p.y += p.vy; p.life -= 0.011;
+      if (p.life <= 0) continue;
+      x.globalAlpha = p.life; x.fillStyle = p.color; x.beginPath(); x.arc(p.x, p.y, 2.2, 0, Math.PI * 2); x.fill();
+    }
+    x.globalAlpha = 1;
+    t < 3400 ? requestAnimationFrame(frame) : stop();
+  })(t0);
 }
 
 /* ---------- shared quiz block ---------- */
@@ -946,8 +1093,7 @@ VIEWS.today = () => {
 
   main.innerHTML = `<div class="view">
     ${P.intro ? "" : welcomeHtml()}
-    <div class="view-head"><div class="eyebrow">Home</div><h1>Learn it. Break it. <em class="accent">Understand it.</em></h1>
-      <p>Visual, hands-on cyber security: simulations you can poke at, plain-English lessons, and this week's news explained.</p></div>
+    <div class="view-head"><h1>Learn it. Break it. <em class="accent">Understand it.</em></h1></div>
     <div class="split">
       <div class="stack" style="gap:18px">
         ${continueCard()}
@@ -967,25 +1113,16 @@ VIEWS.today = () => {
         </section>
         <section class="panel">
           <div class="panel-title"><h2>Top stories</h2><a class="link-btn" href="#news">All ${news.length} stories →</a></div>
-          <p class="hint">Hover over or tap any <span class="term">dotted word</span> for a plain-English explanation.</p>
-          <div class="stories">${featured.slice(0, 5).map(storyHtml).join("")}</div>
+          <div class="stories">${featured.slice(0, 3).map(storyHtml).join("")}</div>
         </section>
       </div>
       <aside class="stack" style="gap:18px">
         <section class="panel" id="daily"></section>
-        ${stackCard()}
-        <section class="panel">
-          <div class="eyebrow">Concept of the day · ${lesson.minutes} min</div>
-          <h2>${esc(lesson.title)}</h2>
-          <p class="muted">${esc(lesson.hook)}</p>
-          <a class="btn" href="#lesson-${esc(lesson.id)}" style="justify-self:start">Learn it</a>
-        </section>
+        ${stackItems().length ? stackCard() : ""}
         <section class="panel">
           <div class="panel-title"><h2>Patch these first</h2><a class="link-btn" href="#cves" data-radar-prio="1">Radar →</a></div>
-          <p class="muted" style="font-size:0.88rem">Added to CISA's Known Exploited list in the last ${m.days} days.</p>
           <div class="kev-list">${kev.slice(0, 5).map(c => `<div class="kev-item"><b>${esc(c.kev.name)}</b><span>${esc(c.id)} · added ${esc(c.kev.added)}${c.kev.ransomware ? " · used by ransomware" : ""}</span></div>`).join("") || '<p class="muted">None this week.</p>'}</div>
         </section>
-        <p class="hint">Tip: press <kbd>/</kbd> to search or type commands. There are 3 hidden flags on this site.</p>
       </aside>
     </div>
   </div>`;
@@ -1002,8 +1139,9 @@ function welcomeHtml() {
   return `<section class="panel welcome" aria-labelledby="welcome-h">
     <div class="panel-title"><h2 id="welcome-h">Welcome. What brings you here?</h2><button class="link-btn" data-intro="skip">Skip</button></div>
     <div class="welcome-grid">${WELCOME.map(w => `<a class="lcard" href="${w.href}" data-intro="${w.id}"><h3>${esc(w.title)}</h3><p>${esc(w.text)}</p><span class="link-btn">${esc(w.cta)} →</span></a>`).join("")}</div>
-    <p class="muted" style="font-size:0.85rem">No sign-up. Your progress is saved in this browser.</p></section>`;
+    </section>`;
 }
+document.addEventListener("click", e => { const r = e.target.closest?.("[data-reset-lab]"); if (r) resetLab(r.dataset.resetLab); });
 document.addEventListener("click", e => {
   const w = e.target.closest?.("[data-intro]"); if (!w) return;
   P.intro = w.dataset.intro; saveP();
@@ -1022,7 +1160,7 @@ const stackHitsCve = c => {
 };
 function stackCard() {
   if (!stackItems().length) return `<section class="panel stack-cta"><div class="eyebrow">Am I affected?</div><h2>Personal alerts</h2>
-    <p class="muted">Tell us what you use (phone, browser, router, work apps) and we'll flag the news and vulnerabilities that affect you. Stored only in this browser.</p>
+    <p class="muted">Pick your phone, browser and router. We'll flag what affects you.</p>
     <a class="btn brand" href="#stack" style="justify-self:start">Set up · +10 XP</a></section>`;
   const stories = DATA.news.filter(n => stackHits(n.title + " " + n.snippet).length);
   const vulns = DATA.cves.filter(c => (c.kev || c.priority <= 3) && stackHitsCve(c).length).sort((a, b) => a.priority - b.priority);
@@ -1060,7 +1198,7 @@ VIEWS.stack = () => {
   const chosen = new Set(P.stack || []);
   const groups = [...new Set(DATA.stack.map(s => s.group))];
   main.innerHTML = `<div class="view"><div class="view-head"><a class="link-btn" href="#today">← Today</a><div class="eyebrow">Am I affected?</div><h1>What do you use?</h1>
-    <p>Pick the things you use at home or work. We'll highlight news and vulnerabilities that mention them, and tell you what to update. Your choices stay in this browser.</p></div>
+</div>
     <div class="stack" id="stack-pick">${groups.map(g => `<section class="stack" style="gap:8px"><h3 class="eyebrow">${esc(g)}</h3><div class="row">${DATA.stack.filter(s => s.group === g).map(s => `<button class="chip" data-stack="${esc(s.id)}" aria-pressed="${chosen.has(s.id)}">${esc(s.label)}</button>`).join("")}</div></section>`).join("")}</div>
     <div class="row"><button class="btn brand" id="stack-save">Save my stack</button><span class="muted" id="stack-n">${chosen.size} selected</span></div></div>`;
   $("stack-pick").addEventListener("click", e => {
@@ -1119,15 +1257,14 @@ VIEWS.news = () => {
   const topics = Object.entries(counts).filter(([t]) => LESSON[t]).sort((a, b) => b[1] - a[1]);
   const sources = [...new Set(DATA.news.map(n => n.source))].sort();
   main.innerHTML = `<div class="view">
-    <div class="view-head"><div class="eyebrow">News</div><h1>Security news, explained</h1>
-      <p>Headlines from ${sources.length} outlets over the past ${DATA.meta.days} days. Tap a topic tag to learn the concept behind the story.</p>
-      <p class="hint">Words with a <span class="term">dotted underline</span> have explanations. Hover over or tap them.</p></div>
+    <div class="view-head"><h1>Security news, explained</h1>
+</div>
     <div class="controls">
       <div class="row"><label class="sr" for="nq">Search news</label><input id="nq" type="search" placeholder="Search headlines (e.g. Microsoft, ransomware, CVE-2026)" value="${esc(NS.q)}">
         <label class="sr" for="nsrc">Source</label><select id="nsrc"><option value="all">All sources</option>${sources.map(s => `<option ${NS.source === s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select></div>
       <div class="row" id="ntopics">
         <button class="chip" data-t="all" aria-pressed="${NS.topic === "all" && !NS.stack}">All</button>
-        ${stackItems().length ? `<button class="chip" data-t="__stack" aria-pressed="${NS.stack}">Your stack</button>` : ""}
+        ${stackItems().length ? `<button class="chip" data-t="__stack" aria-pressed="${NS.stack}">Your stack</button>` : `<a class="chip" href="#stack" style="text-decoration:none">+ Am I affected?</a>`}
         ${topics.map(([t, n]) => `<button class="chip" data-t="${esc(t)}" aria-pressed="${NS.topic === t}">${esc(TOPIC_NAME(t))}<span class="n">${n}</span></button>`).join("")}
       </div>
     </div>
@@ -1244,8 +1381,8 @@ function cveCard(c) {
 }
 VIEWS.cves = () => {
   main.innerHTML = `<div class="view">
-    <div class="view-head"><div class="eyebrow">CVE Radar</div><h1>Which vulnerabilities actually matter</h1>
-      <p>Every CVE published in the last ${DATA.meta.days} days, plus older ones CISA has just confirmed are being exploited. Sorted by real-world risk, not just severity score. Open any card for a plain-English explanation.</p></div>
+    <div class="view-head"><h1>Which vulnerabilities actually matter</h1>
+      <p>This week's vulnerabilities, ranked by real-world risk.</p></div>
     <section class="glance" id="glance" aria-label="At a glance"></section>
     ${trendsHtml()}
     <div class="stack" style="gap:10px">
@@ -1395,11 +1532,11 @@ function rankChart(items, label, linkFn) {
 function trendsHtml() {
   const t = DATA.trends;
   return `<section class="stack" style="gap:12px" aria-labelledby="trends-h">
-    <div class="panel-title"><h2 id="trends-h" class="eyebrow" style="font-size:0.8rem">Trends</h2><span class="muted" style="font-size:0.85rem">Hover a bar for numbers · click a bar to filter</span></div>
+    <div class="panel-title"><h2 id="trends-h" class="eyebrow" style="font-size:0.8rem">Trends</h2><span class="muted" style="font-size:0.85rem">Click a bar to filter</span></div>
     <div class="trend-grid">
-      <section class="panel"><h3>New CVEs per day</h3><p class="muted" style="font-size:0.85rem">By severity score. History grows as the site runs each day.</p>${dailyChart(t.daily)}</section>
-      <section class="panel"><h3>Most common bug types</h3><p class="muted" style="font-size:0.85rem">CVEs in the last ${DATA.meta.days} days, by weakness (CWE).</p>${rankChart(t.cwes.map(c => ({ label: c.name, n: c.n, id: c.id })), "Most common bug types", it => it.id.toLowerCase())}</section>
-      <section class="panel"><h3>Most-affected vendors</h3><p class="muted" style="font-size:0.85rem">CVEs in the last ${DATA.meta.days} days, by first listed vendor.</p>${rankChart(t.vendors.map(v => ({ label: v.name, n: v.n })), "Most-affected vendors", it => it.label.toLowerCase())}</section>
+      <section class="panel"><h3>New CVEs per day</h3>${dailyChart(t.daily)}</section>
+      <section class="panel"><h3>Most common bug types</h3>${rankChart(t.cwes.map(c => ({ label: c.name, n: c.n, id: c.id })), "Most common bug types", it => it.id.toLowerCase())}</section>
+      <section class="panel"><h3>Most-affected vendors</h3>${rankChart(t.vendors.map(v => ({ label: v.name, n: v.n })), "Most-affected vendors", it => it.label.toLowerCase())}</section>
     </div></section>`;
 }
 const tipEl = document.createElement("div"); tipEl.className = "chart-tip"; tipEl.hidden = true; document.body.appendChild(tipEl);
@@ -1423,8 +1560,8 @@ VIEWS.learn = () => {
   const tracks = ["All", ...new Set(DATA.lessons.map(l => l.track))];
   const doneCount = DATA.lessons.filter(l => P.done[l.id]).length;
   main.innerHTML = `<div class="view">
-    <div class="view-head"><div class="eyebrow">Learn</div><h1>The concepts behind the headlines</h1>
-      <p>Short, plain-English lessons with a real case, how defenders stop it, a free place to practise and a quick check. Finish one for +25 XP.</p></div>
+    <div class="view-head"><h1>The concepts behind the headlines</h1>
+</div>
     <div class="row" style="justify-content:space-between">
       <div class="row" id="ltracks">${tracks.map(t => `<button class="chip" data-t="${esc(t)}" aria-pressed="${LS.track === t}">${esc(t)}</button>`).join("")}</div>
       <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(doneCount / DATA.lessons.length * 100)}%"></i></span><span>${doneCount} of ${DATA.lessons.length} done</span></div>
@@ -1484,11 +1621,18 @@ function lessonView(id) {
     ${related.length ? `<section class="panel"><h2>In the news this week</h2><div class="stories">${related.map(storyHtml).join("")}</div></section>` : ""}
     <a class="btn ghost" href="#lesson-${esc(next.id)}" style="justify-self:start">Next: ${esc(next.title)} →</a>
   </article></div>`;
-  $("lcheck").appendChild(quizBlock(l.check, {
-    onAnswer: (choice, correct) => {
+  const ask = () => $("lcheck").appendChild(quizBlock(l.check, {
+    onAnswer: (choice, correct, wrap) => {
       if (correct && !P.done[id]) { P.done[id] = true; award(25, "Lesson complete"); }
+      if (!correct) {
+        const again = document.createElement("button");
+        again.className = "btn ghost"; again.textContent = "↺ Try again"; again.style.justifySelf = "start";
+        again.onclick = () => { wrap.remove(); ask(); };
+        wrap.appendChild(again);
+      }
     }
   }));
+  ask();
 }
 
 /* GLOSSARY */
@@ -1539,21 +1683,27 @@ VIEWS.glossary = () => {
 
 /* LABS */
 const LAB = Object.fromEntries(DATA.labs.map(l => [l.id, l]));
+const CATEGORY_ORDER = ["Networking", "Linux", "Security operations", "Ethical hacking"];
 VIEWS.missions = () => {
+  const items = [
+    ...DATA.missions.map(m => ({ cat: m.category || "Networking", html: missionCard(m) })),
+    ...DATA.labs.map(l => ({ cat: l.category || "Security operations", html: labCard(l) })),
+  ];
+  const cats = [...new Set([...CATEGORY_ORDER, ...items.map(i => i.cat)])].filter(c => items.some(i => i.cat === c));
   main.innerHTML = `<div class="view">
-    <div class="view-head"><div class="eyebrow">Missions</div><h1>Learn it. Break it. Understand it.</h1>
-      <p>Interactive simulations of real systems: watch what happens, change things, diagnose problems. They run entirely in your browser; nothing real is attacked or executed.</p></div>
-    ${DATA.missions.length ? `<section class="stack"><h2 class="eyebrow" style="font-size:0.8rem">Simulations</h2><div class="lessons">${DATA.missions.map(missionCard).join("")}</div></section>` : ""}
-    <section class="stack"><h2 class="eyebrow" style="font-size:0.8rem">Investigation labs</h2><p class="muted" style="font-size:0.9rem">Work through realistic (made-up) evidence. +${LAB_XP} XP each.</p>
-    <div class="lessons">${DATA.labs.map(l => `<a class="lcard" href="#lab-${esc(l.id)}">${P.labs[l.id] ? '<span class="done">DONE</span>' : ""}
-      <span class="eyebrow">${esc(l.track)}</span><h3>${esc(l.title)}</h3><p>${esc(l.skill)}</p><span class="lmeta"><span>${l.minutes} min</span><span>+${LAB_XP} XP</span></span></a>`).join("")}</div></section>
+    <div class="view-head"><h1>Learn it. Break it. Understand it.</h1></div>
+    ${cats.map(c => `<section class="stack"><h2 class="cat-h">${esc(c)}</h2><div class="lessons">${items.filter(i => i.cat === c).map(i => i.html).join("")}</div></section>`).join("")}
   </div>`;
 };
+function labCard(l) {
+  return `<a class="lcard" href="#lab-${esc(l.id)}">${P.labs[l.id] ? '<span class="done">DONE</span>' : ""}
+    <span class="eyebrow">Lab</span><h3>${esc(l.title)}</h3><p>${esc(l.skill)}</p><span class="lmeta"><span>${l.minutes} min</span><span>+${LAB_XP} XP</span></span></a>`;
+}
 function missionCard(m) {
   const done = Object.keys((P.missions || {})[m.id] || {});
   const all = Object.keys(m.modes);
   return `<a class="lcard mission-card" href="#mission-${esc(m.id)}">${done.length === all.length ? '<span class="done">DONE</span>' : ""}
-    <span class="eyebrow">${esc(m.topic)}</span><h3>${esc(m.title)}</h3><p>${esc(m.summary)}</p>
+    <span class="eyebrow">Mission · ${esc(m.topic)}</span><h3>${esc(m.title)}</h3><p>${esc(m.summary)}</p>
     <span class="lmeta"><span>${m.minutes} min</span><span>${all.map(k => (done.includes(k) ? "✓ " : "") + esc(m.modes[k].label)).join(" · ")}</span></span></a>`;
 }
 const MISSION = id => DATA.missions.find(x => x.id === id);
@@ -1568,23 +1718,40 @@ function missionView(id) {
       next: next ? { id: next.id, title: next.title } : null,
       onComplete: mode => {
         P.missions = P.missions || {}; P.missions[id] = P.missions[id] || {};
-        if (P.missions[id][mode]) return;
-        P.missions[id][mode] = todayStr();
-        award(m.modes[mode].xp, `Mission: ${m.title} (${m.modes[mode].label})`);
+        const first = !P.missions[id][mode];
+        if (first) { P.missions[id][mode] = todayStr(); award(m.modes[mode].xp, `Mission: ${m.title} (${m.modes[mode].label})`); }
+        celebrate(`${m.modes[mode].label} complete!`, first ? `${m.title} · +${m.modes[mode].xp} XP` : m.title);
       },
     });
   }).catch(() => {
     $("mission-root").innerHTML = `<div class="empty">Couldn't load the mission code (js/missions/ui.js). If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`;
   });
 }
-function completeLab(l) {
-  if (P.labs[l.id]) return;
-  P.labs[l.id] = todayStr(); award(LAB_XP, `Lab complete: ${l.title}`);
+const MODULE_LABS = ["osi", "terminal", "topology"];  // labs with their own module in static/js/labs/<kind>.js
+function moduleLab(l) {
+  main.innerHTML = `<div class="view" id="lab-root"><div class="empty">Loading lab…</div></div>`;
+  import(`./js/labs/${l.kind}.js`).then(mod => {
+    if (parseRoute().path !== "missions/" + l.id) return;
+    mod.mount($("lab-root"), l, {
+      solved: P.labSteps[l.id] || [],
+      onPart: part => { P.labSteps[l.id] = [...new Set([...(P.labSteps[l.id] || []), part])]; saveP(); },
+      onComplete: () => completeLab(l),
+      onReset: () => resetLab(l.id),
+    });
+  }).catch(() => { $("lab-root").innerHTML = `<div class="empty">Couldn't load this lab. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
 }
+function completeLab(l) {
+  if (P.labs[l.id]) { celebrate("Lab complete!", `${l.title} · practised again`); saveP(); return; }
+  P.labs[l.id] = todayStr(); award(LAB_XP, `Lab complete: ${l.title}`);
+  celebrate("Lab complete!", `${l.title} · +${LAB_XP} XP`);
+}
+// Clear a lab's answers so it can be practised again (XP is only ever awarded once).
+function resetLab(id) { P.labSteps[id] = []; saveP(); route(); }
 const norm = v => String(v || "").trim().toLowerCase().replace(/^["'<]+|[">']+$/g, "");
 function labView(id) {
   const l = LAB[id]; if (!l) return VIEWS.missions();
   if (l.kind === "cvss") return cvssLab(l);
+  if (MODULE_LABS.includes(l.kind)) return moduleLab(l);
   const solved = new Set(P.labSteps[id] || []);
   main.innerHTML = `<div class="view"><article class="article" style="max-width:900px">
     <a class="link-btn" href="#missions">← Missions</a>
@@ -1599,7 +1766,7 @@ function labView(id) {
         : `<form class="flag-form" data-form="${i}"><label class="sr" for="ans-${i}">Answer</label><input id="ans-${i}" autocomplete="off" spellcheck="false" ${solved.has(i) ? `value="${esc(st.answers[0])}" disabled` : ""}><button class="btn" type="submit" ${solved.has(i) ? "disabled" : ""}>Check</button></form>`}
       <div class="fb">${solved.has(i) ? `<div class="feedback"><b class="ok">Correct.</b> ${esc(st.explain)}</div>` : ""}</div>
     </div>`).join("")}</section>
-    <p class="muted">${P.labs[id] ? `Completed on ${esc(P.labs[id])}.` : `Answer every question to complete the lab.`} Related lesson: <a href="#lesson-${esc(l.lesson)}">${esc(LESSON[l.lesson]?.title || l.lesson)}</a></p>
+    <div class="row"><button class="btn ghost" data-reset-lab="${esc(id)}">↺ Reset answers</button><span class="muted">${P.labs[id] ? `Completed ${esc(P.labs[id])}.` : ""} Related: <a href="#lesson-${esc(l.lesson)}">${esc(LESSON[l.lesson]?.title || l.lesson)}</a></span></div>
   </article></div>`;
   const lines = l.artifact.text.split("\n");
   const drawLog = () => {
@@ -1696,9 +1863,9 @@ VIEWS.progress = () => {
   const r = rank(), prog = r.next ? (P.xp - r.floor) / (r.next - r.floor) : 1;
   const stats = [["XP", P.xp], ["Lessons", `${count(P.done)}/${DATA.lessons.length}`], ["Labs", `${count(P.labs)}/${DATA.labs.length}`], ["Flags", `${count(P.flags)}/3`], ["Paths", `${count(P.paths)}/${DATA.paths.length}`], ["Days practised", count(P.days)], ["Terms", count(P.terms)], ["Badges", `${count(P.badges)}/${BADGES.length}`]];
   main.innerHTML = `<div class="view">
-    <div class="view-head"><div class="eyebrow">Progress</div><h1>uid=${esc(r.name)}</h1>
+    <div class="view-head"><h1>uid=${esc(r.name)}</h1>
       <p>${r.next ? `${(r.next - P.xp).toLocaleString()} XP to <strong>${esc(r.nextName)}</strong>.` : "Top access level reached. You are root."} Progress is saved in this browser only.</p>
-      <p class="hint">Levels and badges track your practice on Patch Notes. They aren't qualifications or certifications.</p></div>
+      <p class="hint">Levels and badges track practice here, not qualifications.</p></div>
     <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(prog * 100)}%;background:var(--sun)"></i></span><span class="mono">${RANKS.map(x => x[1]).join(" → ")}</span></div>
     <div class="stat-row">${stats.map(([k, v]) => `<div class="stat"><span class="eyebrow">${k}</span><b>${v}</b></div>`).join("")}</div>
     <section class="stack"><h2 class="eyebrow" style="font-size:0.8rem">Badges</h2>
@@ -1721,8 +1888,8 @@ VIEWS.progress = () => {
 const GS = { mode: "phish", phish: null, quiz: null };
 VIEWS.play = () => {
   main.innerHTML = `<div class="view">
-    <div class="view-head"><div class="eyebrow">Play</div><h1>Train your instincts</h1>
-      <p>Spot the phish, then test your knowledge. Every right answer earns XP towards your next rank.</p></div>
+    <div class="view-head"><h1>Train your instincts</h1>
+</div>
     <div class="game-tabs" id="gtabs">
       <button class="chip" data-m="phish" aria-pressed="${GS.mode === "phish"}">Phish or Legit?</button>
       <button class="chip" data-m="quiz" aria-pressed="${GS.mode === "quiz"}">Quick-fire quiz</button>
@@ -1739,7 +1906,7 @@ function drawGame() { GS.mode === "phish" ? drawPhish() : GS.mode === "flags" ? 
 function drawFlags() {
   const got = P.flags || {};
   $("game").innerHTML = `<div class="game-bar"><span>Capture the flag</span><span>${Object.keys(got).length}/3 captured · 50 XP each</span></div>
-    <p class="muted">Three flags are hidden in this website. Finding them uses the same first steps real security testers take. Each looks like <span class="mono">flag{...}</span>.</p>
+    <p class="muted">Three flags are hidden in this site. Each looks like <span class="mono">flag{...}</span>.</p>
     <div class="flags">${FLAG_INFO.map((f, i) => `<div class="flag ${got[i] ? "got" : ""}"><span class="st">${got[i] ? "✓" : i + 1}</span><div class="stack" style="gap:4px"><h3>${esc(f.name)}</h3><p>${esc(f.hint)}</p></div></div>`).join("")}</div>
     <form class="flag-form" id="flag-form"><label class="sr" for="flag-in">Flag</label><input id="flag-in" placeholder="flag{...}" autocomplete="off" spellcheck="false"><button class="btn brand" type="submit">Submit</button></form>
     <div id="flag-msg" aria-live="polite"></div>
@@ -1752,16 +1919,20 @@ function drawFlags() {
   });
 }
 
-function newPhish() { GS.phish = { deck: shuffle(DATA.phish), i: 0, score: 0, answered: null }; }
+function newPhish(deck = shuffle(DATA.phish)) { GS.phish = { deck, i: 0, score: 0, answered: null, wrong: [] }; }
 function drawPhish() {
   if (!GS.phish) newPhish();
   const g = GS.phish, box = $("game");
   if (g.i >= g.deck.length) {
-    const best = Math.max(P.best.phish || 0, g.score); P.best.phish = best; progressChanged();
+    const full = g.deck.length === DATA.phish.length;
+    const best = full ? Math.max(P.best.phish || 0, g.score) : P.best.phish || 0;
+    if (full) { P.best.phish = best; progressChanged(); }
+    if (!g.celebrated) { g.celebrated = true; celebrate("Round complete!", `${g.score}/${g.deck.length} spotted`); }
     box.innerHTML = `<section class="panel" style="text-align:center;justify-items:center"><div class="eyebrow">Round complete</div><div class="score-big">${g.score}/${g.deck.length}</div>
       <p>${g.score === g.deck.length ? "Perfect. Nothing gets past you." : g.score >= 7 ? "Sharp eyes. A couple slipped through." : "Phishers are good at this. Review the clues and try again."}</p>
-      <p class="muted">Your best: ${best}/${g.deck.length}</p><div class="row" style="justify-content:center"><button class="btn brand" id="again">Play again</button><a class="btn ghost" href="#lesson-phishing">Phishing lesson</a></div></section>`;
+      <p class="muted">Your best: ${best}/${g.deck.length}</p><div class="row" style="justify-content:center">${g.wrong.length ? `<button class="btn brand" id="retryp">↺ Retry the ${g.wrong.length} you got wrong</button>` : ""}<button class="btn ${g.wrong.length ? "ghost" : "brand"}" id="again">Play again</button><a class="btn ghost" href="#lesson-phishing">Phishing lesson</a></div></section>`;
     $("again").onclick = () => { newPhish(); drawPhish(); };
+    if ($("retryp")) $("retryp").onclick = () => { newPhish(shuffle(g.wrong)); drawPhish(); };
     return;
   }
   const m = g.deck[g.i];
@@ -1778,7 +1949,7 @@ function drawPhish() {
   if (g.answered == null) {
     pv.innerHTML = `<div class="verdict"><button class="btn" data-v="phish">It's phishing</button><button class="btn ghost" data-v="legit">It's legit</button></div>`;
     pv.onclick = e => { const b = e.target.closest("[data-v]"); if (!b) return; g.answered = b.dataset.v;
-      if (g.answered === m.verdict) { g.score++; award(15, "Spotted it"); } drawPhish(); };
+      if (g.answered === m.verdict) { g.score++; award(15, "Spotted it"); } else g.wrong.push(m); drawPhish(); };
   } else {
     const ok = g.answered === m.verdict;
     if (m.link) $("insp").innerHTML = `Link really goes to: <strong>${esc(m.link.href)}</strong>`;
@@ -1788,29 +1959,31 @@ function drawPhish() {
   }
 }
 
-function newQuiz() { GS.quiz = { deck: shuffle(DATA.quiz).slice(0, 10), i: 0, score: 0, answered: null }; }
+function newQuiz(deck = shuffle(DATA.quiz).slice(0, 10)) { GS.quiz = { deck, i: 0, score: 0, answered: null, wrong: [] }; }
 function drawQuiz() {
   if (!GS.quiz) newQuiz();
   const g = GS.quiz, box = $("game");
   if (g.i >= g.deck.length) {
-    const best = Math.max(P.best.quiz || 0, g.score); P.best.quiz = best; progressChanged();
-    const missed = [...new Set(g.missed || [])].filter(t => LESSON[t]);
-    box.innerHTML = `<section class="panel" style="text-align:center;justify-items:center"><div class="eyebrow">Quiz complete</div><div class="score-big">${g.score}/10</div>
-      <p class="muted">Your best: ${best}/10</p>
+    const total = g.deck.length;
+    if (total === 10) { const best = Math.max(P.best.quiz || 0, g.score); P.best.quiz = best; progressChanged(); }
+    const missed = [...new Set(g.wrong.map(q => q.topic))].filter(t => LESSON[t]);
+    box.innerHTML = `<section class="panel" style="text-align:center;justify-items:center"><div class="eyebrow">Quiz complete</div><div class="score-big">${g.score}/${total}</div>
       ${missed.length ? `<p>Worth a review: ${missed.map(t => `<a href="#lesson-${esc(t)}">${esc(LESSON[t].title)}</a>`).join(", ")}</p>` : "<p>Flawless.</p>"}
-      <button class="btn brand" id="againq">New quiz</button></section>`;
+      <div class="row" style="justify-content:center">${g.wrong.length ? `<button class="btn brand" id="retryq">↺ Retry the ${g.wrong.length} you missed</button>` : ""}<button class="btn ${g.wrong.length ? "ghost" : "brand"}" id="againq">New quiz</button></div></section>`;
+    if (!g.celebrated) { g.celebrated = true; celebrate("Quiz complete!", `${g.score}/${total} correct`); }
     $("againq").onclick = () => { newQuiz(); drawQuiz(); };
+    if ($("retryq")) $("retryq").onclick = () => { newQuiz(shuffle(g.wrong)); drawQuiz(); };
     return;
   }
   const q = g.deck[g.i];
-  box.innerHTML = `<div class="game-bar"><span>Question ${g.i + 1} of 10</span><span>Score ${g.score}</span></div><section class="panel" id="qp"></section>`;
+  box.innerHTML = `<div class="game-bar"><span>Question ${g.i + 1} of ${g.deck.length}</span><span>Score ${g.score}</span></div><section class="panel" id="qp"></section>`;
   $("qp").appendChild(quizBlock(q, {
     answered: g.answered,
     onAnswer: (choice, correct, wrap) => {
       g.answered = choice;
-      if (correct) { g.score++; award(10, "Correct answer"); } else { (g.missed = g.missed || []).push(q.topic); }
+      if (correct) { g.score++; award(10, "Correct answer"); } else { g.wrong.push(q); }
       const nb = document.createElement("button"); nb.className = "btn brand"; nb.style.justifySelf = "start";
-      nb.textContent = g.i + 1 < 10 ? "Next question" : "See score";
+      nb.textContent = g.i + 1 < g.deck.length ? "Next question" : "See score";
       nb.onclick = () => { g.i++; g.answered = null; drawQuiz(); };
       wrap.appendChild(nb);
     }
@@ -1821,8 +1994,8 @@ function drawQuiz() {
 VIEWS.careers = () => {
   const C = DATA.careers;
   main.innerHTML = `<div class="view">
-    <div class="view-head"><div class="eyebrow">Careers</div><h1>Find your way into cyber</h1>
-      <p>Five common paths, what the work is really like, and the free resources that get you there. Most people start in IT support or a SOC.</p></div>
+    <div class="view-head"><h1>Find your way into cyber</h1>
+      <p>Most people start in IT support or a SOC.</p></div>
     <div class="paths">${C.paths.map(p => `<article class="path">
       <h3>${esc(p.role)}</h3><p class="tl">${esc(p.tagline)}</p><p>${gloss(p.what, 3)}</p>
       <h4>Skills</h4><div class="pchips">${p.skills.map(s => `<span class="pchip">${esc(s)}</span>`).join("")}</div>
@@ -1833,7 +2006,7 @@ VIEWS.careers = () => {
       ${(lp => lp ? `<a class="btn brand" href="#path-${esc(lp.id)}" style="justify-self:start">Start the learning path →</a>` : "")(DATA.paths.find(x => x.career === p.id))}
     </article>`).join("")}</div>
     <section class="stack">
-      <div class="view-head"><h2>The best of the rest</h2><p>Where to go next: the outlets, shows, labs and tools working security people use.</p></div>
+      <div class="view-head"><h2>The best of the rest</h2></div>
       <div class="dir">${C.directory.map(g => `<section class="panel"><h3>${esc(g.group)}</h3><ul>${g.items.map(i => `<li><a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.name)} ↗</a><span>${esc(i.note)}</span></li>`).join("")}</ul></section>`).join("")}</div>
     </section>
   </div>`;
@@ -1844,12 +2017,9 @@ function renderStatus() {
   const bar = $("statusbar"); if (!bar) return;
   document.body.classList.add("has-status");
   const r = rank(), mode = parseRoute().tab;
-  const kev = DATA.kev.length;
-  const flags = count(P.flags);
   bar.innerHTML = `<span class="mode">${esc(mode)}</span>
-    <span class="live">${new Set(DATA.news.map(n => n.source)).size} feeds · ${DATA.news.length} stories · ${kev} KEV · updated ${esc(DATA.meta.generated)}</span>
+    <span class="live">updated ${esc(DATA.meta.generated)}</span>
     <span class="grow"></span>
-    <span>flags ${flags}/3</span><span>badges ${count(P.badges)}/${BADGES.length}</span>
     <span class="lvl">uid=${esc(r.name)} · ${P.xp} xp</span>
     <span><button type="button" data-cmd="help">? help</button></span>`;
 }
@@ -1872,6 +2042,7 @@ async function checkFlag(input) {
   P.flags = P.flags || {};
   if (P.flags[i]) return { ok: true, msg: `Flag ${i + 1} (${FLAG_INFO[i].name}) already captured.` };
   P.flags[i] = todayStr(); award(50, `Flag ${i + 1} captured`);
+  if (count(P.flags) === 3) celebrate("All flags captured!", "CTF complete");
   return { ok: true, msg: `Flag ${i + 1} captured: ${FLAG_INFO[i].name}. +50 XP. We checked it by comparing SHA-256 hashes, so the answers aren't stored in this page.` };
 }
 try {
