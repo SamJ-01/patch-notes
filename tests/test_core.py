@@ -202,6 +202,17 @@ class Styles(unittest.TestCase):
         for body in re.findall(r"(?:^|\n)\.term\s*\{([^}]*)\}", css):
             self.assertNotRegex(body, r"\b(height|display|grid)\s*:", "the glossary .term class must stay an inline text style")
 
+    def test_light_theme_covers_every_token(self):
+        """Every colour token the dark theme defines must be redefined for light, or light mode shows dark patches."""
+        import re
+        css = re.search(r"<style>(.*?)</style>", (ROOT / "site_template.html").read_text(), re.S).group(1)
+        dark = re.search(r":root \{(.*?)\}", css, re.S).group(1)
+        light = re.search(r':root\[data-theme="light"\] \{(.*?)\}', css, re.S).group(1)
+        skip = {"--font-display", "--font-body", "--font-mono", "--radius"}
+        missing = set(re.findall(r"(--[\w-]+):", dark)) - set(re.findall(r"(--[\w-]+):", light)) - skip
+        self.assertEqual(missing, set())
+        self.assertNotIn('fill="${SEV_COLORS', (ROOT / "site_template.html").read_text(), "SVG fill attributes can't read CSS variables")
+
 
 class ContentIntegrity(unittest.TestCase):
     """Catch broken cross-references before they reach the live site."""
