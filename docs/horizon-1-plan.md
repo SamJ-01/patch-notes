@@ -47,6 +47,19 @@ Each step is a focused commit with tests and a short change summary.
 
 No step needs a backend, an external paid service or a security review. Hosted ranges stay out of scope.
 
+## Progress
+
+| Step | Status |
+|---|---|
+| 1. Housekeeping | ✅ Done (`COPYRIGHT`, `THIRD_PARTY.md`, decisions recorded) |
+| 2. Information architecture | ✅ Done: grouped nav (learn / you / updates), Home is a dashboard |
+| 3. Split the page into modules | ⏳ Partly done: new code is ES modules; the existing page is still one file |
+| 4. Mission Engine foundations | ✅ Done: `static/js/missions/engine.js` (rules) + `ui.js` (visuals) |
+| 5. First mission | ✅ DHCP in Guided / Practice / Challenge. Next: a broader "Something isn't right…" troubleshooting mission |
+| 6. Linux permissions reuse test | ⏳ Next |
+| 7. Gamification tone | ✅ Done: practice days instead of streaks, badges labelled as practice |
+| 8. Evidence | ⏳ 9 engine tests in CI; learner feedback still to gather |
+
 ## 3. Constraint: Claude usage
 
 On 14 Oct the daily drafting task hit the plan's weekly usage limit. Building the Mission Engine is several sessions of work. To leave room for it, the daily task could draft fewer explanations (e.g. 20 instead of 60) or run on weekdays only.
