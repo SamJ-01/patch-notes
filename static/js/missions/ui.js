@@ -6,9 +6,10 @@ import * as engine from "./engine.js";
 const NS = "http://www.w3.org/2000/svg";
 // Wide layout uses each device's x/y; narrow screens use the scenario's portrait layout if it has one.
 const WIDE = { w: 680, h: 320, dw: 172 };
-const PAD = 14, HEAD = 22, ROW = 20, MARGIN = 14;  // device box padding, header and row heights; stage margin
+// Card spacing: padding, hardware drawing, gaps and the height of each text row. Stage margin around it all.
+const CARD = { pad: 16, art: 46, gap: 10, name: 20, ip: 20, statusGap: 6, line: 16 };
+const MARGIN = 14;
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const ICON = { pc: "PC", switch: "SW", server: "SRV", router: "RTR" };
 const KIND_LABEL = { Investigate: "Investigate", Test: "Test", Fix: "Fix" };
 
 export function mount(root, scenario, { mode = "guided", doneModes = [], onComplete = () => {}, reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches } = {}) {
@@ -44,34 +45,95 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], onCompl
   const $ = id => root.querySelector("#" + id);
   const svg = $("m-svg"), bubbles = $("m-bubbles");
   const dev = id => scenario.devices[id];
-  let L;  // current layout: { w, h, dw, narrow }
+  let L;  // current layout: { w, h, dw, pos?, narrow }
   const chooseLayout = () => {
     const narrow = scenario.narrow && root.clientWidth < 620;
-    return narrow ? { ...scenario.narrow, narrow: true } : { ...WIDE, narrow: false };
+    return narrow ? { ...scenario.narrow, narrow: true } : { ...WIDE, ...(scenario.wide || {}), narrow: false };
   };
-  const center = id => L.narrow ? { x: L.pos[id][0], y: L.pos[id][1] } : { x: dev(id).x, y: dev(id).y };
-  // Boxes grow with what they show: a header, then an IP row and a status row only if the device has them.
-  const rows = id => { const d = dev(id); return { ip: "ip" in d, status: Boolean(d.status) || d.kind === "server" || d.kind === "pc" }; };
-  const height = id => { const r = rows(id); return PAD * 2 + HEAD + (r.ip ? ROW : 0) + (r.status ? ROW : 0) - (r.ip || r.status ? 0 : 4); };
-  // Devices with details side by side on the same row share the tallest height, so their edges line up.
-  // A name-only device (like a switch) stays compact.
-  const box = id => {
-    const c = center(id), r = rows(id);
-    const h = r.ip || r.status
-      ? Math.max(...Object.keys(scenario.devices).filter(o => center(o).y === c.y && (rows(o).ip || rows(o).status)).map(height))
-      : height(id);
-    return { x: c.x - L.dw / 2, y: c.y - h / 2, w: L.dw, h, cx: c.x, cy: c.y };
-  };
-  // Shrink text a little to fit its space, then cut it with an ellipsis as a last resort.
+  const center = id => L.pos ? { x: L.pos[id][0], y: L.pos[id][1] } : { x: dev(id).x, y: dev(id).y };
+
+  // ---------- card geometry
+  // Each device is a card: a drawing of the hardware, its name, its IP, then its status, wrapped onto
+  // as many lines as the longest status it will ever show needs. Cards with details on the same row share
+  // a height so their edges line up, and the content sits in the vertical middle.
+  let geo = {};
+  const box = id => geo[id];
+  const hasIp = id => "ip" in dev(id);
+  const hasStatus = id => Boolean(dev(id).status) || dev(id).kind === "server" || dev(id).kind === "pc";
+  // Every status text a device can show in this scenario, so its card is sized once and never jumps.
+  function statusTexts(id) {
+    const out = new Set([dev(id).status || ""]);
+    if (dev(id).kind === "server") out.add("Service stopped");
+    const walk = o => {
+      if (Array.isArray(o)) o.forEach(walk);
+      else if (o && typeof o === "object") for (const [k, v] of Object.entries(o)) k === `${id}.status` && typeof v === "string" ? out.add(v) : walk(v);
+    };
+    walk(scenario.messages); walk(scenario.modes);
+    return [...out];
+  }
+  // Break text into lines no wider than maxW, measured in the real font. Over maxLines, the last line gets "…".
+  function wrap(probe, text, maxW, maxLines = 3) {
+    const words = String(text).split(/\s+/).filter(Boolean), lines = [];
+    let line = "";
+    const width = t => { probe.textContent = t; return probe.getComputedTextLength(); };
+    for (const w of words) {
+      const next = line ? line + " " + w : w;
+      if (!line || width(next) <= maxW) line = next; else { lines.push(line); line = w; }
+    }
+    if (line) lines.push(line);
+    if (lines.length > maxLines) {
+      lines.length = maxLines;
+      let last = lines[maxLines - 1] + "…";
+      while (last.length > 1 && width(last) > maxW) last = last.slice(0, -2) + "…";
+      lines[maxLines - 1] = last;
+    }
+    return lines;
+  }
+  // Shrink a single line a little to fit, then cut it with an ellipsis as a last resort.
   function fit(el, text, maxW, minSize) {
     el.textContent = text;
     el.style.fontSize = "";
     let size = parseFloat(getComputedStyle(el).fontSize);
     while (el.getComputedTextLength() > maxW && size > minSize) { size -= 0.5; el.style.fontSize = size + "px"; }
-    if (el.getComputedTextLength() <= maxW) return;
     let t = text;
     while (t.length > 1 && el.getComputedTextLength() > maxW) { t = t.slice(0, -1); el.textContent = t.trimEnd() + "…"; }
   }
+  function measure() {
+    const probe = document.createElementNS(NS, "text");
+    probe.setAttribute("class", "m-status");
+    svg.appendChild(probe);
+    const inner = L.dw - CARD.pad * 2;
+    const content = {};
+    for (const id of Object.keys(scenario.devices)) {
+      const lines = hasStatus(id) ? Math.max(1, ...statusTexts(id).map(t => wrap(probe, t, inner).length)) : 0;
+      content[id] = { lines, h: CARD.art + CARD.gap + CARD.name + (hasIp(id) ? CARD.ip : 0) + (lines ? CARD.statusGap + lines * CARD.line : 0) };
+    }
+    probe.remove();
+    geo = {};
+    for (const id of Object.keys(scenario.devices)) {
+      const c = center(id);
+      const detailed = o => hasIp(o) || hasStatus(o);  // name-only devices (a switch) keep a compact card
+      const rowH = detailed(id) ? Math.max(...Object.keys(scenario.devices).filter(o => center(o).y === c.y && detailed(o)).map(o => content[o].h)) : content[id].h;
+      const h = rowH + CARD.pad * 2;
+      geo[id] = { x: c.x - L.dw / 2, y: c.y - h / 2, w: L.dw, h, cx: c.x, cy: c.y, top: c.y - content[id].h / 2, lines: content[id].lines };
+    }
+  }
+
+  // ---------- hardware drawings, centred on (0,0) in a 64×46 frame
+  const HW = {
+    pc: `<rect class="hw-body" x="-31" y="-21" width="44" height="31" rx="3"/><rect class="hw-screen" x="-28" y="-18" width="38" height="24" rx="1.5"/>
+      <path class="hw-line" d="M-9 10v5M-17 16h16"/><rect class="hw-body" x="18" y="-21" width="14" height="37" rx="2"/>
+      <circle class="hw-led" cx="25" cy="-15" r="1.6"/><path class="hw-line" d="M21-8h8M21-4h8"/>`,
+    switch: `<rect class="hw-body" x="-32" y="-11" width="64" height="22" rx="3"/>
+      ${[0, 1, 2, 3, 4, 5, 6, 7].map(i => `<circle class="hw-led" cx="${-24.5 + i * 7}" cy="-5" r="1.1"/><rect class="hw-port" x="${-27 + i * 7}" y="-1" width="5" height="6" rx="0.8"/>`).join("")}`,
+    router: `<path class="hw-line" d="M-17-3l-5-17M17-3l5-17"/><circle class="hw-tip" cx="-22" cy="-20" r="2"/><circle class="hw-tip" cx="22" cy="-20" r="2"/>
+      <rect class="hw-body" x="-29" y="-3" width="58" height="18" rx="5"/>
+      ${[0, 1, 2, 3].map(i => `<circle class="hw-led" cx="${-19 + i * 7}" cy="6" r="1.4"/>`).join("")}<path class="hw-line" d="M12 6h10"/>`,
+    server: `<rect class="hw-body" x="-17" y="-22" width="34" height="44" rx="3"/>
+      ${[0, 1, 2].map(i => `<rect class="hw-port" x="-12" y="${-17 + i * 10}" width="24" height="7" rx="1"/><circle class="hw-led" cx="8" cy="${-13.5 + i * 10}" r="1.2"/>`).join("")}
+      <path class="hw-line" d="M-10 16h20M-10 19h20"/>`,
+  };
+
   // Cables run at right angles with rounded corners: across then down, or down then across.
   function route(a, b) {
     const p = center(a), q = center(b);
@@ -97,6 +159,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], onCompl
     L = chooseLayout();
     svg.setAttribute("viewBox", `${-MARGIN} ${-MARGIN} ${L.w + MARGIN * 2} ${L.h + MARGIN * 2}`);
     svg.innerHTML = "";
+    measure();
     for (const [a, b] of scenario.links) {
       const l = document.createElementNS(NS, "path");
       l.setAttribute("d", roundedPath(route(a, b)));
@@ -104,50 +167,48 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], onCompl
       svg.appendChild(l);
     }
     for (const id of Object.keys(scenario.devices)) {
-      const b = box(id), r = rows(id);
+      const b = box(id);
+      let y = b.top;
+      const artY = y + CARD.art / 2; y += CARD.art + CARD.gap;
+      const nameY = y + CARD.name / 2; y += CARD.name;
+      const ipY = y + CARD.ip / 2; if (hasIp(id)) y += CARD.ip;
+      const statusY = y + CARD.statusGap;
       const g = document.createElementNS(NS, "g");
-      g.setAttribute("class", "m-dev");
+      g.setAttribute("class", `m-dev kind-${dev(id).kind}`);
       g.setAttribute("id", "dev-" + id);
-      const headY = b.y + PAD + HEAD / 2;
-      let rowY = b.y + PAD + HEAD + ROW / 2 + 2;
-      const ipY = r.ip ? rowY : null; if (r.ip) rowY += ROW;
-      const statusY = r.status ? rowY : null;
-      g.innerHTML = `<rect class="m-box" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="10"/>
-        <rect class="m-badge" x="${b.x + PAD}" y="${headY - 10}" height="20" rx="4"/>
-        <text class="m-ico" x="${b.x + PAD}" y="${headY}" dominant-baseline="central">${ICON[dev(id).kind] || ""}</text>
-        <text class="m-name" y="${headY}" dominant-baseline="central"></text>
-        ${r.status ? `<circle class="m-dot" cx="${b.x + b.w - PAD}" cy="${headY}" r="4"/>` : ""}
-        ${r.ip ? `<text class="m-ip" x="${b.x + PAD}" y="${ipY}" dominant-baseline="central"><tspan class="m-k">IP</tspan><tspan class="m-v" dx="7"></tspan></text>` : ""}
-        ${r.status ? `<text class="m-status" x="${b.x + PAD}" y="${statusY}" dominant-baseline="central"></text>` : ""}`;
+      g.innerHTML = `<rect class="m-box" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="12"/>
+        <g class="hw" transform="translate(${b.cx},${artY})">${HW[dev(id).kind] || ""}</g>
+        <text class="m-name" x="${b.cx}" y="${nameY}" text-anchor="middle" dominant-baseline="central"></text>
+        ${hasStatus(id) ? `<circle class="m-dot" cx="${b.x + b.w - 16}" cy="${b.y + 16}" r="4"/>` : ""}
+        ${hasIp(id) ? `<text class="m-ip" x="${b.cx}" y="${ipY}" text-anchor="middle" dominant-baseline="central"><tspan class="m-k">IP</tspan><tspan class="m-v" dx="7"></tspan></text>` : ""}
+        ${hasStatus(id) ? `<text class="m-status" x="${b.cx}" y="${statusY}" text-anchor="middle"></text>` : ""}`;
       svg.appendChild(g);
-      // The kind badge sizes to its text; the name starts after it and gets whatever room is left.
-      const ico = g.querySelector(".m-ico"), badge = g.querySelector(".m-badge"), name = g.querySelector(".m-name");
-      const bw = ico.getComputedTextLength() + 12;
-      badge.setAttribute("width", bw);
-      ico.setAttribute("x", b.x + PAD + bw / 2);
-      ico.setAttribute("text-anchor", "middle");
-      name.setAttribute("x", b.x + PAD + bw + 8);
-      fit(name, dev(id).label, b.w - PAD * 2 - bw - 8 - (r.status ? 12 : 0), 11.5);
+      fit(g.querySelector(".m-name"), dev(id).label, b.w - CARD.pad * 2, 12);
     }
     updateDevices();
   }
   function updateDevices() {
     for (const [id, d] of Object.entries(state.devices)) {
       const g = svg.querySelector("#dev-" + id); if (!g) continue;
-      const b = box(id), room = b.w - PAD * 2;
+      const b = box(id), room = b.w - CARD.pad * 2;
       const ip = g.querySelector(".m-v");
       if (ip) fit(ip, d.ip || "—", room - 24, 11);
       const st = g.querySelector(".m-status");
-      const status = d.kind === "server" && d.service === "stopped" && state.mode !== "challenge" ? "Service stopped" : d.status || "";
-      if (st) fit(st, status, room, 10.5);
-      const ok = id === "pc" && /^192\.168\./.test(d.ip || ""), bad = id === "pc" && /^169\.254\./.test(d.ip || "");
-      g.classList.toggle("ok", ok);
-      g.classList.toggle("bad", bad);
+      if (st) {
+        const status = d.kind === "server" && d.service === "stopped" && state.mode !== "challenge" ? "Service stopped" : d.status || "";
+        const lines = wrap(st, status, room, b.lines);
+        const x = st.getAttribute("x"), y0 = parseFloat(st.getAttribute("y"));
+        st.innerHTML = lines.map((t, i) => `<tspan x="${x}" y="${y0 + CARD.line / 2 + i * CARD.line}" dominant-baseline="central">${esc(t)}</tspan>`).join("");
+      }
+      g.classList.toggle("ok", id === "pc" && /^192\.168\./.test(d.ip || ""));
+      g.classList.toggle("bad", id === "pc" && /^169\.254\./.test(d.ip || ""));
+      g.classList.toggle("down", d.kind === "server" && d.service === "stopped" && state.mode !== "challenge");
     }
   }
 
-  // ---------- speech bubbles: above the device, or below it when there's no room; never clipped.
-  // A small tail points at the device that's speaking.
+  // ---------- speech bubbles
+  // Each bubble tries above, below, right and left of its device and takes the first spot that's
+  // inside the stage and clear of every card and every other bubble. A tail points at the speaker.
   function bubble(id, text, tone = "") {
     const d = box(id);
     const b = document.createElement("div");
@@ -156,14 +217,32 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], onCompl
     bubbles.appendChild(b);
     const area = bubbles.getBoundingClientRect(), k = area.width / (L.w + MARGIN * 2);
     const px = v => (v + MARGIN) * k;
+    const rectOf = g => ({ l: px(g.x), t: px(g.y), r: px(g.x + g.w), b: px(g.y + g.h) });
+    const D = rectOf(d), cx = px(d.cx), cy = px(d.cy), gap = 12, edge = 6;
     const bw = b.offsetWidth, bh = b.offsetHeight;
-    const x = Math.max(6, Math.min(area.width - bw - 6, px(d.cx) - bw / 2));
-    let y = px(d.y) - bh - 10, below = false;
-    if (y < 6) { y = px(d.y + d.h) + 10; below = true; }
-    b.classList.toggle("below", below);
-    b.style.left = `${x}px`;
-    b.style.top = `${Math.min(y, area.height - bh - 6)}px`;
-    b.style.setProperty("--tail", `${Math.max(14, Math.min(bw - 14, px(d.cx) - x))}px`);
+    const clampX = x => Math.max(edge, Math.min(area.width - bw - edge, x));
+    const spots = [
+      { side: "above", x: clampX(cx - bw / 2), y: D.t - bh - gap },
+      { side: "below", x: clampX(cx - bw / 2), y: D.b + gap },
+      { side: "right", x: D.r + gap, y: cy - bh / 2 },
+      { side: "left", x: D.l - bw - gap, y: cy - bh / 2 },
+    ];
+    const others = [...Object.values(geo).map(rectOf),
+      ...[...bubbles.children].filter(o => o !== b).map(o => ({ l: o.offsetLeft, t: o.offsetTop, r: o.offsetLeft + o.offsetWidth, b: o.offsetTop + o.offsetHeight }))];
+    const overlap = (a, o) => Math.max(0, Math.min(a.r, o.r) - Math.max(a.l, o.l) + 4) * Math.max(0, Math.min(a.b, o.b) - Math.max(a.t, o.t) + 4);
+    const score = s => {
+      const r = { l: s.x, t: s.y, r: s.x + bw, b: s.y + bh };
+      const out = Math.max(0, edge - r.l) + Math.max(0, edge - r.t) + Math.max(0, r.r - area.width + edge) + Math.max(0, r.b - area.height + edge);
+      return out * 1000 + others.reduce((n, o) => n + overlap(r, o), 0);
+    };
+    const best = spots.map(s => ({ ...s, cost: score(s) })).reduce((a, s) => (s.cost < a.cost ? s : a));
+    b.classList.add(best.side);
+    b.style.left = `${best.x}px`;
+    b.style.top = `${Math.max(edge, Math.min(area.height - bh - edge, best.y))}px`;
+    const tail = best.side === "above" || best.side === "below"
+      ? Math.max(14, Math.min(bw - 14, cx - best.x))
+      : Math.max(12, Math.min(bh - 12, cy - Math.max(edge, best.y)));
+    b.style.setProperty("--tail", `${tail}px`);
     return b;
   }
   const clearBubbles = () => { bubbles.innerHTML = ""; };
@@ -236,6 +315,8 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], onCompl
     const copies = (msg.flood || []).map((to, i) => { const c = i === 0 ? p : packet(msg.name, id); c.setAttribute("transform", `translate(${hub.x},${hub.y})`); return [c, to]; });
     await Promise.all(copies.map(([c, to]) => move(c, arrival(hubId, to), ms, token)));
     if (token !== runId) return;
+    // Delivered packets fade away so they never sit on top of a card or its label.
+    svg.querySelectorAll(".m-pkt").forEach(c => c.classList.add("arrived"));
     svg.querySelector("#dev-" + msg.from)?.classList.remove("talk");
     if (noReply) bubble((msg.flood || msg.path.slice(-1))[0], "… (no answer)", "quiet");
     else Object.entries(msg.reactions || {}).forEach(([who, text]) => bubble(who, text, who === "router" ? "quiet" : ""));

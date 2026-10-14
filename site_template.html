@@ -450,8 +450,19 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .m-dev.ok .m-box { stroke: var(--good); }
 .m-dev.bad .m-box { stroke: var(--exploited); }
 .m-dev text { fill: var(--ink); font-family: var(--font-mono); }
-.m-badge { fill: rgba(255, 176, 0, 0.1); stroke: rgba(255, 176, 0, 0.35); stroke-width: 1; }
-.m-ico { font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; fill: var(--sun) !important; }
+.m-dev.down .m-box { stroke: var(--likely); }
+/* Hardware drawings: line art in the console palette; LEDs and the PC screen show the device's state. */
+.hw-body { fill: var(--surface-2); stroke: #4A6080; stroke-width: 1.4; }
+.hw-screen { fill: #0A1A26; stroke: #2E4560; stroke-width: 1; }
+.hw-line { fill: none; stroke: #4A6080; stroke-width: 1.6; stroke-linecap: round; }
+.hw-port { fill: #0A1018; stroke: #3A4E68; stroke-width: 0.8; }
+.hw-led { fill: var(--good); opacity: 0.85; }
+.hw-tip { fill: #4A6080; }
+.m-dev.talk .hw-led { fill: var(--brand); opacity: 1; }
+.m-dev.talk .hw-screen, .m-dev.talk .hw-body { stroke: rgba(63, 224, 232, 0.7); }
+.m-dev.bad .hw-screen { fill: var(--exploited-tint); stroke: var(--exploited); }
+.m-dev.ok .hw-screen { fill: var(--good-tint); stroke: var(--good); }
+.m-dev.down .hw-led { fill: var(--likely); }
 .m-name { font-size: 14px; font-family: var(--font-body) !important; font-weight: 600; }
 .m-ip { font-size: 13px; }
 .m-ip .m-k { fill: var(--muted); font-size: 11px; letter-spacing: 0.06em; }
@@ -467,10 +478,14 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .m-pkt rect { fill: var(--sun); }
 .m-pkt text { fill: var(--sun-ink); font: 600 12.5px var(--font-mono); }
 .m-pkt:focus-visible rect { stroke: var(--ink); stroke-width: 2; }
+.m-pkt rect { filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.5)); }
+.m-pkt.arrived { opacity: 0; pointer-events: none; transition: opacity 0.35s 0.35s; }
 .bubbles { position: absolute; inset: 0; pointer-events: none; }
 .bubble { --bc: rgba(63, 224, 232, 0.45); position: absolute; max-width: 42%; background: var(--surface-2); color: var(--ink); border: 1px solid var(--bc); border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; line-height: 1.35; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45); }
 .bubble::after { content: ""; position: absolute; left: var(--tail, 50%); bottom: -6px; width: 10px; height: 10px; margin-left: -5px; background: var(--surface-2); border: solid var(--bc); border-width: 0 1px 1px 0; transform: rotate(45deg); }
 .bubble.below::after { bottom: auto; top: -6px; border-width: 1px 0 0 1px; }
+.bubble.right::after { left: -6px; top: var(--tail, 50%); bottom: auto; margin: -5px 0 0; border-width: 0 0 1px 1px; }
+.bubble.left::after { left: auto; right: -6px; top: var(--tail, 50%); bottom: auto; margin: -5px 0 0; border-width: 1px 1px 0 0; }
 .bubble.say { --bc: var(--sun); }
 .bubble.quiet { --bc: var(--line); color: var(--muted); border-style: dashed; }
 .bubble.quiet::after { border-style: dashed; }

@@ -629,26 +629,49 @@
    "debrief": "Root cause: the DHCP service had stopped, so every PC that asked for an address got silence and fell back to a 169.254 self-assigned address. The evidence chain was: a 169.254 address (no DHCP answer), a working link (not a cable problem), a Discover that went out with no reply (the server side), and finally a stopped service. Restarting it fixed every PC at once. Typing in a fixed address would have fixed just one PC and hidden the real problem. In a real job you'd also ask why the service stopped and set up monitoring so you hear about it before users do."
   }
  },
+ "wide": {
+  "w": 760,
+  "h": 580,
+  "dw": 184,
+  "pos": {
+   "pc": [
+    110,
+    290
+   ],
+   "switch": [
+    380,
+    290
+   ],
+   "server": [
+    650,
+    150
+   ],
+   "router": [
+    650,
+    440
+   ]
+  }
+ },
  "narrow": {
   "w": 380,
-  "h": 450,
-  "dw": 178,
+  "h": 920,
+  "dw": 176,
   "pos": {
    "pc": [
     190,
-    78
+    120
    ],
    "switch": [
     190,
-    222
+    400
    ],
    "server": [
     94,
-    400
+    660
    ],
    "router": [
     286,
-    400
+    660
    ]
   }
  }
