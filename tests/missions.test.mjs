@@ -127,5 +127,35 @@ test("scenario data is internally consistent", () => {
   for (const msg of Object.values(dhcp.messages)) {
     for (const d of [msg.from, ...msg.path, ...(msg.flood || [])]) assert.ok(dhcp.devices[d], `unknown device ${d}`);
     assert.ok(msg.fields.some(f => f.level === 1) && msg.fields.some(f => f.level === 2), `${msg.name} needs basic and detailed fields`);
+    assert.ok(msg.short && msg.short.length <= 12, `${msg.name} needs a short packet label (12 characters at most)`);
+    for (const [d, r] of Object.entries(msg.reactions || {})) {
+      assert.ok(dhcp.devices[d], `${msg.name}: reaction from unknown device ${d}`);
+      assert.ok(typeof r === "string" || (r.text && ["", "quiet"].includes(r.tone || "")), `${msg.name}: bad reaction from ${d}`);
+    }
+  }
+  for (const [id, rules] of Object.entries(dhcp.appearance || {})) {
+    assert.ok(dhcp.devices[id], `appearance for unknown device ${id}`);
+    for (const r of rules) assert.ok(["ok", "bad", "warn"].includes(r.state), `${id}: unknown appearance ${r.state}`);
+  }
+  for (const [k, m] of Object.entries(dhcp.modes)) if (m.opening) assert.ok(dhcp.devices[m.opening.device], `${k}: opening from unknown device`);
+  for (const L of [dhcp.wide, dhcp.narrow].filter(Boolean)) for (const id of Object.keys(dhcp.devices)) assert.ok(L.pos[id], `layout is missing ${id}`);
+});
+
+test("appearance comes from the scenario's rules, not from code", () => {
+  const look = s => engine.appearance(dhcp, s.devices);
+  assert.deepEqual(look(engine.start(dhcp, "guided")), {}, "no address yet: nothing to flag");
+  const challenge = engine.start(dhcp, "challenge");
+  assert.equal(look(challenge).pc, "bad", "a 169.254 address is a problem");
+  let s = challenge;
+  for (const t of ["start", "renew"]) s = run(engine.useTool, s, t).state;
+  assert.equal(look(s).pc, "ok");
+  assert.deepEqual(engine.appearance({ devices: {} }, {}), {}, "scenarios without rules are fine");
+});
+
+test("a request with no reply undoes whatever its messages changed", () => {
+  const s = engine.start(dhcp, "challenge");
+  const r = run(engine.useTool, s, "renew");
+  for (const path of Object.keys(dhcp.messages.discover.effects)) {
+    assert.equal(engine.get(r.state.devices, path), engine.get(s.devices, path), path);
   }
 });

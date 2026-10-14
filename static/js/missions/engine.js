@@ -31,6 +31,17 @@ export function matches(when = {}, devices) {
 // Fill "{pc.ip}"-style placeholders from the current device state.
 export const fill = (text, devices) => String(text || "").replace(/\{([\w.]+)\}/g, (_, p) => String(get(devices, p) ?? ""));
 
+// How each device should look right now ("ok", "bad", "warn"…), from the scenario's appearance rules:
+// for each device, the first rule whose condition matches wins. Devices with no match look normal.
+export function appearance(scenario, devices) {
+  const out = {};
+  for (const [id, rules] of Object.entries(scenario.appearance || {})) {
+    const rule = rules.find(r => matches(r.when, devices));
+    if (rule) out[id] = rule.state;
+  }
+  return out;
+}
+
 export function start(scenario, mode) {
   const m = scenario.modes[mode];
   if (!m) throw new Error(`Unknown mode: ${mode}`);
@@ -100,8 +111,9 @@ export function useTool(scenario, state, toolId) {
     played.push({ id, msg });
   }
   if (outcome.noReply) {
-    // The request went out but nothing answered: undo the "searching" status the Discover set.
-    s.devices.pc.status = state.devices.pc.status;
+    // The messages went out but nothing answered, so whatever they changed (e.g. a "searching…"
+    // status) goes back to how it was before.
+    for (const { msg } of played) for (const path of Object.keys(msg.effects || {})) set(s.devices, path, get(state.devices, path));
   }
   applyEffects(s.devices, outcome.set);
   s.toolsUsed.push(toolId);

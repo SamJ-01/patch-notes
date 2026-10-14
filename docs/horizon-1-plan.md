@@ -58,7 +58,14 @@ No step needs a backend, an external paid service or a security review. Hosted r
 | 5. First mission | ✅ DHCP in Guided / Practice / Challenge. Next: a broader "Something isn't right…" troubleshooting mission |
 | 6. Linux permissions reuse test | ⏳ Next |
 | 7. Gamification tone | ✅ Done: practice days instead of streaks, badges labelled as practice |
-| 8. Evidence | ⏳ 9 engine tests in CI; learner feedback still to gather |
+| 8. Evidence | ⏳ 13 engine + 10 layout tests in CI; learner feedback still to gather |
+
+### Increment 1 (from the 14 Oct audit): make the engine reusable ✅
+
+- **No protocol knowledge in code.** Device looks (`appearance` rules), packet labels (`short`), bystander reactions (`{ text, tone: "quiet" }`) and how a challenge opens (`opening`) now live in the scenario JSON. Modes are recognised by what they contain (`tools` or `checkpoints`), not by name. A "no reply" outcome undoes whatever its messages changed, for any scenario.
+- **Geometry is testable.** `static/js/missions/layout.js` holds card sizes, cable routes, text wrapping and bubble placement as pure functions. `tests/layout.test.mjs` checks them, and checks that every mission's cards fit the stage with room between them.
+- **Honest labelling.** A visible "Simulation" tag above every stage and "Simulated output" above every console.
+- **Accessibility.** The diagram is a group of labelled devices (each read as one sentence, including its state), so packets can be reached by keyboard and screen reader. Mode buttons are a pressed/not-pressed button group. With reduced motion, Step is the main control and Play pauses 2.5 s on each message. Answer feedback is announced, and focus moves to the debrief when a challenge ends.
 
 ## 3. Constraint: Claude usage
 

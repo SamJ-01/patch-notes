@@ -60,9 +60,30 @@
    "router"
   ]
  ],
+ "appearance": {
+  "pc": [
+   {
+    "when": {
+     "pc.ip": {
+      "startsWith": "169.254."
+     }
+    },
+    "state": "bad"
+   },
+   {
+    "when": {
+     "pc.ip": {
+      "startsWith": "192.168."
+     }
+    },
+    "state": "ok"
+   }
+  ]
+ },
  "messages": {
   "discover": {
    "name": "DHCP Discover",
+   "short": "Discover",
    "from": "pc",
    "path": [
     "pc",
@@ -76,7 +97,10 @@
    "explain": "The PC has no address and doesn't know where the DHCP server is, so it shouts to everyone on the local network. The switch copies broadcasts out of every port.",
    "reactions": {
     "server": "A Discover! I'll offer an address.",
-    "router": "A broadcast. Routers don't pass these on to other networks, so I ignore it."
+    "router": {
+     "text": "A broadcast. Routers don't pass these on to other networks, so I ignore it.",
+     "tone": "quiet"
+    }
    },
    "fields": [
     {
@@ -128,6 +152,7 @@
   },
   "offer": {
    "name": "DHCP Offer",
+   "short": "Offer",
    "from": "server",
    "path": [
     "server",
@@ -141,7 +166,10 @@
    "explain": "The server picks a free address from its pool and offers it, together with the subnet mask, default gateway and DNS server the PC needs.",
    "reactions": {
     "pc": "An offer! Let me take a look.",
-    "router": "Another broadcast. Ignoring it."
+    "router": {
+     "text": "Another broadcast. Ignoring it.",
+     "tone": "quiet"
+    }
    },
    "fields": [
     {
@@ -212,6 +240,7 @@
   },
   "request": {
    "name": "DHCP Request",
+   "short": "Request",
    "from": "pc",
    "path": [
     "pc",
@@ -225,7 +254,10 @@
    "explain": "The PC accepts the offer. It still broadcasts, so that if several servers made offers, they all learn which one was chosen and the others can release their addresses.",
    "reactions": {
     "server": "It accepted my offer. Let me confirm it.",
-    "router": "Still not for me."
+    "router": {
+     "text": "Still not for me.",
+     "tone": "quiet"
+    }
    },
    "fields": [
     {
@@ -271,6 +303,7 @@
   },
   "ack": {
    "name": "DHCP Acknowledge",
+   "short": "Acknowledge",
    "from": "server",
    "path": [
     "server",
@@ -284,7 +317,10 @@
    "explain": "The server records the lease and confirms it. The PC configures its network card and can now talk to the gateway and beyond.",
    "reactions": {
     "pc": "I have an address! Setting up 192.168.1.50 now.",
-    "router": "Ignoring the broadcast, but I'll see this PC's traffic soon."
+    "router": {
+     "text": "Ignoring the broadcast, but I'll see this PC's traffic soon.",
+     "tone": "quiet"
+    }
    },
    "fields": [
     {
@@ -413,6 +449,11 @@
     "pc.status": "Self-assigned address",
     "server.service": "stopped",
     "server.status": "Status unknown"
+   },
+   "opening": {
+    "device": "pc",
+    "say": "I've got no internet!",
+    "log": "Start: the PC shows {pc.ip} and the user can't reach anything."
    },
    "hints": [
     "Start with the PC itself: what IP address does it have?",
