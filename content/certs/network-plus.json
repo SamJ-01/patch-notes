@@ -80,9 +80,14 @@
     {
      "id": "1.5",
      "title": "Transmission media and transceivers",
-     "coverage": "none",
-     "activities": [],
-     "gap": "Copper, fibre, wireless standards and transceivers aren't covered yet."
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "cable-wiring"
+      }
+     ],
+     "gap": "Copper connector wiring (T568A/B, straight-through vs crossover) is hands-on; fibre types, transceivers (SFP/QSFP) and media distances aren't covered yet."
     },
     {
      "id": "1.6",

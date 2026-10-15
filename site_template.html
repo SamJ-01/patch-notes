@@ -1116,6 +1116,30 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .hs-stats dd.ok { color: var(--good); } .hs-stats dd.no { color: var(--bad); }
 .hs-explain summary { cursor: pointer; font-weight: 600; }
 .hs-explain p { margin: 8px 0 0; max-width: 72ch; }
+.wire-lab { display: grid; gap: 18px; }
+.rj45 { display: grid; justify-items: center; gap: 0; margin: 4px 0; }
+.rj45-body { background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.12)), var(--surface-2); border: 2px solid var(--dg-strong); border-radius: 8px 8px 4px 4px; padding: 10px 10px 16px; }
+.rj45-pins { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }
+.rj45-pin { position: relative; width: 34px; height: 76px; display: grid; align-items: end; justify-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 3px 3px 0 0; cursor: pointer; padding: 0; overflow: hidden; }
+.rj45-pin:hover { border-color: var(--brand); }
+.rj45-pin.filled { border-color: var(--dg-strong); }
+.rj45-pin.wrong { border-color: var(--bad); box-shadow: inset 0 0 0 2px var(--bad); }
+.rj45-pin .w-wire { position: absolute; inset: 0 0 18px 0; }
+.rj45-pin .rj45-num { position: relative; z-index: 1; font: 600 0.7rem var(--font-mono); color: var(--ink); background: var(--surface); width: 100%; text-align: center; padding: 1px 0; }
+.rj45-clip { width: 26px; height: 12px; background: var(--surface-2); border: 2px solid var(--dg-strong); border-top: 0; border-radius: 0 0 4px 4px; }
+.wire-tray { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.w-chip { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--card-line); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); cursor: pointer; font: inherit; text-align: left; }
+.w-chip:hover { border-color: var(--brand); }
+.w-chip.held { border-color: var(--brand); box-shadow: 0 0 0 2px rgba(var(--brand-rgb), 0.4); }
+.w-chip.used { opacity: 0.4; cursor: default; }
+.w-swatch { display: inline-block; width: 36px; height: 16px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.3); flex: none; }
+.w-swatch.sm { width: 26px; height: 13px; }
+.wire-result { margin: 0; min-height: 1.4em; }
+.wire-result .ok { color: var(--good); } .wire-result .no { color: var(--bad); }
+.wire-table { border-collapse: collapse; font-size: 0.85rem; }
+.wire-table th, .wire-table td { border: 1px solid var(--line); padding: 5px 8px; text-align: center; }
+.wire-table th { color: var(--muted); font-weight: 600; }
+@media (max-width: 520px) { .rj45-pin { width: 30px; height: 66px; } .w-swatch { width: 28px; } }
 </style>
 
 <!-- recon complete. you found flag 1 of 3: flag{v1ew_s0urce_is_r3con}  (submit it in the command palette: press / then type "submit" and the flag) -->
@@ -2330,6 +2354,7 @@ const termArt = () => { const id = `cterm-clip-${++termN}`; return `<defs><clipP
 const OSI_ART = [0, 1, 2, 3, 4, 5, 6].map(k => `<rect class="cosi" x="74" y="${14 + k * 8.6}" width="52" height="6" rx="1.5" style="fill:${["var(--critical)", "var(--high)", "var(--brand)", "var(--good)", "var(--sun)", "var(--likely)", "var(--exploited)"][k]}"/>`).join("");
 // d: devices [kind, x, y, scale], g: glyphs, l: links [x1, y1, x2, y2, air?], t: tags, p: packet paths, tone: packet colour
 const SCENE = {
+  "cable-wiring": { raw: `${[0,1,2,3,4,5,6,7].map(k=>`<rect x="${64+k*9}" y="30" width="6" height="34" rx="1.5" style="fill:${["#E8820C","#E8820C","#2F9E44","#1971C2","#1971C2","#2F9E44","#8B5A2B","#8B5A2B"][k]}"/>`).join("")}<rect x="58" y="24" width="84" height="44" rx="4" fill="none" stroke="var(--dg-strong)" stroke-width="2"/>` },
   "tcp-handshake": { d: [["laptop", 34, 44, 0.5], ["server", 166, 46, 0.56], ["attacker", 34, 70, 0.0001]], l: [[50, 44, 150, 46]], t: [["SYN →", 92, 20], ["← SYN-ACK", 92, 70, "good"]], p: ["M34 44L166 46", "M166 46L34 44"] },
   "net-detective": { d: [["pc", 32, 46, 0.5], ["router", 100, 44, 0.5], ["cloud", 170, 44, 0.5]], g: [["search", 134, 66, 0.7]], l: [[48, 46, 84, 44], [118, 44, 152, 44]], t: [["DNS?", 100, 18, "bad"]], p: ["M32 46L100 44L170 44"], tone: "bad" },
   "recon-basics": { d: [["laptop", 34, 48, 0.5], ["server", 128, 34, 0.42], ["server", 128, 60, 0.42]], g: [["search", 92, 46, 0.9]], l: [[50, 48, 108, 36], [50, 48, 108, 58]], t: [["in scope", 150, 18]], p: ["M34 48L128 34", "M34 48L128 60"] },
@@ -2463,7 +2488,7 @@ function missionView(id) {
     $("mission-root").innerHTML = `<div class="empty">Couldn't load the mission code (js/missions/ui.js). If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`;
   });
 }
-const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake"];  // labs with their own module in static/js/labs/<kind>.js
+const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring"];  // labs with their own module in static/js/labs/<kind>.js
 function moduleLab(l) {
   main.innerHTML = `<div class="view" id="lab-root"><div class="empty">Loading lab…</div></div>`;
   import(`./js/labs/${l.kind}.js`).then(mod => {

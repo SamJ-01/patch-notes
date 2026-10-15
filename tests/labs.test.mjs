@@ -307,3 +307,25 @@ test("SYN cookies let real clients through even during a flood", () => {
   assert.equal(srv.syn("client"), "cookie-connect");
   assert.ok(!srv.state.full && srv.state.established === 1);
 });
+
+import * as wiring from "../static/js/labs/wiring.js";
+
+test("wiring: standards validate and identify themselves", () => {
+  assert.ok(wiring.checkWiring(wiring.T568B, "T568B").correct);
+  assert.ok(wiring.checkWiring(wiring.T568A, "T568A").correct);
+  assert.ok(!wiring.checkWiring(wiring.T568A, "T568B").correct, "A isn't B");
+  assert.equal(wiring.matchesStandard(wiring.T568B), "T568B");
+  assert.equal(wiring.matchesStandard(wiring.T568A), "T568A");
+  assert.equal(wiring.matchesStandard([null, ...wiring.T568B.slice(1)]), null, "incomplete matches nothing");
+  // only pins 1,2,3,6 differ between the standards (the orange and green pairs swap)
+  const diff = wiring.T568B.map((w, i) => w !== wiring.T568A[i] ? i + 1 : null).filter(Boolean);
+  assert.deepEqual(diff, [1, 2, 3, 6]);
+});
+
+test("wiring: straight-through vs crossover", () => {
+  assert.equal(wiring.cableType("T568B", "T568B").type, "Straight-through");
+  assert.equal(wiring.cableType("T568A", "T568A").type, "Straight-through");
+  assert.equal(wiring.cableType("T568A", "T568B").type, "Crossover");
+  assert.equal(wiring.cableType("T568B", null), null);
+  assert.equal(Object.keys(wiring.WIRES).length, 8);
+});

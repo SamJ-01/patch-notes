@@ -1710,6 +1710,17 @@
   "holdTicks": 8
  },
  {
+  "id": "cable-wiring",
+  "kind": "wiring",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 8,
+  "lesson": "networking",
+  "skill": "Wire an RJ45 connector to T568A/T568B and tell a straight-through cable from a crossover",
+  "title": "Build an Ethernet cable",
+  "intro": "Ever wondered what's inside the clear plug on a network cable? Eight tiny wires in a set order. Arrange them correctly, learn the two standards, and see what makes a cable straight-through or crossover."
+ },
+ {
   "id": "linux-terminal",
   "title": "Linux terminal basics",
   "kind": "terminal",
