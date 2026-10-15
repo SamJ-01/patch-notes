@@ -48,6 +48,7 @@ Wrong answers never end a lab: every quiz offers a retry of the questions you mi
 | **News** | Headlines from 12 outlets, auto-tagged by topic, linked to lessons and CVEs, with "What this means" explanations (AI-written, fact-checked against each article and official records) |
 | **CVE Radar** | Every new CVE, enriched with CISA KEV and FIRST EPSS, prioritised by real-world risk, with trend charts |
 | **Am I affected?** | Pick the tech you use (phone, browser, router, work apps) for personal alerts |
+| **Exam prep** | CompTIA Network+ (N10-009): all 25 objectives mapped to the lessons, labs and missions that practise them, with honest coverage (4 hands-on, 13 partial, 8 not yet), per-objective progress and "revise next" suggestions. Preparation, not a guarantee; no real exam questions |
 | **Learn** | 22 lessons with sourced real-world cases, 4 learning paths (e.g. Path to SOC Analyst) and a glossary of 250+ terms, including the common CWE bug types |
 | **Play** | "Phish or Legit?", a quick-fire quiz and a 3-flag CTF hunt hidden in the site itself |
 | **Careers** | Five entry paths with skills, certs and first job titles, plus a directory of free resources |
@@ -143,6 +144,14 @@ If the Mac is off, step 1 still runs: news and CVEs stay current, only new expla
 - Automated testing in CI: a failing test blocks the deploy
 - Accessibility: keyboard support, screen-reader labels, reduced motion, contrast-checked light and dark themes (no axe-core violations across every view, in both themes)
 - Accessible, tested data visualisation (colour palette validated for colour-blind readers)
+
+## Security
+
+- **Untrusted data is escaped:** headlines, summaries, CVE text and saved progress are treated as untrusted. Text is escaped before it reaches the page, feed links must be `https://`, and the embedded data can't break out of its `<script>`.
+- **Content Security Policy:** GitHub Pages can't send headers, so `build.py` writes the policy into each page and allows only that build's inline scripts, by SHA-256 hash. Static lesson pages allow no scripts at all.
+- **Pipeline:** workflow permissions are per job (the build job can only read; only deploy can publish), checkout keeps no credentials, every action is pinned to a commit, and Dependabot keeps the pins current. The NVD key is only visible to the build step.
+- **Progress:** XP lives in the browser, so anyone can edit it. It's for motivation, not proof. Restored progress files are validated field by field.
+- **Rollback:** every deploy comes from a commit. To undo a bad one, `git revert` it and push, or re-run an older successful workflow from the Actions tab.
 
 ## Copyright
 

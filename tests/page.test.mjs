@@ -83,3 +83,27 @@ test("CVSS vector decodes into plain English", () => {
   assert.ok(lines.at(-1).includes("read sensitive data, change or plant data and crash or shut down the service"));
   assert.equal(decodeVector(null), null);
 });
+
+// Progress is untrusted (browser storage, restored files): cleanProgress must drop junk and neutralise HTML.
+test("progress: restored or stored data is cleaned before use", () => {
+  const pctx = {};
+  vm.createContext(pctx);
+  vm.runInContext([
+    template.match(/const FRESH = .*\n/)[0],
+    extract("function cleanProgress(src)"),
+    template.match(/const restoreProgress = .*\n/)[0],
+    "this.api = { cleanProgress, restoreProgress };",
+  ].join("\n"), pctx);
+  const { cleanProgress, restoreProgress } = pctx.api;
+  const evil = '<img src=x onerror=alert(1)>';
+  const p = cleanProgress({ xp: 42.6, log: [{ d: "2026-10-15", why: "Lab", n: evil }, "junk", null], done: "nope", intro: 1, hacked: evil });
+  assert.equal(p.xp, 43);
+  assert.equal(p.log.length, 1);
+  assert.equal(p.log[0].n, 0, "a non-number XP value becomes 0, never markup");
+  assert.equal(typeof p.done, "object");
+  assert.equal(p.hacked, undefined, "unknown fields are dropped");
+  assert.throws(() => cleanProgress({ xp: "lots" }));
+  assert.throws(() => cleanProgress([1, 2]));
+  assert.throws(() => restoreProgress({ progress: { xp: 1 } }), "files must say they come from patch-notes");
+  assert.equal(restoreProgress({ app: "patch-notes", progress: { xp: 5 } }).xp, 5);
+});

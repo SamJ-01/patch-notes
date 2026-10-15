@@ -17,6 +17,9 @@ Also data/artifact.html: the app without a document skeleton, for the private cl
 """
 
 import argparse
+import base64
+import hashlib
+import os
 import collections
 import datetime as dt
 import email.utils
@@ -63,6 +66,29 @@ def snapshot(name, data=None):
     DATA_DIR.mkdir(exist_ok=True)
     path.write_text(json.dumps(data))
     return data
+
+
+FONT_SOURCES = "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com"
+
+
+def csp_meta(page, scripts=True):
+    """A Content-Security-Policy <meta> for a built page. GitHub Pages can't send headers, so the policy lives
+    in the page. Inline scripts are allowed only by the SHA-256 of their exact text, computed here at build time,
+    so anything injected later (or a changed script) won't run. Pages with no scripts allow none at all."""
+    if scripts:
+        hashes = " ".join("'sha256-" + base64.b64encode(hashlib.sha256(body.encode()).digest()).decode() + "'"
+                          for body in re.findall(r"<script>(.*?)</script>", page, re.S))
+        policy = (f"default-src 'self'; script-src 'self' {hashes}; {FONT_SOURCES}; img-src 'self' data:; "
+                  "connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'")
+    else:
+        policy = f"default-src 'none'; {FONT_SOURCES}; img-src 'self' data:; base-uri 'none'; form-action 'none'"
+    return f'<meta http-equiv="Content-Security-Policy" content="{policy}">\n'
+
+
+def with_csp(page):
+    """Add the script-free policy right after a static page's charset declaration."""
+    assert "<script" not in page, "static lesson pages must stay script-free"
+    return page.replace('<meta charset="utf-8">\n', '<meta charset="utf-8">\n' + csp_meta(page, scripts=False), 1)
 
 
 def embed_json(data):
@@ -318,6 +344,7 @@ def main():
         "labs": load("labs.json"),
         "missions": [json.loads(p.read_text()) for p in sorted((CONTENT / "missions").glob("*.json"))],
         "paths": load("paths.json"),
+        "certs": [json.loads(f.read_text()) for f in sorted((CONTENT / "certs").glob("*.json"))],
         "stack": load("stack.json"),
         "quiz": load("quiz.json"),
         "phish": load("phish.json"),
@@ -337,15 +364,17 @@ def main():
     # The device drawings live in one module (static/js/hw.js) shared by the labs; the page gets the same code inline.
     hw_js = re.sub(r"^export ", "", (STATIC / "js" / "hw.js").read_text(), flags=re.M)
     page = template.replace("<!--__META__-->", meta).replace("/*__DATA__*/null", embed_json(data)).replace("/*__HW__*/", hw_js)
-    out.write_text('<!doctype html>\n<html lang="en">\n<meta charset="utf-8">\n' + page)
+    # PN_NO_CSP=1 is only for local testing tools that inject scripts (e.g. an accessibility checker).
+    csp = "" if os.environ.get("PN_NO_CSP") else csp_meta(page)
+    out.write_text('<!doctype html>\n<html lang="en">\n<meta charset="utf-8">\n' + csp + page)
     # Same page without the document skeleton, for publishing as a claude.ai artifact (which adds its own).
     DATA_DIR.mkdir(exist_ok=True)
     (DATA_DIR / "artifact.html").write_text(page)
 
     fonts, css = page_css(template)
     for i, l in enumerate(lessons):
-        (SITE_DIR / "lessons" / f"{l['id']}.html").write_text(lesson_page(l, lessons[(i + 1) % len(lessons)], fonts, css, site))
-    (SITE_DIR / "lessons" / "index.html").write_text(lessons_index(lessons, fonts, css, site))
+        (SITE_DIR / "lessons" / f"{l['id']}.html").write_text(with_csp(lesson_page(l, lessons[(i + 1) % len(lessons)], fonts, css, site)))
+    (SITE_DIR / "lessons" / "index.html").write_text(with_csp(lessons_index(lessons, fonts, css, site)))
     (SITE_DIR / "feed.xml").write_text(rss(stories, explainers, site))
     (SITE_DIR / "sitemap.xml").write_text(sitemap(lessons, site))
     if STATIC.exists():

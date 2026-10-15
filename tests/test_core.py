@@ -245,6 +245,52 @@ class Styles(unittest.TestCase):
         self.assertNotIn('fill="${SEV_COLORS', (ROOT / "site_template.html").read_text(), "SVG fill attributes can't read CSS variables")
 
 
+class SecurityControls(unittest.TestCase):
+    """Guards for the site's and pipeline's security controls, so they can't quietly regress."""
+
+    def test_workflow_actions_pinned_and_permissions_scoped(self):
+        import re
+        wf = (ROOT / ".github" / "workflows" / "daily.yml").read_text()
+        uses = re.findall(r"uses:\s*(\S+)", wf)
+        self.assertTrue(uses)
+        for u in uses:
+            self.assertRegex(u, r"@[0-9a-f]{40}$", f"pin {u} to a full commit SHA")
+        self.assertIn("permissions: {}", wf, "no workflow-wide permissions")
+        build = wf.split("  deploy:")[0]
+        self.assertNotIn("pages: write", build, "only the deploy job may publish")
+        self.assertNotIn("id-token: write", build)
+        self.assertIn("persist-credentials: false", build)
+
+    def test_csp_allows_exactly_the_pages_inline_scripts(self):
+        import base64, hashlib, re
+        page = '<meta charset="utf-8">\n<script>alert(1)</script><p>hi</p><script>\nlet x = 2;\n</script>'
+        meta = build.csp_meta(page)
+        for body in ("alert(1)", "\nlet x = 2;\n"):
+            digest = base64.b64encode(hashlib.sha256(body.encode()).digest()).decode()
+            self.assertIn(f"'sha256-{digest}'", meta)
+        self.assertNotIn("unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src", meta.split("script-src")[0])
+        self.assertNotIn("'unsafe-inline'", re.search(r"script-src([^;]*)", meta).group(1), "scripts never allowed inline wholesale")
+        self.assertIn("object-src 'none'", meta)
+        static = build.with_csp('<meta charset="utf-8">\n<p>lesson</p>')
+        self.assertIn("default-src 'none'", static)
+        with self.assertRaises(AssertionError):
+            build.with_csp('<meta charset="utf-8">\n<script>x</script>')
+
+    def test_feed_links_other_than_https_are_dropped(self):
+        import datetime as dt
+        import news
+        now = dt.datetime.now(dt.timezone.utc)
+        fake = [{"title": f"Ransomware story {i}", "link": link, "date": now, "summary": "", "source": "Test"}
+                for i, link in enumerate(["javascript:alert(document.cookie)", "http://plain.example/a", "data:text/html,x", "https://ok.example/story"])]
+        real_fetch, real_feeds = news.fetch_feed, news.FEEDS
+        news.fetch_feed, news.FEEDS = (lambda feed: fake), [{"name": "Test", "url": "https://test"}]
+        try:
+            stories = news.collect_news(days=7)
+        finally:
+            news.fetch_feed, news.FEEDS = real_fetch, real_feeds
+        self.assertEqual([s["link"] for s in stories], ["https://ok.example/story"])
+
+
 class QuizFairness(unittest.TestCase):
     def test_answer_position_is_shuffled_everywhere(self):
         """Most authored answers are option 2, so every quiz must mix its options before showing them."""
@@ -303,6 +349,33 @@ class ContentIntegrity(unittest.TestCase):
         for x in [*self.labs.values(), *(json.loads(f.read_text()) for f in (ROOT / "content" / "missions").glob("*.json"))]:
             if x.get("lesson"):
                 self.assertIn(x["lesson"], self.lessons, x["id"])
+
+    def test_certification_maps_are_complete_and_honest(self):
+        import re
+        labs = {l["id"] for l in self.labs.values()}
+        missions = {json.loads(f.read_text())["id"] for f in (ROOT / "content" / "missions").glob("*.json")}
+        for f in (ROOT / "content" / "certs").glob("*.json"):
+            c = json.loads(f.read_text())
+            self.assertRegex(c["exam"], r"^[A-Z0-9]+-\d{3}$", f.name)
+            self.assertRegex(c["reviewed"], r"^\d{4}-\d{2}-\d{2}$", "record when the objectives were last checked")
+            self.assertTrue(c["source"]["url"].startswith("https://"))
+            self.assertIn("not a guarantee", c["note"], "say plainly that practice isn't a pass guarantee")
+            self.assertEqual(sum(d["weight"] for d in c["domains"]), 100, f.name)
+            ids = [o["id"] for d in c["domains"] for o in d["objectives"]]
+            self.assertEqual(len(ids), len(set(ids)), "objective ids unique")
+            for d in c["domains"]:
+                for o in d["objectives"]:
+                    self.assertTrue(o["id"].startswith(d["id"][0] + "."), o["id"])
+                    self.assertIn(o["coverage"], {"strong", "partial", "none"}, o["id"])
+                    if o["coverage"] == "none":
+                        self.assertEqual(o["activities"], [], f"{o['id']}: 'not covered' can't list activities")
+                    else:
+                        self.assertTrue(o["activities"], f"{o['id']}: covered objectives need activities")
+                    if o["coverage"] != "strong":
+                        self.assertTrue(o.get("gap"), f"{o['id']}: say what's missing")
+                    for a in o["activities"]:
+                        known = {"lesson": self.lessons, "lab": labs, "mission": missions, "tool": {"subnet-calc"}}[a["type"]]
+                        self.assertIn(a["id"], known, f"{o['id']}: unknown {a['type']} {a['id']}")
 
     def test_glossary_ids_unique_and_links_valid(self):
         ids = [g["id"] for g in self.glossary]

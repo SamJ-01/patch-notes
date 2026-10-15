@@ -1,0 +1,389 @@
+{
+ "id": "network-plus",
+ "name": "CompTIA Network+",
+ "exam": "N10-009",
+ "source": {
+  "label": "CompTIA: Network+ certification",
+  "url": "https://www.comptia.org/en-us/certifications/network/"
+ },
+ "reviewed": "2026-10-15",
+ "note": "Objective numbers and domain weights follow CompTIA's published outline for N10-009. Titles here are short summaries. Patch Notes isn't affiliated with CompTIA, uses no real exam questions, and practising here is preparation, not a guarantee of passing.",
+ "domains": [
+  {
+   "id": "1.0",
+   "name": "Networking concepts",
+   "weight": 23,
+   "objectives": [
+    {
+     "id": "1.1",
+     "title": "The OSI reference model",
+     "coverage": "strong",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "osi-model"
+      },
+      {
+       "type": "lesson",
+       "id": "networking"
+      }
+     ]
+    },
+    {
+     "id": "1.2",
+     "title": "Network appliances, applications and functions",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "networking"
+      },
+      {
+       "type": "lab",
+       "id": "topologies"
+      },
+      {
+       "type": "lesson",
+       "id": "iot-ot"
+      }
+     ],
+     "gap": "Load balancers, proxies, IDS/IPS, NAS/SAN, CDN and QoS aren't covered in depth yet."
+    },
+    {
+     "id": "1.3",
+     "title": "Cloud concepts and connectivity",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "cloud"
+      }
+     ],
+     "gap": "The lesson covers cloud security; VPCs, cloud gateways and connectivity options aren't covered yet."
+    },
+    {
+     "id": "1.4",
+     "title": "Ports, protocols, services and traffic types",
+     "coverage": "strong",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "ports-protocols"
+      },
+      {
+       "type": "lesson",
+       "id": "networking"
+      }
+     ],
+     "gap": "Unicast, multicast, anycast and broadcast aren't covered yet."
+    },
+    {
+     "id": "1.5",
+     "title": "Transmission media and transceivers",
+     "coverage": "none",
+     "activities": [],
+     "gap": "Copper, fibre, wireless standards and transceivers aren't covered yet."
+    },
+    {
+     "id": "1.6",
+     "title": "Topologies, architectures and network types",
+     "coverage": "strong",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "topologies"
+      }
+     ]
+    },
+    {
+     "id": "1.7",
+     "title": "IPv4 addressing",
+     "coverage": "strong",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "subnetting"
+      },
+      {
+       "type": "tool",
+       "id": "subnet-calc"
+      },
+      {
+       "type": "mission",
+       "id": "dhcp"
+      }
+     ]
+    },
+    {
+     "id": "1.8",
+     "title": "Modern network environments",
+     "coverage": "none",
+     "activities": [],
+     "gap": "SDN, SD-WAN, VXLAN, zero trust, SASE, infrastructure as code and IPv6 aren't covered yet."
+    }
+   ]
+  },
+  {
+   "id": "2.0",
+   "name": "Network implementation",
+   "weight": 20,
+   "objectives": [
+    {
+     "id": "2.1",
+     "title": "Routing technologies",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "networking"
+      },
+      {
+       "type": "lab",
+       "id": "topologies"
+      }
+     ],
+     "gap": "Static vs dynamic routing, OSPF/BGP/EIGRP, route selection and NAT details aren't covered yet."
+    },
+    {
+     "id": "2.2",
+     "title": "Switching technologies and features",
+     "coverage": "none",
+     "activities": [],
+     "gap": "VLANs, trunking (802.1Q), spanning tree and MTU aren't covered yet."
+    },
+    {
+     "id": "2.3",
+     "title": "Wireless devices and technologies",
+     "coverage": "none",
+     "activities": [],
+     "gap": "Wi-Fi standards, channels, frequencies, SSIDs and wireless encryption aren't covered yet."
+    },
+    {
+     "id": "2.4",
+     "title": "Physical installations",
+     "coverage": "none",
+     "activities": [],
+     "gap": "Rack, power and environmental factors aren't covered yet."
+    }
+   ]
+  },
+  {
+   "id": "3.0",
+   "name": "Network operations",
+   "weight": 19,
+   "objectives": [
+    {
+     "id": "3.1",
+     "title": "Organisational processes and procedures",
+     "coverage": "none",
+     "activities": [],
+     "gap": "Documentation, change management and life-cycle management aren't covered yet."
+    },
+    {
+     "id": "3.2",
+     "title": "Network monitoring technologies",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "soc"
+      },
+      {
+       "type": "lab",
+       "id": "log-detective"
+      },
+      {
+       "type": "lesson",
+       "id": "linux"
+      }
+     ],
+     "gap": "SNMP, flow data and baselines aren't covered yet."
+    },
+    {
+     "id": "3.3",
+     "title": "Disaster recovery concepts",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "ransomware"
+      },
+      {
+       "type": "lesson",
+       "id": "incident-response"
+      }
+     ],
+     "gap": "RPO, RTO, MTTR, MTBF and site types (hot, warm, cold) aren't covered yet."
+    },
+    {
+     "id": "3.4",
+     "title": "IPv4 and IPv6 network services",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "mission",
+       "id": "dhcp"
+      },
+      {
+       "type": "lesson",
+       "id": "networking"
+      }
+     ],
+     "gap": "DHCP and DNS basics are covered; NTP, SLAAC and DNS record types aren't yet."
+    },
+    {
+     "id": "3.5",
+     "title": "Network access and management methods",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "ports-protocols"
+      },
+      {
+       "type": "lesson",
+       "id": "identity"
+      }
+     ],
+     "gap": "Site-to-site vs client VPN, jump boxes and in-band vs out-of-band management aren't covered yet."
+    }
+   ]
+  },
+  {
+   "id": "4.0",
+   "name": "Network security",
+   "weight": 14,
+   "objectives": [
+    {
+     "id": "4.1",
+     "title": "Basic network security concepts",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "encryption"
+      },
+      {
+       "type": "lesson",
+       "id": "identity"
+      },
+      {
+       "type": "lesson",
+       "id": "cloud"
+      }
+     ],
+     "gap": "The CIA triad, PKI details, RADIUS/TACACS+/LDAP and compliance aren't covered yet."
+    },
+    {
+     "id": "4.2",
+     "title": "Attack types and their impact",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "ddos"
+      },
+      {
+       "type": "lesson",
+       "id": "phishing"
+      },
+      {
+       "type": "lesson",
+       "id": "malware"
+      },
+      {
+       "type": "lesson",
+       "id": "ransomware"
+      }
+     ],
+     "gap": "VLAN hopping, MAC flooding, ARP and DNS poisoning, rogue DHCP and evil twins aren't covered yet."
+    },
+    {
+     "id": "4.3",
+     "title": "Network security features, defences and solutions",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "iot-ot"
+      },
+      {
+       "type": "lesson",
+       "id": "networking"
+      },
+      {
+       "type": "lesson",
+       "id": "web-access"
+      }
+     ],
+     "gap": "Port security, NAC, ACLs and screened subnets aren't covered yet."
+    }
+   ]
+  },
+  {
+   "id": "5.0",
+   "name": "Network troubleshooting",
+   "weight": 24,
+   "objectives": [
+    {
+     "id": "5.1",
+     "title": "Troubleshooting methodology",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "mission",
+       "id": "dhcp"
+      }
+     ],
+     "gap": "The DHCP challenge practises it; the full step-by-step method isn't taught on its own yet."
+    },
+    {
+     "id": "5.2",
+     "title": "Cabling and physical interface issues",
+     "coverage": "none",
+     "activities": [],
+     "gap": "Cable faults, interface errors and PoE issues aren't covered yet."
+    },
+    {
+     "id": "5.3",
+     "title": "Network service issues",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "mission",
+       "id": "dhcp"
+      },
+      {
+       "type": "lab",
+       "id": "subnetting"
+      }
+     ],
+     "gap": "DHCP failure is covered; VLAN, DNS and routing faults aren't yet."
+    },
+    {
+     "id": "5.4",
+     "title": "Performance issues",
+     "coverage": "none",
+     "activities": [],
+     "gap": "Congestion, latency, jitter, packet loss and wireless interference aren't covered yet."
+    },
+    {
+     "id": "5.5",
+     "title": "Tools and protocols for troubleshooting",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "mission",
+       "id": "dhcp"
+      }
+     ],
+     "gap": "ipconfig and ping appear in the DHCP challenge; traceroute, nslookup/dig, tcpdump, Wireshark and nmap aren't practised yet."
+    }
+   ]
+  }
+ ],
+ "study": {
+  "label": "Professor Messer's free N10-009 course",
+  "url": "https://www.professormesser.com/network-plus/n10-009/n10-009-video/n10-009-training-course/"
+ }
+}
