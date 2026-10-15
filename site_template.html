@@ -1066,7 +1066,6 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .ex-opts { display: grid; gap: 8px; }
 .ex-opt { display: flex; align-items: flex-start; gap: 10px; width: 100%; }
 .ex-opt.picked { border-color: var(--brand); background: var(--brand-soft); }
-.ex-mark { font-family: var(--font-mono); color: var(--muted); flex: none; }
 .ex-why { margin: -2px 0 4px; padding: 8px 12px; font-size: 0.9rem; border-radius: var(--radius-sm); background: var(--surface-2); }
 .ex-why.ok b { color: var(--good); } .ex-why.no b { color: var(--bad); }
 .ex-review ol { display: grid; gap: 10px; padding-left: 1.2em; }
@@ -1075,6 +1074,24 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .cert-badge.bad { color: var(--bad); }
 .scope-note { margin: 0; padding: 10px 14px; border: 1px solid rgba(var(--sun-rgb), 0.5); border-left: 3px solid var(--sun); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--sun) 8%, var(--surface)); font-size: 0.92rem; }
 .scope-note b { color: var(--sun); }
+.ex-letter { font: 700 0.85rem var(--font-mono); color: var(--muted); flex: none; width: 1.4em; text-align: center; }
+.ex-opt.picked .ex-letter, .ex-opt.right .ex-letter { color: var(--brand); }
+.ex-qhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+.ex-flag { background: none; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 3px 10px; font: 600 0.78rem var(--font-mono); color: var(--muted); cursor: pointer; }
+.ex-flag:hover { color: var(--ink); border-color: var(--sun); }
+.ex-flag.on { color: var(--sun); border-color: var(--sun); background: color-mix(in srgb, var(--sun) 12%, transparent); }
+.ex-nav { gap: 8px; }
+.ex-nav [data-act="end"] { margin-left: auto; }
+.ex-items { border-top: 1px solid var(--line); padding-top: 10px; }
+.ex-items summary { cursor: pointer; font: 600 0.82rem var(--font-mono); color: var(--muted); }
+.ex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 6px; margin-top: 10px; }
+.ex-item { aspect-ratio: 1; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); color: var(--muted); font: 600 0.8rem var(--font-mono); cursor: pointer; }
+.ex-item:hover { border-color: var(--brand); color: var(--ink); }
+.ex-item.done { background: var(--brand-soft); color: var(--brand); border-color: rgba(var(--brand-rgb), 0.5); }
+.ex-item.flag { box-shadow: inset 0 0 0 2px var(--sun); }
+.ex-item.cur { outline: 2px solid var(--ink); outline-offset: 1px; }
+.ex-legend { font-size: 0.78rem; margin: 8px 0 0; }
+.ex-review li.skip > b { color: var(--muted); }
 </style>
 
 <!-- recon complete. you found flag 1 of 3: flag{v1ew_s0urce_is_r3con}  (submit it in the command palette: press / then type "submit" and the flag) -->
