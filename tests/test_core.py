@@ -214,6 +214,14 @@ class Styles(unittest.TestCase):
         self.assertNotIn('fill="${SEV_COLORS', (ROOT / "site_template.html").read_text(), "SVG fill attributes can't read CSS variables")
 
 
+class DeviceLibrary(unittest.TestCase):
+    def test_inlined_device_library_is_self_contained(self):
+        """build.py pastes static/js/hw.js into the page with "export" removed, so it must not import anything."""
+        src = (ROOT / "static" / "js" / "hw.js").read_text()
+        self.assertNotRegex(src, r"^\s*import ", "hw.js is inlined into the page and can't import")
+        self.assertIn("/*__HW__*/", (ROOT / "site_template.html").read_text())
+
+
 class ContentIntegrity(unittest.TestCase):
     """Catch broken cross-references before they reach the live site."""
 

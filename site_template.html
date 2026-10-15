@@ -44,7 +44,7 @@
   --panel-bg: linear-gradient(180deg, rgba(20, 32, 48, 0.55), rgba(13, 19, 28, 0.9));
   --faint: #3A4A60; --statusbar: #04070B;
   --dg-line: #2B3D55; --dg-box: #24344A; --dg-strong: #4D6280;
-  --hw-stroke: #4A6080; --hw-screen: #0A1A26; --hw-port: #0A1018;
+  --hw-stroke: #4A6080; --hw-screen: #0A1A26; --hw-port: #0A1018; --hw-top: #22324A; --hw-bot: #101A28; --hw-shadow: rgba(0, 0, 0, 0.45);
   --sev-critical: #FFB000; --sev-high: #A8740F; --sev-other: #5E4614;
   color-scheme: dark;
 }
@@ -53,7 +53,7 @@
   --bg: #EEF2F7; --surface: #FFFFFF; --surface-2: #E7EDF5; --ink: #0F1B2D; --muted: #4F5E77; --line: #CDD6E3;
   --grid: rgba(20, 80, 140, 0.05);
   --brand: #08717D; --brand-ink: #FFFFFF; --brand-soft: #DDF1F3; --brand-rgb: 8, 113, 125;
-  --sun: #9A5A00; --sun-ink: #FFFFFF; --sun-rgb: 154, 90, 0;
+  --sun: #8A5000; --sun-ink: #FFFFFF; --sun-rgb: 138, 80, 0;
   --slab: #FFFFFF; --slab-ink: #0F1B2D;
   --good: #11784A; --good-tint: #DDF3E8; --good-rgb: 17, 120, 74;
   --bad: #BE1F36; --bad-tint: #FBE4E8; --bad-rgb: 190, 31, 54;
@@ -66,13 +66,12 @@
   --panel-bg: linear-gradient(180deg, #FFFFFF, #FAFBFD);
   --faint: #B3BFCF; --statusbar: #E2E8F0;
   --dg-line: #9FB1C7; --dg-box: #B9C6D7; --dg-strong: #7F93AE;
-  --hw-stroke: #6F84A0; --hw-screen: #DCE7F2; --hw-port: #E7EDF5;
+  --hw-stroke: #6F84A0; --hw-screen: #DCE7F2; --hw-port: #E7EDF5; --hw-top: #FFFFFF; --hw-bot: #D9E2EE; --hw-shadow: rgba(15, 27, 45, 0.18);
   --sev-critical: #7A4300; --sev-high: #B87A12; --sev-other: #E0B866;
   color-scheme: light;
 }
 :root[data-theme="light"] .osi-layer b, :root[data-theme="light"] .osi-row b, :root[data-theme="light"] .osi-choice b,
 :root[data-theme="light"] .pdu-h b, :root[data-theme="light"] .osi-card h3 { color: color-mix(in srgb, var(--c) 55%, #000); }
-:root[data-theme="light"] .card-art svg { filter: none; }
 /* The terminal is always dark, in either theme. */
 .term-shell { --ink: #DCE6F2; --muted: #7F90A8; --line: #1E2A3A; --surface: #0D131C; --good: #3DDC97; --exploited: #FF5470; --high: #5AA9FF; --sun: #FFB000; color-scheme: dark; }
 
@@ -497,7 +496,28 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .m-dev text { fill: var(--ink); font-family: var(--font-mono); }
 .m-dev.warn .m-box { stroke: var(--likely); }
 /* Hardware drawings: line art in the console palette; LEDs and the PC screen show the device's state. */
-.hw-body { fill: var(--surface-2); stroke: var(--hw-stroke); stroke-width: 1.4; }
+.hw-body { fill: url(#hw-sheen); stroke: var(--hw-stroke); stroke-width: 1.4; }
+.hw { filter: drop-shadow(0 2px 2.5px var(--hw-shadow)); }
+.hw-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.hw-defs .s1 { stop-color: var(--hw-top); } .hw-defs .s2 { stop-color: var(--hw-bot); }
+.hw-text { font: 700 6px var(--font-mono); fill: var(--muted); letter-spacing: 0.08em; }
+.hw-amber { fill: var(--sun); }
+.hw-fw { stroke: rgba(var(--bad-rgb), 0.85); }
+.hw-brick { fill: none; stroke: rgba(var(--bad-rgb), 0.55); stroke-width: 1.2; }
+.hw-wave { fill: none; stroke: var(--brand); stroke-width: 2.2; stroke-linecap: round; }
+.hw-cloud, .hw-globe { stroke: var(--good); }
+.hw-threat { stroke: var(--bad); }
+.hw-face { fill: #05080C; stroke: none; }
+.hw-eye { fill: var(--bad); }
+@media (prefers-reduced-motion: no-preference) {
+  .hw-live .hw-led { animation: hw-blink 2.4s steps(1) infinite; }
+  .hw-live .hw:nth-child(3n) .hw-led { animation-delay: -0.8s; } .hw-live .hw:nth-child(3n+1) .hw-led { animation-delay: -1.7s; }
+  .hw-live .hw-led:nth-of-type(2n) { animation-duration: 1.7s; }
+  @keyframes hw-blink { 0%, 100% { opacity: 0.9; } 45% { opacity: 0.25; } }
+  .hw-live .hw-wave { animation: hw-wave 2.2s ease-in-out infinite; }
+  .hw-live .hw-wave.w2 { animation-delay: 0.25s; } .hw-live .hw-wave.w3 { animation-delay: 0.5s; }
+  @keyframes hw-wave { 0%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+}
 .hw-screen { fill: var(--hw-screen); stroke: var(--dg-box); stroke-width: 1; }
 .hw-line { fill: none; stroke: var(--hw-stroke); stroke-width: 1.6; stroke-linecap: round; }
 .hw-port { fill: var(--hw-port); stroke: var(--dg-box); stroke-width: 0.8; }
@@ -598,10 +618,33 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 
 /* ---------- Illustrated cards ---------- */
 .art-card { padding-top: 0; overflow: hidden; border-top: 3px solid var(--cat); }
-.card-art { display: grid; place-items: center; height: 84px; margin-inline: -16px; margin-bottom: 4px; background: radial-gradient(120% 140% at 50% 120%, color-mix(in srgb, var(--cat) 26%, transparent), transparent 70%), color-mix(in srgb, var(--cat) 6%, var(--surface)); border-bottom: 1px solid var(--line); }
-.card-art svg { width: 46px; height: 46px; fill: none; stroke: var(--cat); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--cat) 45%, transparent)); transition: transform 0.25s; }
-.art-card:hover { border-color: var(--cat); border-top-color: var(--cat); box-shadow: 0 10px 30px color-mix(in srgb, var(--cat) 18%, transparent); }
-@media (prefers-reduced-motion: no-preference) { .art-card:hover .card-art svg { transform: scale(1.12) rotate(-3deg); } }
+.card-art { display: grid; place-items: center; height: 96px; margin-inline: -16px; margin-bottom: 4px; background: radial-gradient(120% 140% at 50% 120%, color-mix(in srgb, var(--cat) 22%, transparent), transparent 70%), color-mix(in srgb, var(--cat) 5%, var(--surface)); background-image: radial-gradient(120% 140% at 50% 120%, color-mix(in srgb, var(--cat) 22%, transparent), transparent 70%), radial-gradient(rgba(127, 144, 168, 0.14) 1px, transparent 1.2px); background-size: auto, 14px 14px; border-bottom: 1px solid var(--line); overflow: hidden; }
+.card-art svg { width: 100%; max-width: 240px; height: 100%; overflow: visible; }
+.card-art .cln { stroke: color-mix(in srgb, var(--cat) 45%, var(--dg-line)); stroke-width: 1.6; }
+.card-art .cln.air { stroke-dasharray: 2 4; stroke-linecap: round; }
+.gl { fill: none; stroke: var(--cat, var(--brand)); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.gl.bad { stroke: var(--bad); } .gl.good { stroke: var(--good); }
+.ctag rect { fill: var(--surface); stroke: color-mix(in srgb, var(--cat) 70%, transparent); stroke-width: 1; }
+.ctag text { font: 600 8.5px var(--font-mono); fill: var(--ink); }
+.ctag.bad rect { stroke: rgba(var(--bad-rgb), 0.75); } .ctag.bad text { fill: var(--bad); }
+.cpkt { fill: var(--cat); stroke: var(--surface); stroke-width: 1.5; filter: drop-shadow(0 0 4px var(--cat)); }
+.cpkt.bad { fill: var(--bad); } .cpkt.good { fill: var(--good); }
+.czone { stroke-width: 1; stroke-dasharray: 3 3; }
+.czone.a { fill: rgba(var(--brand-rgb), 0.08); stroke: rgba(var(--brand-rgb), 0.55); } .czone.b { fill: rgba(var(--sun-rgb), 0.08); stroke: rgba(var(--sun-rgb), 0.55); }
+.cosi { opacity: 0.85; }
+.cterm { fill: #05080C; stroke: var(--dg-strong); } .cterm-bar { stroke: var(--dg-strong); } .cdot { fill: var(--dg-strong); }
+.cterm-t { font: 500 8px var(--font-mono); fill: #3DDC97; } .cterm-t.dim { fill: #7F90A8; }
+.needle { transform-box: fill-box; transform-origin: 100% 100%; }
+.art-card:hover { border-color: var(--cat); border-top-color: var(--cat); box-shadow: 0 12px 32px color-mix(in srgb, var(--cat) 20%, transparent); }
+@media (prefers-reduced-motion: no-preference) {
+  .card-art svg { transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .art-card:hover .card-art svg { transform: scale(1.06); }
+  .needle { transition: transform 0.7s cubic-bezier(0.3, 1.6, 0.5, 1); }
+  .art-card:hover .needle { transform: rotate(118deg); }
+  .blink { animation: hw-blink 1s steps(1) infinite; }
+  .art-card:hover .cosi { animation: cosi 0.9s ease-in-out; } .cosi:nth-child(2) { animation-delay: 0.06s; } .cosi:nth-child(3) { animation-delay: 0.12s; }
+  @keyframes cosi { 50% { transform: translateX(4px); } }
+}
 .art-card .done { top: 96px; }
 
 /* ---------- Category headings ---------- */
@@ -613,7 +656,10 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .osi-progress .pchip { font-size: 0.8rem; }
 .osi-stage { display: grid; grid-template-columns: minmax(0, 1fr) 60px minmax(0, 1fr); gap: 10px; align-items: stretch; }
 .osi-stack { display: grid; gap: 4px; }
-.osi-host { font: 600 0.78rem var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); text-align: center; }
+.osi-host { font: 600 0.78rem var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); text-align: center; display: grid; justify-items: center; gap: 4px; }
+.host-ic { width: 54px; height: 40px; overflow: visible; }
+.pp-group { display: flex; align-items: center; gap: 8px; }
+.grp-ic { width: 34px; height: 25px; flex: none; overflow: visible; }
 .osi-layer { display: flex; gap: 10px; align-items: center; padding: 7px 10px; border-radius: 5px; border: 1px solid var(--line); border-left: 4px solid var(--c); background: var(--surface); font-size: 0.88rem; transition: background 0.2s, opacity 0.2s; }
 .osi-layer b { font-family: var(--font-mono); color: var(--c); }
 .osi-layer.past { opacity: 0.45; }
@@ -670,17 +716,21 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .tp-tap { fill: var(--dg-strong); }
 .tp-term { fill: var(--muted); }
 .tp-node { cursor: pointer; }
-.tp-node rect, .tp-node circle { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
-.tp-node .ico { fill: var(--sun); font: 600 11px var(--font-mono); }
-.tp-node .lbl { fill: var(--muted); font: 11px var(--font-body); }
-.tp-node.ok rect, .tp-node.ok circle { stroke: var(--good); }
-.tp-node.bad rect, .tp-node.bad circle { stroke: var(--exploited); }
-.tp-node.target rect, .tp-node.target circle { stroke: var(--brand); stroke-width: 3; }
-.tp-node.down rect, .tp-node.down circle { stroke: var(--exploited); fill: var(--exploited-tint); }
-.tp-node.down .x { stroke: var(--exploited); stroke-width: 3; }
-.tp-node.spof rect, .tp-node.spof circle { stroke: var(--sun); stroke-width: 3; }
+.tp-node .plate { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
+.tp-node .lbl { fill: var(--muted); font: 11px var(--font-body); paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
+.tp-node.ok .plate { stroke: var(--good); fill: color-mix(in srgb, var(--good) 8%, var(--surface)); }
+.tp-node.bad .plate { stroke: var(--exploited); fill: color-mix(in srgb, var(--exploited) 10%, var(--surface)); }
+.tp-node.bad .hw-screen { fill: var(--exploited-tint); }
+.tp-node.bad .hw-led, .tp-node.down .hw-led { fill: var(--exploited); }
+.tp-node.target .plate { stroke: var(--brand); stroke-width: 3; fill: var(--brand-soft); }
+.tp-node.down .plate { stroke: var(--exploited); fill: var(--exploited-tint); }
+.tp-node.down .hw { opacity: 0.45; }
+.tp-node.down .x { stroke: var(--exploited); stroke-width: 3; stroke-linecap: round; }
+.tp-node.spof .plate { stroke: var(--sun); stroke-width: 3; }
 .tp-node:focus { outline: none; }
-.tp-node:focus-visible rect, .tp-node:focus-visible circle { stroke: var(--ink); }
+.tp-node:hover .plate { stroke-width: 3; }
+.tp-node:focus-visible .plate { stroke: var(--ink); stroke-width: 3; }
+@media (prefers-reduced-motion: no-preference) { .tp-node .plate { transition: fill 0.25s, stroke 0.25s; } .tp-node.bad .plate { animation: tp-shake 0.35s; } @keyframes tp-shake { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } } }
 .topo-status { min-height: 1.6em; margin-top: 8px; }
 .topo-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-block: 6px; }
 @media (max-width: 860px) { .topo-grid { grid-template-columns: 1fr; } }
@@ -788,21 +838,24 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
   @keyframes pop { from { transform: translate(-50%, 12px); opacity: 0; } }
 }
 
-/* Home hero: heading plus a small live network (packets travel PC -> switch -> router -> internet/server). */
-.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 380px); gap: 16px 32px; align-items: center; }
+/* Home hero: heading plus a live, clickable network drawn with the device library. */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 460px); gap: 16px 32px; align-items: center; }
 .hero p { color: var(--muted); margin: 0; max-width: 46ch; }
+.hero-art { display: grid; gap: 8px; min-width: 0; }
 .hero-net { width: 100%; height: auto; display: block; overflow: visible; }
 .hero-net .ln { stroke: var(--dg-line); stroke-width: 2; fill: none; }
-.hero-net .dev { fill: var(--surface); stroke: var(--dg-strong); stroke-width: 1.6; }
-.hero-net .sw { stroke: var(--brand); }
-.hero-net .rt { stroke: var(--sun); }
-.hero-net .cl { stroke: var(--good); }
-.hero-net .glyph { fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.hero-net .port { fill: var(--brand); }
-.hero-net text { font: 500 10px var(--font-mono); fill: var(--muted); text-anchor: middle; }
+.hero-net .ln.air { stroke: var(--brand); stroke-dasharray: 2 5; stroke-linecap: round; opacity: 0.7; }
+.hero-net .lbl { font: 500 9.5px var(--font-mono); fill: var(--muted); text-anchor: middle; pointer-events: none; paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
 .hero-net .pkt { stroke: var(--bg); stroke-width: 1.5; }
 .hero-net .p1 { fill: var(--brand); } .hero-net .p2 { fill: var(--sun); } .hero-net .p3 { fill: var(--good); }
-@media (max-width: 760px) { .hero { grid-template-columns: minmax(0, 1fr); } .hero-net { max-width: 340px; } }
+.hero-dev { cursor: pointer; outline: none; }
+.hero-dev .halo { fill: rgba(var(--brand-rgb), 0.12); stroke: rgba(var(--brand-rgb), 0.5); stroke-width: 1; opacity: 0; }
+.hero-dev:hover .halo, .hero-dev:focus-visible .halo, .hero-dev.sel .halo { opacity: 1; }
+.hero-dev.sel .lbl, .hero-dev:hover .lbl { fill: var(--brand); }
+.hero-cap { min-height: 3.2em; margin: 0; font-size: 0.88rem; color: var(--muted); }
+.hero-cap b { color: var(--ink); font-family: var(--font-display); }
+@media (prefers-reduced-motion: no-preference) { .hero-dev .halo { transition: opacity 0.2s; } .hero-dev.sel .hw { animation: hw-pop 0.35s ease-out; } @keyframes hw-pop { 40% { transform: var(--t) scale(1.12); } } }
+@media (max-width: 760px) { .hero { grid-template-columns: minmax(0, 1fr); } .hero-net .lbl { font-size: 12.5px; } }
 @media (prefers-reduced-motion: reduce) { .hero-net .pkt { display: none; } }
 /* Theme toggle */
 .mast-end { display: flex; align-items: center; gap: 8px; flex: none; }
@@ -888,16 +941,11 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .sc-trunk line { stroke: var(--dg-strong); stroke-width: 3; }
 .sc-wire { stroke: var(--dg-line); stroke-width: 1.4; opacity: 0; }
 .sc-wire.on { opacity: 1; }
-.sc-router circle { fill: var(--surface-2); stroke: var(--sun); stroke-width: 2; }
-.sc-router.me circle { fill: rgba(var(--sun-rgb), 0.25); }
-.sc-glyph { fill: none; stroke: var(--sun); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.sc-switch > rect:first-child { fill: var(--surface-2); stroke: var(--brand); stroke-width: 2; }
-.sc-port { fill: var(--brand); }
+.sc-router.me .hw-body { stroke: var(--sun); stroke-width: 2.4; }
 .sc-dev { opacity: 0; transform: scale(0.3); transform-origin: 0 0; }
 .sc-dev.on { opacity: 1; transform: none; }
-.sc-dev rect { fill: var(--surface-2); stroke: var(--dg-strong); stroke-width: 1.5; }
-.sc-dev .stand { fill: none; stroke: var(--dg-strong); stroke-width: 1.5; }
-.sc-dev.me rect { fill: rgba(var(--sun-rgb), 0.25); stroke: var(--sun); stroke-width: 2.5; }
+.sc-dev.me .hw-screen { fill: rgba(var(--sun-rgb), 0.35); stroke: var(--sun); stroke-width: 2; }
+.sc-dev.me .hw-body { stroke: var(--sun); }
 .sc-more { font: 600 17px var(--font-mono); fill: var(--muted); }
 @media (prefers-reduced-motion: no-preference) {
   .sc-dev { transition: opacity 0.3s, transform 0.3s; transition-delay: calc(var(--i) * 12ms); }
@@ -920,6 +968,32 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .sn-table tr.cur td { color: var(--brand); font-weight: 600; }
 @container calc (max-width: 520px) { .sc .stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .sc .stat { padding: 10px; } .sc .stat b { font-size: 0.85rem; } }
 .sn-table .link-btn { background: none; border: 0; padding: 0; cursor: pointer; font: inherit; }
+
+/* Section header art */
+.view-head.with-art { position: relative; padding-right: 300px; min-height: 120px; align-content: center; }
+.head-art { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 270px; height: 118px; margin: 0; border: 1px solid var(--line); border-radius: var(--radius); }
+.head-art svg { max-width: none; }
+@media (max-width: 900px) { .view-head.with-art { padding-right: 0; min-height: 0; } .head-art { display: none; } }
+.radar circle:not(.blip), .radar path:not(.sweep) { fill: none; stroke: color-mix(in srgb, var(--cat) 45%, transparent); stroke-width: 1; }
+.radar .sweep { fill: color-mix(in srgb, var(--cat) 30%, transparent); transform-origin: 0 0; }
+.radar .blip { fill: var(--cat); }
+@media (prefers-reduced-motion: no-preference) {
+  .radar .sweep { animation: radar 3.2s linear infinite; }
+  @keyframes radar { to { transform: rotate(360deg); } }
+  .radar .blip { animation: blip 3.2s ease-out infinite; } .radar .b2 { animation-delay: 1.9s; } .radar .b3 { animation-delay: 1.2s; }
+  @keyframes blip { 0%, 100% { opacity: 0.15; } 8% { opacity: 1; } }
+  .head-art .needle { animation: needle 3s ease-in-out infinite alternate; }
+  @keyframes needle { from { transform: rotate(10deg); } to { transform: rotate(120deg); } }
+  /* Page entry and scroll reveal */
+  #main.enter { animation: view-in 0.38s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  @keyframes view-in { from { opacity: 0; transform: translateY(8px); } }
+  .rv { opacity: 0; transform: translateY(16px); }
+  .rv.in { opacity: 1; transform: none; transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); transition-delay: var(--rd, 0s); }
+  /* A light sweep across primary buttons */
+  .btn.brand { position: relative; overflow: hidden; }
+  .btn.brand::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%); transform: translateX(-120%); pointer-events: none; }
+  .btn.brand:hover::after { transform: translateX(120%); transition: transform 0.7s ease; }
+}
 </style>
 
 <!-- recon complete. you found flag 1 of 3: flag{v1ew_s0urce_is_r3con}  (submit it in the command palette: press / then type "submit" and the flag) -->
@@ -950,6 +1024,9 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
   </div></nav>
 </header>
 
+<svg class="hw-defs" aria-hidden="true" focusable="false"><defs>
+  <linearGradient id="hw-sheen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="s1"/><stop offset="1" class="s2"/></linearGradient>
+</defs></svg>
 <main id="main"></main>
 <div class="pop" id="pop" role="dialog" aria-label="Explanation" hidden></div>
 <div class="cmdk" id="cmdk" hidden>
@@ -971,10 +1048,12 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
     <div class="rot" title="Transmission intercepted">rot13 // synt{pnrfne_jbhyq_or_cebhq}</div>
   </div>
 </footer>
-<div class="statusbar" id="statusbar"></div>
+<div class="statusbar" id="statusbar" role="region" aria-label="Status bar"></div>
 
 <script>
 const DATA = /*__DATA__*/null;
+/* ---------- device library (static/js/hw.js, inlined by build.py) ---------- */
+/*__HW__*/
 
 /* ---------- helpers ---------- */
 const $ = id => document.getElementById(id);
@@ -1278,17 +1357,37 @@ $("theme-btn").addEventListener("click", () => {
 paintThemeBtn();
 
 /* Home hero network: two PCs, a switch, a router, the internet and a server, with packets moving between them. */
-const HERO_PATHS = ["M48 52 L160 104 L250 104 L330 50", "M330 50 L250 104 L160 104 L48 156", "M48 156 L160 104 L250 104 L330 160"];
-const HERO_NET = `<svg class="hero-net" viewBox="0 0 380 210" role="img" aria-label="Diagram: two PCs connect to a switch, the switch to a router, and the router to the internet and a server, with packets moving along the links">
-  <path class="ln" d="M48 52 L160 104 M48 156 L160 104 M160 104 L250 104 M250 104 L330 50 M250 104 L330 160"/>
-  ${HERO_PATHS.map((d, i) => `<circle class="pkt p${i + 1}" r="5"><animateMotion dur="${3.2 + i * 0.5}s" begin="${i * 1.1}s" repeatCount="indefinite" path="${d}" keyPoints="0;1" keyTimes="0;1" calcMode="linear"/></circle>`).join("")}
-  <g><rect class="dev" x="26" y="34" width="44" height="30" rx="3"/><path class="glyph" d="M20 70h56"/><text x="48" y="88">PC</text></g>
-  <g><rect class="dev" x="26" y="138" width="44" height="30" rx="3"/><path class="glyph" d="M20 174h56"/><text x="48" y="192">PC</text></g>
-  <g><rect class="dev sw" x="128" y="92" width="64" height="24" rx="3"/>${[0, 1, 2, 3, 4].map(i => `<rect class="port" x="${137 + i * 10}" y="101" width="6" height="6" rx="1"/>`).join("")}<text x="160" y="134">switch</text></g>
-  <g><circle class="dev rt" cx="250" cy="104" r="17"/><path class="glyph" d="M241 104h18M254 99l5 5-5 5M246 99l-5 5 5 5"/><text x="250" y="138">router</text></g>
-  <g><path class="dev cl" d="M314 60a11 11 0 0 1 1-21a14 14 0 0 1 26-4a11 11 0 0 1 12 25z"/><text x="334" y="80">internet</text></g>
-  <g><rect class="dev" x="318" y="140" width="26" height="40" rx="3"/><path class="glyph" d="M324 150h14M324 158h14M324 166h14"/><text x="331" y="196">server</text></g>
-</svg>`;
+/* Home hero network: every device is clickable and explains itself. Packets travel the real paths. */
+const HERO_DEV = [  // kind, x, y, label
+  ["laptop", 46, 50, "laptop"], ["phone", 46, 130, "phone"], ["pc", 46, 212, "PC"],
+  ["ap", 150, 44, "access point", "side"], ["switch", 150, 130, "switch"], ["server", 150, 218, "server"],
+  ["router", 258, 130, "router"], ["firewall", 344, 130, "firewall"], ["cloud", 424, 130, "internet"],
+];
+const HERO_LINKS = [[0, 4], [2, 4], [3, 4], [5, 4], [4, 6], [6, 7], [7, 8]];
+const HERO_PATHS = ["M46 50 L150 130 L258 130 L344 130 L424 130", "M424 130 L344 130 L258 130 L150 130 L46 212", "M46 130 L150 44 L150 130 L150 218"];
+function heroNet() {
+  const P = i => HERO_DEV[i];
+  return `<div class="hero-art"><svg class="hero-net hw-live" viewBox="0 0 470 250" role="group" aria-label="A small network. Select a device to learn what it does.">
+    ${HERO_LINKS.map(([a, b]) => `<line class="ln" x1="${P(a)[1]}" y1="${P(a)[2]}" x2="${P(b)[1]}" y2="${P(b)[2]}"/>`).join("")}
+    <line class="ln air" x1="46" y1="130" x2="150" y2="44"/>
+    ${HERO_PATHS.map((d, i) => `<circle class="pkt p${i + 1}" r="5"><animateMotion dur="${3.6 + i * 0.6}s" begin="${i * 1.2}s" repeatCount="indefinite" path="${d}" calcMode="linear"/></circle>`).join("")}
+    ${HERO_DEV.map(([k, x, y, label, side]) => `<g class="hero-dev" data-k="${k}" tabindex="0" role="button" aria-label="${esc(HW_INFO[k][0])}: ${esc(HW_INFO[k][1])}">
+      <rect class="halo" x="${x - 34}" y="${y - 30}" width="68" height="${label ? 72 : 60}" rx="12"/>
+      <g style="--t: translate(${x}px, ${y}px)">${hw(k, x, y, 0.72)}</g><text class="lbl" ${side ? `x="${x + 26}" y="${y + 4}" style="text-anchor:start"` : `x="${x}" y="${y + 33}"`}>${esc(label)}</text></g>`).join("")}
+  </svg><p class="hero-cap" id="hero-cap" aria-live="polite">Tap any device to see what it does.</p></div>`;
+}
+function wireHero() {
+  const svg = main.querySelector(".hero-net"); if (!svg) return;
+  const pick = g => {
+    svg.querySelectorAll(".hero-dev.sel").forEach(x => x.classList.remove("sel"));
+    g.classList.add("sel");
+    const [name, what] = HW_INFO[g.dataset.k];
+    $("hero-cap").innerHTML = `<b>${esc(name)}</b> · ${esc(what)}`;
+  };
+  svg.addEventListener("click", e => { const g = e.target.closest(".hero-dev"); if (g) pick(g); });
+  svg.addEventListener("keydown", e => { const g = e.target.closest(".hero-dev"); if (g && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pick(g); } });
+  svg.addEventListener("mouseover", e => { const g = e.target.closest(".hero-dev"); if (g && !g.classList.contains("sel")) pick(g); });
+}
 
 /* TODAY */
 VIEWS.today = () => {
@@ -1304,7 +1403,7 @@ VIEWS.today = () => {
 
   main.innerHTML = `<div class="view">
     ${P.intro ? "" : welcomeHtml()}
-    <div class="view-head hero"><div class="stack" style="gap:10px"><h1>Learn it. Break it. <em class="accent">Understand it.</em></h1><p>Security news explained in plain English, plus hands-on labs for Network+.</p></div>${HERO_NET}</div>
+    <div class="view-head hero"><div class="stack" style="gap:10px"><h1>Learn it. Break it. <em class="accent">Understand it.</em></h1><p>Security news explained in plain English, plus hands-on labs for Network+.</p></div>${heroNet()}</div>
     <div class="split">
       <div class="stack" style="gap:18px">
         ${continueCard()}
@@ -1338,6 +1437,7 @@ VIEWS.today = () => {
     </div>
   </div>`;
   renderDaily();
+  wireHero();
 };
 
 /* WELCOME: first visit only */
@@ -1468,7 +1568,7 @@ VIEWS.news = () => {
   const topics = Object.entries(counts).filter(([t]) => LESSON[t]).sort((a, b) => b[1] - a[1]);
   const sources = [...new Set(DATA.news.map(n => n.source))].sort();
   main.innerHTML = `<div class="view">
-    <div class="view-head"><h1>Security news, explained</h1>
+    <div class="view-head with-art">${headArt("news")}<h1>Security news, explained</h1>
 </div>
     <div class="controls">
       <div class="row"><label class="sr" for="nq">Search news</label><input id="nq" type="search" placeholder="Search headlines (e.g. Microsoft, ransomware, CVE-2026)" value="${esc(NS.q)}">
@@ -1592,7 +1692,7 @@ function cveCard(c) {
 }
 VIEWS.cves = () => {
   main.innerHTML = `<div class="view">
-    <div class="view-head"><h1>Which vulnerabilities actually matter</h1>
+    <div class="view-head with-art">${headArt("cves")}<h1>Which vulnerabilities actually matter</h1>
       <p>This week's vulnerabilities, ranked by real-world risk.</p></div>
     <section class="glance" id="glance" aria-label="At a glance"></section>
     ${trendsHtml()}
@@ -1771,7 +1871,7 @@ VIEWS.learn = () => {
   const tracks = ["All", ...new Set(DATA.lessons.map(l => l.track))];
   const doneCount = DATA.lessons.filter(l => P.done[l.id]).length;
   main.innerHTML = `<div class="view">
-    <div class="view-head"><h1>The concepts behind the headlines</h1>
+    <div class="view-head with-art">${headArt("learn")}<h1>The concepts behind the headlines</h1>
 </div>
     <div class="row" style="justify-content:space-between">
       <div class="row" id="ltracks">${tracks.map(t => `<button class="chip" data-t="${esc(t)}" aria-pressed="${LS.track === t}">${esc(t)}</button>`).join("")}</div>
@@ -1787,7 +1887,7 @@ VIEWS.learn = () => {
   </div>`;
   const drawGrid = () => {
     $("lgrid").innerHTML = DATA.lessons.filter(l => LS.track === "All" || l.track === LS.track).map(l => `
-      <a class="lcard" href="#lesson-${esc(l.id)}">${P.done[l.id] ? '<span class="done">DONE</span>' : ""}
+      <a class="lcard art-card" href="#lesson-${esc(l.id)}" style="--cat:${TRACK_COLOR[l.track] || "var(--brand)"}">${cardArt(l.id, l.track)}${P.done[l.id] ? '<span class="done">DONE</span>' : ""}
         <span class="eyebrow">${esc(l.track)}</span><h3>${esc(l.title)}</h3><p>${esc(l.hook)}</p>
         <span class="lmeta"><span>${l.minutes} min</span><span>${esc(l.level)}</span></span></a>`).join("");
   };
@@ -1895,19 +1995,90 @@ VIEWS.glossary = () => {
 /* LABS */
 const LAB = Object.fromEntries(DATA.labs.map(l => [l.id, l]));
 const CAT_COLOR = { "Networking": "var(--brand)", "Linux": "var(--good)", "Security operations": "var(--sun)", "Ethical hacking": "var(--exploited)" };
-const ART = {  // simple line icons, drawn in the category colour
-  network: '<circle cx="12" cy="24" r="5"/><circle cx="36" cy="10" r="5"/><circle cx="36" cy="38" r="5"/><path d="M17 22l14-9M17 26l14 9"/><path d="M41 10h4M41 38h4" stroke-dasharray="2 3"/>',
-  layers: '<path d="M24 6l18 8-18 8-18-8z"/><path d="M6 24l18 8 18-8"/><path d="M6 33l18 8 18-8"/>',
-  graph: '<circle cx="24" cy="24" r="5"/><circle cx="8" cy="10" r="4"/><circle cx="40" cy="10" r="4"/><circle cx="8" cy="38" r="4"/><circle cx="40" cy="38" r="4"/><path d="M11 13l9 8M37 13l-9 8M11 35l9-8M37 35l-9-8"/><path d="M12 10h24" stroke-dasharray="3 3"/>',
-  terminal: '<rect x="4" y="8" width="40" height="32" rx="4"/><path d="M11 18l7 6-7 6M22 31h12"/>',
-  search: '<circle cx="20" cy="20" r="11"/><path d="M28 28l12 12"/><path d="M15 17h10M15 22h7"/>',
-  mail: '<rect x="5" y="11" width="38" height="27" rx="3"/><path d="M6 13l18 13 18-13"/><circle cx="38" cy="35" r="7" fill="var(--surface)"/><path d="M38 31v4M38 38v.5"/>',
-  gauge: '<path d="M8 34a16 16 0 1132 0"/><path d="M24 34l9-11"/><circle cx="24" cy="34" r="3"/>',
-  ports: '<rect x="5" y="12" width="38" height="24" rx="3"/><rect x="11" y="19" width="7" height="8" rx="1"/><rect x="21" y="19" width="7" height="8" rx="1"/><rect x="31" y="19" width="7" height="8" rx="1"/><path d="M14 36v5M24 36v5M34 36v5"/>',
-  subnet: '<path d="M5 14h38M5 24h38M5 34h38"/><path d="M28 9v30" stroke-dasharray="3 3"/><path d="M10 14v0M16 24v0M22 34v0" stroke-width="4"/>',
+const TRACK_COLOR = { Threats: "var(--exploited)", Defence: "var(--good)", "Web attacks": "var(--likely)", Foundations: "var(--brand)" };
+/* ---------- card scenes: small illustrations built from the device library ---------- */
+const GLYPH = {  // extras drawn next to devices, centred on (0,0)
+  mail: '<rect x="-12" y="-8" width="24" height="16" rx="2"/><path d="M-11-7l11 8 11-8"/>',
+  lock: '<rect x="-8" y="-2" width="16" height="12" rx="2"/><path d="M-5-2v-4a5 5 0 0 1 10 0v4"/>',
+  bug: '<ellipse cx="0" cy="2" rx="6" ry="8"/><path d="M0-6v16M-6 0h-5M6 0h5M-6 6l-5 3M6 6l5 3M-5-4l-4-4M5-4l4-4"/>',
+  shield: '<path d="M0-11l9 4v6c0 6-4 10-9 12c-5-2-9-6-9-12v-6z"/><path d="M-4 0l3 3 5-6"/>',
+  key: '<circle cx="-5" cy="0" r="5"/><path d="M0 0h11M7 0v4M10 0v3"/>',
+  search: '<circle cx="-3" cy="-3" r="7"/><path d="M2 2l8 8"/>',
+  alert: '<path d="M0-10l11 19h-22z"/><path d="M0-3v5M0 6v.5"/>',
+  chip: '<rect x="-8" y="-8" width="16" height="16" rx="2"/><path d="M-4-12v4M0-12v4M4-12v4M-4 8v4M0 8v4M4 8v4M-12-4h4M-12 0h4M-12 4h4M8-4h4M8 0h4M8 4h4"/>',
+  eye: '<path d="M-12 0c4-7 20-7 24 0c-4 7-20 7-24 0z"/><circle cx="0" cy="0" r="3.5"/>',
+  gauge: '<path d="M-14 6a14 14 0 1 1 28 0"/><path class="needle" d="M0 6l-9-7"/><circle cx="0" cy="6" r="2"/>',
 };
-const ITEM_ART = { dhcp: "network", "osi-model": "layers", topologies: "graph", "linux-terminal": "terminal", "log-detective": "search", "header-inspector": "mail", "cvss-builder": "gauge", "ports-protocols": "ports", subnetting: "subnet", "subnet-calc": "subnet" };
-const cardArt = (id, cat) => `<span class="card-art" style="--cat:${CAT_COLOR[cat] || "var(--brand)"}"><svg viewBox="0 0 48 48" aria-hidden="true">${ART[ITEM_ART[id]] || ART.network}</svg></span>`;
+const glyph = (k, x, y, sc = 1, cls = "") => `<g class="gl ${cls}" transform="translate(${x},${y}) scale(${sc})">${GLYPH[k]}</g>`;
+const ctag = (t, x, y, cls = "") => `<g class="ctag ${cls}" transform="translate(${x},${y})"><rect x="${-(t.length * 3.1 + 7)}" y="-8.5" width="${t.length * 6.2 + 14}" height="17" rx="8.5"/><text y="3.2" text-anchor="middle">${esc(t)}</text></g>`;
+const TERM_ART = `<rect class="cterm" x="46" y="12" width="108" height="64" rx="5"/><path class="cterm-bar" d="M46 24h108"/><circle class="cdot" cx="54" cy="18" r="2"/><circle class="cdot" cx="61" cy="18" r="2"/><circle class="cdot" cx="68" cy="18" r="2"/>
+  <text class="cterm-t" x="54" y="40">$ grep Failed auth.log</text><text class="cterm-t dim" x="54" y="52">203.0.113.45 x3</text><text class="cterm-t" x="54" y="66">$ <tspan class="blink">▌</tspan></text>`;
+const OSI_ART = [0, 1, 2, 3, 4, 5, 6].map(k => `<rect class="cosi" x="72" y="${9 + k * 10}" width="56" height="7.5" rx="2" style="fill:${["var(--critical)", "var(--high)", "var(--brand)", "var(--good)", "var(--sun)", "var(--likely)", "var(--exploited)"][k]}"/>`).join("");
+// d: devices [kind, x, y, scale], g: glyphs, l: links [x1, y1, x2, y2, air?], t: tags, p: packet paths, tone: packet colour
+const SCENE = {
+  dhcp: { d: [["pc", 38, 46, 0.58], ["switch", 100, 48, 0.55], ["server", 162, 46, 0.6]], l: [[58, 47, 82, 48], [118, 48, 150, 46]], t: [["IP?", 70, 18]], p: ["M38 46L100 48L162 46", "M162 46L100 48L38 46"] },
+  "osi-model": { raw: OSI_ART, d: [["pc", 32, 46, 0.5], ["server", 170, 46, 0.55]], l: [[50, 46, 72, 46], [128, 46, 158, 46]], p: ["M32 46L100 12L100 78L170 46"] },
+  topologies: { d: [["switch", 100, 46, 0.6], ["pc", 36, 20, 0.4], ["pc", 36, 70, 0.4], ["pc", 164, 20, 0.4], ["pc", 164, 70, 0.4]], l: [[48, 22, 84, 44], [48, 68, 84, 48], [152, 22, 116, 44], [152, 68, 116, 48]], p: ["M36 20L100 46L164 70"] },
+  "ports-protocols": { d: [["laptop", 40, 48, 0.55], ["server", 160, 46, 0.62]], l: [[58, 50, 146, 46]], t: [[":443", 100, 20], [":22", 100, 70]], p: ["M40 48L160 46"] },
+  subnetting: { raw: `<rect class="czone a" x="14" y="44" width="80" height="34" rx="6"/><rect class="czone b" x="106" y="44" width="80" height="34" rx="6"/>`, d: [["router", 100, 20, 0.52], ["pc", 38, 62, 0.36], ["pc", 72, 62, 0.36], ["pc", 128, 62, 0.36], ["pc", 162, 62, 0.36]], l: [[90, 26, 54, 44], [110, 26, 146, 44]], t: [["/26", 30, 44], [ "/26", 170, 44]], p: ["M100 22L54 44L38 62", "M100 22L146 44L162 62"] },
+  "linux-terminal": { raw: TERM_ART },
+  "log-detective": { d: [["attacker", 36, 46, 0.6], ["server", 164, 46, 0.62]], l: [[52, 46, 150, 46]], t: [["ssh ×300", 100, 20, "bad"]], g: [["search", 172, 64, 0.8]], p: ["M36 46L164 46", "M36 46L164 46"], tone: "bad" },
+  "header-inspector": { d: [["attacker", 34, 46, 0.58], ["laptop", 166, 48, 0.55]], g: [["mail", 100, 46, 1.1], ["search", 112, 36, 0.7]], l: [[50, 46, 86, 46], [114, 46, 148, 48]], p: ["M34 46L166 48"], tone: "bad" },
+  "cvss-builder": { g: [["gauge", 100, 44, 2.3]], t: [["9.8 critical", 100, 72, "bad"]] },
+  // lessons
+  phishing: { d: [["attacker", 36, 46, 0.6], ["laptop", 164, 48, 0.55]], g: [["mail", 100, 46, 1.1]], l: [[52, 46, 86, 46], [114, 46, 146, 48]], p: ["M36 46L164 48"], tone: "bad" },
+  ransomware: { d: [["attacker", 36, 46, 0.6], ["server", 160, 46, 0.62]], g: [["lock", 178, 30, 0.9, "bad"]], l: [[52, 46, 146, 46]], t: [["$$$", 100, 20, "bad"]], p: ["M36 46L160 46"], tone: "bad" },
+  malware: { d: [["pc", 150, 46, 0.62]], g: [["bug", 54, 46, 1.4, "bad"]], l: [[70, 46, 128, 46]], p: ["M54 46L150 46"], tone: "bad" },
+  "zero-day": { d: [["attacker", 36, 46, 0.6], ["server", 164, 46, 0.62]], l: [[52, 46, 150, 46]], t: [["0-day", 100, 20, "bad"]], p: ["M36 46L164 46"], tone: "bad" },
+  "vuln-management": { d: [["server", 64, 46, 0.62]], g: [["shield", 140, 46, 1.6, "good"]], l: [[80, 46, 124, 46]], t: [["patched", 100, 70]], p: ["M140 46L64 46"], tone: "good" },
+  "supply-chain": { d: [["server", 36, 46, 0.55], ["server", 100, 46, 0.55], ["laptop", 164, 48, 0.5]], l: [[48, 46, 88, 46], [112, 46, 148, 48]], t: [["update", 68, 20, "bad"]], p: ["M36 46L100 46L164 48"], tone: "bad" },
+  "data-breach": { d: [["db", 56, 46, 0.66], ["attacker", 160, 46, 0.6]], l: [[72, 46, 144, 46]], t: [["records", 108, 20, "bad"]], p: ["M56 46L160 46", "M56 46L160 46"], tone: "bad" },
+  "nation-state": { d: [["cloud", 36, 42, 0.55], ["firewall", 100, 46, 0.52], ["server", 164, 46, 0.58]], l: [[52, 44, 86, 46], [114, 46, 150, 46]], p: ["M36 42L100 46L164 46"], tone: "bad" },
+  ddos: { d: [["attacker", 30, 18, 0.36], ["attacker", 30, 46, 0.36], ["attacker", 30, 74, 0.36], ["server", 164, 46, 0.62]], l: [[40, 20, 150, 44], [40, 46, 150, 46], [40, 72, 150, 48]], p: ["M30 18L164 46", "M30 46L164 46", "M30 74L164 46"], tone: "bad" },
+  "ai-security": { d: [["server", 156, 46, 0.62]], g: [["chip", 56, 46, 1.5]], l: [[74, 46, 142, 46]], t: [["prompt", 104, 20, "bad"]], p: ["M56 46L156 46"], tone: "bad" },
+  cloud: { d: [["cloud", 100, 28, 0.72], ["server", 56, 64, 0.42], ["server", 100, 66, 0.42], ["server", 144, 64, 0.42]], l: [[90, 40, 60, 54], [100, 40, 100, 56], [110, 40, 140, 54]], p: ["M100 28L56 64", "M100 28L144 64"] },
+  identity: { d: [["phone", 54, 46, 0.6], ["laptop", 152, 48, 0.55]], g: [["key", 100, 44, 1.1, "good"]], t: [["MFA", 100, 20]], l: [[68, 46, 88, 46], [114, 46, 134, 48]], p: ["M54 46L152 48"], tone: "good" },
+  "iot-ot": { d: [["ap", 100, 26, 0.6]], g: [["chip", 40, 64, 0.8], ["chip", 100, 70, 0.8], ["chip", 160, 64, 0.8]], l: [[90, 34, 48, 58, 1], [100, 36, 100, 60, 1], [110, 34, 152, 58, 1]], p: ["M100 26L40 64", "M100 26L160 64"] },
+  "web-sqli": { d: [["laptop", 30, 48, 0.48], ["server", 100, 46, 0.55], ["db", 170, 46, 0.55]], l: [[46, 48, 88, 46], [112, 46, 156, 46]], t: [["' OR 1=1", 66, 20, "bad"]], p: ["M30 48L100 46L170 46"], tone: "bad" },
+  "web-xss": { d: [["attacker", 32, 46, 0.52], ["server", 100, 46, 0.55], ["laptop", 168, 48, 0.48]], l: [[46, 46, 88, 46], [112, 46, 150, 48]], t: [["<script>", 100, 18, "bad"]], p: ["M32 46L100 46L168 48"], tone: "bad" },
+  "web-access": { d: [["laptop", 38, 48, 0.55], ["server", 164, 46, 0.6]], g: [["lock", 100, 44, 1.2]], l: [[56, 48, 90, 46], [110, 46, 150, 46]], t: [["/admin", 100, 18, "bad"]], p: ["M38 48L164 46"], tone: "bad" },
+  networking: { d: [["pc", 28, 48, 0.45], ["switch", 78, 50, 0.45], ["router", 128, 48, 0.48], ["cloud", 176, 46, 0.45]], l: [[42, 48, 64, 50], [92, 50, 114, 50], [142, 50, 164, 47]], p: ["M28 48L78 50L128 50L176 46"] },
+  encryption: { d: [["laptop", 38, 48, 0.55], ["server", 164, 46, 0.6]], g: [["lock", 100, 44, 1.1, "good"]], l: [[56, 48, 90, 46], [110, 46, 150, 46]], t: [["TLS", 100, 20]], p: ["M38 48L164 46"], tone: "good" },
+  linux: { raw: TERM_ART },
+  soc: { d: [["server", 40, 52, 0.5], ["pc", 100, 56, 0.5], ["laptop", 160, 56, 0.48]], g: [["eye", 100, 20, 1.3]], l: [[52, 40, 88, 26, 1], [100, 30, 100, 42, 1], [148, 40, 112, 26, 1]], t: [["alert", 160, 22, "bad"]] },
+  "incident-response": { g: [["alert", 56, 46, 1.6, "bad"], ["shield", 144, 46, 1.6, "good"]], l: [[76, 46, 124, 46]], p: ["M56 46L144 46"], tone: "good" },
+  osint: { d: [["cloud", 52, 46, 0.6]], g: [["search", 140, 44, 1.8]], l: [[70, 46, 120, 44, 1]], t: [["@handle", 100, 18]] },
+};
+SCENE["subnet-calc"] = SCENE.subnetting;
+function sceneSvg(sc) {
+  const pk = (sc.p || []).map((d, i) => `<circle class="cpkt ${sc.tone || ""}" r="4" opacity="0"><animateMotion begin="indefinite" dur="1.5s" path="${d}" fill="freeze"/><animate attributeName="opacity" begin="indefinite" dur="1.5s" values="0;1;1;0" keyTimes="0;0.1;0.85;1" fill="freeze"/></circle>`).join("");
+  return `<svg viewBox="0 0 200 88" aria-hidden="true" class="hw-live">
+    ${(sc.l || []).map(([a, b, c, d, air]) => `<line class="cln${air ? " air" : ""}" x1="${a}" y1="${b}" x2="${c}" y2="${d}"/>`).join("")}${sc.raw || ""}
+    ${(sc.d || []).map(([k, x, y, z]) => hw(k, x, y, z)).join("")}${(sc.g || []).map(([k, x, y, z, c]) => glyph(k, x, y, z, c)).join("")}
+    ${(sc.t || []).map(([t, x, y, c]) => ctag(t, x, y, c)).join("")}${pk}</svg>`;
+}
+// Section headers: a scene in the same style, on wide screens only.
+const RADAR_ART = `<g class="radar" transform="translate(100,46)"><circle r="40"/><circle r="27"/><circle r="14"/><path d="M-40 0h80M0-40v80"/>
+  <path class="sweep" d="M0 0L0-40A40 40 0 0 1 28.3-28.3z"/><circle class="blip b1" cx="17" cy="-22" r="3"/><circle class="blip b2" cx="-24" cy="9" r="3"/><circle class="blip b3" cx="9" cy="27" r="2.5"/></g>`;
+const HEAD_SCENE = {
+  missions: SCENE.networking,
+  learn: { d: [["laptop", 52, 50, 0.72]], g: [["shield", 140, 46, 2, "good"]], l: [[76, 50, 116, 46]], p: ["M52 50L140 46"], tone: "good" },
+  play: { d: [["attacker", 40, 48, 0.68], ["firewall", 116, 48, 0.6]], g: [["key", 170, 46, 1.3]], l: [[58, 48, 100, 48], [132, 48, 156, 46]], t: [["flag{…}", 116, 14]], p: ["M40 48L116 48L170 46"], tone: "bad" },
+  careers: { d: [["laptop", 34, 66, 0.5], ["server", 100, 48, 0.58], ["cloud", 166, 28, 0.62]], l: [[48, 62, 88, 52], [112, 44, 150, 32]], t: [["SOC", 100, 80]], p: ["M34 66L100 48L166 28"] },
+  progress: { g: [["gauge", 100, 44, 2.4]], t: [["root", 100, 76]] },
+  news: { d: [["ap", 100, 50, 1]], t: [["breaking", 100, 80, "bad"], ["CVE", 38, 30], ["KEV", 162, 30, "bad"]] },
+  cves: { raw: RADAR_ART },
+};
+const headArt = k => `<span class="head-art card-art" aria-hidden="true" style="--cat:${{ cves: "var(--exploited)", play: "var(--exploited)", learn: "var(--good)", news: "var(--sun)" }[k] || "var(--brand)"}">${sceneSvg(HEAD_SCENE[k])}</span>`;
+const cardArt = (id, cat) => `<span class="card-art" style="--cat:${CAT_COLOR[cat] || TRACK_COLOR[cat] || "var(--brand)"}">${sceneSvg(SCENE[id] || SCENE.networking)}</span>`;
+// Hovering a card sends its packets across the scene.
+document.addEventListener("mouseover", e => {
+  const card = e.target.closest?.(".art-card"); if (!card || card.dataset.playing || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const anims = card.querySelectorAll(".card-art animateMotion, .card-art animate"); if (!anims.length) return;
+  card.dataset.playing = "1";
+  anims.forEach((a, i) => { try { setTimeout(() => a.beginElement(), Math.floor(i / 2) * 220); } catch (err) {} });
+  setTimeout(() => delete card.dataset.playing, 2200);
+});
 const CATEGORY_ORDER = ["Networking", "Linux", "Security operations", "Ethical hacking"];
 VIEWS.missions = () => {
   const items = [
@@ -1917,7 +2088,7 @@ VIEWS.missions = () => {
   ];
   const cats = [...new Set([...CATEGORY_ORDER, ...items.map(i => i.cat)])].filter(c => items.some(i => i.cat === c));
   main.innerHTML = `<div class="view">
-    <div class="view-head"><h1>Learn it. Break it. Understand it.</h1></div>
+    <div class="view-head with-art">${headArt("missions")}<h1>Learn it. Break it. Understand it.</h1></div>
     ${cats.map(c => `<section class="stack"><h2 class="cat-h">${esc(c)}</h2><div class="lessons">${items.filter(i => i.cat === c).map(i => i.html).join("")}</div></section>`).join("")}
   </div>`;
 };
@@ -2110,7 +2281,7 @@ VIEWS.progress = () => {
   const r = rank(), prog = r.next ? (P.xp - r.floor) / (r.next - r.floor) : 1;
   const stats = [["XP", P.xp], ["Lessons", `${count(P.done)}/${DATA.lessons.length}`], ["Labs", `${count(P.labs)}/${DATA.labs.length}`], ["Flags", `${count(P.flags)}/3`], ["Paths", `${count(P.paths)}/${DATA.paths.length}`], ["Days practised", count(P.days)], ["Terms", count(P.terms)], ["Badges", `${count(P.badges)}/${BADGES.length}`]];
   main.innerHTML = `<div class="view">
-    <div class="view-head"><h1>uid=${esc(r.name)}</h1>
+    <div class="view-head with-art">${headArt("progress")}<h1>uid=${esc(r.name)}</h1>
       <p>${r.next ? `${(r.next - P.xp).toLocaleString()} XP to <strong>${esc(r.nextName)}</strong>.` : "Top access level reached. You are root."} Progress is saved in this browser only.</p>
       <p class="hint">Levels and badges track practice here, not qualifications.</p></div>
     <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(prog * 100)}%;background:var(--sun)"></i></span><span class="mono">${RANKS.map(x => x[1]).join(" → ")}</span></div>
@@ -2135,7 +2306,7 @@ VIEWS.progress = () => {
 const GS = { mode: "phish", phish: null, quiz: null };
 VIEWS.play = () => {
   main.innerHTML = `<div class="view">
-    <div class="view-head"><h1>Train your instincts</h1>
+    <div class="view-head with-art">${headArt("play")}<h1>Train your instincts</h1>
 </div>
     <div class="game-tabs" id="gtabs">
       <button class="chip" data-m="phish" aria-pressed="${GS.mode === "phish"}">Phish or Legit?</button>
@@ -2241,7 +2412,7 @@ function drawQuiz() {
 VIEWS.careers = () => {
   const C = DATA.careers;
   main.innerHTML = `<div class="view">
-    <div class="view-head"><h1>Find your way into cyber</h1>
+    <div class="view-head with-art">${headArt("careers")}<h1>Find your way into cyber</h1>
       <p>Most people start in IT support or a SOC.</p></div>
     <h2 class="sr-only">Entry paths</h2><div class="paths">${C.paths.map(p => `<article class="path">
       <h3>${esc(p.role)}</h3><p class="tl">${esc(p.tagline)}</p><p>${gloss(p.what, 3)}</p>
@@ -2462,6 +2633,35 @@ function route() {
   window.scrollTo(0, 0);
   if (CVE_VIEWS.includes(r.path)) loadCves();
   r.draw();
+  main.classList.remove("enter"); void main.offsetWidth; main.classList.add("enter");
+  revealLater();
+}
+// Cards and panels below the fold fade up as they scroll into view. Anything already on screen is left alone,
+// and the classes are removed afterwards so nothing keeps a transform (which would break fixed-position children).
+let revealQueue = [];
+function revealCheck() {
+  if (!revealQueue.length) return;
+  const limit = innerHeight - 30;
+  revealQueue = revealQueue.filter(el => {
+    if (!el.isConnected) return false;
+    if (el.getBoundingClientRect().top > limit) return true;
+    el.classList.add("in"); setTimeout(() => el.classList.remove("rv", "in"), 900);
+    return false;
+  });
+}
+addEventListener("scroll", revealCheck, { passive: true });
+addEventListener("resize", revealCheck);
+document.addEventListener("visibilitychange", revealCheck);
+function revealLater() {
+  revealQueue.forEach(el => el.classList.remove("rv", "in")); revealQueue = [];
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const groups = new Map();
+  main.querySelectorAll(".lcard, .view > .panel, .split .panel, .changelog, .path, .glance > *").forEach(el => {
+    if (el.getBoundingClientRect().top < innerHeight) return;
+    const parent = el.parentElement, k = groups.get(parent) || 0; groups.set(parent, k + 1);
+    el.style.setProperty("--rd", `${Math.min(k % 3, 2) * 70}ms`);
+    el.classList.add("rv"); revealQueue.push(el);
+  });
 }
 // Redraw the current view in place (no scroll jump), e.g. when the CVE list finishes loading.
 function rerender() { const y = scrollY; parseRoute().draw(); scrollTo(0, y); }

@@ -1,5 +1,6 @@
 // OSI model lab: watch encapsulation step by step, browse the layers, then sort real things into them.
 // Content lives in content/labs.json (kind "osi"); the pure helpers below are tested in tests/labs.test.mjs.
+import { hw } from "../hw.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -55,9 +56,9 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
 
     <section class="panel"><div class="panel-title"><h2>1 · Send a web request</h2><span class="muted mono" id="osi-count"></span></div>
       <div class="osi-stage">
-        <div class="osi-stack" aria-label="Your PC, sending"><div class="osi-host">Your PC</div>${stackRows("send")}</div>
+        <div class="osi-stack" aria-label="Your PC, sending"><div class="osi-host"><svg class="host-ic" viewBox="-34 -25 68 50" aria-hidden="true">${hw("pc")}</svg>Your PC</div>${stackRows("send")}</div>
         <div class="osi-wire" id="osi-wire" aria-hidden="true"></div>
-        <div class="osi-stack" aria-label="Web server, receiving"><div class="osi-host">Web server</div>${stackRows("recv")}</div>
+        <div class="osi-stack" aria-label="Web server, receiving"><div class="osi-host"><svg class="host-ic" viewBox="-34 -25 68 50" aria-hidden="true">${hw("server")}</svg>Web server</div>${stackRows("recv")}</div>
       </div>
       <div class="osi-pdu" id="osi-pdu" aria-live="polite"></div>
       <p class="osi-say" id="osi-say"></p>

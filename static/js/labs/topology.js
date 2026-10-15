@@ -1,5 +1,6 @@
 // Network topologies lab: break cables or devices and see who can still reach the target.
 // Reachability and single points of failure are computed from the graph (tested in tests/labs.test.mjs).
+import { hw } from "../hw.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 export const linkKey = (a, b) => [a, b].sort().join("|");
@@ -35,7 +36,8 @@ export function singlePoints(topo) {
   return { nodes, links };
 }
 
-const ICON = { pc: "PC", server: "SRV", switch: "SW", router: "R" };
+// Each node is a status plate (its outline shows working / cut off / failed) with the shared device drawing on top.
+const PLATE = { pc: [58, 44, 0.72], server: [46, 52, 0.8], switch: [72, 36, 0.98], router: [62, 46, 0.8] };
 
 export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = () => {}, onReset = () => {} } = {}) {
   const done = new Set(solved);
@@ -81,10 +83,10 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
       if (n.kind === "tap") { svg += `<circle class="tp-tap" cx="${n.x}" cy="${n.y}" r="4"/>`; continue; }
       const isEnd = ends.includes(n.id), isTarget = n.id === topo.target, down = failed.has(n.id);
       const state = down ? "down" : isTarget ? "target" : isEnd ? (r.has(n.id) ? "ok" : "bad") : r.has(n.id) ? "" : "bad";
-      const w = n.kind === "switch" || n.kind === "server" ? 74 : n.kind === "router" ? 56 : 48;
-      const shape = n.kind === "router" ? `<circle r="22"/>` : `<rect x="${-w / 2}" y="-15" width="${w}" height="30" rx="${n.kind === "pc" ? 6 : 4}"/>`;
+      const [w, h, sc] = PLATE[n.kind] || PLATE.pc;
+      const shape = `<rect class="plate" x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="9"/>${hw(n.kind, 0, n.kind === "router" ? 3 : 0, sc)}`;
       svg += `<g class="tp-node ${state} ${spof.nodes.includes(n.id) ? "spof" : ""}" data-node="${n.id}" transform="translate(${n.x},${n.y})" tabindex="0" role="button" aria-label="${esc(label(n))}${isTarget ? " (target)" : ""}: ${down ? "failed, select to repair" : state === "bad" ? "cut off" : "working, select to make it fail"}">
-        ${shape}<text y="4" text-anchor="middle" class="ico">${ICON[n.kind] || ""}</text>${n.label ? `<text y="${n.kind === "router" ? 36 : 29}" text-anchor="middle" class="lbl">${esc(n.label)}</text>` : ""}${down ? `<path d="M-12,-12L12,12M12,-12L-12,12" class="x"/>` : ""}</g>`;
+        ${shape}${n.label ? `<text y="${(PLATE[n.kind] || PLATE.pc)[1] / 2 + 13}" text-anchor="middle" class="lbl">${esc(n.label)}</text>` : ""}${down ? `<path d="M-12,-12L12,12M12,-12L-12,12" class="x"/>` : ""}</g>`;
     }
     $("tp-svg").innerHTML = svg;
     const cut = ends.filter(e => !r.has(e)).length;

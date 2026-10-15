@@ -226,3 +226,14 @@ test("subnet calculator: splitting a network borrows the right bits", () => {
   assert.equal(subnet.splitNetwork(subnet.ipToInt("10.0.0.0"), 30, 8), null);
   assert.equal(subnet.splitNetwork(subnet.ipToInt("10.0.0.0"), 8, 64, 64).subnets.length, 64);
 });
+
+test("device library: every device drawn anywhere exists and explains itself", async () => {
+  const lib = await import("../static/js/hw.js");
+  for (const k of Object.keys(lib.HW)) assert.ok(lib.HW_INFO[k] && lib.HW_INFO[k][1].length > 20, k);
+  const used = new Set();
+  for (const t of lab("topologies").topologies) for (const n of t.nodes) if (n.kind !== "tap") used.add(n.kind);
+  const missions = (await import("node:fs")).readdirSync(new URL("../content/missions/", import.meta.url));
+  for (const f of missions) for (const d of Object.values(JSON.parse(readFileSync(new URL(`../content/missions/${f}`, import.meta.url), "utf8")).devices)) used.add(d.kind);
+  for (const k of used) assert.ok(lib.HW[k], `no drawing for "${k}"`);
+  assert.match(lib.hw("router", 10, 20, 0.5, "me"), /class="hw hw-k-router me" transform="translate\(10,20\) scale\(0.5\)"/);
+});

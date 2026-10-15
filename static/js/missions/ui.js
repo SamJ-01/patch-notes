@@ -5,6 +5,7 @@
 // challenge opens all come from the scenario's data. Geometry lives in layout.js; rules in engine.js.
 import * as engine from "./engine.js";
 import * as layout from "./layout.js";
+import { HW } from "../hw.js";
 
 const NS = "http://www.w3.org/2000/svg";
 const { CARD } = layout;
@@ -14,20 +15,7 @@ const KIND_LABEL = { Investigate: "Investigate", Test: "Test", Fix: "Fix" };
 // A mode with tools is a challenge (investigate and fix); one with a sequence plays messages in order.
 const isToolMode = m => Array.isArray(m.tools);
 
-// ---------- hardware drawings, centred on (0,0) in a 64×46 frame
-const HW = {
-  pc: `<rect class="hw-body" x="-31" y="-21" width="44" height="31" rx="3"/><rect class="hw-screen" x="-28" y="-18" width="38" height="24" rx="1.5"/>
-    <path class="hw-line" d="M-9 10v5M-17 16h16"/><rect class="hw-body" x="18" y="-21" width="14" height="37" rx="2"/>
-    <circle class="hw-led" cx="25" cy="-15" r="1.6"/><path class="hw-line" d="M21-8h8M21-4h8"/>`,
-  switch: `<rect class="hw-body" x="-32" y="-11" width="64" height="22" rx="3"/>
-    ${[0, 1, 2, 3, 4, 5, 6, 7].map(i => `<circle class="hw-led" cx="${-24.5 + i * 7}" cy="-5" r="1.1"/><rect class="hw-port" x="${-27 + i * 7}" y="-1" width="5" height="6" rx="0.8"/>`).join("")}`,
-  router: `<path class="hw-line" d="M-17-3l-5-17M17-3l5-17"/><circle class="hw-tip" cx="-22" cy="-20" r="2"/><circle class="hw-tip" cx="22" cy="-20" r="2"/>
-    <rect class="hw-body" x="-29" y="-3" width="58" height="18" rx="5"/>
-    ${[0, 1, 2, 3].map(i => `<circle class="hw-led" cx="${-19 + i * 7}" cy="6" r="1.4"/>`).join("")}<path class="hw-line" d="M12 6h10"/>`,
-  server: `<rect class="hw-body" x="-17" y="-22" width="34" height="44" rx="3"/>
-    ${[0, 1, 2].map(i => `<rect class="hw-port" x="-12" y="${-17 + i * 10}" width="24" height="7" rx="1"/><circle class="hw-led" cx="8" cy="${-13.5 + i * 10}" r="1.2"/>`).join("")}
-    <path class="hw-line" d="M-10 16h20M-10 19h20"/>`,
-};
+// Hardware drawings come from the shared device library (static/js/hw.js), the same ones every diagram uses.
 const STATE_WORDS = { ok: "working", bad: "problem", warn: "warning" };
 
 export function mount(root, scenario, { mode = "guided", doneModes = [], next = null, onComplete = () => {}, reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches } = {}) {
@@ -125,7 +113,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
       g.setAttribute("id", "dev-" + id);
       g.setAttribute("role", "img");
       g.innerHTML = `<rect class="m-box" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="12"/>
-        <g class="hw" transform="translate(${b.cx},${artY})">${HW[dev(id).kind] || ""}</g>
+        <g class="hw hw-k-${dev(id).kind}" transform="translate(${b.cx},${artY})">${HW[dev(id).kind] || ""}</g>
         <text class="m-name" x="${b.cx}" y="${nameY}" text-anchor="middle" dominant-baseline="central"></text>
         ${hasStatus(id) ? `<circle class="m-dot" cx="${b.x + b.w - 16}" cy="${b.y + 16}" r="4"/>` : ""}
         ${hasIp(id) ? `<text class="m-ip" x="${b.cx}" y="${ipY}" text-anchor="middle" dominant-baseline="central"><tspan class="m-k">IP</tspan><tspan class="m-v" dx="7"></tspan></text>` : ""}

@@ -1,5 +1,6 @@
 // Ports and protocols: flip cards for the Network+ port list, then a quick-fire drill.
 // makeRound() and makeQuestion() are pure (tested in tests/labs.test.mjs); mount() is the on-page lab.
+import { hw } from "../hw.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 export const portText = p => p.ports.join(", ");
@@ -44,6 +45,7 @@ export function makeRound(protos, n, rng = Math.random) {
   return chosen.map(([type, p]) => makeQuestion(protos, type, p, rng));
 }
 
+const GROUP_ICON = { Web: "cloud", Email: "server", "File transfer": "db", "Remote access": "laptop", "Network services": "router", "Directory and databases": "db", Voice: "phone" };
 const GROUP_ORDER = ["Web", "Email", "File transfer", "Remote access", "Network services", "Directory and databases", "Voice"];
 
 export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = () => {}, onReset = () => {} } = {}) {
@@ -59,7 +61,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     <div class="row osi-progress" id="pp-parts"></div>
     <section class="panel"><div class="panel-title"><h2>The port cards</h2><button class="btn ghost" id="pp-all" type="button">Flip all</button></div>
       <p class="muted">Guess the port, then tap the card to check.</p>
-      ${groups.map(g => `<h3 class="eyebrow">${esc(g)}</h3><div class="port-grid">${protos.filter(p => p.group === g).map(p => `
+      ${groups.map(g => `<h3 class="eyebrow pp-group"><svg class="grp-ic" viewBox="-34 -25 68 50" aria-hidden="true">${hw(GROUP_ICON[g] || "server")}</svg>${esc(g)}</h3><div class="port-grid">${protos.filter(p => p.group === g).map(p => `
         <button class="port-card" type="button" data-p="${p.id}" aria-pressed="false">
           <span class="pc-front"><b>${esc(p.name)}</b><span>${esc(p.full)}</span></span>
           <span class="pc-back"><span class="pc-name">${esc(p.name)}</span><b class="pc-num">${esc(portText(p))}</b><span class="pc-tr">${esc(p.transport)}</span><span class="pc-what">${esc(p.what)}</span></span>

@@ -76,6 +76,8 @@ news.py        12 RSS/Atom feeds ─► de-dupe ─► topic tagging ─► CVE 
 cve_watch.py   NVD API ─► CISA KEV ─► FIRST EPSS ─► risk priority ─► SQLite (what's new)
 content/       lessons, labs, missions, quiz, phishing emails, careers, glossary (plain JSON, easy to edit)
 static/js/     the Mission Engine and lab modules (OSI, topology, terminal, ports, subnetting), loaded on demand
+static/js/hw.js  the device library: one drawing per device (PC, laptop, phone, server, database, switch, hub,
+               router, firewall, access point, internet, attacker), used by every diagram on the site
 build.py       builds site/: the app, lazily loaded CVE data, a page per lesson, RSS feed and sitemap
 tests/         Python unit tests + Node tests of the page logic, Mission Engine and every lab
 .github/       GitHub Actions rebuilds and redeploys the site every morning

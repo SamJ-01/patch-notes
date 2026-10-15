@@ -325,7 +325,9 @@ def main():
     (SITE_DIR / "data" / "cves.json").write_text(json.dumps(rows, ensure_ascii=False))
     out = SITE_DIR / "index.html"
     meta = social_meta(site, "Patch Notes: cyber security news, explained", site.get("description", ""))
-    page = template.replace("<!--__META__-->", meta).replace("/*__DATA__*/null", embed_json(data))
+    # The device drawings live in one module (static/js/hw.js) shared by the labs; the page gets the same code inline.
+    hw_js = re.sub(r"^export ", "", (STATIC / "js" / "hw.js").read_text(), flags=re.M)
+    page = template.replace("<!--__META__-->", meta).replace("/*__DATA__*/null", embed_json(data)).replace("/*__HW__*/", hw_js)
     out.write_text('<!doctype html>\n<html lang="en">\n<meta charset="utf-8">\n' + page)
     # Same page without the document skeleton, for publishing as a claude.ai artifact (which adds its own).
     DATA_DIR.mkdir(exist_ok=True)

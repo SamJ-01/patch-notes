@@ -1,6 +1,8 @@
 // Subnetting: a live subnet calculator (mountCalc, also used on its own page) and the trainer lab (mount).
 // The maths (subnetInfo, classify, splitNetwork, makeQuestion, check) is pure and tested in tests/labs.test.mjs.
 
+import { hw } from "../hw.js";
+
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 export function ipToInt(s) {
@@ -143,16 +145,16 @@ const PRESETS = [["Home Wi-Fi", "192.168.1.10/24"], ["Small office", "10.20.4.50
 // Device icons drawn (the rest are counted). Phones get a compact 4-column layout so the icons stay readable.
 const LAYOUTS = {
   wide: { W: 640, cols: 8, rx: 60, sx: 150, sw: 80, dx: 300 },
-  narrow: { W: 380, cols: 4, rx: 36, sx: 86, sw: 64, dx: 206 },
+  narrow: { W: 380, cols: 4, rx: 38, sx: 86, sw: 64, dx: 206 },
 };
 function netSvg(L) {
   const slots = L.cols * 3, pos = k => [L.dx + (k % L.cols) * 42, 48 + Math.floor(k / L.cols) * 72];
   return `<svg viewBox="0 0 ${L.W} 236" id="sc-svg" role="img" aria-labelledby="sc-netcap">
-    <g class="sc-trunk"><line x1="${L.rx + 24}" y1="120" x2="${L.sx}" y2="120"/></g>
+    <g class="sc-trunk"><line x1="${L.rx + 30}" y1="120" x2="${L.sx}" y2="120"/></g>
     ${[...Array(slots)].map((_, k) => { const [x, y] = pos(k); return `<line class="sc-wire" x1="${L.sx + L.sw}" y1="120" x2="${x - 16}" y2="${y}"/>`; }).join("")}
-    <g class="sc-router" id="sc-router"><circle cx="${L.rx}" cy="120" r="24"/><path class="sc-glyph" d="M${L.rx - 12} 120h24M${L.rx + 6} 114l6 6-6 6M${L.rx - 6} 114l-6 6 6 6"/><title id="sc-rtitle"></title></g>
-    <g class="sc-switch"><rect x="${L.sx}" y="106" width="${L.sw}" height="28" rx="4"/>${[...Array(Math.floor((L.sw - 10) / 11))].map((_, k) => `<rect class="sc-port" x="${L.sx + 9 + k * 11}" y="116" width="7" height="7" rx="1"/>`).join("")}</g>
-    ${[...Array(slots)].map((_, k) => { const [x, y] = pos(k); return `<g transform="translate(${x},${y})"><g class="sc-dev" style="--i:${k}"><rect x="-15" y="-12" width="30" height="20" rx="2"/><path class="stand" d="M-6 13h12M0 8v5"/><title></title></g></g>`; }).join("")}
+    <g class="sc-router" id="sc-router">${hw("router", L.rx, 114, 1.08)}<title id="sc-rtitle"></title></g>
+    <g class="sc-switch">${hw("switch", L.sx + L.sw / 2, 120, L.sw / 64)}</g>
+    ${[...Array(slots)].map((_, k) => { const [x, y] = pos(k); return `<g transform="translate(${x},${y})"><g class="sc-dev" style="--i:${k}">${hw("pc", 0, 0, 0.52)}<title></title></g></g>`; }).join("")}
     <text class="sc-more" id="sc-more" x="${L.W - 8}" y="228" text-anchor="end"></text>
   </svg>`;
 }
