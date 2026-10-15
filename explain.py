@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-The human-in-the-loop for AI-written content. The daily task drafts; a person approves.
+Quality control for AI-written content. The daily task drafts explanations, fact-checks every claim against
+the source article and official records (NIST NVD, CISA KEV), then publishes, corrects or rejects each one.
+Every decision is logged in content/verification_log.json. A person can still review by hand:
 
     python3 explain.py review                 # go through drafted story explanations: approve / edit / reject
     python3 explain.py review-terms           # same for drafted glossary entries
@@ -10,6 +12,10 @@ Used by the daily task:
     python3 explain.py add drafts.json        # save {"<story link>": "<explanation>", ...} as drafts
     python3 explain.py terms                  # unexplained jargon from this week's news, with example headlines
     python3 explain.py add-terms drafts.json  # save glossary drafts (same shape as content/glossary.json entries)
+    python3 explain.py sources DIR            # evidence for each draft: article text, publisher summary, related
+                                              #   coverage and NVD/KEV records for any CVE it names (one file each)
+    python3 explain.py publish verdicts.json  # apply fact-check verdicts: publish (possibly corrected) or reject
+    python3 explain.py publish-terms verdicts.json
 
 Only approved explanations (content/explainers.json) and glossary entries (content/glossary.json)
 appear on the site. Drafts wait in content/explainer_drafts.json and content/glossary_drafts.json.
@@ -27,7 +33,10 @@ EXPLAINERS = HERE / "content" / "explainers.json"
 EXPLAINER_DRAFTS = HERE / "content" / "explainer_drafts.json"
 GLOSSARY = HERE / "content" / "glossary.json"
 DRAFTS = HERE / "content" / "glossary_drafts.json"
+LOG = HERE / "content" / "verification_log.json"
+CVES = HERE / "site" / "data" / "cves.json"
 KEEP_DAYS = 30
+USER_AGENT = "Mozilla/5.0 (compatible; patch-notes/1.0; +personal security news reader)"
 MAX_CHARS = 700
 
 
@@ -219,6 +228,112 @@ def review_terms():
         offer_push(["content/glossary.json", "content/glossary_drafts.json"], f"Add {changed} glossary terms")
 
 
+# --------------------------------------------------------------------------- automated fact-check
+
+def article_text(url):
+    """Readable paragraph text of a page, or None if the site refuses or sends nothing useful."""
+    import html, re, urllib.request
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept-Language": "en-GB,en;q=0.9"})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            page = resp.read().decode("utf-8", "replace")
+    except Exception:
+        return None
+    page = re.sub(r"(?is)<(script|style|noscript|nav|footer|header|aside)[^>]*>.*?</\1>", " ", page)
+    paras = re.findall(r"(?is)<(?:p|h1|h2|h3|li)[^>]*>(.*?)</(?:p|h1|h2|h3|li)>", page)
+    text = "\n".join(t for t in (" ".join(html.unescape(re.sub(r"(?s)<[^>]+>", " ", p)).split()) for p in paras) if len(t) > 40)
+    return text if len(text) > 400 else None
+
+
+def sources(outdir):
+    """Write one evidence file per draft so each claim can be checked against something authoritative."""
+    import re
+    out = Path(outdir); out.mkdir(parents=True, exist_ok=True)
+    stories = {s["link"]: s for s in load(NEWS, [])}
+    cves = {c["id"]: c for c in load(CVES, [])}
+    drafts = {k: v for k, v in load(EXPLAINER_DRAFTS, {}).items() if k in stories}
+    words = lambda t: {w for w in re.findall(r"[A-Za-z][A-Za-z0-9-]{4,}", t.lower())} - {"security", "attack", "attacks", "hackers", "vulnerability", "vulnerabilities", "flaws", "critical", "update", "updates", "patches", "exploited"}
+    index = []
+    for i, (link, d) in enumerate(drafts.items(), 1):
+        s = stories[link]
+        ids = set(re.findall(r"CVE-\d{4}-\d+", f"{d['text']} {s['title']} {s['snippet']}"))
+        related = [o for o in stories.values() if o["link"] != link and o["source"] != s["source"] and (
+            ids & set(o.get("cves", [])) or len(words(s["title"]) & words(o["title"])) >= 2)][:3]
+        body = article_text(link)
+        parts = [f"DRAFT\n{d['text']}\n", f"STORY\n{s['source']} | {s['title']}\n{link}\n",
+                 f"PUBLISHER SUMMARY (from its feed)\n{s['snippet']}\n",
+                 "ARTICLE\n" + (body[:12000] if body else "UNAVAILABLE: the site refused or sent no article text. Check against the publisher summary and related coverage only.") + "\n"]
+        for o in related:
+            t = article_text(o["link"])
+            parts.append(f"RELATED COVERAGE · {o['source']} | {o['title']}\n{o['link']}\n{(t or o['snippet'])[:6000]}\n")
+        for cid in sorted(ids):
+            c = cves.get(cid)
+            parts.append(f"OFFICIAL RECORD {cid}\n" + (f"NVD: CVSS {c.get('cvss')} {c.get('severity')}; published {c.get('published')}; CISA KEV: "
+                         + (f"yes, added {c['kev'].get('added')}" if c.get("kev") else "not listed") + f"\n{c.get('description', '')[:600]}"
+                         if c else "Not in this week's NVD data. Look it up: https://nvd.nist.gov/vuln/detail/" + cid) + "\n")
+        name = f"{i:03d}.txt"
+        (out / name).write_text("\n".join(parts))
+        index.append({"file": name, "link": link, "article": bool(body), "related": len(related), "cves": sorted(ids)})
+    (out / "index.json").write_text(json.dumps(index, indent=1))
+    print(f"Wrote evidence for {len(index)} drafts to {out} ({sum(x['article'] for x in index)} with the full article).")
+
+
+def log(entries):
+    data = load(LOG, [])
+    data.extend(entries)
+    cutoff = (dt.date.today() - dt.timedelta(days=90)).isoformat()
+    save(LOG, [e for e in data if e.get("date", "") >= cutoff])
+
+
+def publish(path):
+    """Apply verdicts: [{"link", "verdict": "publish"|"reject", "text"?: corrected text, "evidence", "notes"}].
+    Drafts for stories that have left the site are dropped too."""
+    verdicts = json.loads(Path(path).read_text())
+    drafts, today, entries, done = load(EXPLAINER_DRAFTS, {}), dt.date.today().isoformat(), [], set()
+    for v in verdicts:
+        link = v["link"]
+        if link not in drafts:
+            print(f"skipped (no such draft): {link}", file=sys.stderr); continue
+        if v["verdict"] == "publish":
+            approve(link, v.get("text") or drafts[link]["text"])
+        else:
+            reject(link)
+        done.add(link)
+        entries.append({"date": today, "kind": "story", "link": link, "verdict": v["verdict"],
+                        "corrected": bool(v.get("text")) and tidy(v["text"]) != drafts[link]["text"],
+                        "evidence": v.get("evidence", ""), "notes": v.get("notes", "")})
+    live = {s["link"] for s in load(NEWS, [])}
+    for link in [k for k in load(EXPLAINER_DRAFTS, {}) if k not in live]:
+        reject(link)
+        entries.append({"date": today, "kind": "story", "link": link, "verdict": "dropped", "notes": "story no longer on the site"})
+    log(entries)
+    print(f"Published {sum(e['verdict'] == 'publish' for e in entries)}, rejected {sum(e['verdict'] == 'reject' for e in entries)}, "
+          f"dropped {sum(e['verdict'] == 'dropped' for e in entries)}; {len(load(EXPLAINER_DRAFTS, {}))} drafts left.")
+
+
+def publish_terms(path):
+    """Apply glossary verdicts: [{"id", "verdict": "publish"|"reject"|"keep", "entry"?: corrected entry, "evidence", "notes"}]."""
+    verdicts = json.loads(Path(path).read_text())
+    drafts, today, entries = {d["id"]: d for d in load(DRAFTS, [])}, dt.date.today().isoformat(), []
+    for v in verdicts:
+        d = drafts.get(v["id"])
+        if not d:
+            print(f"skipped (no such draft): {v['id']}", file=sys.stderr); continue
+        verdict, note = v["verdict"], v.get("notes", "")
+        if verdict == "keep":  # couldn't confirm today: leave the draft for the next run
+            entries.append({"date": today, "kind": "term", "id": d["id"], "verdict": "kept", "notes": note}); continue
+        if verdict == "publish":
+            entry = {**d, **(v.get("entry") or {}), "id": d["id"]}
+            error = approve_term(entry)
+            if error:
+                reject_term(d["id"]); verdict, note = "reject", f"{note} (not added: {error})".strip()
+        else:
+            reject_term(d["id"])
+        entries.append({"date": today, "kind": "term", "id": d["id"], "verdict": verdict, "evidence": v.get("evidence", ""), "notes": note})
+    log(entries)
+    print(f"Glossary: published {sum(e['verdict'] == 'publish' for e in entries)}, rejected {sum(e['verdict'] == 'reject' for e in entries)}.")
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
     if cmd == "todo":
@@ -233,6 +348,12 @@ if __name__ == "__main__":
         add_terms(sys.argv[2])
     elif cmd == "review-terms":
         review_terms()
+    elif cmd == "sources" and len(sys.argv) > 2:
+        sources(sys.argv[2])
+    elif cmd == "publish" and len(sys.argv) > 2:
+        publish(sys.argv[2])
+    elif cmd == "publish-terms" and len(sys.argv) > 2:
+        publish_terms(sys.argv[2])
     else:
         print(__doc__)
         sys.exit(1)

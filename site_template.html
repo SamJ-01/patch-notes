@@ -1570,7 +1570,7 @@ function storyHtml(s) {
     <div class="meta"><span>${esc(s.source)}</span><span>${ago(s.date)}</span><a class="read" href="${esc(s.link)}" target="_blank" rel="noopener">Read the story ↗</a></div>
     <h3>${gloss(s.title, 1, seen)}</h3>
     ${s.snippet ? `<p class="snip">${gloss(s.snippet, 2, seen)}</p>` : ""}
-    ${DATA.explainers && DATA.explainers[s.link] ? `<details class="eli" data-read="${esc(s.link)}"><summary>What this means</summary><p>${gloss(DATA.explainers[s.link], 4)}</p><p class="ai-note">AI-generated explanation based on the headline and summary. Read the full story for details.</p></details>` : ""}
+    ${DATA.explainers && DATA.explainers[s.link] ? `<details class="eli" data-read="${esc(s.link)}"><summary>What this means</summary><p>${gloss(DATA.explainers[s.link], 4)}</p><p class="ai-note">AI-written explanation, fact-checked against the original article and official vulnerability records. Read the full story for details.</p></details>` : ""}
     ${s.topics.length || s.cves.length ? `<div class="row">${s.topics.filter(t => LESSON[t]).map(t => `<a class="topic" href="#lesson-${esc(t)}">Learn: ${esc(TOPIC_NAME(t))}</a>`).join("")}${s.cves.map(c => CVE_IDS.has(c) ? `<button class="cvetag" data-cve="${esc(c)}" title="Open on the CVE Radar">${esc(c)}</button>` : `<a class="cvetag" href="https://nvd.nist.gov/vuln/detail/${esc(c)}" target="_blank" rel="noopener" title="Open on NVD">${esc(c)} ↗</a>`).join("")}</div>` : ""}
   </article>`;
 }

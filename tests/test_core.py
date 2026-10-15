@@ -154,7 +154,7 @@ class ExplainHelper(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         tmp = Path(self.tmp.name)
-        self.saved = {k: getattr(explain, k) for k in ("NEWS", "EXPLAINERS", "EXPLAINER_DRAFTS", "GLOSSARY", "DRAFTS")}
+        self.saved = {k: getattr(explain, k) for k in ("NEWS", "EXPLAINERS", "EXPLAINER_DRAFTS", "GLOSSARY", "DRAFTS", "LOG")}
         for k in self.saved:
             setattr(explain, k, tmp / f"{k.lower()}.json")
         explain.NEWS.write_text(json.dumps([{"link": "https://k/1", "title": "t", "snippet": "", "source": "s"}]))
@@ -172,6 +172,37 @@ class ExplainHelper(unittest.TestCase):
         self.assertEqual(list(drafts), ["https://k/1"])
         self.assertLessEqual(len(drafts["https://k/1"]["text"]), explain.MAX_CHARS)
         self.assertFalse(explain.EXPLAINERS.exists())
+
+    def test_fact_check_verdicts_publish_correct_or_reject_and_are_logged(self):
+        explain.NEWS.write_text(json.dumps([{"link": f"https://k/{i}", "title": "t", "snippet": "", "source": "s"} for i in (1, 2, 3)]))
+        self.incoming.write_text(json.dumps({"https://k/1": "accurate", "https://k/2": "two critical", "https://k/3": "made up", "https://k/4": "x"}))
+        explain.add(self.incoming)
+        drafts = json.loads(explain.EXPLAINER_DRAFTS.read_text())
+        drafts["https://gone/9"] = {"text": "old story", "date": "2026-01-01"}  # its story has left the site
+        explain.EXPLAINER_DRAFTS.write_text(json.dumps(drafts))
+        verdicts = self.incoming.with_name("v.json")
+        verdicts.write_text(json.dumps([
+            {"link": "https://k/1", "verdict": "publish", "evidence": "article"},
+            {"link": "https://k/2", "verdict": "publish", "text": "five critical", "evidence": "article", "notes": "count was wrong"},
+            {"link": "https://k/3", "verdict": "reject", "evidence": "article", "notes": "unsupported"},
+        ]))
+        explain.publish(verdicts)
+        live = json.loads(explain.EXPLAINERS.read_text())
+        self.assertEqual({k: v["text"] for k, v in live.items()}, {"https://k/1": "accurate", "https://k/2": "five critical"})
+        self.assertEqual(json.loads(explain.EXPLAINER_DRAFTS.read_text()), {})
+        logged = {e.get("link"): (e["verdict"], e.get("corrected")) for e in json.loads(explain.LOG.read_text())}
+        self.assertEqual(logged, {"https://k/1": ("publish", False), "https://k/2": ("publish", True), "https://k/3": ("reject", False), "https://gone/9": ("dropped", None)})
+
+    def test_glossary_verdicts_apply_corrections(self):
+        explain.GLOSSARY.write_text("[]")
+        explain.DRAFTS.write_text(json.dumps([{"id": "isac", "term": "ISAC (Centre)", "kind": "Organisation", "aliases": ["ISAC"], "short": "x", "lesson": "", "draft": "2026-10-13"},
+                                              {"id": "junk", "term": "Junk", "kind": "Concept", "aliases": ["junk"], "short": "y", "draft": "2026-10-13"}]))
+        verdicts = self.incoming.with_name("t.json")
+        verdicts.write_text(json.dumps([{"id": "isac", "verdict": "publish", "entry": {"term": "ISAC (Center)", "lesson": "soc"}},
+                                        {"id": "junk", "verdict": "reject", "notes": "not verifiable"}]))
+        explain.publish_terms(verdicts)
+        self.assertEqual(json.loads(explain.GLOSSARY.read_text()), [{"id": "isac", "term": "ISAC (Center)", "kind": "Organisation", "aliases": ["ISAC"], "short": "x", "lesson": "soc"}])
+        self.assertEqual(json.loads(explain.DRAFTS.read_text()), [])
 
     def test_approve_publishes_and_clears_draft(self):
         self.incoming.write_text(json.dumps({"https://k/1": "Draft text."}))

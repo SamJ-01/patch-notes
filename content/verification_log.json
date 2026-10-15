@@ -1,0 +1,720 @@
+[
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.theregister.com/cyber-crime/2026/10/13/owner-of-fashion-brands-hobbs-and-whistles-joins-autumn-pwned-collection/5302752",
+  "verdict": "publish",
+  "corrected": true,
+  "evidence": "article",
+  "notes": "orders 'may be' delayed (company warned, not confirmed)"
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/attackers-heat-french-supermarket.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/two-critical-marklogic-flaws-could-give.html",
+  "verdict": "publish",
+  "corrected": true,
+  "evidence": "article",
+  "notes": "five critical, not two; two of them give admin control"
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/gitlab-patches-cvss-100-flaw-that-could.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article + NIST NVD / CISA KEV",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.bitdefender.com/en-us/blog/hotforsecurity/gta-6-leaker-threatens-release-full-game",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.theregister.com/virtualization/2026/10/13/vmware-is-pushing-so-many-patches-it-thinks-users-need-new-tools-to-manage-the-flood-1/5302172",
+  "verdict": "publish",
+  "corrected": true,
+  "evidence": "article",
+  "notes": "patches generally, not specifically security updates"
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/low-cost-android-phones-ship-with.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.darkreading.com/insider-threats/prominent-ransomware-negotiator-extortion-charges",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "publisher summary + Krebs on Security",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.schneier.com/blog/archives/2026/10/fbi-arrests-suspect-in-fbi-hacking-case.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.theregister.com/security/2026/10/12/ukrainian-drone-strikes-on-yandex-datacenters-knock-cloud-and-payments-offline/5302577",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/ledger-finds-unauthorized-hardware.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/critical-sonicwall-sma-1000-flaw.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article + NIST NVD / CISA KEV",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/attackers-exploit-cvss-100-bricksforge.html",
+  "verdict": "publish",
+  "corrected": true,
+  "evidence": "article + NIST NVD / CISA KEV",
+  "notes": "CVSS 10.0 per Patchstack, 9.8 per NIST NVD"
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/cyberxero-uses-claude-code-in-campaign.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.theregister.com/security/2026/10/11/ai-systems-are-fully-capable-of-carrying-out-nightmare-attacks-against-infrastructure-and-nobodys-ready/5302450",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/p7-darksword-ios-exploit-kit-adds.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.theregister.com/security/2026/10/10/two-characters-open-up-a-world-of-typosquatting-opportunities-in-chromium-browsers/5302383",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/anthropic-cuts-live-internet-access-for.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://isc.sans.edu/diary/rss/33414",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://krebsonsecurity.com/2026/10/fbi-arrests-founder-of-ransomware-negotiation-firm/",
+  "verdict": "publish",
+  "corrected": true,
+  "evidence": "article",
+  "notes": "executive, not co-founder (firm's statement, Krebs update)"
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.darkreading.com/cyberattacks-data-breaches/asos-breach-risks-customer-facing-saas",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "publisher summary",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.theregister.com/security/2026/10/09/aws-agentcore-security-undone-by-prompt-requesting-credentials/5302436",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/credential-stealing-github-actions.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/fbi-arrests-another-shinyhunters.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.securityweek.com/ics-patch-tuesday-siemens-issues-17-advisories-rockwell-fixes-armorblock-takeover-flaw/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.bleepingcomputer.com/news/microsoft/microsoft-fixes-vpn-issues-caused-by-september-windows-updates/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://krebsonsecurity.com/2026/10/u-k-sanctions-cryptomus-for-ru-money-laundering/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.schneier.com/blog/archives/2026/10/cyberattack-on-connected-fridges-in-france.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://therecord.media/microsoft-takes-down-3-major-chinese-phishing-platforms",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.bleepingcomputer.com/news/security/global-takedown-hits-network-behind-1-billion-phishing-messages/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://therecord.media/russia-anywayanyday-travel-website-cyberattack",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.securityweek.com/microsoft-disrupts-chinese-language-phishing-market-behind-1b-messages/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.darkreading.com/cyberattacks-data-breaches/russian-influence-operation-targeting-latin-america",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "publisher summary",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.bleepingcomputer.com/news/security/cisa-warns-admins-to-immediately-fix-ivanti-flaw-exploited-as-zero-day/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article + NIST NVD / CISA KEV",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/cisa-urges-immediate-ivanti-connect.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article + NIST NVD / CISA KEV",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/curl-patches-http2-upload-flaw-after.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.bleepingcomputer.com/news/security/hirudo-android-malware-replaces-banking-apps-to-evade-security-checks/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/researchers-used-public-openai-model-to.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/hirudo-android-trojan-uses-patched.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/an-ai-agent-found-critical-otp-bypass.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.securityweek.com/us-arrests-two-in-crackdown-on-north-korean-it-worker-laptop-farms/",
+  "verdict": "publish",
+  "corrected": true,
+  "evidence": "article",
+  "notes": "arrests and the 40-site FBI search were separate operations"
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.bleepingcomputer.com/news/security/microsoft-recent-windows-updates-may-trigger-remote-desktop-failures/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.theregister.com/security/2026/10/14/openai-engineer-charged-after-boardroom-bug-found-wrapped-in-toilet-paper/5303000",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/ai-found-linux-kernel-flaw-gives-local.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article + NIST NVD / CISA KEV",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.securityweek.com/chrome-firefox-updates-patch-114-flaws-as-mozilla-unveils-firefox-enterprise/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.securityweek.com/citrix-fortinet-ivanti-patch-29-vulnerabilities-across-their-products/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.securityweek.com/microsoft-patches-record-1413-vulnerabilities-including-exploited-windows-zero-day/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article + NIST NVD / CISA KEV",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://isc.sans.edu/diary/rss/33420",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.securityweek.com/sap-patches-critical-netweaver-s-4hana-vulnerabilities/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article + NIST NVD / CISA KEV",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/four-byte-write-and-timing-bug-let.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article + NIST NVD / CISA KEV",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.darkreading.com/cybersecurity-analytics/ransomware-gangs-physical-threats-family-stalking",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "publisher summary",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.theregister.com/cyber-crime/2026/10/14/ransomware-gets-personal-we-know-where-you-are-kind-of-stuff/5302939",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/microsoft-patches-record-1413-flaws.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/openai-employee-arrested-for-allegedly.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://krebsonsecurity.com/2026/10/microsoft-patches-more-than-1400-security-flaws/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article + NIST NVD / CISA KEV",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.bleepingcomputer.com/news/artificial-intelligence/openai-engineer-arrested-for-allegedly-planting-spy-device-in-office/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.darkreading.com/vulnerabilities-threats/zero-days-microsoft-october-patch-tuesday",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.bleepingcomputer.com/news/security/ghostscript-flaw-lets-hackers-hijack-servers-via-pdf-uploads/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article + NIST NVD / CISA KEV",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.darkreading.com/cyberattacks-data-breaches/north-korea-phishes-ukrainians-war-intel",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "publisher summary",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.bleepingcomputer.com/news/security/anthropic-warns-self-replicating-ai-could-spread-to-your-smart-devices/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.darkreading.com/perimeter/anthropic-ingredients-future-ai-worms",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.bleepingcomputer.com/news/microsoft/microsoft-october-2026-patch-tuesday-fixes-1-411-flaws-3-zero-days/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.bleepingcomputer.com/news/microsoft/microsoft-releases-windows-10-kb5126657-extended-security-update/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://isc.sans.edu/diary/rss/33422",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.bleepingcomputer.com/news/microsoft/microsoft-windows-11-24h2-home-and-pro-reached-end-of-support/",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/anthropic-warns-small-ai-models-could.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/docker-fixes-critical-two-year-old-hub.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article + NIST NVD / CISA KEV",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/attacker-chains-three-ivanti-connect.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://thehackernews.com/2026/10/sap-discloses-critical-cvss-10-flaw-in.html",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article + NIST NVD / CISA KEV",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.theregister.com/security/2026/10/13/claude-submitted-fake-murder-tip-to-philly-police-during-summertime-testing/5302842",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "https://www.theregister.com/ai-and-ml/2026/10/13/anthropic-conjures-another-threat-that-doesnt-exist-yet-to-stoke-fears-of-ai-apocalypse/5302866",
+  "verdict": "publish",
+  "corrected": false,
+  "evidence": "article",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "story",
+  "link": "(33 drafts)",
+  "verdict": "dropped",
+  "notes": "stories no longer on the site"
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "term",
+  "id": "marklogic",
+  "verdict": "publish",
+  "evidence": "established definition",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "term",
+  "id": "ahsaycbs",
+  "verdict": "publish",
+  "evidence": "https://www.ahsay.com/support/help-centre/doc/cbs",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "term",
+  "id": "agentcore",
+  "verdict": "publish",
+  "evidence": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "term",
+  "id": "prc",
+  "verdict": "publish",
+  "evidence": "established definition",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "term",
+  "id": "isac",
+  "verdict": "publish",
+  "evidence": "established definition",
+  "notes": "official name: Information Sharing and Analysis Center; linked to SOC lesson"
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "term",
+  "id": "sap-netweaver",
+  "verdict": "publish",
+  "evidence": "established definition",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "term",
+  "id": "otp",
+  "verdict": "publish",
+  "evidence": "established definition",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "term",
+  "id": "vba-macro",
+  "verdict": "publish",
+  "evidence": "established definition",
+  "notes": ""
+ },
+ {
+  "date": "2026-10-15",
+  "kind": "term",
+  "id": "smartscreen",
+  "verdict": "publish",
+  "evidence": "established definition",
+  "notes": ""
+ }
+]

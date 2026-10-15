@@ -45,7 +45,7 @@ Wrong answers never end a lab: every quiz offers a retry of the questions you mi
 | Section | What it does |
 |---|---|
 | **Home** | Your next learning step, a daily challenge, this week in security and the vulnerabilities to patch first |
-| **News** | Headlines from 12 outlets, auto-tagged by topic, linked to lessons and CVEs, with "What this means" explanations (AI-drafted, human-approved) |
+| **News** | Headlines from 12 outlets, auto-tagged by topic, linked to lessons and CVEs, with "What this means" explanations (AI-written, fact-checked against each article and official records) |
 | **CVE Radar** | Every new CVE, enriched with CISA KEV and FIRST EPSS, prioritised by real-world risk, with trend charts |
 | **Am I affected?** | Pick the tech you use (phone, browser, router, work apps) for personal alerts |
 | **Learn** | 22 lessons with sourced real-world cases, 4 learning paths (e.g. Path to SOC Analyst) and a glossary of 250+ terms, including the common CWE bug types |
@@ -113,8 +113,8 @@ gh secret set NVD_API_KEY
 ## Daily automation
 
 1. **GitHub Actions** (`.github/workflows/daily.yml`) runs the tests, then rebuilds and deploys the site every day at 06:00 UTC and on every push. A failing test blocks the deploy.
-2. **A scheduled Claude task** on the maintainer's Mac runs each morning. It fetches the news, drafts beginner explanations for new stories and glossary entries for new jargon, then pushes the drafts.
-3. **A person reviews the drafts.** Nothing AI-written goes live until approved:
+2. **A scheduled Claude task** on the maintainer's Mac runs each morning. It fetches the news and drafts beginner explanations for new stories and glossary entries for new jargon.
+3. **Every draft is fact-checked before it goes live.** The same task gathers evidence for each draft with `python3 explain.py sources`: the original article (or, when a site blocks downloads, the publisher's own summary and other outlets' coverage of the same event) plus NIST NVD and CISA KEV records for every CVE named. Each claim is checked; drafts are published, corrected or rejected with `python3 explain.py publish`, and every decision is recorded in `content/verification_log.json`. Glossary terms are confirmed against vendor or standards-body documentation. To review by hand instead:
 
 ```bash
 python3 explain.py review         # story explanations: approve / edit / reject, then push

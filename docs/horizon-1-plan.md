@@ -15,7 +15,7 @@ Based on *PATCH//NOTES Product Vision & Claude Implementation Brief* (14 Oct 202
 | Play | Phish or Legit, quiz, 3-flag CTF | ✅ Keep |
 | Careers | 5 roles with skills, certs, starting points, linked paths | ✅ Keep. Certifications deserve their own section later |
 | Progress | XP, 6 access levels, 16 badges, streak, path bonuses (browser-only) | ⚠️ The brief warns against streak pressure and implying badges are qualifications. Needs a lighter touch |
-| AI content | Drafted daily, published only after human review | ✅ Matches the brief's accuracy principle |
+| AI content | Drafted daily, published only after every claim is fact-checked against the source article and official records (decisions logged) | ✅ Matches the brief's accuracy principle |
 | Engineering | Static site on GitHub Pages, Python stdlib build, 24 Python + 5 Node tests gating deploys | ✅ Good base. The page is one ~1,700-line HTML/JS file, which a reusable engine will need split into modules |
 | Accessibility | Contrast checked (body text 15.7:1, secondary text 6:1), keyboard nav, reduced-motion for animations, validated chart palette | ✅ Partial. Needs a full keyboard/screen-reader pass once missions exist |
 | Data & privacy | No accounts, no tracking, progress in localStorage | ✅ Matches the brief |
