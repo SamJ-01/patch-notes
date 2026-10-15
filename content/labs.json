@@ -1697,6 +1697,19 @@
   ]
  },
  {
+  "id": "tcp-handshake",
+  "kind": "handshake",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 8,
+  "lesson": "networking",
+  "skill": "See the TCP three-way handshake, watch a SYN flood exhaust a server, and stop it with SYN cookies",
+  "title": "TCP handshake & SYN flood",
+  "intro": "Every TCP connection opens with a three-way handshake. Watch one happen, then launch a SYN flood and see how it stops real users getting in — and how one setting defends against it.",
+  "slots": 8,
+  "holdTicks": 8
+ },
+ {
   "id": "linux-terminal",
   "title": "Linux terminal basics",
   "kind": "terminal",

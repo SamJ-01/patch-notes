@@ -1092,6 +1092,30 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .ex-item.cur { outline: 2px solid var(--ink); outline-offset: 1px; }
 .ex-legend { font-size: 0.78rem; margin: 8px 0 0; }
 .ex-review li.skip > b { color: var(--muted); }
+.hs { display: grid; gap: 18px; }
+.hs-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 820px) { .hs-grid { grid-template-columns: 1fr; } }
+.hs-wire { stroke: var(--dg-line); stroke-width: 2; }
+.hs-lbl { font: 500 10px var(--font-mono); fill: var(--muted); text-anchor: middle; }
+.hs-pkt rect { fill: var(--surface); stroke: var(--brand); stroke-width: 1.4; }
+.hs-pkt text { font: 600 9px var(--font-mono); fill: var(--brand); text-anchor: middle; }
+.hs-pkt.good rect { stroke: var(--good); } .hs-pkt.good text { fill: var(--good); }
+.hs-pkt.bad rect { stroke: var(--bad); } .hs-pkt.bad text { fill: var(--bad); }
+.hs-status { margin: 0; min-height: 3em; font-size: 0.95rem; }
+.hs-status .ok { color: var(--good); } .hs-status .no { color: var(--bad); }
+.hs-ctl h2 { margin: 0; }
+.hs-ctl .btn { width: 100%; text-align: left; }
+.hs-queue { display: grid; gap: 6px; }
+.hs-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(26px, 1fr)); gap: 5px; }
+.hs-slot { aspect-ratio: 1; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--surface-2); transition: background-color 0.25s, border-color 0.25s; }
+.hs-slot.flood { background: var(--bad); border-color: var(--bad); }
+.hs-slot.client { background: var(--good); border-color: var(--good); }
+.hs-stats { display: grid; gap: 4px; margin: 0; font-size: 0.9rem; }
+.hs-stats div { display: flex; justify-content: space-between; gap: 10px; }
+.hs-stats dt { color: var(--muted); } .hs-stats dd { margin: 0; font-variant-numeric: tabular-nums; }
+.hs-stats dd.ok { color: var(--good); } .hs-stats dd.no { color: var(--bad); }
+.hs-explain summary { cursor: pointer; font-weight: 600; }
+.hs-explain p { margin: 8px 0 0; max-width: 72ch; }
 </style>
 
 <!-- recon complete. you found flag 1 of 3: flag{v1ew_s0urce_is_r3con}  (submit it in the command palette: press / then type "submit" and the flag) -->
@@ -2306,6 +2330,7 @@ const termArt = () => { const id = `cterm-clip-${++termN}`; return `<defs><clipP
 const OSI_ART = [0, 1, 2, 3, 4, 5, 6].map(k => `<rect class="cosi" x="74" y="${14 + k * 8.6}" width="52" height="6" rx="1.5" style="fill:${["var(--critical)", "var(--high)", "var(--brand)", "var(--good)", "var(--sun)", "var(--likely)", "var(--exploited)"][k]}"/>`).join("");
 // d: devices [kind, x, y, scale], g: glyphs, l: links [x1, y1, x2, y2, air?], t: tags, p: packet paths, tone: packet colour
 const SCENE = {
+  "tcp-handshake": { d: [["laptop", 34, 44, 0.5], ["server", 166, 46, 0.56], ["attacker", 34, 70, 0.0001]], l: [[50, 44, 150, 46]], t: [["SYN →", 92, 20], ["← SYN-ACK", 92, 70, "good"]], p: ["M34 44L166 46", "M166 46L34 44"] },
   "net-detective": { d: [["pc", 32, 46, 0.5], ["router", 100, 44, 0.5], ["cloud", 170, 44, 0.5]], g: [["search", 134, 66, 0.7]], l: [[48, 46, 84, 44], [118, 44, 152, 44]], t: [["DNS?", 100, 18, "bad"]], p: ["M32 46L100 44L170 44"], tone: "bad" },
   "recon-basics": { d: [["laptop", 34, 48, 0.5], ["server", 128, 34, 0.42], ["server", 128, 60, 0.42]], g: [["search", 92, 46, 0.9]], l: [[50, 48, 108, 36], [50, 48, 108, 58]], t: [["in scope", 150, 18]], p: ["M34 48L128 34", "M34 48L128 60"] },
   dhcp: { d: [["pc", 38, 46, 0.58], ["switch", 100, 48, 0.55], ["server", 162, 46, 0.6]], l: [[58, 47, 82, 48], [118, 48, 150, 46]], t: [["IP?", 70, 18]], p: ["M38 46L100 48L162 46", "M162 46L100 48L38 46"] },
@@ -2438,7 +2463,7 @@ function missionView(id) {
     $("mission-root").innerHTML = `<div class="empty">Couldn't load the mission code (js/missions/ui.js). If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`;
   });
 }
-const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools"];  // labs with their own module in static/js/labs/<kind>.js
+const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake"];  // labs with their own module in static/js/labs/<kind>.js
 function moduleLab(l) {
   main.innerHTML = `<div class="view" id="lab-root"><div class="empty">Loading lab…</div></div>`;
   import(`./js/labs/${l.kind}.js`).then(mod => {

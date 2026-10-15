@@ -278,3 +278,32 @@ test("nettools: inCidr matches only addresses inside the range", () => {
   assert.ok(!nettools.inCidr("10.10.20.5", "10.10.10.0/24"));
   assert.ok(nettools.inCidr("192.168.1.255", "192.168.1.0/24"));
 });
+
+import * as handshake from "../static/js/labs/handshake.js";
+
+test("SYN flood fills the half-open queue until clients are refused", () => {
+  const srv = handshake.createServer({ slots: 4, holdTicks: 100 });
+  assert.equal(srv.syn("client"), "connect", "a normal client completes the handshake");
+  assert.equal(srv.state.established, 1);
+  for (let n = 0; n < 4; n++) srv.syn("flood");          // flood fills every slot
+  assert.ok(srv.state.full, "the queue is full of half-open connections");
+  assert.equal(srv.syn("client"), "dropped", "a real client is now refused");
+  assert.ok(srv.state.dropped >= 1);
+});
+
+test("half-open connections time out and free their slot", () => {
+  const srv = handshake.createServer({ slots: 2, holdTicks: 2 });
+  srv.syn("flood"); srv.syn("flood");
+  assert.ok(srv.state.full);
+  srv.tick(); srv.tick();                                // ttl runs out
+  assert.ok(!srv.state.full, "slots free up once the server gives up waiting");
+});
+
+test("SYN cookies let real clients through even during a flood", () => {
+  const srv = handshake.createServer({ slots: 4, holdTicks: 100 });
+  srv.setCookies(true);
+  for (let n = 0; n < 50; n++) srv.syn("flood");         // flood does nothing: no slot is held
+  assert.equal(srv.state.halfOpen, 0, "no slots are consumed with cookies on");
+  assert.equal(srv.syn("client"), "cookie-connect");
+  assert.ok(!srv.state.full && srv.state.established === 1);
+});

@@ -280,6 +280,10 @@
      "coverage": "partial",
      "activities": [
       {
+       "type": "lab",
+       "id": "tcp-handshake"
+      },
+      {
        "type": "lesson",
        "id": "ddos"
       },
@@ -290,13 +294,9 @@
       {
        "type": "lesson",
        "id": "malware"
-      },
-      {
-       "type": "lesson",
-       "id": "ransomware"
       }
      ],
-     "gap": "VLAN hopping, MAC flooding, ARP and DNS poisoning, rogue DHCP and evil twins aren't covered yet."
+     "gap": "SYN floods are covered hands-on; VLAN hopping, MAC flooding, ARP and DNS poisoning and evil twins aren't yet."
     },
     {
      "id": "4.3",
