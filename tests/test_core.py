@@ -355,6 +355,8 @@ class ContentIntegrity(unittest.TestCase):
         labs = {l["id"] for l in self.labs.values()}
         missions = {json.loads(f.read_text())["id"] for f in (ROOT / "content" / "missions").glob("*.json")}
         for f in (ROOT / "content" / "certs").glob("*.json"):
+            if f.stem.endswith("-questions"):
+                continue
             c = json.loads(f.read_text())
             self.assertRegex(c["exam"], r"^[A-Z0-9]+-\d{3}$", f.name)
             self.assertRegex(c["reviewed"], r"^\d{4}-\d{2}-\d{2}$", "record when the objectives were last checked")
@@ -376,6 +378,26 @@ class ContentIntegrity(unittest.TestCase):
                     for a in o["activities"]:
                         known = {"lesson": self.lessons, "lab": labs, "mission": missions, "tool": {"subnet-calc"}}[a["type"]]
                         self.assertIn(a["id"], known, f"{o['id']}: unknown {a['type']} {a['id']}")
+
+    def test_practice_questions_are_complete(self):
+        bank = json.loads((ROOT / "content" / "certs" / "network-plus-questions.json").read_text())
+        cert = json.loads((ROOT / "content" / "certs" / "network-plus.json").read_text())
+        objectives = {o["id"] for d in cert["domains"] for o in d["objectives"]}
+        self.assertIn("not real exam questions", bank["note"])
+        ids = [q["id"] for q in bank["questions"]]
+        self.assertEqual(len(ids), len(set(ids)))
+        for q in bank["questions"]:
+            self.assertIn(q["objective"], objectives, q["id"])
+            texts = [o["text"] for o in q["options"]]
+            self.assertEqual(len(texts), len(set(texts)), f"{q['id']}: duplicate options")
+            right = sum(o["correct"] for o in q["options"])
+            self.assertGreaterEqual(right, 1, q["id"])
+            if right > 1:
+                self.assertIn(f"Choose {['', 'one', 'two', 'three'][right]}", q["stem"].replace("(", "").replace(")", "").replace("TWO", "two"), f"{q['id']}: say how many to choose")
+            for o in q["options"]:
+                self.assertGreater(len(o["why"]), 10, f"{q['id']}: every option needs an explanation")
+        covered = {q["objective"] for q in bank["questions"]}
+        self.assertEqual(covered, objectives, "every objective has practice questions")
 
     def test_glossary_ids_unique_and_links_valid(self):
         ids = [g["id"] for g in self.glossary]

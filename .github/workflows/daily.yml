@@ -46,7 +46,7 @@ jobs:
       - name: Run tests
         run: |
           python -m unittest discover -s tests -v
-          node --test tests/page.test.mjs tests/missions.test.mjs tests/layout.test.mjs tests/labs.test.mjs tests/flow.test.mjs
+          node --test tests/page.test.mjs tests/missions.test.mjs tests/layout.test.mjs tests/labs.test.mjs tests/flow.test.mjs tests/exam.test.mjs
       - name: Build site
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}

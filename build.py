@@ -91,6 +91,19 @@ def with_csp(page):
     return page.replace('<meta charset="utf-8">\n', '<meta charset="utf-8">\n' + csp_meta(page, scripts=False), 1)
 
 
+def load_certs():
+    """Certification objective maps (content/certs/<id>.json), each with its practice questions if present."""
+    certs = []
+    for f in sorted((CONTENT / "certs").glob("*.json")):
+        if f.stem.endswith("-questions"):
+            continue
+        cert = json.loads(f.read_text())
+        qfile = f.with_name(f"{f.stem}-questions.json")
+        cert["questions"] = json.loads(qfile.read_text())["questions"] if qfile.exists() else []
+        certs.append(cert)
+    return certs
+
+
 def embed_json(data):
     """Serialise data for an inline <script>. Escaping every '<' means no feed text ('</script>',
     '<!--<script>') can change how the HTML parser reads the script."""
@@ -344,7 +357,7 @@ def main():
         "labs": load("labs.json"),
         "missions": [json.loads(p.read_text()) for p in sorted((CONTENT / "missions").glob("*.json"))],
         "paths": load("paths.json"),
-        "certs": [json.loads(f.read_text()) for f in sorted((CONTENT / "certs").glob("*.json"))],
+        "certs": load_certs(),
         "stack": load("stack.json"),
         "quiz": load("quiz.json"),
         "phish": load("phish.json"),
@@ -378,7 +391,8 @@ def main():
     (SITE_DIR / "feed.xml").write_text(rss(stories, explainers, site))
     (SITE_DIR / "sitemap.xml").write_text(sitemap(lessons, site))
     if STATIC.exists():
-        shutil.copytree(STATIC, SITE_DIR, dirs_exist_ok=True)
+        # Contents only: copying file metadata fails on macOS when a target file carries the 'compressed' flag.
+        shutil.copytree(STATIC, SITE_DIR, dirs_exist_ok=True, copy_function=shutil.copyfile)
     (SITE_DIR / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {site['url'].rstrip('/')}/sitemap.xml\n")
 
     kev = len(data["kev"])

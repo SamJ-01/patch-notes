@@ -1061,6 +1061,18 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .cert-acts { gap: 6px; }
 .cert-gap { margin: 0; font-size: 0.88rem; }
 .obj-links { margin: 0; font-size: 0.88rem; }
+.ex-scenario { margin: 0; padding: 10px 12px; border-left: 3px solid var(--brand); background: var(--surface-2); border-radius: var(--radius-sm); }
+.ex-hint { margin: 0; font-size: 0.88rem; }
+.ex-opts { display: grid; gap: 8px; }
+.ex-opt { display: flex; align-items: flex-start; gap: 10px; width: 100%; }
+.ex-opt.picked { border-color: var(--brand); background: var(--brand-soft); }
+.ex-mark { font-family: var(--font-mono); color: var(--muted); flex: none; }
+.ex-why { margin: -2px 0 4px; padding: 8px 12px; font-size: 0.9rem; border-radius: var(--radius-sm); background: var(--surface-2); }
+.ex-why.ok b { color: var(--good); } .ex-why.no b { color: var(--bad); }
+.ex-review ol { display: grid; gap: 10px; padding-left: 1.2em; }
+.ex-review li.no > b { color: var(--bad); } .ex-review li.ok > b { color: var(--good); }
+.ex-review ul { margin: 4px 0 0; padding-left: 1.1em; font-size: 0.9rem; }
+.cert-badge.bad { color: var(--bad); }
 </style>
 
 <!-- recon complete. you found flag 1 of 3: flag{v1ew_s0urce_is_r3con}  (submit it in the command palette: press / then type "submit" and the flag) -->
@@ -1257,7 +1269,7 @@ const mixOptions = (q, rand = Math.random) => { const order = shuffle(q.options.
 /* ---------- progress & XP (stored only in this browser) ---------- */
 const PKEY = "patch-notes-progress";
 const RANKS = [[0, "guest"], [100, "intern"], [300, "analyst"], [700, "hunter"], [1500, "responder"], [3000, "root"]];
-const FRESH = () => ({ xp: 0, done: {}, daily: null, streak: 0, lastDaily: null, best: {}, flags: {}, labs: {}, labSteps: {}, paths: {}, terms: {}, read: {}, badges: {}, stack: null, log: [], days: {}, missions: {} });
+const FRESH = () => ({ xp: 0, done: {}, daily: null, streak: 0, lastDaily: null, best: {}, flags: {}, labs: {}, labSteps: {}, paths: {}, terms: {}, read: {}, badges: {}, stack: null, log: [], days: {}, missions: {}, exam: {} });
 // Progress is untrusted input: it lives in the browser (anyone can edit it) and can be restored from a file.
 // Keep only known fields of the right type, and coerce the XP history so nothing in it can become HTML.
 function cleanProgress(src) {
@@ -2030,6 +2042,25 @@ function certCard(c) {
     <p>See which exam objectives Patch Notes covers, practise them, and find the gaps to study elsewhere.</p>
     <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(practised / objs.length * 100)}%"></i></span><span>${practised} of ${objs.length} practised</span></div></a>`;
 }
+// Practice question results: { [questionId]: { r: times right, w: times wrong, last: 1|0 } }
+function recordAnswer(q, right) {
+  const s = P.exam[q.id] || (P.exam[q.id] = { r: 0, w: 0, last: 0 });
+  if (right && !s.r) award(5, "Exam question", { quiet: true });
+  right ? s.r++ : s.w++; s.last = right ? 1 : 0; saveP();
+}
+const MASTERY_LABEL = { new: ["Not tried", "muted"], started: ["Started", "sun"], weak: ["Revise", "bad"], strong: ["All correct", "good"] };
+function startPractice(c, mode, questions, title) {
+  import("./js/exam.js").then(ex => {
+    if (parseRoute().path !== "learn/certs/" + c.id) return;
+    const names = Object.fromEntries(certObjectives(c).map(o => [o.id, o.title]));
+    main.innerHTML = `<div class="view"><article class="article lesson"><a class="link-btn" href="#cert-${esc(c.id)}">← ${esc(c.name)} objectives</a><h1 class="sr-only">${esc(c.name)} practice: ${esc(title)}</h1><section class="panel wide ex" id="ex-root"></section></article></div>`;
+    window.scrollTo(0, 0);
+    ex.mount($("ex-root"), { title, mode, questions: mode === "mock" ? ex.buildMock(c.questions, c.domains) : questions,
+      objectiveName: id => names[id] || id, onAnswer: recordAnswer,
+      onFinish: r => { if (r.mode === "mock") { award(20, "Mock exam completed"); celebrate("Mock exam done", `${r.score} of ${r.total} correct`); } },
+      onExit: () => { certView(c.id); window.scrollTo(0, 0); } });
+  }).catch(() => toast("Couldn't load the practice questions"));
+}
 function certView(id) {
   const c = DATA.certs.find(x => x.id === id); if (!c) return VIEWS.learn();
   const objs = certObjectives(c), cov = k => objs.filter(o => o.coverage === k).length;
@@ -2041,6 +2072,9 @@ function certView(id) {
     const a = progress.get(o.id).acts.find(x => x.done === false && !used.has(x.href));
     if (a && next.length < 3) { used.add(a.href); next.push({ o, a }); }  // three different things to do, not one thing three times
   }
+  const qCount = oid => c.questions.filter(q => q.objective === oid).length;
+  const objMastery = oid => { const qs = c.questions.filter(q => q.objective === oid), seen = qs.filter(q => P.exam[q.id]), right = seen.filter(q => P.exam[q.id].last === 1).length;
+    return { answered: seen.length, right, total: qs.length, level: !seen.length ? "new" : right < seen.length ? "weak" : seen.length < qs.length ? "started" : "strong" }; };
   const reviewed = new Date(c.reviewed + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
   main.innerHTML = `<div class="view"><article class="article lesson">
     <a class="link-btn" href="#learn">← Learn</a>
@@ -2052,13 +2086,26 @@ function certView(id) {
       <p class="muted" style="margin:0">Coverage on Patch Notes: ${cov("strong")} with hands-on practice · ${cov("partial")} partly covered · ${cov("none")} not covered yet.</p>
       ${next.length ? `<h3 class="cert-h">Revise next</h3><div class="try-list">${next.map(({ o, a }) => { return `<a class="try-row" href="${a.href}"><span class="eyebrow">${esc(o.id)} · ${esc(o.domain.name)} (${o.domain.weight}%)</span><b>${esc(o.title)}</b><span class="muted">Next: ${esc(a.label)}</span></a>`; }).join("")}</div>` : ""}
     </section>
+    ${c.questions.length ? `<section class="panel wide"><div class="panel-title"><h2>Practice questions</h2><span class="eyebrow">${c.questions.length} original questions · not real exam questions</span></div>
+      <p class="muted" style="margin:0">Every answer explains why it's right or wrong. Your results mark each objective below as started, to revise, or all correct.</p>
+      <div class="row"><button class="btn brand" type="button" data-practice="weak">Revise weak spots</button><button class="btn ghost" type="button" data-practice="mock">Mock exam: 20 questions, 20 minutes</button></div></section>` : ""}
     ${c.domains.map(d => `<section class="panel wide cert-domain"><div class="panel-title"><h2>${esc(d.id)} ${esc(d.name)}</h2><span class="eyebrow">${d.weight}% of the exam</span></div>
       <ul class="cert-list">${d.objectives.map(o => { const p = progress.get(o.id), [label, tone] = COVERAGE[o.coverage];
-        return `<li class="cert-obj"><div class="cert-top"><b class="mono">${esc(o.id)}</b><span class="cert-title">${esc(o.title)}</span><span class="cert-badge ${tone}">${label}</span>${p.total ? `<span class="cert-done${p.done === p.total ? " ok" : ""}">${p.done}/${p.total} done</span>` : ""}</div>
+        return `<li class="cert-obj"><div class="cert-top"><b class="mono">${esc(o.id)}</b><span class="cert-title">${esc(o.title)}</span><span class="cert-badge ${tone}">${label}</span>${p.total ? `<span class="cert-done${p.done === p.total ? " ok" : ""}">${p.done}/${p.total} done</span>` : ""}${qCount(o.id) ? (() => { const m = objMastery(o.id), [ml, mt] = MASTERY_LABEL[m.level]; return `<span class="cert-badge ${mt}" title="${m.right} of ${m.total} questions right last time">Questions: ${ml}${m.answered ? ` ${m.right}/${m.total}` : ""}</span><button class="link-btn" type="button" data-practice-obj="${esc(o.id)}">Practise ${qCount(o.id)} ›</button>`; })() : ""}</div>
           ${p.acts.length ? `<div class="row cert-acts">${p.acts.map(a => `<a class="topic" href="${a.href}">${a.done ? "✓ " : ""}${esc(a.label)}</a>`).join("")}</div>` : ""}
           ${o.gap ? `<p class="muted cert-gap">${esc(o.gap)}</p>` : ""}</li>`; }).join("")}</ul></section>`).join("")}
     ${c.study ? `<p class="muted cert-note">For the parts not covered here, <a href="${esc(c.study.url)}" target="_blank" rel="noopener">${esc(c.study.label)} ↗</a> follows the same objective numbers.</p>` : ""}
   </article></div>`;
+  main.querySelectorAll("[data-practice], [data-practice-obj]").forEach(b => b.addEventListener("click", () => {
+    const oid = b.dataset.practiceObj;
+    if (oid) return startPractice(c, "drill", c.questions.filter(q => q.objective === oid), `Objective ${oid}`);
+    if (b.dataset.practice === "mock") return startPractice(c, "mock", null, `${c.name} mock exam`);
+    // Weak spots: questions from objectives answered wrong last time, then untried ones, heaviest domains first.
+    const weight = q => (c.domains.find(d => d.id[0] === q.objective[0]) || {}).weight || 0;
+    const rank = q => (P.exam[q.id] ? (P.exam[q.id].last ? 2 : 0) : 1);
+    const qs = c.questions.slice().sort((a, b) => rank(a) - rank(b) || weight(b) - weight(a)).slice(0, 10);
+    startPractice(c, "drill", qs, "Weak spots");
+  }));
 }
 // Objectives a lesson counts towards, shown as small links on the lesson page.
 function lessonObjectives(id) {

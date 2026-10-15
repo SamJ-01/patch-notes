@@ -1,0 +1,1630 @@
+{
+ "cert": "network-plus",
+ "exam": "N10-009",
+ "reviewed": "2026-10-15",
+ "note": "Original practice questions written for Patch Notes. They are not real exam questions.",
+ "questions": [
+  {
+   "id": "np-1.1-1",
+   "objective": "1.1",
+   "stem": "A colleague says a fault is 'at layer 3'. Which device works at that layer?",
+   "options": [
+    {
+     "text": "A router",
+     "correct": true,
+     "why": "Routers forward packets between networks using IP addresses, which is layer 3 (network)."
+    },
+    {
+     "text": "A switch",
+     "correct": false,
+     "why": "A standard switch forwards frames using MAC addresses at layer 2 (data link)."
+    },
+    {
+     "text": "A hub",
+     "correct": false,
+     "why": "A hub just repeats electrical signals out of every port, which is layer 1 (physical)."
+    },
+    {
+     "text": "A web browser",
+     "correct": false,
+     "why": "Browsers work at layer 7 (application)."
+    }
+   ]
+  },
+  {
+   "id": "np-1.1-2",
+   "objective": "1.1",
+   "stem": "Which OSI layer adds the source and destination port numbers?",
+   "options": [
+    {
+     "text": "Transport (layer 4)",
+     "correct": true,
+     "why": "TCP and UDP add port numbers to segments or datagrams at layer 4."
+    },
+    {
+     "text": "Network (layer 3)",
+     "correct": false,
+     "why": "Layer 3 adds IP addresses, not ports."
+    },
+    {
+     "text": "Data link (layer 2)",
+     "correct": false,
+     "why": "Layer 2 adds MAC addresses when it builds the frame."
+    },
+    {
+     "text": "Session (layer 5)",
+     "correct": false,
+     "why": "Layer 5 sets up and manages sessions; it doesn't add port numbers."
+    }
+   ]
+  },
+  {
+   "id": "np-1.2-1",
+   "objective": "1.2",
+   "stem": "Which device spreads incoming web traffic across several servers so no single one is overwhelmed?",
+   "options": [
+    {
+     "text": "A load balancer",
+     "correct": true,
+     "why": "A load balancer shares requests between servers and can stop sending to one that fails."
+    },
+    {
+     "text": "A proxy server",
+     "correct": false,
+     "why": "A proxy makes requests on behalf of clients, often to filter or cache them."
+    },
+    {
+     "text": "An IDS",
+     "correct": false,
+     "why": "An intrusion detection system watches traffic and raises alerts; it doesn't distribute it."
+    },
+    {
+     "text": "A NAS",
+     "correct": false,
+     "why": "Network-attached storage serves files over the network."
+    }
+   ]
+  },
+  {
+   "id": "np-1.2-2",
+   "objective": "1.2",
+   "stem": "What's the key difference between an IDS and an IPS?",
+   "options": [
+    {
+     "text": "An IPS sits in the traffic path and can block it; an IDS only detects and alerts",
+     "correct": true,
+     "why": "Because it's inline, an IPS can drop malicious traffic. An IDS watches a copy and alerts."
+    },
+    {
+     "text": "An IDS blocks traffic; an IPS only logs it",
+     "correct": false,
+     "why": "That's the wrong way round."
+    },
+    {
+     "text": "An IDS is for wireless networks and an IPS for wired",
+     "correct": false,
+     "why": "Both work on any network; the difference is whether they can block."
+    },
+    {
+     "text": "There's no difference",
+     "correct": false,
+     "why": "The P (prevention) means it can act, not just watch."
+    }
+   ]
+  },
+  {
+   "id": "np-1.3-1",
+   "objective": "1.3",
+   "stem": "A company rents virtual servers from a provider and installs its own operating systems and apps. Which cloud model is this?",
+   "options": [
+    {
+     "text": "IaaS",
+     "correct": true,
+     "why": "Infrastructure as a service: the provider runs the hardware and virtualisation; you manage everything from the OS up."
+    },
+    {
+     "text": "PaaS",
+     "correct": false,
+     "why": "With platform as a service the provider also manages the OS and runtime; you just deploy code."
+    },
+    {
+     "text": "SaaS",
+     "correct": false,
+     "why": "Software as a service is finished software you simply use, such as webmail."
+    },
+    {
+     "text": "On-premises",
+     "correct": false,
+     "why": "On-premises means you own and run the hardware yourself, so it isn't cloud."
+    }
+   ]
+  },
+  {
+   "id": "np-1.3-2",
+   "objective": "1.3",
+   "stem": "What does a virtual private cloud (VPC) give you?",
+   "options": [
+    {
+     "text": "A logically isolated private network inside a public cloud",
+     "correct": true,
+     "why": "A VPC is your own network space in the provider's cloud, with your own subnets, routing and firewall rules."
+    },
+    {
+     "text": "A physical server you own in the provider's data centre",
+     "correct": false,
+     "why": "That describes a dedicated host or colocation, not a VPC."
+    },
+    {
+     "text": "A VPN client for remote staff",
+     "correct": false,
+     "why": "A VPN client connects users; a VPC is the network itself."
+    },
+    {
+     "text": "Automatic backups",
+     "correct": false,
+     "why": "Backups are a separate service."
+    }
+   ]
+  },
+  {
+   "id": "np-1.4-1",
+   "objective": "1.4",
+   "stem": "Which TWO protocols send everything, including passwords, unencrypted? (Choose two.)",
+   "options": [
+    {
+     "text": "Telnet",
+     "correct": true,
+     "why": "Telnet sends the whole session in plain text. Replace it with SSH (port 22)."
+    },
+    {
+     "text": "FTP",
+     "correct": true,
+     "why": "FTP logins and data cross the network in plain text. Use SFTP or FTPS instead."
+    },
+    {
+     "text": "SSH",
+     "correct": false,
+     "why": "SSH encrypts the session."
+    },
+    {
+     "text": "HTTPS",
+     "correct": false,
+     "why": "HTTPS encrypts web traffic with TLS."
+    }
+   ]
+  },
+  {
+   "id": "np-1.4-2",
+   "objective": "1.4",
+   "stem": "A firewall must allow normal DNS lookups. What is mainly needed?",
+   "options": [
+    {
+     "text": "Port 53 over UDP",
+     "correct": true,
+     "why": "Most DNS queries use UDP 53. TCP 53 is used for large answers and zone transfers."
+    },
+    {
+     "text": "Port 53 over TCP only",
+     "correct": false,
+     "why": "Allowing only TCP would break most everyday lookups, which use UDP."
+    },
+    {
+     "text": "Ports 67 and 68 over UDP",
+     "correct": false,
+     "why": "Those are DHCP."
+    },
+    {
+     "text": "Port 123 over UDP",
+     "correct": false,
+     "why": "That's NTP, for time."
+    }
+   ]
+  },
+  {
+   "id": "np-1.4-3",
+   "objective": "1.4",
+   "stem": "Which traffic type sends one packet to every device on the local network?",
+   "options": [
+    {
+     "text": "Broadcast",
+     "correct": true,
+     "why": "A broadcast goes to every device in the broadcast domain, e.g. a DHCP Discover."
+    },
+    {
+     "text": "Unicast",
+     "correct": false,
+     "why": "Unicast is one sender to one receiver."
+    },
+    {
+     "text": "Multicast",
+     "correct": false,
+     "why": "Multicast reaches only devices that have joined a group."
+    },
+    {
+     "text": "Anycast",
+     "correct": false,
+     "why": "Anycast delivers to the nearest of several devices sharing one address."
+    }
+   ]
+  },
+  {
+   "id": "np-1.5-1",
+   "objective": "1.5",
+   "stem": "Which cabling is immune to electromagnetic interference and suits long runs between buildings?",
+   "options": [
+    {
+     "text": "Fibre optic",
+     "correct": true,
+     "why": "Fibre carries light, not electricity, so EMI can't affect it, and it covers far longer distances."
+    },
+    {
+     "text": "Cat 6 unshielded twisted pair",
+     "correct": false,
+     "why": "Copper UTP is affected by interference and is limited to about 100 m."
+    },
+    {
+     "text": "Coaxial cable",
+     "correct": false,
+     "why": "Coax is shielded copper, so it resists but isn't immune to interference."
+    },
+    {
+     "text": "Shielded twisted pair",
+     "correct": false,
+     "why": "Shielding reduces interference but doesn't eliminate it, and the 100 m limit still applies."
+    }
+   ]
+  },
+  {
+   "id": "np-1.5-2",
+   "objective": "1.5",
+   "stem": "What's the maximum recommended length of a twisted-pair Ethernet run, such as Cat 6, from switch to device?",
+   "options": [
+    {
+     "text": "100 metres",
+     "correct": true,
+     "why": "Twisted-pair Ethernet is specified to 100 m, including patch cables."
+    },
+    {
+     "text": "10 metres",
+     "correct": false,
+     "why": "Far shorter than the standard allows."
+    },
+    {
+     "text": "500 metres",
+     "correct": false,
+     "why": "That was an old thick-coax standard, not twisted pair."
+    },
+    {
+     "text": "2 kilometres",
+     "correct": false,
+     "why": "Distances like that need fibre."
+    }
+   ]
+  },
+  {
+   "id": "np-1.6-1",
+   "objective": "1.6",
+   "stem": "In a spine-and-leaf data centre network, how is each leaf switch connected?",
+   "options": [
+    {
+     "text": "To every spine switch",
+     "correct": true,
+     "why": "Each leaf links to every spine, so any two servers are the same short distance apart and one spine can fail safely."
+    },
+    {
+     "text": "To one spine switch only",
+     "correct": false,
+     "why": "That would make each spine a single point of failure for its leaves."
+    },
+    {
+     "text": "To the other leaf switches in a ring",
+     "correct": false,
+     "why": "Leaves don't connect to each other in spine-and-leaf."
+    },
+    {
+     "text": "Directly to the internet",
+     "correct": false,
+     "why": "Internet links come in through border devices, not every leaf."
+    }
+   ]
+  },
+  {
+   "id": "np-1.6-2",
+   "objective": "1.6",
+   "stem": "Which topology has no single point of failure because every node connects to every other node?",
+   "options": [
+    {
+     "text": "Full mesh",
+     "correct": true,
+     "why": "With every node linked to every other, traffic can always take another path."
+    },
+    {
+     "text": "Star",
+     "correct": false,
+     "why": "The central switch is a single point of failure."
+    },
+    {
+     "text": "Bus",
+     "correct": false,
+     "why": "A break in the shared backbone takes everyone down."
+    },
+    {
+     "text": "Hub and spoke",
+     "correct": false,
+     "why": "If the hub fails, the spokes can't reach each other."
+    }
+   ]
+  },
+  {
+   "id": "np-1.7-1",
+   "objective": "1.7",
+   "stem": "A PC's address is 169.254.33.10. What does that tell you?",
+   "options": [
+    {
+     "text": "It couldn't reach a DHCP server, so it gave itself an APIPA address",
+     "correct": true,
+     "why": "169.254.0.0/16 addresses are self-assigned when DHCP fails. Check the DHCP server and the path to it."
+    },
+    {
+     "text": "It has a public internet address",
+     "correct": false,
+     "why": "169.254 addresses are link-local and never routed."
+    },
+    {
+     "text": "Someone set a static address",
+     "correct": false,
+     "why": "Possible but unlikely: this range is what Windows picks for itself when DHCP fails."
+    },
+    {
+     "text": "It's using the loopback address",
+     "correct": false,
+     "why": "Loopback is 127.0.0.0/8."
+    }
+   ]
+  },
+  {
+   "id": "np-1.7-2",
+   "objective": "1.7",
+   "stem": "How many usable host addresses does a /27 subnet provide?",
+   "options": [
+    {
+     "text": "30",
+     "correct": true,
+     "why": "/27 leaves 5 host bits: 2^5 = 32 addresses, minus the network and broadcast addresses = 30."
+    },
+    {
+     "text": "32",
+     "correct": false,
+     "why": "That's the total, including the network and broadcast addresses, which hosts can't use."
+    },
+    {
+     "text": "62",
+     "correct": false,
+     "why": "That's a /26."
+    },
+    {
+     "text": "14",
+     "correct": false,
+     "why": "That's a /28."
+    }
+   ]
+  },
+  {
+   "id": "np-1.7-3",
+   "objective": "1.7",
+   "stem": "Which of these is a private (RFC 1918) address?",
+   "options": [
+    {
+     "text": "172.20.5.4",
+     "correct": true,
+     "why": "172.16.0.0/12 covers 172.16.x.x to 172.31.x.x, so 172.20 is private."
+    },
+    {
+     "text": "172.32.1.1",
+     "correct": false,
+     "why": "172.32 is just outside the private 172.16–172.31 range, so it's public."
+    },
+    {
+     "text": "192.169.1.1",
+     "correct": false,
+     "why": "Only 192.168.x.x is private; 192.169 is public."
+    },
+    {
+     "text": "11.0.0.1",
+     "correct": false,
+     "why": "Only 10.x.x.x is private in that area; 11 is public."
+    }
+   ]
+  },
+  {
+   "id": "np-1.8-1",
+   "objective": "1.8",
+   "stem": "What does SD-WAN mainly do?",
+   "options": [
+    {
+     "text": "Uses software to choose the best path across several WAN links, such as broadband, 5G and MPLS",
+     "correct": true,
+     "why": "SD-WAN steers each application over whichever link suits it best and fails over automatically."
+    },
+    {
+     "text": "Replaces Wi-Fi inside offices",
+     "correct": false,
+     "why": "SD-WAN is about links between sites, not wireless."
+    },
+    {
+     "text": "Encrypts data stored on servers",
+     "correct": false,
+     "why": "That's encryption at rest."
+    },
+    {
+     "text": "Hands out IP addresses",
+     "correct": false,
+     "why": "That's DHCP."
+    }
+   ]
+  },
+  {
+   "id": "np-1.8-2",
+   "objective": "1.8",
+   "stem": "Which statement best describes zero trust?",
+   "options": [
+    {
+     "text": "Never trust by default: verify every request, wherever it comes from",
+     "correct": true,
+     "why": "Zero trust checks identity, device and context for each request instead of trusting the internal network."
+    },
+    {
+     "text": "Trust anything inside the firewall",
+     "correct": false,
+     "why": "That's the old perimeter model zero trust replaces."
+    },
+    {
+     "text": "Block all remote access",
+     "correct": false,
+     "why": "Zero trust allows remote access, but verifies it."
+    },
+    {
+     "text": "Use one strong shared password",
+     "correct": false,
+     "why": "Shared passwords are the opposite of verifying each identity."
+    }
+   ]
+  },
+  {
+   "id": "np-1.8-3",
+   "objective": "1.8",
+   "stem": "Which IPv6 range is link-local, like IPv4's 169.254 addresses?",
+   "options": [
+    {
+     "text": "fe80::/10",
+     "correct": true,
+     "why": "Every IPv6 interface has an fe80:: link-local address that only works on the local link."
+    },
+    {
+     "text": "::1/128",
+     "correct": false,
+     "why": "::1 is the IPv6 loopback address."
+    },
+    {
+     "text": "2000::/3",
+     "correct": false,
+     "why": "That's the global unicast range used on the internet."
+    },
+    {
+     "text": "ff00::/8",
+     "correct": false,
+     "why": "That's multicast."
+    }
+   ]
+  },
+  {
+   "id": "np-2.1-1",
+   "objective": "2.1",
+   "stem": "Which routing protocol is a link-state protocol commonly used inside a single organisation?",
+   "options": [
+    {
+     "text": "OSPF",
+     "correct": true,
+     "why": "OSPF is a link-state interior gateway protocol: routers share link information and each works out the best paths."
+    },
+    {
+     "text": "BGP",
+     "correct": false,
+     "why": "BGP is the exterior protocol that connects organisations across the internet."
+    },
+    {
+     "text": "RIP",
+     "correct": false,
+     "why": "RIP is a distance-vector protocol that only counts hops."
+    },
+    {
+     "text": "NAT",
+     "correct": false,
+     "why": "NAT translates addresses; it isn't a routing protocol."
+    }
+   ]
+  },
+  {
+   "id": "np-2.1-2",
+   "objective": "2.1",
+   "stem": "A router knows two routes to the same network: a static route and one learned by OSPF. Which does it normally use?",
+   "options": [
+    {
+     "text": "The static route, because it has a lower administrative distance",
+     "correct": true,
+     "why": "Administrative distance ranks how trustworthy a source is. Static routes default to 1, OSPF to 110, and lower wins."
+    },
+    {
+     "text": "The OSPF route, because dynamic routes always win",
+     "correct": false,
+     "why": "Dynamic routes don't automatically beat static ones; administrative distance decides."
+    },
+    {
+     "text": "The route with more hops",
+     "correct": false,
+     "why": "More hops is never a reason to prefer a route."
+    },
+    {
+     "text": "Whichever it learned first",
+     "correct": false,
+     "why": "Order doesn't matter; administrative distance, then metric, decide."
+    }
+   ]
+  },
+  {
+   "id": "np-2.2-1",
+   "objective": "2.2",
+   "stem": "What does a VLAN do?",
+   "options": [
+    {
+     "text": "Splits one physical switch into separate logical networks, each its own broadcast domain",
+     "correct": true,
+     "why": "Devices in different VLANs can't talk directly; traffic between them must be routed."
+    },
+    {
+     "text": "Makes the switch faster",
+     "correct": false,
+     "why": "VLANs are about separation, not speed."
+    },
+    {
+     "text": "Encrypts traffic between switches",
+     "correct": false,
+     "why": "VLAN tags aren't encryption."
+    },
+    {
+     "text": "Connects the network to the internet",
+     "correct": false,
+     "why": "That's the router's job."
+    }
+   ]
+  },
+  {
+   "id": "np-2.2-2",
+   "objective": "2.2",
+   "stem": "Which standard adds a VLAN tag to frames on a trunk link between switches?",
+   "options": [
+    {
+     "text": "802.1Q",
+     "correct": true,
+     "why": "802.1Q inserts a 4-byte tag with the VLAN ID so one link can carry many VLANs."
+    },
+    {
+     "text": "802.11",
+     "correct": false,
+     "why": "802.11 is Wi-Fi."
+    },
+    {
+     "text": "802.3af",
+     "correct": false,
+     "why": "802.3af is Power over Ethernet."
+    },
+    {
+     "text": "802.1X",
+     "correct": false,
+     "why": "802.1X is port-based network access control (authentication)."
+    }
+   ]
+  },
+  {
+   "id": "np-2.2-3",
+   "objective": "2.2",
+   "stem": "Why do switches run Spanning Tree Protocol?",
+   "options": [
+    {
+     "text": "To stop loops when there are redundant links between switches",
+     "correct": true,
+     "why": "Loops create broadcast storms. STP blocks redundant paths until they're needed."
+    },
+    {
+     "text": "To hand out IP addresses",
+     "correct": false,
+     "why": "That's DHCP."
+    },
+    {
+     "text": "To encrypt frames",
+     "correct": false,
+     "why": "STP doesn't encrypt anything."
+    },
+    {
+     "text": "To share traffic equally across all links",
+     "correct": false,
+     "why": "STP blocks redundant links rather than load-balancing across them."
+    }
+   ]
+  },
+  {
+   "id": "np-2.3-1",
+   "objective": "2.3",
+   "stem": "Which Wi-Fi band reaches furthest but suffers the most interference from other devices?",
+   "options": [
+    {
+     "text": "2.4 GHz",
+     "correct": true,
+     "why": "Lower frequencies travel further and through walls better, but 2.4 GHz is crowded and shared with microwaves and Bluetooth."
+    },
+    {
+     "text": "5 GHz",
+     "correct": false,
+     "why": "5 GHz is faster with less interference, but shorter range."
+    },
+    {
+     "text": "6 GHz",
+     "correct": false,
+     "why": "6 GHz (Wi-Fi 6E/7) has the shortest range of the three."
+    },
+    {
+     "text": "60 GHz",
+     "correct": false,
+     "why": "60 GHz is very short-range, roughly within one room."
+    }
+   ]
+  },
+  {
+   "id": "np-2.3-2",
+   "objective": "2.3",
+   "stem": "Which wireless security setting should a new office network use?",
+   "options": [
+    {
+     "text": "WPA3",
+     "correct": true,
+     "why": "WPA3 is the current standard, with stronger protection against password guessing."
+    },
+    {
+     "text": "WEP",
+     "correct": false,
+     "why": "WEP was broken decades ago and can be cracked in minutes."
+    },
+    {
+     "text": "WPA with TKIP",
+     "correct": false,
+     "why": "TKIP is deprecated and weak."
+    },
+    {
+     "text": "An open network with a hidden SSID",
+     "correct": false,
+     "why": "Hiding the name isn't security; the traffic is still unencrypted."
+    }
+   ]
+  },
+  {
+   "id": "np-2.3-3",
+   "objective": "2.3",
+   "stem": "Why do 2.4 GHz networks use channels 1, 6 and 11?",
+   "options": [
+    {
+     "text": "They don't overlap, so neighbouring access points don't interfere",
+     "correct": true,
+     "why": "Other 2.4 GHz channels overlap. Using 1, 6 and 11 avoids co-channel and adjacent-channel interference."
+    },
+    {
+     "text": "They're the fastest channels",
+     "correct": false,
+     "why": "Every channel has the same width; these just don't overlap."
+    },
+    {
+     "text": "WPA3 requires them",
+     "correct": false,
+     "why": "Security settings don't depend on the channel."
+    },
+    {
+     "text": "They reach further",
+     "correct": false,
+     "why": "Range doesn't depend on the channel number."
+    }
+   ]
+  },
+  {
+   "id": "np-2.4-1",
+   "objective": "2.4",
+   "stem": "Why do data centres arrange racks into hot and cold aisles?",
+   "options": [
+    {
+     "text": "To keep cool intake air separate from hot exhaust air, so cooling works efficiently",
+     "correct": true,
+     "why": "Equipment pulls cool air from the cold aisle and blows hot air into the hot aisle, so the two don't mix."
+    },
+    {
+     "text": "To make cable runs shorter",
+     "correct": false,
+     "why": "Aisle layout is about airflow."
+    },
+    {
+     "text": "For fire suppression",
+     "correct": false,
+     "why": "Fire suppression is a separate system."
+    },
+    {
+     "text": "For physical security",
+     "correct": false,
+     "why": "Access control is handled separately."
+    }
+   ]
+  },
+  {
+   "id": "np-2.4-2",
+   "objective": "2.4",
+   "stem": "What does a UPS provide?",
+   "options": [
+    {
+     "text": "Short-term battery power so equipment keeps running or shuts down cleanly",
+     "correct": true,
+     "why": "A UPS covers short outages and dips, long enough to shut down safely or for a generator to start."
+    },
+    {
+     "text": "Power for days during a long outage",
+     "correct": false,
+     "why": "That's a generator's job."
+    },
+    {
+     "text": "A redundant network link",
+     "correct": false,
+     "why": "A UPS is about power, not connectivity."
+    },
+    {
+     "text": "A faster internet connection",
+     "correct": false,
+     "why": "Power protection doesn't change bandwidth."
+    }
+   ]
+  },
+  {
+   "id": "np-3.1-1",
+   "objective": "3.1",
+   "stem": "Before changing a core switch's configuration, what should normally happen first?",
+   "options": [
+    {
+     "text": "It goes through change management: approval, a scheduled window and a rollback plan",
+     "correct": true,
+     "why": "Change management cuts the risk of outages and makes sure someone can undo the change."
+    },
+    {
+     "text": "Make the change, then tell people",
+     "correct": false,
+     "why": "Unannounced changes cause unexpected outages."
+    },
+    {
+     "text": "Reboot all the switches",
+     "correct": false,
+     "why": "Rebooting every switch causes an outage and does nothing to make the change safer."
+    },
+    {
+     "text": "Turn off logging",
+     "correct": false,
+     "why": "You want logs during a change, not fewer."
+    }
+   ]
+  },
+  {
+   "id": "np-3.1-2",
+   "objective": "3.1",
+   "stem": "Which document shows how devices are physically and logically connected?",
+   "options": [
+    {
+     "text": "A network diagram",
+     "correct": true,
+     "why": "Physical and logical diagrams show devices, links, VLANs and addressing."
+    },
+    {
+     "text": "An acceptable use policy",
+     "correct": false,
+     "why": "That sets rules for how people may use systems."
+    },
+    {
+     "text": "A service level agreement",
+     "correct": false,
+     "why": "An SLA defines the service a provider promises."
+    },
+    {
+     "text": "A non-disclosure agreement",
+     "correct": false,
+     "why": "An NDA is a confidentiality contract."
+    }
+   ]
+  },
+  {
+   "id": "np-3.2-1",
+   "objective": "3.2",
+   "stem": "Which protocol lets a monitoring system poll devices for counters such as interface errors?",
+   "options": [
+    {
+     "text": "SNMP",
+     "correct": true,
+     "why": "SNMP managers poll devices on UDP 161; devices can also send alerts (traps) on UDP 162."
+    },
+    {
+     "text": "Syslog",
+     "correct": false,
+     "why": "Syslog is devices pushing log messages, not polling counters."
+    },
+    {
+     "text": "NTP",
+     "correct": false,
+     "why": "NTP synchronises time."
+    },
+    {
+     "text": "SMTP",
+     "correct": false,
+     "why": "SMTP sends email."
+    }
+   ]
+  },
+  {
+   "id": "np-3.2-2",
+   "objective": "3.2",
+   "stem": "Why record a baseline of normal network performance?",
+   "options": [
+    {
+     "text": "So you can spot when something becomes abnormal",
+     "correct": true,
+     "why": "Without knowing what normal looks like, you can't tell whether today's traffic is a problem."
+    },
+    {
+     "text": "It makes the network faster",
+     "correct": false,
+     "why": "A baseline is a measurement, not a tweak."
+    },
+    {
+     "text": "DHCP needs it",
+     "correct": false,
+     "why": "DHCP doesn't use baselines."
+    },
+    {
+     "text": "It encrypts traffic",
+     "correct": false,
+     "why": "Baselines don't encrypt anything."
+    }
+   ]
+  },
+  {
+   "id": "np-3.3-1",
+   "objective": "3.3",
+   "stem": "What does RPO (recovery point objective) describe?",
+   "options": [
+    {
+     "text": "How much data, measured in time, you can afford to lose",
+     "correct": true,
+     "why": "An RPO of 4 hours means backups must be at most 4 hours old."
+    },
+    {
+     "text": "How long systems can be down",
+     "correct": false,
+     "why": "That's the RTO (recovery time objective)."
+    },
+    {
+     "text": "The average time between failures",
+     "correct": false,
+     "why": "That's MTBF."
+    },
+    {
+     "text": "How much backups cost",
+     "correct": false,
+     "why": "Cost isn't what RPO measures."
+    }
+   ]
+  },
+  {
+   "id": "np-3.3-2",
+   "objective": "3.3",
+   "stem": "Which disaster recovery site can take over almost immediately?",
+   "options": [
+    {
+     "text": "A hot site",
+     "correct": true,
+     "why": "A hot site has equipment running with current data, ready to switch over."
+    },
+    {
+     "text": "A warm site",
+     "correct": false,
+     "why": "A warm site has equipment but needs data restored first, so it takes hours or days."
+    },
+    {
+     "text": "A cold site",
+     "correct": false,
+     "why": "A cold site is space and power only, so recovery takes the longest."
+    },
+    {
+     "text": "An offsite tape store",
+     "correct": false,
+     "why": "Tapes protect data but provide no systems to run on."
+    }
+   ]
+  },
+  {
+   "id": "np-3.4-1",
+   "objective": "3.4",
+   "stem": "Which DNS record maps a name to an IPv6 address?",
+   "options": [
+    {
+     "text": "AAAA",
+     "correct": true,
+     "why": "AAAA ('quad A') records hold IPv6 addresses."
+    },
+    {
+     "text": "A",
+     "correct": false,
+     "why": "A records hold IPv4 addresses."
+    },
+    {
+     "text": "MX",
+     "correct": false,
+     "why": "MX records name the mail servers for a domain."
+    },
+    {
+     "text": "CNAME",
+     "correct": false,
+     "why": "A CNAME is an alias pointing to another name."
+    }
+   ]
+  },
+  {
+   "id": "np-3.4-2",
+   "objective": "3.4",
+   "stem": "How can an IPv6 device give itself an address without a DHCP server?",
+   "options": [
+    {
+     "text": "SLAAC",
+     "correct": true,
+     "why": "Stateless address autoconfiguration builds an address from the prefix in the router's advertisements."
+    },
+    {
+     "text": "APIPA",
+     "correct": false,
+     "why": "APIPA is IPv4's last-resort self-assigned address (169.254.x.x)."
+    },
+    {
+     "text": "NAT",
+     "correct": false,
+     "why": "NAT translates addresses; it doesn't assign them."
+    },
+    {
+     "text": "ARP",
+     "correct": false,
+     "why": "ARP maps IPv4 addresses to MAC addresses."
+    }
+   ]
+  },
+  {
+   "id": "np-3.4-3",
+   "objective": "3.4",
+   "stem": "Which service keeps device clocks in sync, so logs from different systems line up?",
+   "options": [
+    {
+     "text": "NTP",
+     "correct": true,
+     "why": "NTP (UDP 123) synchronises clocks. Accurate time matters for logs, certificates and authentication."
+    },
+    {
+     "text": "SNMP",
+     "correct": false,
+     "why": "SNMP is for monitoring."
+    },
+    {
+     "text": "DNS",
+     "correct": false,
+     "why": "DNS resolves names."
+    },
+    {
+     "text": "LDAP",
+     "correct": false,
+     "why": "LDAP is a directory service."
+    }
+   ]
+  },
+  {
+   "id": "np-3.5-1",
+   "objective": "3.5",
+   "stem": "An admin plugs into a switch's console port because the network itself is down. What's this called?",
+   "options": [
+    {
+     "text": "Out-of-band management",
+     "correct": true,
+     "why": "Out-of-band management uses a separate path, such as a console port, so it works even when the network doesn't."
+    },
+    {
+     "text": "In-band management",
+     "correct": false,
+     "why": "In-band management goes over the production network, which is down here."
+    },
+    {
+     "text": "A site-to-site VPN",
+     "correct": false,
+     "why": "That links two networks."
+    },
+    {
+     "text": "A jump box",
+     "correct": false,
+     "why": "A jump box is a hardened server admins connect through."
+    }
+   ]
+  },
+  {
+   "id": "np-3.5-2",
+   "objective": "3.5",
+   "stem": "What's a jump box (jump server) for?",
+   "options": [
+    {
+     "text": "A hardened single point admins connect through to reach sensitive systems",
+     "correct": true,
+     "why": "Funnelling admin access through one well-protected, logged host shrinks the attack surface."
+    },
+    {
+     "text": "Speeding up file transfers",
+     "correct": false,
+     "why": "Jump boxes are about controlled access, not speed."
+    },
+    {
+     "text": "A backup DNS server",
+     "correct": false,
+     "why": "A jump box controls administrator access; it doesn't answer DNS queries."
+    },
+    {
+     "text": "Hosting the public website",
+     "correct": false,
+     "why": "Public servers belong in a screened subnet, not on a jump box."
+    }
+   ]
+  },
+  {
+   "id": "np-3.5-3",
+   "objective": "3.5",
+   "stem": "Which VPN type permanently connects two office networks?",
+   "options": [
+    {
+     "text": "Site-to-site",
+     "correct": true,
+     "why": "Gateways at each office keep a tunnel up, so the two networks act as one."
+    },
+    {
+     "text": "Client-to-site",
+     "correct": false,
+     "why": "Client-to-site connects one remote user."
+    },
+    {
+     "text": "Clientless",
+     "correct": false,
+     "why": "Clientless VPN gives a user access through a web browser."
+    },
+    {
+     "text": "Split tunnel",
+     "correct": false,
+     "why": "Split tunnelling describes which traffic goes through a VPN, not what it connects."
+    }
+   ]
+  },
+  {
+   "id": "np-4.1-1",
+   "objective": "4.1",
+   "stem": "Comparing a file's hash before and after a download protects which part of the CIA triad?",
+   "options": [
+    {
+     "text": "Integrity",
+     "correct": true,
+     "why": "A matching hash shows the file wasn't changed."
+    },
+    {
+     "text": "Confidentiality",
+     "correct": false,
+     "why": "Confidentiality is about keeping data secret, for example with encryption."
+    },
+    {
+     "text": "Availability",
+     "correct": false,
+     "why": "Availability is about systems being up when needed."
+    },
+    {
+     "text": "Non-repudiation",
+     "correct": false,
+     "why": "That needs digital signatures tied to an identity, not just a hash, and it isn't part of the triad."
+    }
+   ]
+  },
+  {
+   "id": "np-4.1-2",
+   "objective": "4.1",
+   "stem": "Which protocol commonly provides central authentication for 802.1X Wi-Fi and wired port access?",
+   "options": [
+    {
+     "text": "RADIUS",
+     "correct": true,
+     "why": "The switch or access point passes credentials to a RADIUS server, which approves or denies access."
+    },
+    {
+     "text": "TFTP",
+     "correct": false,
+     "why": "TFTP is a simple file transfer protocol."
+    },
+    {
+     "text": "SNMP",
+     "correct": false,
+     "why": "SNMP is for monitoring."
+    },
+    {
+     "text": "FTP",
+     "correct": false,
+     "why": "FTP transfers files."
+    }
+   ]
+  },
+  {
+   "id": "np-4.2-1",
+   "objective": "4.2",
+   "stem": "An attacker floods a switch with fake MAC addresses until it starts sending frames out of every port. What is this?",
+   "options": [
+    {
+     "text": "MAC flooding",
+     "correct": true,
+     "why": "Once the MAC table is full, the switch floods frames like a hub, letting the attacker see others' traffic. Port security limits it."
+    },
+    {
+     "text": "ARP spoofing",
+     "correct": false,
+     "why": "ARP spoofing sends fake ARP replies to redirect traffic through the attacker."
+    },
+    {
+     "text": "VLAN hopping",
+     "correct": false,
+     "why": "VLAN hopping reaches another VLAN through trunk tricks."
+    },
+    {
+     "text": "DNS poisoning",
+     "correct": false,
+     "why": "DNS poisoning plants false name-to-address answers."
+    }
+   ]
+  },
+  {
+   "id": "np-4.2-2",
+   "objective": "4.2",
+   "stem": "Users on one floor suddenly get addresses from the wrong range and can't reach anything.",
+   "options": [
+    {
+     "text": "A rogue DHCP server is handing out leases",
+     "correct": true,
+     "why": "An unauthorised DHCP server answering first gives bad addresses or a malicious gateway. DHCP snooping blocks it."
+    },
+    {
+     "text": "MAC flooding",
+     "correct": false,
+     "why": "MAC flooding affects switching, not address assignment."
+    },
+    {
+     "text": "An evil twin access point",
+     "correct": false,
+     "why": "That would only affect wireless users who joined the fake network."
+    },
+    {
+     "text": "A DDoS attack",
+     "correct": false,
+     "why": "A DDoS overwhelms services; it doesn't change users' addresses."
+    }
+   ],
+   "scenario": "Wired users on the third floor report the network stopped working after lunch. Their PCs show addresses in 10.99.0.0/24, but the company uses 192.168.20.0/24."
+  },
+  {
+   "id": "np-4.2-3",
+   "objective": "4.2",
+   "stem": "A fake Wi-Fi access point copies the name of a café's real network. What is it called?",
+   "options": [
+    {
+     "text": "An evil twin",
+     "correct": true,
+     "why": "An evil twin lures people to connect so the attacker can intercept their traffic."
+    },
+    {
+     "text": "A rogue DHCP server",
+     "correct": false,
+     "why": "That's about address assignment."
+    },
+    {
+     "text": "Bluejacking",
+     "correct": false,
+     "why": "Bluejacking sends unsolicited Bluetooth messages."
+    },
+    {
+     "text": "War driving",
+     "correct": false,
+     "why": "War driving is searching an area for wireless networks."
+    }
+   ]
+  },
+  {
+   "id": "np-4.3-1",
+   "objective": "4.3",
+   "stem": "Which switch feature limits which MAC addresses may use a port?",
+   "options": [
+    {
+     "text": "Port security",
+     "correct": true,
+     "why": "Port security can allow specific or a set number of MAC addresses, and shut the port down on a violation."
+    },
+    {
+     "text": "Spanning Tree Protocol",
+     "correct": false,
+     "why": "STP prevents loops."
+    },
+    {
+     "text": "VLAN trunking",
+     "correct": false,
+     "why": "Trunking carries several VLANs over one link."
+    },
+    {
+     "text": "QoS",
+     "correct": false,
+     "why": "QoS prioritises traffic."
+    }
+   ]
+  },
+  {
+   "id": "np-4.3-2",
+   "objective": "4.3",
+   "stem": "Where should a public web server go so a compromise doesn't expose the internal network?",
+   "options": [
+    {
+     "text": "In a screened subnet (DMZ)",
+     "correct": true,
+     "why": "A screened subnet sits between the internet and the internal network, with firewall rules limiting what it can reach."
+    },
+    {
+     "text": "On the internal user VLAN",
+     "correct": false,
+     "why": "A compromised server there sits next to staff PCs."
+    },
+    {
+     "text": "Next to the domain controllers",
+     "correct": false,
+     "why": "That puts the most sensitive systems next to the most exposed one."
+    },
+    {
+     "text": "On the guest Wi-Fi",
+     "correct": false,
+     "why": "Guest networks are for visitors, not servers."
+    }
+   ]
+  },
+  {
+   "id": "np-4.3-3",
+   "objective": "4.3",
+   "stem": "Router access control lists end with an implicit rule. What does it do?",
+   "options": [
+    {
+     "text": "Denies anything not explicitly allowed",
+     "correct": true,
+     "why": "The implicit deny means traffic that matches no permit line is dropped."
+    },
+    {
+     "text": "Allows everything",
+     "correct": false,
+     "why": "That would make the ACL pointless."
+    },
+    {
+     "text": "Logs everything",
+     "correct": false,
+     "why": "Logging must be configured; it isn't implied."
+    },
+    {
+     "text": "Allows web traffic only",
+     "correct": false,
+     "why": "No protocol is allowed by default."
+    }
+   ]
+  },
+  {
+   "id": "np-5.1-1",
+   "objective": "5.1",
+   "stem": "What's the first step of the CompTIA troubleshooting methodology?",
+   "options": [
+    {
+     "text": "Identify the problem",
+     "correct": true,
+     "why": "First gather information, question users, find symptoms and what changed."
+    },
+    {
+     "text": "Establish a theory of probable cause",
+     "correct": false,
+     "why": "That's step two, after identifying the problem."
+    },
+    {
+     "text": "Implement the solution",
+     "correct": false,
+     "why": "Fixing comes later, after testing a theory and planning."
+    },
+    {
+     "text": "Document findings",
+     "correct": false,
+     "why": "Documentation is the last step."
+    }
+   ]
+  },
+  {
+   "id": "np-5.1-2",
+   "objective": "5.1",
+   "stem": "You've just fixed a fault. What should you do before documenting it?",
+   "options": [
+    {
+     "text": "Verify full system functionality and add preventive measures if needed",
+     "correct": true,
+     "why": "Check that everything works, not just the original symptom, and stop it recurring. Then document."
+    },
+    {
+     "text": "Establish a plan of action",
+     "correct": false,
+     "why": "Planning comes before you implement the fix."
+    },
+    {
+     "text": "Question the user",
+     "correct": false,
+     "why": "That's part of identifying the problem at the start."
+    },
+    {
+     "text": "Escalate the ticket",
+     "correct": false,
+     "why": "Escalation is for problems you can't solve yourself."
+    }
+   ]
+  },
+  {
+   "id": "np-5.2-1",
+   "objective": "5.2",
+   "stem": "A port's link light is off and a cable tester reports an open on one pair. What's the likely cause?",
+   "options": [
+    {
+     "text": "A broken or badly terminated cable",
+     "correct": true,
+     "why": "An 'open' means a wire has no continuity. Re-terminate or replace the cable."
+    },
+    {
+     "text": "A duplex mismatch",
+     "correct": false,
+     "why": "A duplex mismatch gives a link with errors and slow speed, not no link at all."
+    },
+    {
+     "text": "A DHCP failure",
+     "correct": false,
+     "why": "DHCP problems happen after the link is up."
+    },
+    {
+     "text": "The wrong VLAN",
+     "correct": false,
+     "why": "A wrong VLAN still shows a link light."
+    }
+   ]
+  },
+  {
+   "id": "np-5.2-2",
+   "objective": "5.2",
+   "stem": "An interface shows a steadily rising count of CRC errors. What's the most likely cause?",
+   "options": [
+    {
+     "text": "A damaged cable or electrical interference",
+     "correct": true,
+     "why": "CRC errors mean frames arrive corrupted, usually from physical problems such as bad cables, EMI or bad connectors."
+    },
+    {
+     "text": "The wrong DNS server",
+     "correct": false,
+     "why": "DNS can't corrupt frames."
+    },
+    {
+     "text": "An expired DHCP lease",
+     "correct": false,
+     "why": "Leases don't affect frame integrity."
+    },
+    {
+     "text": "Too many users",
+     "correct": false,
+     "why": "Congestion causes drops and delay, not CRC errors."
+    }
+   ]
+  },
+  {
+   "id": "np-5.3-1",
+   "objective": "5.3",
+   "stem": "Which fault fits these symptoms best?",
+   "options": [
+    {
+     "text": "DNS",
+     "correct": true,
+     "why": "Reaching an IP but not names points to name resolution. Check the DNS server settings, and test with nslookup."
+    },
+    {
+     "text": "The default gateway",
+     "correct": false,
+     "why": "If the gateway were wrong, pinging an internet IP would fail too."
+    },
+    {
+     "text": "The cable",
+     "correct": false,
+     "why": "A cable fault would stop the ping as well."
+    },
+    {
+     "text": "The switch",
+     "correct": false,
+     "why": "The ping proves the switch is forwarding traffic."
+    }
+   ],
+   "scenario": "A user can ping 8.8.8.8 successfully, but no website opens by name."
+  },
+  {
+   "id": "np-5.3-2",
+   "objective": "5.3",
+   "stem": "Two PCs keep showing 'duplicate IP address' warnings. What's the likely cause?",
+   "options": [
+    {
+     "text": "A static address was set that's also inside the DHCP pool",
+     "correct": true,
+     "why": "When DHCP hands out an address someone set manually, two devices clash. Exclude static addresses from the pool or use reservations."
+    },
+    {
+     "text": "The DNS server is down",
+     "correct": false,
+     "why": "DNS failures don't cause address conflicts."
+    },
+    {
+     "text": "A faulty cable",
+     "correct": false,
+     "why": "Cables don't cause duplicate addresses."
+    },
+    {
+     "text": "The firewall is blocking ICMP",
+     "correct": false,
+     "why": "That stops ping, not address assignment."
+    }
+   ]
+  },
+  {
+   "id": "np-5.4-1",
+   "objective": "5.4",
+   "stem": "Voice calls sound choppy because packets arrive at uneven intervals. What is this called?",
+   "options": [
+    {
+     "text": "Jitter",
+     "correct": true,
+     "why": "Jitter is variation in delay. Real-time traffic needs it low; QoS and jitter buffers help."
+    },
+    {
+     "text": "Latency",
+     "correct": false,
+     "why": "Latency is the overall delay, even if it's constant."
+    },
+    {
+     "text": "Packet loss",
+     "correct": false,
+     "why": "Packet loss is packets that never arrive."
+    },
+    {
+     "text": "Throughput",
+     "correct": false,
+     "why": "Throughput is how much data gets through per second."
+    }
+   ]
+  },
+  {
+   "id": "np-5.4-2",
+   "objective": "5.4",
+   "stem": "Wi-Fi is slow only near the office kitchen. What's the most likely cause?",
+   "options": [
+    {
+     "text": "Interference on the 2.4 GHz band from the microwave",
+     "correct": true,
+     "why": "Microwave ovens operate around 2.4 GHz. Use 5 GHz or move the access point and channels."
+    },
+    {
+     "text": "DNS problems",
+     "correct": false,
+     "why": "DNS wouldn't depend on where you stand."
+    },
+    {
+     "text": "A duplex mismatch",
+     "correct": false,
+     "why": "That's a wired problem."
+    },
+    {
+     "text": "The wrong subnet mask",
+     "correct": false,
+     "why": "That would break things everywhere, not just near the kitchen."
+    }
+   ]
+  },
+  {
+   "id": "np-5.5-1",
+   "objective": "5.5",
+   "stem": "Which command shows each router hop on the way to a destination?",
+   "options": [
+    {
+     "text": "traceroute (tracert on Windows)",
+     "correct": true,
+     "why": "traceroute lists every hop and its delay, so you can see where traffic stops or slows."
+    },
+    {
+     "text": "ping",
+     "correct": false,
+     "why": "ping tests reachability and round-trip time, not the path."
+    },
+    {
+     "text": "nslookup",
+     "correct": false,
+     "why": "nslookup queries DNS."
+    },
+    {
+     "text": "arp -a",
+     "correct": false,
+     "why": "arp -a lists the local IP-to-MAC cache."
+    }
+   ]
+  },
+  {
+   "id": "np-5.5-2",
+   "objective": "5.5",
+   "stem": "Which tool checks which IP address a name resolves to?",
+   "options": [
+    {
+     "text": "nslookup or dig",
+     "correct": true,
+     "why": "Both query DNS directly and show the answer and which server gave it."
+    },
+    {
+     "text": "netstat",
+     "correct": false,
+     "why": "netstat shows connections and listening ports."
+    },
+    {
+     "text": "ipconfig",
+     "correct": false,
+     "why": "ipconfig shows the local IP settings."
+    },
+    {
+     "text": "tcpdump",
+     "correct": false,
+     "why": "tcpdump captures packets."
+    }
+   ]
+  },
+  {
+   "id": "np-5.5-3",
+   "objective": "5.5",
+   "stem": "Which tools capture network packets so you can inspect them?",
+   "options": [
+    {
+     "text": "tcpdump or Wireshark",
+     "correct": true,
+     "why": "Packet capture shows exactly what's on the wire, such as DHCP, DNS and TCP handshakes."
+    },
+    {
+     "text": "ping",
+     "correct": false,
+     "why": "ping sends test packets; it doesn't capture traffic."
+    },
+    {
+     "text": "nslookup",
+     "correct": false,
+     "why": "nslookup only queries DNS."
+    },
+    {
+     "text": "route",
+     "correct": false,
+     "why": "route shows or edits the routing table."
+    }
+   ]
+  }
+ ]
+}
