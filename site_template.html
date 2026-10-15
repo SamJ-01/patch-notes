@@ -12,7 +12,7 @@
    panels styled as terminal windows, and a tmux-style status bar pinned to the bottom on wide screens. Deliberately one dark world. */
 :root {
   --bg: #070A10;          /* console black, blue-biased */
-  --surface: #0D131C;     /* panel */
+  --surface: #0F1621;     /* panel */
   --surface-2: #142030;   /* raised / hover */
   --ink: #DCE6F2;
   --muted: #7F90A8;
@@ -45,6 +45,9 @@
   --faint: #3A4A60; --statusbar: #04070B;
   --dg-line: #2B3D55; --dg-box: #24344A; --dg-strong: #4D6280;
   --hw-stroke: #4A6080; --hw-screen: #0A1A26; --hw-port: #0A1018; --hw-top: #22324A; --hw-bot: #101A28; --hw-shadow: rgba(0, 0, 0, 0.45);
+  --card-line: #24334A;
+  --elev: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.4), 0 14px 34px rgba(0, 0, 0, 0.55);
+  --elev-hover: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.4), 0 18px 44px rgba(0, 0, 0, 0.65), 0 0 28px rgba(63, 224, 232, 0.1);
   --sev-critical: #FFB000; --sev-high: #A8740F; --sev-other: #5E4614;
   color-scheme: dark;
 }
@@ -67,6 +70,9 @@
   --faint: #B3BFCF; --statusbar: #E2E8F0;
   --dg-line: #9FB1C7; --dg-box: #B9C6D7; --dg-strong: #7F93AE;
   --hw-stroke: #6F84A0; --hw-screen: #DCE7F2; --hw-port: #E7EDF5; --hw-top: #FFFFFF; --hw-bot: #D9E2EE; --hw-shadow: rgba(15, 27, 45, 0.18);
+  --card-line: #CDD6E3;
+  --elev: 0 1px 2px rgba(15, 27, 45, 0.06), 0 10px 28px rgba(15, 27, 45, 0.1);
+  --elev-hover: 0 2px 4px rgba(15, 27, 45, 0.08), 0 16px 40px rgba(15, 27, 45, 0.16);
   --sev-critical: #7A4300; --sev-high: #B87A12; --sev-other: #E0B866;
   color-scheme: light;
 }
@@ -287,6 +293,7 @@ details.explain summary { cursor: pointer; font-weight: 700; color: var(--brand)
 .lcard .lmeta span { white-space: nowrap; }
 .lcard .done { position: absolute; top: 14px; right: 14px; font: 700 0.7rem var(--font-mono); color: var(--good); background: var(--good-tint); border-radius: 999px; padding: 3px 8px; }
 .progress { display: flex; align-items: center; gap: 12px; font-size: 0.88rem; color: var(--muted); }
+.progress > span:last-child { white-space: nowrap; }
 .progress .trk { flex: 0 1 240px; height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
 .progress .trk i { display: block; height: 100%; background: var(--good); }
 .article { display: grid; gap: 22px; max-width: 760px; }
@@ -617,6 +624,7 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 @media (max-width: 900px) { .mission-grid { grid-template-columns: 1fr; } .bubble { max-width: 60%; font-size: 0.7rem; } }
 
 /* ---------- Illustrated cards ---------- */
+.art-card, .card-art { --cat: var(--brand); }
 .art-card { padding-top: 0; overflow: hidden; border-top: 3px solid var(--cat); }
 .card-art { display: grid; place-items: center; height: 96px; margin-inline: -16px; margin-bottom: 4px; background: radial-gradient(120% 140% at 50% 120%, color-mix(in srgb, var(--cat) 22%, transparent), transparent 70%), color-mix(in srgb, var(--cat) 5%, var(--surface)); background-image: radial-gradient(120% 140% at 50% 120%, color-mix(in srgb, var(--cat) 22%, transparent), transparent 70%), radial-gradient(rgba(127, 144, 168, 0.14) 1px, transparent 1.2px); background-size: auto, 14px 14px; border-bottom: 1px solid var(--line); overflow: hidden; }
 .card-art svg { width: 100%; max-width: 240px; height: 100%; overflow: visible; }
@@ -637,8 +645,6 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .needle { transform-box: fill-box; transform-origin: 100% 100%; }
 .art-card:hover { border-color: var(--cat); border-top-color: var(--cat); box-shadow: 0 12px 32px color-mix(in srgb, var(--cat) 20%, transparent); }
 @media (prefers-reduced-motion: no-preference) {
-  .card-art svg { transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
-  .art-card:hover .card-art svg { transform: scale(1.06); }
   .needle { transition: transform 0.7s cubic-bezier(0.3, 1.6, 0.5, 1); }
   .art-card:hover .needle { transform: rotate(118deg); }
   .blink { animation: hw-blink 1s steps(1) infinite; }
@@ -854,7 +860,7 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .hero-dev.sel .lbl, .hero-dev:hover .lbl { fill: var(--brand); }
 .hero-cap { min-height: 3.2em; margin: 0; font-size: 0.88rem; color: var(--muted); }
 .hero-cap b { color: var(--ink); font-family: var(--font-display); }
-@media (prefers-reduced-motion: no-preference) { .hero-dev .halo { transition: opacity 0.2s; } .hero-dev.sel .hw { animation: hw-pop 0.35s ease-out; } @keyframes hw-pop { 40% { transform: var(--t) scale(1.12); } } }
+@media (prefers-reduced-motion: no-preference) { .hero-dev .halo { transition: opacity 0.2s; } }
 @media (max-width: 760px) { .hero { grid-template-columns: minmax(0, 1fr); } .hero-net .lbl { font-size: 12.5px; } }
 @media (prefers-reduced-motion: reduce) { .hero-net .pkt { display: none; } }
 /* Theme toggle */
@@ -994,6 +1000,14 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
   .btn.brand::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%); transform: translateX(-120%); pointer-events: none; }
   .btn.brand:hover::after { transform: translateX(120%); transition: transform 0.7s ease; }
 }
+
+/* Elevation: cards and panels sit clearly above the page in both themes */
+.panel, .lcard, .path, .stat, .gl-item, .changelog { box-shadow: var(--elev); }
+.panel, .lcard, .path, .stat, .gl-item { border-color: var(--card-line); }
+.lcard:hover, .art-card:hover { box-shadow: var(--elev-hover); border-color: rgba(var(--brand-rgb), 0.55); }
+.lessons { gap: 20px; }
+.paths { gap: 18px; }
+.stat-row { gap: 14px; }
 </style>
 
 <!-- recon complete. you found flag 1 of 3: flag{v1ew_s0urce_is_r3con}  (submit it in the command palette: press / then type "submit" and the flag) -->
@@ -1370,10 +1384,10 @@ function heroNet() {
   return `<div class="hero-art"><svg class="hero-net hw-live" viewBox="0 0 470 250" role="group" aria-label="A small network. Select a device to learn what it does.">
     ${HERO_LINKS.map(([a, b]) => `<line class="ln" x1="${P(a)[1]}" y1="${P(a)[2]}" x2="${P(b)[1]}" y2="${P(b)[2]}"/>`).join("")}
     <line class="ln air" x1="46" y1="130" x2="150" y2="44"/>
-    ${HERO_PATHS.map((d, i) => `<circle class="pkt p${i + 1}" r="5"><animateMotion dur="${3.6 + i * 0.6}s" begin="${i * 1.2}s" repeatCount="indefinite" path="${d}" calcMode="linear"/></circle>`).join("")}
+    ${HERO_PATHS.map((d, i) => `<circle class="pkt p${i + 1}" r="5"><animateMotion dur="${3.6 + i * 0.6}s" begin="${-i * 1.2}s" repeatCount="indefinite" path="${d}" calcMode="linear"/></circle>`).join("")}
     ${HERO_DEV.map(([k, x, y, label, side]) => `<g class="hero-dev" data-k="${k}" tabindex="0" role="button" aria-label="${esc(HW_INFO[k][0])}: ${esc(HW_INFO[k][1])}">
       <rect class="halo" x="${x - 34}" y="${y - 30}" width="68" height="${label ? 72 : 60}" rx="12"/>
-      <g style="--t: translate(${x}px, ${y}px)">${hw(k, x, y, 0.72)}</g><text class="lbl" ${side ? `x="${x + 26}" y="${y + 4}" style="text-anchor:start"` : `x="${x}" y="${y + 33}"`}>${esc(label)}</text></g>`).join("")}
+      ${hw(k, x, y, 0.72)}<text class="lbl" ${side ? `x="${x + 26}" y="${y + 4}" style="text-anchor:start"` : `x="${x}" y="${y + 33}"`}>${esc(label)}</text></g>`).join("")}
   </svg><p class="hero-cap" id="hero-cap" aria-live="polite">Tap any device to see what it does.</p></div>`;
 }
 function wireHero() {
@@ -1867,8 +1881,10 @@ document.addEventListener("click", e => {
 
 /* LEARN */
 const LS = { track: "All", gq: "" };
+// Tracks in learning order; any new track in lessons.json is added at the end rather than dropped.
+const LESSON_TRACKS = [...new Set(["Foundations", "Threats", "Defence", "Web attacks", ...DATA.lessons.map(l => l.track)])];
 VIEWS.learn = () => {
-  const tracks = ["All", ...new Set(DATA.lessons.map(l => l.track))];
+  const tracks = ["All", ...LESSON_TRACKS.filter(t => DATA.lessons.some(l => l.track === t))];
   const doneCount = DATA.lessons.filter(l => P.done[l.id]).length;
   main.innerHTML = `<div class="view">
     <div class="view-head with-art">${headArt("learn")}<h1>The concepts behind the headlines</h1>
@@ -1879,17 +1895,20 @@ VIEWS.learn = () => {
     </div>
     <section class="stack" style="gap:12px"><div class="panel-title"><h2 class="eyebrow" style="font-size:0.8rem">Learning paths</h2><span class="muted" style="font-size:0.85rem">Finish a path for +${PATH_XP} XP and a badge</span></div>
       <div class="paths-grid">${DATA.paths.map(pathCard).join("")}</div></section>
-    <div class="lessons" id="lgrid"></div>
+    <div class="stack" id="lgrid" style="gap:30px"></div>
     <section class="panel" style="grid-template-columns:minmax(0,1fr) auto;align-items:center">
       <div class="stack" style="gap:6px"><h2>Glossary</h2><p class="muted">${DATA.glossary.length + Object.keys(DATA.cwe).length} terms explained in plain English, from APT to zero-day, plus the products that keep making headlines. Dotted words across the site open these explanations.</p></div>
       <a class="btn brand" href="#glossary">Open glossary</a>
     </section>
   </div>`;
   const drawGrid = () => {
-    $("lgrid").innerHTML = DATA.lessons.filter(l => LS.track === "All" || l.track === LS.track).map(l => `
-      <a class="lcard art-card" href="#lesson-${esc(l.id)}" style="--cat:${TRACK_COLOR[l.track] || "var(--brand)"}">${cardArt(l.id, l.track)}${P.done[l.id] ? '<span class="done">DONE</span>' : ""}
+    const card = l => `
+      <a class="lcard art-card" href="#lesson-${esc(l.id)}">${cardArt(l.id)}${P.done[l.id] ? '<span class="done">DONE</span>' : ""}
         <span class="eyebrow">${esc(l.track)}</span><h3>${esc(l.title)}</h3><p>${esc(l.hook)}</p>
-        <span class="lmeta"><span>${l.minutes} min</span><span>${esc(l.level)}</span></span></a>`).join("");
+        <span class="lmeta"><span>${l.minutes} min</span><span>${esc(l.level)}</span></span></a>`;
+    // Lessons are grouped by track, in learning order, so "All" reads as sections rather than a mix.
+    const tracks = LESSON_TRACKS.filter(t => (LS.track === "All" || LS.track === t) && DATA.lessons.some(l => l.track === t));
+    $("lgrid").innerHTML = tracks.map(t => `<section class="stack" style="gap:12px">${LS.track === "All" ? `<h2 class="cat-h">${esc(t)}</h2>` : ""}<div class="lessons">${DATA.lessons.filter(l => l.track === t).map(card).join("")}</div></section>`).join("");
   };
   $("ltracks").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; LS.track = b.dataset.t;
     $("ltracks").querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b)); drawGrid(); });
@@ -1994,8 +2013,6 @@ VIEWS.glossary = () => {
 
 /* LABS */
 const LAB = Object.fromEntries(DATA.labs.map(l => [l.id, l]));
-const CAT_COLOR = { "Networking": "var(--brand)", "Linux": "var(--good)", "Security operations": "var(--sun)", "Ethical hacking": "var(--exploited)" };
-const TRACK_COLOR = { Threats: "var(--exploited)", Defence: "var(--good)", "Web attacks": "var(--likely)", Foundations: "var(--brand)" };
 /* ---------- card scenes: small illustrations built from the device library ---------- */
 const GLYPH = {  // extras drawn next to devices, centred on (0,0)
   mail: '<rect x="-12" y="-8" width="24" height="16" rx="2"/><path d="M-11-7l11 8 11-8"/>',
@@ -2069,8 +2086,8 @@ const HEAD_SCENE = {
   news: { d: [["ap", 100, 50, 1]], t: [["breaking", 100, 80, "bad"], ["CVE", 38, 30], ["KEV", 162, 30, "bad"]] },
   cves: { raw: RADAR_ART },
 };
-const headArt = k => `<span class="head-art card-art" aria-hidden="true" style="--cat:${{ cves: "var(--exploited)", play: "var(--exploited)", learn: "var(--good)", news: "var(--sun)" }[k] || "var(--brand)"}">${sceneSvg(HEAD_SCENE[k])}</span>`;
-const cardArt = (id, cat) => `<span class="card-art" style="--cat:${CAT_COLOR[cat] || TRACK_COLOR[cat] || "var(--brand)"}">${sceneSvg(SCENE[id] || SCENE.networking)}</span>`;
+const headArt = k => `<span class="head-art card-art" aria-hidden="true">${sceneSvg(HEAD_SCENE[k])}</span>`;
+const cardArt = id => `<span class="card-art">${sceneSvg(SCENE[id] || SCENE.networking)}</span>`;
 // Hovering a card sends its packets across the scene.
 document.addEventListener("mouseover", e => {
   const card = e.target.closest?.(".art-card"); if (!card || card.dataset.playing || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -2093,7 +2110,7 @@ VIEWS.missions = () => {
   </div>`;
 };
 function toolCard() {
-  return `<a class="lcard art-card" href="#subnet-calc" style="--cat:${CAT_COLOR.Networking || "var(--brand)"}">${cardArt("subnet-calc", "Networking")}
+  return `<a class="lcard art-card" href="#subnet-calc">${cardArt("subnet-calc")}
     <span class="eyebrow">Tool</span><h3>Subnet calculator</h3><p>Type any address and watch the network change: class, CIDR, mask, hosts, ranges and a live diagram</p><span class="lmeta"><span>Use any time</span><span>Shareable links</span></span></a>`;
 }
 // The subnet calculator on its own page. The address lives in the URL (#subnet-calc/10.0.0.0/22) so it can be shared.
@@ -2114,13 +2131,13 @@ function calcView(h) {
   }).catch(() => { $("calc-root").innerHTML = `<div class="empty">Couldn't load the calculator. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
 }
 function labCard(l) {
-  return `<a class="lcard art-card" href="#lab-${esc(l.id)}" style="--cat:${CAT_COLOR[l.category] || "var(--brand)"}">${cardArt(l.id, l.category)}${P.labs[l.id] ? '<span class="done">DONE</span>' : ""}
+  return `<a class="lcard art-card" href="#lab-${esc(l.id)}">${cardArt(l.id)}${P.labs[l.id] ? '<span class="done">DONE</span>' : ""}
     <span class="eyebrow">Lab</span><h3>${esc(l.title)}</h3><p>${esc(l.skill)}</p><span class="lmeta"><span>${l.minutes} min</span><span>+${LAB_XP} XP</span></span></a>`;
 }
 function missionCard(m) {
   const done = Object.keys((P.missions || {})[m.id] || {});
   const all = Object.keys(m.modes);
-  return `<a class="lcard mission-card art-card" href="#mission-${esc(m.id)}" style="--cat:${CAT_COLOR[m.category] || "var(--brand)"}">${cardArt(m.id, m.category)}${done.length === all.length ? '<span class="done">DONE</span>' : ""}
+  return `<a class="lcard mission-card art-card" href="#mission-${esc(m.id)}">${cardArt(m.id)}${done.length === all.length ? '<span class="done">DONE</span>' : ""}
     <span class="eyebrow">Mission · ${esc(m.topic)}</span><h3>${esc(m.title)}</h3><p>${esc(m.summary)}</p>
     <span class="lmeta"><span>${m.minutes} min</span>${all.map(k => `<span>${done.includes(k) ? "✓ " : ""}${esc(m.modes[k].label)}</span>`).join("")}</span></a>`;
 }
