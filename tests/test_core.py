@@ -208,7 +208,7 @@ class Styles(unittest.TestCase):
         css = re.search(r"<style>(.*?)</style>", (ROOT / "site_template.html").read_text(), re.S).group(1)
         dark = re.search(r":root \{(.*?)\}", css, re.S).group(1)
         light = re.search(r':root\[data-theme="light"\] \{(.*?)\}', css, re.S).group(1)
-        skip = {"--font-display", "--font-body", "--font-mono", "--radius"}
+        skip = {"--font-display", "--font-body", "--font-mono", "--radius", "--radius-sm"}
         missing = set(re.findall(r"(--[\w-]+):", dark)) - set(re.findall(r"(--[\w-]+):", light)) - skip
         self.assertEqual(missing, set())
         self.assertNotIn('fill="${SEV_COLORS', (ROOT / "site_template.html").read_text(), "SVG fill attributes can't read CSS variables")
