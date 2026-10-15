@@ -632,7 +632,11 @@
   "example": {
    "title": "Exposed RDP",
    "year": "Ongoing",
-   "text": "Remote Desktop (port 3389) left open to the internet with weak passwords has for years been one of the most common ways ransomware gangs get in. Scanners find these within minutes of them going online."
+   "text": "Remote Desktop (port 3389) left open to the internet with weak passwords has for years been one of the most common ways ransomware gangs get in. Sophos found RDP abused in 90% of the attacks its incident responders handled in 2023. Scanners find exposed RDP within minutes of it going online.",
+   "source": {
+    "label": "Sophos: RDP abused in 90% of attacks (2024)",
+    "url": "https://www.sophos.com/en-us/press/press-releases/2024/04/cybercriminals-abuse-remote-desktop-protocol-rdp-90-attacks-handled"
+   }
   },
   "defend": [
    "Close every port you don't need",

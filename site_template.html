@@ -206,12 +206,6 @@ input[type="search"] { flex: 1 1 240px; }
 
 /* Trend bars */
 .bars { display: grid; gap: 8px; }
-.bar-row { display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) 2.5rem; gap: 10px; align-items: center; cursor: pointer; background: none; border: 0; padding: 0; text-align: left; }
-.bar-row .lbl { font-size: 0.88rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bar-row .trk { height: 10px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
-.bar-row .trk i { display: block; height: 100%; border-radius: 5px; background: var(--brand); }
-.bar-row .v { font: 600 0.8rem var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; color: var(--muted); }
-.bar-row:hover .lbl { color: var(--brand); }
 
 /* Quiz blocks */
 .q { font-weight: 700; font-size: 1.02rem; }
@@ -399,7 +393,7 @@ details.eli .ai-note { font-size: 0.78rem; color: var(--muted); }
 .view-head .eyebrow::before { content: "// "; color: var(--brand); }
 .panel { background: var(--panel-bg); border-color: var(--line); position: relative; }
 .continue::before { content: ""; position: absolute; left: -1px; top: -1px; width: 14px; height: 14px; border-left: 2px solid var(--brand); border-top: 2px solid var(--brand); border-top-left-radius: var(--radius); opacity: 0.8; pointer-events: none; }
-.panel-title h2, .panel > h2, .panel > h3, .dir h3, .glossary-h { font: 600 1.12rem/1.25 var(--font-display); letter-spacing: 0.01em; color: var(--ink); }
+.panel-title h2, .panel > h2, .panel > h3, .dir h3 { font: 600 1.12rem/1.25 var(--font-display); letter-spacing: 0.01em; color: var(--ink); }
 .panel-title h2::before, .panel > h2::before, .dir h3::before { content: "▸ "; color: var(--sun); }
 .btn { font: 600 0.82rem var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; border-radius: var(--radius-sm); border-color: var(--line); background: var(--surface-2); color: var(--ink); }
 .btn:hover { border-color: var(--brand); color: var(--brand); }
@@ -790,6 +784,8 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .metric legend { font: 500 0.74rem var(--font-mono); color: var(--muted); padding: 0 4px; text-transform: uppercase; letter-spacing: 0.06em; }
 .metric .chip { font-size: 0.76rem; }
 .score-panel { grid-template-columns: minmax(0, 1fr) auto; align-items: center; position: sticky; bottom: 40px; z-index: 2; }
+/* It floats over the metrics while you scroll, so it needs a solid background and a clear edge. */
+.panel.score-panel { background: var(--surface); border-color: rgba(var(--brand-rgb), 0.45); box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.35), var(--elev); }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font: 0.76rem var(--font-mono); color: var(--muted); }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
@@ -827,7 +823,6 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
   .rung { border-left: 0; border-top: 1px solid var(--line); }
   .rung:first-child { border-top: 0; }
   .cid { margin-left: 0; }
-  .bar-row { grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr) 2.2rem; }
   .xp .bar { display: none; }
   .cwd { display: none; }
   .cmd-btn span { display: none; }
@@ -1197,7 +1192,11 @@ document.addEventListener("toggle", e => {
   P.read[d.dataset.read] = todayStr(); award(2, "Read an explanation", { quiet: count(P.read) % 5 !== 1 });
 }, true);
 
-function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function shuffle(arr, rand = Math.random) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+// Small seeded random generator, so a shuffle can be the same all day (the daily challenge) yet differ tomorrow.
+const seededRand = seed => () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+// Quiz questions are written with the answer wherever the author put it; mix the options so position gives nothing away.
+const mixOptions = (q, rand = Math.random) => { const order = shuffle(q.options.map((_, i) => i), rand); return { ...q, options: order.map(i => q.options[i]), answer: order.indexOf(q.answer) }; };
 
 /* ---------- progress & XP (stored only in this browser) ---------- */
 const PKEY = "patch-notes-progress";
@@ -1543,7 +1542,7 @@ VIEWS.stack = () => {
 
 function renderDaily() {
   const box = $("daily"); if (!box) return;
-  const q = DATA.quiz[dayNumber() % DATA.quiz.length];
+  const q = mixOptions(DATA.quiz[dayNumber() % DATA.quiz.length], seededRand(dayNumber() + 7));
   const today = todayStr();
   const answered = P.daily && P.daily.date === today ? P.daily.choice : null;
   box.innerHTML = `<div class="panel-title"><div class="eyebrow">Daily challenge</div><span class="eyebrow">Days practised: ${count(P.days)}</span></div>`;
@@ -1953,7 +1952,7 @@ function lessonView(id) {
     ${related.length ? `<section class="panel"><h2>In the news this week</h2><div class="stories">${related.map(storyHtml).join("")}</div></section>` : ""}
     <a class="btn ghost" href="#lesson-${esc(next.id)}" style="justify-self:start">Next: ${esc(next.title)} →</a>
   </article></div>`;
-  const ask = () => $("lcheck").appendChild(quizBlock(l.check, {
+  const ask = () => $("lcheck").appendChild(quizBlock(mixOptions(l.check), {
     onAnswer: (choice, correct, wrap) => {
       if (correct && !P.done[id]) { P.done[id] = true; award(25, "Lesson complete"); }
       if (!correct) {
@@ -2399,7 +2398,7 @@ function drawPhish() {
   }
 }
 
-function newQuiz(deck = shuffle(DATA.quiz).slice(0, 10)) { GS.quiz = { deck, i: 0, score: 0, answered: null, wrong: [] }; }
+function newQuiz(deck = shuffle(DATA.quiz).slice(0, 10).map(q => mixOptions(q))) { GS.quiz = { deck, i: 0, score: 0, answered: null, wrong: [] }; }
 function drawQuiz() {
   if (!GS.quiz) newQuiz();
   const g = GS.quiz, box = $("game");
@@ -2412,7 +2411,7 @@ function drawQuiz() {
       <div class="row" style="justify-content:center">${g.wrong.length ? `<button class="btn brand" id="retryq">↺ Retry the ${g.wrong.length} you missed</button>` : ""}<button class="btn ${g.wrong.length ? "ghost" : "brand"}" id="againq">New quiz</button></div></section>`;
     if (!g.celebrated) { g.celebrated = true; celebrate("Quiz complete!", `${g.score}/${total} correct`); }
     $("againq").onclick = () => { newQuiz(); drawQuiz(); };
-    if ($("retryq")) $("retryq").onclick = () => { newQuiz(shuffle(g.wrong)); drawQuiz(); };
+    if ($("retryq")) $("retryq").onclick = () => { newQuiz(shuffle(g.wrong).map(q => mixOptions(q))); drawQuiz(); };
     return;
   }
   const q = g.deck[g.i];
@@ -2528,6 +2527,15 @@ function define(id) {
   say(`${g.term} [${g.kind}]`, "ok"); say(g.short);
   if (g.lesson && LESSON[g.lesson]) say(`→ open ${g.lesson}   (lesson: ${LESSON[g.lesson].title})`);
 }
+// The best item for what was typed: exact id, then a word that starts with it, then anywhere in the name.
+// ("lab log" should find Log detective, not topo-LOG-ies.)
+function bestMatch(items, q) {
+  q = q.toLowerCase().trim();
+  const text = x => (x.id + " " + x.title).toLowerCase();
+  return items.find(x => x.id === q)
+    || items.find(x => text(x).split(/[^a-z0-9+]+/).some(w => w.startsWith(q)))
+    || items.find(x => text(x).includes(q));
+}
 async function runCmd(raw) {
   const line = raw.trim(); if (!line) return;
   say(line, "echo");
@@ -2542,7 +2550,7 @@ async function runCmd(raw) {
   }
   else if (SECTIONS.some(([s]) => s === c) && !arg) go(c);
   else if (c === "open" || c === "man" || c === "learn") {
-    const l = DATA.lessons.find(l => l.id === arg.toLowerCase()) || DATA.lessons.find(l => (l.id + " " + l.title).toLowerCase().includes(arg.toLowerCase()));
+    const l = arg && bestMatch(DATA.lessons, arg);
     if (arg && l) go("lesson-" + l.id); else say(`No lesson matches "${arg}". Lessons: ${DATA.lessons.map(l => l.id).join(", ")}`, "err");
   }
   else if (c === "define" || c === "whatis") {
@@ -2551,7 +2559,7 @@ async function runCmd(raw) {
     if (m && g) define(g.id); else say(`No glossary entry for "${arg}" yet.`, "err");
   }
   else if (c === "mission" || c === "missions") {
-    const ms = arg && DATA.missions.find(x => (x.id + " " + x.title).toLowerCase().includes(arg.toLowerCase()));
+    const ms = arg && bestMatch(DATA.missions, arg);
     if (ms) go("mission-" + ms.id); else if (!arg) go("missions"); else say(`No mission matches "${arg}". Missions: ${DATA.missions.map(x => x.id).join(", ")}`, "err");
   }
   else if (c === "subnet" || c === "ipcalc" || c === "calc") {
@@ -2560,11 +2568,11 @@ async function runCmd(raw) {
     else say(`Usage: subnet 192.168.1.10/24`, "err");
   }
   else if (c === "lab" || c === "labs") {
-    const l = arg && DATA.labs.find(l => (l.id + " " + l.title).toLowerCase().includes(arg.toLowerCase()));
+    const l = arg && bestMatch(DATA.labs, arg);
     if (l) go("lab-" + l.id); else if (!arg) go("missions"); else say(`No lab matches "${arg}". Labs: ${DATA.labs.map(l => l.id).join(", ")}`, "err");
   }
   else if (c === "path" || c === "paths") {
-    const p = arg && DATA.paths.find(p => (p.id + " " + p.title).toLowerCase().includes(arg.toLowerCase()));
+    const p = arg && bestMatch(DATA.paths, arg);
     if (p) go("path-" + p.id); else if (!arg) go("learn"); else say(`No path matches "${arg}". Paths: ${DATA.paths.map(p => p.id).join(", ")}`, "err");
   }
   else if (c === "progress" || c === "badges") go("progress");

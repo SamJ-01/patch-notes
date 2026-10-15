@@ -118,10 +118,19 @@ def parse_feed(xml_bytes, source):
 
 
 def fetch_feed(feed):
-    req = urllib.request.Request(feed["url"], headers={"User-Agent": USER_AGENT})
+    # Standard content-negotiation headers: some sites' firewalls refuse requests that send none.
+    req = urllib.request.Request(feed["url"], headers={
+        "User-Agent": USER_AGENT,
+        "Accept": "application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.9, */*;q=0.5",
+        "Accept-Language": "en-GB,en;q=0.9",
+    })
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
-            return parse_feed(resp.read(), feed["name"])
+            body = resp.read()
+        if body.lstrip()[:15].lower().startswith((b"<!doctype html", b"<html")):
+            print(f"  ! {feed['name']}: sent a web page instead of its feed (probably rate-limited); skipped this run", file=sys.stderr)
+            return []
+        return parse_feed(body, feed["name"])
     except Exception as exc:
         print(f"  ! {feed['name']}: {exc}", file=sys.stderr)
         return []

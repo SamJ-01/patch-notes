@@ -48,7 +48,7 @@ Wrong answers never end a lab: every quiz offers a retry of the questions you mi
 | **News** | Headlines from 12 outlets, auto-tagged by topic, linked to lessons and CVEs, with "What this means" explanations (AI-drafted, human-approved) |
 | **CVE Radar** | Every new CVE, enriched with CISA KEV and FIRST EPSS, prioritised by real-world risk, with trend charts |
 | **Am I affected?** | Pick the tech you use (phone, browser, router, work apps) for personal alerts |
-| **Learn** | 22 lessons with sourced real-world cases, 4 learning paths (e.g. Path to SOC Analyst) and a 208-term glossary |
+| **Learn** | 22 lessons with sourced real-world cases, 4 learning paths (e.g. Path to SOC Analyst) and a glossary of 250+ terms, including the common CWE bug types |
 | **Play** | "Phish or Legit?", a quick-fire quiz and a 3-flag CTF hunt hidden in the site itself |
 | **Careers** | Five entry paths with skills, certs and first job titles, plus a directory of free resources |
 | **Progress** | XP, access levels (guest → root), 17 badges and an XP history |

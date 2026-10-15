@@ -214,6 +214,14 @@ class Styles(unittest.TestCase):
         self.assertNotIn('fill="${SEV_COLORS', (ROOT / "site_template.html").read_text(), "SVG fill attributes can't read CSS variables")
 
 
+class QuizFairness(unittest.TestCase):
+    def test_answer_position_is_shuffled_everywhere(self):
+        """Most authored answers are option 2, so every quiz must mix its options before showing them."""
+        page = (ROOT / "site_template.html").read_text()
+        for use in ("mixOptions(DATA.quiz[", "map(q => mixOptions(q))", "quizBlock(mixOptions(l.check)"):
+            self.assertIn(use, page)
+
+
 class DeviceLibrary(unittest.TestCase):
     def test_inlined_device_library_is_self_contained(self):
         """build.py pastes static/js/hw.js into the page with "export" removed, so it must not import anything."""
