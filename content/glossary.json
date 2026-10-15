@@ -2902,5 +2902,108 @@
    "edge-device",
    "misconfiguration"
   ]
+ },
+ {
+  "id": "marklogic",
+  "term": "MarkLogic",
+  "kind": "Product",
+  "aliases": [
+   "MarkLogic",
+   "MarkLogic Server"
+  ],
+  "short": "A database product from Progress Software that businesses use to store and search large amounts of documents and data. Flaws in it can expose that data or let attackers take control of the server.",
+  "lesson": "vuln-management"
+ },
+ {
+  "id": "ahsaycbs",
+  "term": "AhsayCBS",
+  "kind": "Product",
+  "aliases": [
+   "AhsayCBS",
+   "Ahsay"
+  ],
+  "short": "Ahsay Cloud Backup Suite, server software that backup providers and businesses run to store customers' backups. Because it is reachable over the internet and holds copies of data, unpatched flaws in it are attractive to attackers.",
+  "lesson": "vuln-management"
+ },
+ {
+  "id": "agentcore",
+  "term": "Amazon Bedrock AgentCore",
+  "kind": "Product",
+  "aliases": [
+   "AgentCore",
+   "AWS AgentCore",
+   "Bedrock AgentCore"
+  ],
+  "short": "An Amazon Web Services (AWS) service for building and running AI agents in the cloud. Agents run there may hold credentials and permissions, so weaknesses can let a malicious prompt reach sensitive cloud resources.",
+  "lesson": "ai-security"
+ },
+ {
+  "id": "prc",
+  "term": "PRC",
+  "kind": "Organisation",
+  "aliases": [
+   "PRC"
+  ],
+  "short": "Short for the People's Republic of China. Security reports use 'PRC-linked' or 'PRC state-sponsored' to describe hacking groups believed to work for or on behalf of the Chinese government.",
+  "lesson": "nation-state"
+ },
+ {
+  "id": "isac",
+  "term": "ISAC (Information Sharing and Analysis Center)",
+  "kind": "Organisation",
+  "aliases": [
+   "ISAC",
+   "ISACs",
+   "Health-ISAC"
+  ],
+  "short": "A member group where organisations in the same industry, such as healthcare or finance, share warnings and information about cyber threats so they can defend each other.",
+  "lesson": "soc"
+ },
+ {
+  "id": "sap-netweaver",
+  "term": "SAP NetWeaver",
+  "kind": "Product",
+  "aliases": [
+   "NetWeaver",
+   "SAP NetWeaver"
+  ],
+  "short": "SAP's software platform that many large organisations use to run and connect their business applications. Because it holds sensitive business data, flaws in it are high-value targets for attackers.",
+  "lesson": "vuln-management"
+ },
+ {
+  "id": "otp",
+  "term": "OTP (one-time password)",
+  "kind": "Defence",
+  "aliases": [
+   "OTP",
+   "OTPs",
+   "one-time password",
+   "one-time code"
+  ],
+  "short": "A short code that works only once, sent by text or email or shown in an app, used as an extra login step on top of your password.",
+  "lesson": "identity"
+ },
+ {
+  "id": "vba-macro",
+  "term": "VBA (Visual Basic for Applications)",
+  "kind": "Technology",
+  "aliases": [
+   "VBA",
+   "VBA macro",
+   "VBA macros"
+  ],
+  "short": "A programming language built into Microsoft Office and some other programs, used to write macros that automate tasks. Attackers often hide malicious VBA macros in documents to infect computers.",
+  "lesson": "malware"
+ },
+ {
+  "id": "smartscreen",
+  "term": "Microsoft Defender SmartScreen",
+  "kind": "Defence",
+  "aliases": [
+   "SmartScreen",
+   "Windows SmartScreen"
+  ],
+  "short": "A Windows and Microsoft Edge feature that warns you before you open websites, downloads or apps known or suspected to be malicious.",
+  "lesson": "malware"
  }
 ]
