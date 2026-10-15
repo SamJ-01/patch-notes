@@ -1259,7 +1259,7 @@
   "track": "Networking",
   "minutes": 12,
   "lesson": "networking",
-  "skill": "The Network+ port list: flip the cards, then beat the quick-fire drill",
+  "skill": "The ports every IT and security pro should know: flip the cards, then beat the quick-fire drill",
   "intro": "A port number tells a computer which program a message is for, like a flat number on a block of flats. Flip the cards to learn them, then take the drill.",
   "protocols": [
    {

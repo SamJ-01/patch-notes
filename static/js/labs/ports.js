@@ -1,4 +1,4 @@
-// Ports and protocols: flip cards for the Network+ port list, then a quick-fire drill.
+// Ports and protocols: flip cards for the common port list (as tested in Network+, Security+ and PenTest+), then a quick-fire drill.
 // makeRound() and makeQuestion() are pure (tested in tests/labs.test.mjs); mount() is the on-page lab.
 import { hw } from "../hw.js";
 

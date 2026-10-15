@@ -1,6 +1,6 @@
 # Patch Notes
 
-**Learn it. Break it. Understand it.** A free site for people getting into IT and cyber security: hands-on Network+ labs, plus the day's security news with every headline explained.
+**Learn it. Break it. Understand it.** A free site for people getting into cyber security and IT, covering both sides: how attacks work (offensive security) and how to stop them (defensive security). Hands-on labs, missions and games, plus the day's security news with every headline explained.
 
 **Live:** https://samj-01.github.io/patch-notes/
 
@@ -12,7 +12,7 @@ Most security news is written for people already in the industry, and most cours
 
 Everything runs in the browser. Nothing is installed and no real network traffic is sent.
 
-| | What you do | Network+ topic |
+| | What you do | Topic |
 |---|---|---|
 | **DHCP mission** | Watch a PC get its IP address packet by packet (Discover, Offer, Request, Acknowledge), inspect every message, then fix a broken network. Guided, Practice and Challenge modes | IP addressing, DHCP |
 | **The OSI model, layer by layer** | Follow one web request down all 7 layers and back up as headers are added and removed, then sort real things into the right layer | OSI model |
@@ -137,7 +137,7 @@ If the Mac is off, step 1 still runs: news and CVEs stay current, only new expla
 - Vulnerability management: CVE, CWE, CVSS v2/v3/v4, EPSS, KEV, risk-based prioritisation
 - Automation and CI/CD with GitHub Actions and Pages
 - Security awareness content design: phishing simulation, plain-language explanations
-- Networking (CompTIA Network+): DHCP, the OSI model, topologies and failure analysis, ports and protocols, IPv4 subnetting maths
+- Networking: DHCP, the OSI model, topologies and failure analysis, ports and protocols, IPv4 subnetting maths
 - Linux: a simulated shell with pipes, permissions and log analysis
 - Hands-on training design: log analysis, email header forensics, CVSS 3.1 scoring (implemented from the FIRST spec and tested)
 - Automated testing in CI: a failing test blocks the deploy

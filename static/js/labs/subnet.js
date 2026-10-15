@@ -64,7 +64,7 @@ export function ipClass(addr) {
   return { cls: "E", range: "240–255", defaultPrefix: null, note: "Experimental: reserved, never used on real networks." };
 }
 const inNet = (addr, net, p) => ((addr & maskOf(p)) >>> 0) === ipToInt(net);
-// What kind of address this is. Network+ asks about all of these.
+// What kind of address this is. Certification exams (Network+, Security+) ask about all of these.
 export function classify(addr) {
   if (addr === 0xFFFFFFFF) return { kind: "broadcast", label: "Limited broadcast", note: "Sent to every device on the local network. Routers never forward it." };
   if (inNet(addr, "0.0.0.0", 8)) return { kind: "special", label: "\"This network\"", note: "0.0.0.0 means \"no address yet\" or \"any address\". Not usable on a device." };
