@@ -1005,6 +1005,43 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .lessons { gap: 20px; }
 .paths { gap: 18px; }
 .stat-row { gap: 14px; }
+
+/* Lesson "See it" diagrams (static/js/flow.js) */
+.flow { margin: 0; display: grid; gap: 12px; min-width: 0; }
+.flow-title { font-weight: 600; }
+.flow-stage { position: relative; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 10px; padding: 22px 10px 16px; border: 1px solid var(--line); border-radius: var(--radius); background-color: var(--bg); background-image: radial-gradient(rgba(127, 144, 168, 0.16) 1px, transparent 1.2px); background-size: 18px 18px; }
+.flow-node { position: relative; z-index: 1; display: grid; justify-items: center; align-content: start; gap: 8px; text-align: center; font-size: 0.82rem; line-height: 1.3; color: var(--muted); min-width: 0; }
+.flow-node svg { width: min(76px, 100%); height: auto; overflow: visible; }
+.flow-node span { overflow-wrap: anywhere; }
+.flow-node.send span, .flow-node.recv span { color: var(--ink); }  /* colour only: bold would re-wrap labels and shift the layout */
+.flow-node.send svg, .flow-node.recv svg { filter: drop-shadow(0 0 10px rgba(var(--brand-rgb), 0.55)); }
+.flow-stage[data-tone="bad"] .flow-node.send svg { filter: drop-shadow(0 0 10px rgba(var(--bad-rgb), 0.6)); }
+.flow-stage[data-tone="good"] .flow-node.recv svg { filter: drop-shadow(0 0 10px rgba(var(--good-rgb), 0.6)); }
+.flow-wire { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; overflow: visible; }
+.flow-wire line { stroke: var(--brand); stroke-width: 2; stroke-dasharray: 6 5; }
+.flow-wire marker path { fill: var(--brand); }
+.flow-stage[data-tone="bad"] .flow-wire line { stroke: var(--bad); } .flow-stage[data-tone="bad"] .flow-wire marker path { fill: var(--bad); }
+.flow-stage[data-tone="good"] .flow-wire line { stroke: var(--good); } .flow-stage[data-tone="good"] .flow-wire marker path { fill: var(--good); }
+.flow-pkt { position: absolute; left: -7px; top: -7px; width: 14px; height: 14px; border-radius: 50%; z-index: 2; background: var(--brand); box-shadow: 0 0 12px var(--brand); }
+.flow-stage[data-tone="bad"] .flow-pkt { background: var(--bad); box-shadow: 0 0 12px var(--bad); }
+.flow-stage[data-tone="good"] .flow-pkt { background: var(--good); box-shadow: 0 0 12px var(--good); }
+.flow-step { display: grid; gap: 6px; align-content: start; }
+.flow-step p { margin: 0; }
+.flow-msg { font: 600 0.88rem/1.45 var(--font-mono); padding: 8px 12px; border-left: 3px solid var(--brand); background: var(--surface-2); border-radius: var(--radius-sm); overflow-wrap: anywhere; }
+.flow-msg.bad { border-left-color: var(--bad); } .flow-msg.good { border-left-color: var(--good); }
+.flow-stop { font-size: 0.9rem; color: var(--muted); } .flow-stop b { color: var(--good); }
+.flow-text summary { cursor: pointer; font-size: 0.9rem; color: var(--muted); }
+.flow-text ol { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 6px; font-size: 0.9rem; }
+@media (max-width: 520px) { .flow-stage { gap: 4px; padding-inline: 4px; } .flow-node { font-size: 0.72rem; } }
+/* Lesson practice and next steps */
+.try-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 12px; }
+.try-row { display: grid; gap: 4px; align-content: start; padding: 12px 14px; border: 1px solid var(--card-line); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); text-decoration: none; box-shadow: var(--elev); }
+.try-row:hover { border-color: rgba(var(--brand-rgb), 0.55); }
+.try-row .muted { font-size: 0.88rem; }
+.try-else { margin: 0; font-size: 0.9rem; }
+.next-step { border-color: rgba(var(--brand-rgb), 0.5); }
+.next-step h2 { margin: 0; }
+[tabindex="-1"]:focus { outline: none; }
 </style>
 
 <!-- recon complete. you found flag 1 of 3: flag{v1ew_s0urce_is_r3con}  (submit it in the command palette: press / then type "submit" and the flag) -->
@@ -1933,36 +1970,106 @@ function pathView(id) {
   </article></div>`;
 }
 
+// What to do after finishing something: the next unfinished step of a learning path that includes it
+// (paths already in progress first), otherwise practice for a lesson or the lesson behind a lab.
+const pathRank = p => (P.paths[p.id] ? -1 : pathSteps(p).some(st => st.done) ? 1 : 0);
+function nextStep(type, id) {
+  const paths = DATA.paths.filter(p => p.steps.some(st => st.type === type && st.id === id)).sort((a, b) => pathRank(b) - pathRank(a));
+  for (const p of paths) {
+    const n = pathSteps(p).find(st => !st.done && !(st.type === type && st.id === id));
+    if (n) return { ...n, why: `Next in ${p.title}` };
+  }
+  if (type === "lesson") {
+    const practice = [...DATA.missions.filter(m => m.lesson === id).map(m => ({ label: m.title, href: "#mission-" + m.id, kind: "mission", done: count((P.missions || {})[m.id]) > 0 })),
+      ...DATA.labs.filter(x => x.lesson === id).map(x => ({ label: x.title, href: "#lab-" + x.id, kind: "lab", done: !!P.labs[x.id] }))].find(x => !x.done);
+    if (practice) return { ...practice, why: "Practise what you just learned" };
+    const l = LESSON[id], track = DATA.lessons.filter(x => x.track === l.track);
+    const nx = track.slice(track.indexOf(l) + 1).find(x => !P.done[x.id]) || DATA.lessons.find(x => !P.done[x.id] && x.id !== id);
+    if (nx) return { label: nx.title, href: "#lesson-" + nx.id, kind: "lesson", why: nx.track === l.track ? `Next in ${l.track}` : "A lesson you haven't done yet" };
+  } else {
+    const item = type === "lab" ? DATA.labs.find(x => x.id === id) : MISSION(id), ls = item && LESSON[item.lesson];
+    if (ls && !P.done[ls.id]) return { label: ls.title, href: "#lesson-" + ls.id, kind: "lesson", why: "Check you've got the theory" };
+  }
+  return null;
+}
+const GO_LABEL = { lesson: "Start the lesson", lab: "Open the lab", mission: "Open the mission", game: "Play", ctf: "Go hunting" };
+function nextStepCard(type, id) {
+  const n = nextStep(type, id);
+  return n ? `<section class="panel next-step"><div class="eyebrow">${esc(n.why)}</div><h2>Next: ${esc(n.label)}</h2><a class="btn brand" href="${n.href}" style="justify-self:start">${GO_LABEL[n.kind] || "Go"} ›</a></section>` : "";
+}
+// After a lab or mission: what was practised, where the theory lives, and what to do next.
+function showDoneCard(type, item, title) {
+  const root = type === "lab" ? ($("lab-root") || main.querySelector(".view")) : $("mission-root");
+  if (!root) return;
+  root.querySelector("#done-card")?.remove();
+  const ls = LESSON[item.lesson], n = nextStep(type, item.id);
+  root.insertAdjacentHTML("beforeend", `<section class="panel next-step" id="done-card" tabindex="-1"><div class="eyebrow">${esc(title)}</div>
+    <h2>${esc(item.title)}</h2><p class="muted" style="margin:0">${esc(item.skill || item.summary)}</p>
+    <div class="row">${n ? `<a class="btn brand" href="${n.href}">Next: ${esc(n.label)} ›</a>` : ""}${ls && (!n || n.href !== "#lesson-" + ls.id) ? `<a class="btn ghost" href="#lesson-${esc(ls.id)}">Revisit the lesson: ${esc(ls.title)}</a>` : ""}<a class="link-btn" href="#missions">All missions and labs</a></div></section>`);
+  setTimeout(() => { const c = root.querySelector("#done-card"); c?.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); c?.focus({ preventScroll: true }); }, 400);
+}
+
+const SECTION_NAME = { what: "What it is", diagram: "See it", example: "Real case", defend: "How defenders stop it" };
 function lessonView(id) {
   const l = LESSON[id]; if (!l) return VIEWS.learn();
-  const idx = DATA.lessons.indexOf(l);
-  const next = DATA.lessons[(idx + 1) % DATA.lessons.length];
   const related = DATA.news.filter(n => n.topics.includes(id)).slice(0, 5);
   const internal = l.practice.url.startsWith("#");
+  const practice = [...DATA.missions.filter(m => m.lesson === id).map(m => ({ kind: "Mission", href: "#mission-" + m.id, title: m.title, sub: m.summary, min: m.minutes, done: count((P.missions || {})[m.id]) > 0 })),
+    ...DATA.labs.filter(x => x.lesson === id).map(x => ({ kind: "Lab", href: "#lab-" + x.id, title: x.title, sub: x.skill, min: x.minutes, done: !!P.labs[x.id] }))];
   const lseen = new Set([id]);
   main.innerHTML = `<div class="view"><article class="article">
     <a class="link-btn" href="#learn">← All lessons</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">${esc(l.track)} · ${esc(l.level)} · ${l.minutes} min</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.hook)}</p></div>
-    <section><h2>What it is</h2><p>${gloss(l.what, 6, lseen)}</p></section>
-    <section class="case"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h3>${esc(l.example.title)}</h3><p>${gloss(l.example.text, 4, lseen)}</p>${l.example.source ? `<p class="muted" style="font-size:0.85rem">Source: <a href="${esc(l.example.source.url)}" target="_blank" rel="noopener">${esc(l.example.source.label)} ↗</a></p>` : ""}</section>
-    <section><h2>How defenders stop it</h2><ul class="checklist">${l.defend.map(d => `<li>${esc(d)}</li>`).join("")}</ul></section>
-    ${DATA.missions.filter(m => m.lesson === l.id).map(m => `<section class="panel continue"><div class="eyebrow">Interactive mission · ${m.minutes} min</div><h2>${esc(m.title)}</h2><p class="muted">${esc(m.summary)}</p><a class="btn brand" href="#mission-${esc(m.id)}" style="justify-self:start">Open the mission</a></section>`).join("")}
-    <section><h2>Try it yourself</h2><p><a class="btn brand" href="${esc(l.practice.url)}" ${internal ? "" : 'target="_blank" rel="noopener"'}>${esc(l.practice.label)}${internal ? "" : " ↗"}</a></p></section>
-    <section class="panel" id="lcheck"><div class="panel-title"><h2>Check yourself</h2>${P.done[id] ? '<span class="eyebrow" style="color:var(--good)">Completed</span>' : '<span class="eyebrow">+25 XP</span>'}</div></section>
+    <section id="l-what" tabindex="-1"><h2>What it is</h2><p>${gloss(l.what, 6, lseen)}</p></section>
+    ${l.diagram ? `<section class="panel" id="l-diagram" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">Step through it</span></div><div id="lflow"><div class="empty">Loading the diagram…</div></div></section>` : ""}
+    <section class="case" id="l-example" tabindex="-1"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h3>${esc(l.example.title)}</h3><p>${gloss(l.example.text, 4, lseen)}</p>${l.example.source ? `<p class="muted" style="font-size:0.85rem">Source: <a href="${esc(l.example.source.url)}" target="_blank" rel="noopener">${esc(l.example.source.label)} ↗</a></p>` : ""}</section>
+    <section id="l-defend" tabindex="-1"><h2>How defenders stop it</h2><ul class="checklist">${l.defend.map(d => `<li>${esc(d)}</li>`).join("")}</ul></section>
+    <section class="panel"><h2>Try it</h2>
+      ${practice.length ? `<div class="try-list">${practice.map(x => `<a class="try-row" href="${x.href}"><span class="eyebrow">${x.kind} · ${x.min} min${x.done ? ' · <span style="color:var(--good)">✓ done</span>' : ""}</span><b>${esc(x.title)}</b><span class="muted">${esc(x.sub)}</span></a>`).join("")}</div>` : ""}
+      ${internal ? (practice.length ? "" : `<a class="btn brand" href="${esc(l.practice.url)}" style="justify-self:start">${esc(l.practice.label)}</a>`)
+        : `<p class="muted try-else">${practice.length ? "More practice elsewhere" : "Practise elsewhere"}: <a href="${esc(l.practice.url)}" target="_blank" rel="noopener">${esc(l.practice.label)} ↗</a></p>`}
+    </section>
+    <section class="panel" id="lcheck"><div class="panel-title"><h2>Check yourself</h2><span class="eyebrow" id="lcheck-n">${P.done[id] ? '<span style="color:var(--good)">Completed</span>' : `${l.checks.length} questions · +25 XP`}</span></div><div class="stack" id="lcheck-body"></div></section>
+    <div id="lnext">${nextStepCard("lesson", id)}</div>
     ${related.length ? `<section class="panel"><h2>In the news this week</h2><div class="stories">${related.map(storyHtml).join("")}</div></section>` : ""}
-    <a class="btn ghost" href="#lesson-${esc(next.id)}" style="justify-self:start">Next: ${esc(next.title)} →</a>
   </article></div>`;
-  const ask = () => $("lcheck").appendChild(quizBlock(mixOptions(l.check), {
-    onAnswer: (choice, correct, wrap) => {
-      if (correct && !P.done[id]) { P.done[id] = true; award(25, "Lesson complete"); }
-      if (!correct) {
-        const again = document.createElement("button");
-        again.className = "btn ghost"; again.textContent = "↺ Try again"; again.style.justifySelf = "start";
-        again.onclick = () => { wrap.remove(); ask(); };
-        wrap.appendChild(again);
-      }
+  if (l.diagram) import("./js/flow.js").then(f => { if (parseRoute().path === "learn/" + id && $("lflow")) f.mount($("lflow"), l.diagram); })
+    .catch(() => { if ($("lflow")) $("lflow").innerHTML = `<div class="empty">Couldn't load the diagram.</div>`; });
+  lessonChecks(l, id);
+}
+// Questions one at a time. A wrong answer explains why, points back to the section to re-read and asks again
+// (with the options reshuffled); the lesson completes when every question has been answered correctly.
+function lessonChecks(l, id) {
+  const box = $("lcheck-body"), qs = l.checks;
+  let i = 0;
+  const ask = () => {
+    if (i >= qs.length) {
+      const first = !P.done[id];
+      if (first) { P.done[id] = true; award(25, "Lesson complete"); }
+      $("lcheck-n").innerHTML = '<span style="color:var(--good)">Completed</span>';
+      box.innerHTML = `<div class="feedback"><b class="ok">All ${qs.length} correct.</b> ${first ? "Lesson complete: +25 XP." : "Nicely done."}</div><button class="btn ghost" type="button" data-again style="justify-self:start">↺ Practise again</button>`;
+      $("lnext").innerHTML = nextStepCard("lesson", id);
+      return;
     }
-  }));
+    const q = qs[i];
+    box.innerHTML = `<div class="eyebrow">Question ${i + 1} of ${qs.length}</div>`;
+    box.appendChild(quizBlock(mixOptions(q), {
+      onAnswer: (choice, correct, wrap) => {
+        const row = document.createElement("div"); row.className = "row";
+        row.innerHTML = correct ? `<button class="btn brand" type="button" data-nextq>${i + 1 < qs.length ? "Next question ›" : "Finish"}</button>`
+          : `<button class="btn ghost" type="button" data-retry>↺ Try again</button>${q.see && $("l-" + q.see) ? `<button class="link-btn" type="button" data-see="${q.see}">Re-read: ${SECTION_NAME[q.see]} ↑</button>` : ""}`;
+        wrap.appendChild(row);
+        row.querySelector("button")?.focus();
+      }
+    }));
+  };
+  box.addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.hasAttribute("data-nextq")) { i++; ask(); }
+    else if (b.hasAttribute("data-retry")) ask();
+    else if (b.hasAttribute("data-again")) { i = 0; ask(); }
+    else if (b.dataset.see) { const t = $("l-" + b.dataset.see); t.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); t.focus({ preventScroll: true }); }
+  });
   ask();
 }
 
@@ -2160,6 +2267,7 @@ function missionView(id) {
         const first = !P.missions[id][mode];
         if (first) { P.missions[id][mode] = todayStr(); award(m.modes[mode].xp, `Mission: ${m.title} (${m.modes[mode].label})`); }
         celebrate(`${m.modes[mode].label} complete!`, first ? `${m.title} · +${m.modes[mode].xp} XP` : m.title);
+        showDoneCard("mission", m, `${m.modes[mode].label} mode complete`);
       },
     });
   }).catch(() => {
@@ -2180,9 +2288,9 @@ function moduleLab(l) {
   }).catch(() => { $("lab-root").innerHTML = `<div class="empty">Couldn't load this lab. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
 }
 function completeLab(l) {
-  if (P.labs[l.id]) { celebrate("Lab complete!", `${l.title} · practised again`); saveP(); return; }
-  P.labs[l.id] = todayStr(); award(LAB_XP, `Lab complete: ${l.title}`);
-  celebrate("Lab complete!", `${l.title} · +${LAB_XP} XP`);
+  if (P.labs[l.id]) { celebrate("Lab complete!", `${l.title} · practised again`); saveP(); }
+  else { P.labs[l.id] = todayStr(); award(LAB_XP, `Lab complete: ${l.title}`); celebrate("Lab complete!", `${l.title} · +${LAB_XP} XP`); }
+  showDoneCard("lab", l, "Lab complete");
 }
 // Clear a lab's answers so it can be practised again (XP is only ever awarded once).
 function resetLab(id) { P.labSteps[id] = []; saveP(); route(); }
@@ -2303,7 +2411,7 @@ VIEWS.progress = () => {
   const stats = [["XP", P.xp], ["Lessons", `${count(P.done)}/${DATA.lessons.length}`], ["Labs", `${count(P.labs)}/${DATA.labs.length}`], ["Flags", `${count(P.flags)}/3`], ["Paths", `${count(P.paths)}/${DATA.paths.length}`], ["Days practised", count(P.days)], ["Terms", count(P.terms)], ["Badges", `${count(P.badges)}/${BADGES.length}`]];
   main.innerHTML = `<div class="view">
     <div class="view-head with-art">${headArt("progress")}<h1>uid=${esc(r.name)}</h1>
-      <p>${r.next ? `${(r.next - P.xp).toLocaleString()} XP to <strong>${esc(r.nextName)}</strong>.` : "Top access level reached. You are root."} Progress is saved in this browser only.</p>
+      <p>${r.next ? `${(r.next - P.xp).toLocaleString()} XP to <strong>${esc(r.nextName)}</strong>.` : "Top access level reached. You are root."} Progress is saved in this browser only, so download a copy to keep it safe or move it to another device.</p>
       <p class="hint">Levels and badges track practice here, not qualifications.</p></div>
     <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(prog * 100)}%;background:var(--sun)"></i></span><span class="mono">${RANKS.map(x => x[1]).join(" → ")}</span></div>
     <div class="stat-row">${stats.map(([k, v]) => `<div class="stat"><span class="eyebrow">${k}</span><b>${v}</b></div>`).join("")}</div>
@@ -2315,13 +2423,43 @@ VIEWS.progress = () => {
       <li><span></span><span>Daily challenge (correct)</span><b>+20</b></li><li><span></span><span>Finish a lesson</span><b>+25</b></li><li><span></span><span>Complete a lab</span><b>+${LAB_XP}</b></li>
       <li><span></span><span>Capture a hidden flag</span><b>+50</b></li><li><span></span><span>Complete a learning path</span><b>+${PATH_XP}</b></li><li><span></span><span>Unlock a badge</span><b>+${BADGE_XP}</b></li>
       <li><span></span><span>Correct quiz answer / spotted phish</span><b>+10 / +15</b></li><li><span></span><span>Set up your stack</span><b>+10</b></li><li><span></span><span>New glossary term or story explanation</span><b>+2</b></li></ul></section>
-    <div class="row"><button class="btn ghost" id="reset">Reset my progress</button><span class="muted" id="reset-msg"></span></div>
+    <section class="panel"><h2>Keep your progress</h2>
+      <div class="row"><button class="btn brand" type="button" id="export">Download my progress</button><label class="btn ghost" for="import-file">Restore from a file</label><input type="file" id="import-file" accept="application/json,.json" class="sr-only"><button class="btn ghost" type="button" id="reset">Reset my progress</button></div>
+      <p class="muted" id="reset-msg" role="status"></p></section>
   </div>`;
+  $("export").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify({ app: "patch-notes", version: 1, saved: new Date().toISOString(), progress: P }, null, 1)], { type: "application/json" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `patch-notes-progress-${todayStr()}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    $("reset-msg").textContent = "Saved a copy to your downloads.";
+  });
+  $("import-file").addEventListener("change", async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const restored = restoreProgress(JSON.parse(await f.text()));
+      P = restored; saveP(); renderXP(); VIEWS.progress(); toast("Progress restored");
+    } catch (err) { $("reset-msg").textContent = "That file isn't a Patch Notes progress file, so nothing was changed."; }
+  });
   $("reset").addEventListener("click", () => {
     if (Date.now() - resetArmed < 5000) { P = FRESH(); saveP(); renderXP(); VIEWS.progress(); toast("Progress reset"); return; }
     resetArmed = Date.now(); $("reset").textContent = "Click again to confirm"; $("reset-msg").textContent = "This clears XP, badges and progress in this browser.";
   });
 };
+
+// Rebuild progress from a downloaded file, keeping only known fields of the right type.
+function restoreProgress(file) {
+  const src = file && file.app === "patch-notes" ? file.progress : null;
+  if (!src || typeof src !== "object" || typeof src.xp !== "number") throw new Error("not a progress file");
+  const out = FRESH(), extra = { intro: "", egg: "" };  // flags set later in a visit, not in FRESH
+  for (const k of [...Object.keys(out), ...Object.keys(extra)]) {
+    const v = k in out ? out[k] : extra[k], got = src[k];
+    if (got === undefined || got === null) continue;
+    const ok = v === null || v === "" ? ["string", "number", "boolean", "object"].includes(typeof got)  // optional fields
+      : Array.isArray(v) ? Array.isArray(got) : typeof got === typeof v && !Array.isArray(got);
+    if (ok) out[k] = got;
+  }
+  return out;
+}
 
 /* PLAY */
 const GS = { mode: "phish", phish: null, quiz: null };

@@ -249,7 +249,7 @@ class QuizFairness(unittest.TestCase):
     def test_answer_position_is_shuffled_everywhere(self):
         """Most authored answers are option 2, so every quiz must mix its options before showing them."""
         page = (ROOT / "site_template.html").read_text()
-        for use in ("mixOptions(DATA.quiz[", "map(q => mixOptions(q))", "quizBlock(mixOptions(l.check)"):
+        for use in ("mixOptions(DATA.quiz[", "map(q => mixOptions(q))", "quizBlock(mixOptions(q)"):
             self.assertIn(use, page)
 
 
@@ -272,11 +272,37 @@ class ContentIntegrity(unittest.TestCase):
 
     def test_lessons_complete(self):
         for l in self.lessons.values():
-            self.assertTrue(0 <= l["check"]["answer"] < len(l["check"]["options"]), l["id"])
+            self.assertGreaterEqual(len(l["checks"]), 3, f"{l['id']}: each lesson needs at least 3 check questions")
+            for c in l["checks"]:
+                self.assertTrue(c["q"] and c["why"], l["id"])
+                self.assertEqual(len(set(c["options"])), len(c["options"]), f"{l['id']}: duplicate options")
+                self.assertTrue(0 <= c["answer"] < len(c["options"]), l["id"])
+                self.assertIn(c.get("see"), {"what", "example", "defend", "diagram"}, l["id"])
+                if c["see"] == "diagram":
+                    self.assertIn("diagram", l, f"{l['id']}: a question points to a diagram the lesson doesn't have")
             self.assertTrue(l["practice"]["url"].startswith(("https://", "http://", "#")), l["id"])
             src = l["example"].get("source")
             if src:
                 self.assertTrue(src["url"].startswith("https://"), l["id"])
+
+    def test_lesson_diagrams_use_real_devices(self):
+        import re
+        kinds = set(re.findall(r"^  (\w+): `", (ROOT / "static" / "js" / "hw.js").read_text(), re.M))
+        with_diagram = [l for l in self.lessons.values() if "diagram" in l]
+        self.assertGreaterEqual(len(with_diagram), 8)
+        for l in with_diagram:
+            d = l["diagram"]; ids = {n["id"] for n in d["nodes"]}
+            self.assertTrue(2 <= len(d["nodes"]) <= 5, l["id"])
+            for n in d["nodes"]:
+                self.assertIn(n["kind"], kinds, f"{l['id']}: no device drawing for {n['kind']}")
+            for st in d["steps"]:
+                self.assertTrue({st["from"], st["to"]} <= ids and st["from"] != st["to"], l["id"])
+                self.assertTrue(st["msg"] and st["text"], l["id"])
+
+    def test_labs_and_missions_point_to_real_lessons(self):
+        for x in [*self.labs.values(), *(json.loads(f.read_text()) for f in (ROOT / "content" / "missions").glob("*.json"))]:
+            if x.get("lesson"):
+                self.assertIn(x["lesson"], self.lessons, x["id"])
 
     def test_glossary_ids_unique_and_links_valid(self):
         ids = [g["id"] for g in self.glossary]

@@ -151,7 +151,16 @@ def lesson_page(lesson, nxt, fonts, css, site):
     e = html.escape
     ex = lesson["example"]
     src = ex.get("source")
-    check = lesson["check"]
+    checks = "".join(
+        f'<div class="stack" style="gap:6px"><p class="q">{n}. {e(c["q"])}</p><ol type="a">{"".join(f"<li>{e(o)}</li>" for o in c["options"])}</ol>'
+        f'<details><summary>Show answer</summary><p><strong>{e(c["options"][c["answer"]])}</strong>. {e(c["why"])}</p></details></div>'
+        for n, c in enumerate(lesson["checks"], 1))
+    diagram = lesson.get("diagram")
+    if diagram:
+        name = {n["id"]: n["label"] for n in diagram["nodes"]}
+        steps = "".join(f'<li><strong>{e(name[st["from"]])} → {e(name[st["to"]])}</strong>: {e(st["msg"])}. {e(st["text"])}'
+                        + (f' <em>Stopped by: {e(st["stop"])}</em>' if st.get("stop") else "") + "</li>" for st in diagram["steps"])
+        diagram = f'<section><h2>See it: {e(diagram["title"])}</h2><ol>{steps}</ol><p class="muted" style="font-size:0.88rem"><a href="../index.html#lesson-{e(lesson["id"])}">Step through the animated diagram</a> in the app.</p></section>'
     return f"""<!doctype html>
 <html lang="en">
 <meta charset="utf-8">
@@ -172,12 +181,12 @@ def lesson_page(lesson, nxt, fonts, css, site):
   <a class="link-btn" href="index.html">← All lessons</a>
   <div class="stack" style="gap:8px"><div class="eyebrow">{e(lesson['track'])} · {e(lesson['level'])} · {lesson['minutes']} min</div><h1>{e(lesson['title'])}</h1><p class="hook">{e(lesson['hook'])}</p></div>
   <section><h2>What it is</h2><p>{e(lesson['what'])}</p></section>
+  {diagram or ''}
   <section class="case"><div class="eyebrow">Real case · {e(ex['year'])}</div><h3>{e(ex['title'])}</h3><p>{e(ex['text'])}</p>{f'<p class="muted" style="font-size:0.85rem">Source: <a href="{e(src["url"])}" rel="noopener">{e(src["label"])}</a></p>' if src else ''}</section>
   <section><h2>How defenders stop it</h2><ul class="checklist">{''.join(f'<li>{e(d)}</li>' for d in lesson['defend'])}</ul></section>
   <section><h2>Try it yourself</h2><p><a class="btn brand" href="{e(lesson['practice']['url'] if not lesson['practice']['url'].startswith('#') else '../index.html' + lesson['practice']['url'])}" rel="noopener">{e(lesson['practice']['label'])}</a></p></section>
-  <section class="panel"><h2>Check yourself</h2><p class="q">{e(check['q'])}</p><ol>{''.join(f'<li>{e(o)}</li>' for o in check['options'])}</ol>
-    <details><summary>Show answer</summary><p><strong>{e(check['options'][check['answer']])}</strong>. {e(check['why'])}</p></details>
-    <p class="muted" style="font-size:0.88rem"><a href="../index.html#lesson-{e(lesson['id'])}">Answer it in the app</a> to earn XP.</p></section>
+  <section class="panel"><h2>Check yourself</h2>{checks}
+    <p class="muted" style="font-size:0.88rem"><a href="../index.html#lesson-{e(lesson['id'])}">Answer them in the app</a> to earn XP.</p></section>
   <a class="btn ghost" href="{e(nxt['id'])}.html" style="justify-self:start">Next: {e(nxt['title'])} →</a>
 </article></main>
 </html>

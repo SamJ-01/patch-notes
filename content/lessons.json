@@ -26,16 +26,101 @@
    "label": "Take Google's phishing quiz",
    "url": "https://phishingquiz.withgoogle.com/"
   },
-  "check": {
-   "q": "Your 'CEO' emails asking you to buy gift cards urgently and keep it quiet. What's the best move?",
-   "options": [
-    "Buy them quickly, it's the CEO",
-    "Reply to the email to ask if it's real",
-    "Contact the CEO through a known phone number or chat",
-    "Forward it to colleagues to see what they think"
+  "checks": [
+   {
+    "q": "Your 'CEO' emails asking you to buy gift cards urgently and keep it quiet. What's the best move?",
+    "options": [
+     "Buy them quickly, it's the CEO",
+     "Reply to the email to ask if it's real",
+     "Contact the CEO through a known phone number or chat",
+     "Forward it to colleagues to see what they think"
+    ],
+    "answer": 2,
+    "why": "Replying goes straight back to the attacker. Verify through a channel you already trust.",
+    "see": "defend"
+   },
+   {
+    "q": "An email says your account will be closed within the hour unless you sign in now. Which trick is it mainly relying on?",
+    "options": [
+     "Credential stuffing",
+     "Encryption",
+     "Urgency",
+     "A zero-day"
+    ],
+    "answer": 2,
+    "why": "Attackers lean on urgency, authority and fear because people under pressure skip the checks they'd normally do.",
+    "see": "what"
+   },
+   {
+    "q": "You typed your password into a fake login page. Which defence still stops the attacker getting in?",
+    "options": [
+     "A longer password",
+     "Clearing your browser history",
+     "Antivirus on your phone",
+     "Phishing-resistant MFA such as a passkey or security key"
+    ],
+    "answer": 3,
+    "why": "A passkey or security key only works on the real website, so a stolen password on its own isn't enough.",
+    "see": "defend"
+   }
+  ],
+  "diagram": {
+   "title": "How a credential-phishing attack unfolds",
+   "nodes": [
+    {
+     "id": "a",
+     "kind": "attacker",
+     "label": "Attacker"
+    },
+    {
+     "id": "u",
+     "kind": "laptop",
+     "label": "Employee"
+    },
+    {
+     "id": "f",
+     "kind": "server",
+     "label": "Fake login page"
+    },
+    {
+     "id": "m",
+     "kind": "cloud",
+     "label": "Real email account"
+    }
    ],
-   "answer": 2,
-   "why": "Replying goes straight back to the attacker. Verify through a channel you already trust."
+   "steps": [
+    {
+     "from": "a",
+     "to": "u",
+     "msg": "Email: “Your mailbox is full. Sign in to keep it.”",
+     "text": "The email looks like it comes from IT and adds urgency so the reader acts before thinking.",
+     "tone": "bad",
+     "stop": "Email filtering and SPF, DKIM and DMARC catch many spoofed senders."
+    },
+    {
+     "from": "u",
+     "to": "f",
+     "msg": "Clicks the link and types a password",
+     "text": "The link opens a copy of the real sign-in page on a lookalike address.",
+     "tone": "bad",
+     "stop": "Check the address; report it. Never punish people who click."
+    },
+    {
+     "from": "f",
+     "to": "a",
+     "msg": "Password sent to the attacker",
+     "text": "Whatever is typed into the fake page goes straight to the attacker.",
+     "tone": "bad"
+    },
+    {
+     "from": "a",
+     "to": "m",
+     "msg": "Signs in as the employee",
+     "text": "With the password, the attacker logs in to the real account to read mail or phish colleagues from a trusted address.",
+     "tone": "bad",
+     "stop": "Phishing-resistant MFA (passkeys) blocks this step: the password alone isn't enough."
+    }
+   ]
   }
  },
  {
@@ -65,16 +150,110 @@
    "label": "See free decryptors at No More Ransom",
    "url": "https://www.nomoreransom.org/"
   },
-  "check": {
-   "q": "Why aren't backups alone enough against modern ransomware?",
-   "options": [
-    "Backups are always encrypted too",
-    "Gangs also steal data and threaten to leak it",
-    "Backups are illegal to restore",
-    "Ransomware deletes the internet connection"
+  "checks": [
+   {
+    "q": "Why aren't backups alone enough against modern ransomware?",
+    "options": [
+     "Backups are always encrypted too",
+     "Gangs also steal data and threaten to leak it",
+     "Backups are illegal to restore",
+     "Ransomware deletes the internet connection"
+    ],
+    "answer": 1,
+    "why": "Double extortion means restoring from backup doesn't stop the leak threat.",
+    "see": "what"
+   },
+   {
+    "q": "In ransomware-as-a-service, who usually breaks into the victim's network?",
+    "options": [
+     "The ransomware's developers",
+     "Affiliates who rent the ransomware",
+     "The antivirus vendor",
+     "The victim's IT team"
+    ],
+    "answer": 1,
+    "why": "Developers rent the ransomware to affiliates, who break in, often with stolen passwords or unpatched VPNs, and spread before striking.",
+    "see": "what"
+   },
+   {
+    "q": "Which backups are most likely to survive a ransomware attack?",
+    "options": [
+     "Files in the Recycle Bin",
+     "A copy on the same server",
+     "Offline or immutable backups that are tested regularly",
+     "Backups on a mapped network drive"
+    ],
+    "answer": 2,
+    "why": "Gangs hunt for reachable backups and destroy them. Offline or immutable copies can't be changed, and testing proves they actually restore.",
+    "see": "defend"
+   }
+  ],
+  "diagram": {
+   "title": "How a ransomware attack reaches the point of encryption",
+   "nodes": [
+    {
+     "id": "a",
+     "kind": "attacker",
+     "label": "Affiliate"
+    },
+    {
+     "id": "v",
+     "kind": "firewall",
+     "label": "VPN / remote access"
+    },
+    {
+     "id": "s",
+     "kind": "server",
+     "label": "File servers"
+    },
+    {
+     "id": "b",
+     "kind": "db",
+     "label": "Backups"
+    }
    ],
-   "answer": 1,
-   "why": "Double extortion means restoring from backup doesn't stop the leak threat."
+   "steps": [
+    {
+     "from": "a",
+     "to": "v",
+     "msg": "Logs in with a stolen password",
+     "text": "Many attacks start at remote access: a reused password or an unpatched VPN.",
+     "tone": "bad",
+     "stop": "MFA on every remote access point; patch internet-facing systems first."
+    },
+    {
+     "from": "v",
+     "to": "s",
+     "msg": "Spreads quietly for days",
+     "text": "The attacker gains admin rights and maps the network before doing anything noisy.",
+     "tone": "bad",
+     "stop": "Segment networks and give accounts only the access they need."
+    },
+    {
+     "from": "s",
+     "to": "a",
+     "msg": "Copies data out",
+     "text": "Data is stolen first so the gang can threaten to leak it (double extortion).",
+     "tone": "bad",
+     "stop": "Watch for unusual large outbound transfers."
+    },
+    {
+     "from": "a",
+     "to": "b",
+     "msg": "Deletes reachable backups",
+     "text": "Gangs destroy backups they can reach so the victim can't simply restore.",
+     "tone": "bad",
+     "stop": "Keep offline or immutable backups and test restoring them."
+    },
+    {
+     "from": "a",
+     "to": "s",
+     "msg": "Encrypts files, leaves a ransom note",
+     "text": "Files become unusable and the ransom demand appears.",
+     "tone": "bad",
+     "stop": "EDR that spots mass file changes can stop encryption early."
+    }
+   ]
   }
  },
  {
@@ -104,17 +283,44 @@
    "label": "Look up a file hash on VirusTotal",
    "url": "https://www.virustotal.com/"
   },
-  "check": {
-   "q": "Which malware type steals saved browser passwords and session cookies?",
-   "options": [
-    "Worm",
-    "Infostealer",
-    "Loader",
-    "Adware"
-   ],
-   "answer": 1,
-   "why": "Infostealers are a big driver of account takeovers because stolen cookies can bypass MFA."
-  }
+  "checks": [
+   {
+    "q": "Which malware type steals saved browser passwords and session cookies?",
+    "options": [
+     "Worm",
+     "Infostealer",
+     "Loader",
+     "Adware"
+    ],
+    "answer": 1,
+    "why": "Infostealers are a big driver of account takeovers because stolen cookies can bypass MFA.",
+    "see": "what"
+   },
+   {
+    "q": "Which type of malware spreads between machines by itself, without anyone clicking anything?",
+    "options": [
+     "Loader",
+     "Worm",
+     "Trojan",
+     "Infostealer"
+    ],
+    "answer": 1,
+    "why": "A worm spreads on its own, which is why keeping systems patched (leaving it nothing to exploit) matters so much.",
+    "see": "what"
+   },
+   {
+    "q": "A program's only job is to download and run other malware. What is it?",
+    "options": [
+     "A RAT",
+     "Adware",
+     "A loader",
+     "A botnet"
+    ],
+    "answer": 2,
+    "why": "A loader fetches the next stage. Blocking it stops everything that would have followed.",
+    "see": "what"
+   }
+  ]
  },
  {
   "id": "zero-day",
@@ -143,17 +349,44 @@
    "label": "Browse Google Project Zero's in-the-wild tracker",
    "url": "https://googleprojectzero.github.io/0days-in-the-wild/"
   },
-  "check": {
-   "q": "When does a zero-day stop being a zero-day?",
-   "options": [
-    "After 24 hours",
-    "When the vendor releases a patch",
-    "When it gets a CVSS score",
-    "Never"
-   ],
-   "answer": 1,
-   "why": "Once a fix exists it's an n-day, but unpatched systems are still vulnerable."
-  }
+  "checks": [
+   {
+    "q": "When does a zero-day stop being a zero-day?",
+    "options": [
+     "After 24 hours",
+     "When the vendor releases a patch",
+     "When it gets a CVSS score",
+     "Never"
+    ],
+    "answer": 1,
+    "why": "Once a fix exists it's an n-day, but unpatched systems are still vulnerable.",
+    "see": "what"
+   },
+   {
+    "q": "What is an 'n-day'?",
+    "options": [
+     "A bug nobody has found yet",
+     "A vulnerability with no CVE ID",
+     "A bug found by AI",
+     "A known vulnerability that already has a patch"
+    ],
+    "answer": 3,
+    "why": "Once a patch ships, a zero-day becomes an n-day: attackers study the patch while defenders race to install it.",
+    "see": "what"
+   },
+   {
+    "q": "There's no patch yet for a zero-day in software you run. What helps most right now?",
+    "options": [
+     "Change your Wi-Fi password",
+     "Apply the vendor's mitigations and watch for unusual behaviour",
+     "Uninstall every program",
+     "Wait quietly for the patch"
+    ],
+    "answer": 1,
+    "why": "Vendors often publish workarounds before a fix, and behaviour monitoring catches attacks that signatures miss.",
+    "see": "defend"
+   }
+  ]
  },
  {
   "id": "vuln-management",
@@ -182,17 +415,44 @@
    "label": "Explore this week's CVEs on the Radar",
    "url": "#cves"
   },
-  "check": {
-   "q": "A CVE has CVSS 6.5 and is on CISA's KEV list. Another has CVSS 9.8 with EPSS 0.2%. Which should most teams patch first?",
-   "options": [
-    "The 9.8, higher score always wins",
-    "The 6.5 on KEV, because it's being exploited",
-    "Neither until both have patches",
-    "Whichever was published first"
-   ],
-   "answer": 1,
-   "why": "Confirmed exploitation beats a theoretical worst case."
-  }
+  "checks": [
+   {
+    "q": "A CVE has CVSS 6.5 and is on CISA's KEV list. Another has CVSS 9.8 with EPSS 0.2%. Which should most teams patch first?",
+    "options": [
+     "The 9.8, higher score always wins",
+     "The 6.5 on KEV, because it's being exploited",
+     "Neither until both have patches",
+     "Whichever was published first"
+    ],
+    "answer": 1,
+    "why": "Confirmed exploitation beats a theoretical worst case.",
+    "see": "what"
+   },
+   {
+    "q": "What does EPSS estimate?",
+    "options": [
+     "How severe a vulnerability could be",
+     "How many computers are affected",
+     "How likely a vulnerability is to be exploited in the next 30 days",
+     "How long a patch takes to install"
+    ],
+    "answer": 2,
+    "why": "CVSS scores how bad a bug could be; EPSS estimates the chance it's exploited in the next 30 days.",
+    "see": "what"
+   },
+   {
+    "q": "What does a CVE ID give you?",
+    "options": [
+     "A patch",
+     "Proof it's being exploited",
+     "A severity score",
+     "A unique name for one public vulnerability"
+    ],
+    "answer": 3,
+    "why": "A CVE ID is a shared name so everyone means the same bug. Severity comes from CVSS, and exploitation from CISA's KEV list.",
+    "see": "what"
+   }
+  ]
  },
  {
   "id": "supply-chain",
@@ -221,17 +481,44 @@
    "label": "Read the SLSA supply-chain framework",
    "url": "https://slsa.dev/"
   },
-  "check": {
-   "q": "What made the XZ Utils attack so dangerous?",
-   "options": [
-    "It used a zero-click iPhone bug",
-    "A trusted maintainer inserted the backdoor",
-    "It spread through email",
-    "It only affected Windows"
-   ],
-   "answer": 1,
-   "why": "Trust was the attack vector. Code review and reproducible builds are key defences."
-  }
+  "checks": [
+   {
+    "q": "What made the XZ Utils attack so dangerous?",
+    "options": [
+     "It used a zero-click iPhone bug",
+     "A trusted maintainer inserted the backdoor",
+     "It spread through email",
+     "It only affected Windows"
+    ],
+    "answer": 1,
+    "why": "Trust was the attack vector. Code review and reproducible builds are key defences.",
+    "see": "example"
+   },
+   {
+    "q": "Why do attackers target software vendors and open-source packages?",
+    "options": [
+     "It's legal",
+     "One compromise reaches every organisation that trusts them",
+     "They never use passwords",
+     "They're easier to find on the internet"
+    ],
+    "answer": 1,
+    "why": "Compromising something many organisations trust lets an attacker reach all of its customers at once.",
+    "see": "what"
+   },
+   {
+    "q": "What is typosquatting in package registries?",
+    "options": [
+     "Encrypting a package",
+     "Typing commands too quickly",
+     "Misspelling a CVE ID",
+     "Publishing a malicious package named like a popular one"
+    ],
+    "answer": 3,
+    "why": "Attackers publish packages with names one typo away from popular libraries, hoping a developer installs theirs by mistake.",
+    "see": "what"
+   }
+  ]
  },
  {
   "id": "data-breach",
@@ -260,17 +547,44 @@
    "label": "Check your email on Have I Been Pwned",
    "url": "https://haveibeenpwned.com/"
   },
-  "check": {
-   "q": "What is credential stuffing?",
-   "options": [
-    "Guessing passwords one letter at a time",
-    "Trying leaked username/password pairs on other sites",
-    "Putting too many passwords in a manager",
-    "Encrypting stolen passwords"
-   ],
-   "answer": 1,
-   "why": "It works because people reuse passwords. Unique passwords stop it."
-  }
+  "checks": [
+   {
+    "q": "What is credential stuffing?",
+    "options": [
+     "Guessing passwords one letter at a time",
+     "Trying leaked username/password pairs on other sites",
+     "Putting too many passwords in a manager",
+     "Encrypting stolen passwords"
+    ],
+    "answer": 1,
+    "why": "It works because people reuse passwords. Unique passwords stop it.",
+    "see": "what"
+   },
+   {
+    "q": "Which of these is a data breach?",
+    "options": [
+     "A software update is installed",
+     "The office network is slow",
+     "A stranger downloads a customer database that was left open to the internet",
+     "A website goes offline for an hour"
+    ],
+    "answer": 2,
+    "why": "A breach is any access to data by someone who shouldn't have it. Misconfigured, exposed databases count, not only hacks.",
+    "see": "what"
+   },
+   {
+    "q": "What stops credential stuffing from working on your accounts?",
+    "options": [
+     "The same strong password everywhere",
+     "Clearing your cookies",
+     "A different password for every site, kept in a password manager",
+     "Changing your username"
+    ],
+    "answer": 2,
+    "why": "Credential stuffing replays passwords leaked from one site on others, so it only works when a password is reused.",
+    "see": "defend"
+   }
+  ]
  },
  {
   "id": "nation-state",
@@ -299,17 +613,44 @@
    "label": "Browse threat groups on MITRE ATT&CK",
    "url": "https://attack.mitre.org/groups/"
   },
-  "check": {
-   "q": "What does 'living off the land' mean?",
-   "options": [
-    "Hacking from a rural location",
-    "Using a system's own legitimate tools to avoid detection",
-    "Stealing farming data",
-    "Only attacking physical infrastructure"
-   ],
-   "answer": 1,
-   "why": "Built-in tools look normal, so defenders watch how they're used, not just whether they run."
-  }
+  "checks": [
+   {
+    "q": "What does 'living off the land' mean?",
+    "options": [
+     "Hacking from a rural location",
+     "Using a system's own legitimate tools to avoid detection",
+     "Stealing farming data",
+     "Only attacking physical infrastructure"
+    ],
+    "answer": 1,
+    "why": "Built-in tools look normal, so defenders watch how they're used, not just whether they run.",
+    "see": "what"
+   },
+   {
+    "q": "What does APT stand for?",
+    "options": [
+     "Automated Phishing Tool",
+     "Anti-Piracy Team",
+     "Applied Penetration Test",
+     "Advanced Persistent Threat"
+    ],
+    "answer": 3,
+    "why": "APTs are government-backed groups that spy, steal and pre-position, often staying hidden for a long time.",
+    "see": "what"
+   },
+   {
+    "q": "Which framework maps attacker tactics so defenders can check what they'd detect?",
+    "options": [
+     "MITRE ATT&CK",
+     "CVSS",
+     "GDPR",
+     "TLS"
+    ],
+    "answer": 0,
+    "why": "MITRE ATT&CK catalogues how attackers behave, so teams can map their defences and find the gaps.",
+    "see": "defend"
+   }
+  ]
  },
  {
   "id": "ddos",
@@ -338,17 +679,44 @@
    "label": "Cloudflare's DDoS explainer",
    "url": "https://www.cloudflare.com/learning/ddos/what-is-a-ddos-attack/"
   },
-  "check": {
-   "q": "How did Mirai build such a big botnet?",
-   "options": [
-    "A Windows zero-day",
-    "IoT devices with default passwords",
-    "Phishing emails",
-    "Buying servers"
-   ],
-   "answer": 1,
-   "why": "It simply tried a short list of default usernames and passwords."
-  }
+  "checks": [
+   {
+    "q": "How did Mirai build such a big botnet?",
+    "options": [
+     "A Windows zero-day",
+     "IoT devices with default passwords",
+     "Phishing emails",
+     "Buying servers"
+    ],
+    "answer": 1,
+    "why": "It simply tried a short list of default usernames and passwords.",
+    "see": "example"
+   },
+   {
+    "q": "What does 'distributed' mean in DDoS?",
+    "options": [
+     "The traffic comes from many machines at once",
+     "It uses a distributed database",
+     "It attacks many websites at once",
+     "It spreads like a worm"
+    ],
+    "answer": 0,
+    "why": "The flood comes from many machines, usually a botnet, which is why blocking one source doesn't stop it.",
+    "see": "what"
+   },
+   {
+    "q": "Which defence helps most against a large DDoS attack?",
+    "options": [
+     "Turning off HTTPS",
+     "DDoS protection from a CDN or cloud provider",
+     "A stronger admin password",
+     "Antivirus on the web server"
+    ],
+    "answer": 1,
+    "why": "Big providers absorb floods across their global networks before the traffic ever reaches you.",
+    "see": "defend"
+   }
+  ]
  },
  {
   "id": "ai-security",
@@ -377,17 +745,44 @@
    "label": "Try to trick an AI in Gandalf",
    "url": "https://gandalf.lakera.ai/"
   },
-  "check": {
-   "q": "What is prompt injection?",
-   "options": [
-    "Typing very long prompts",
-    "Hiding instructions in content an AI processes to hijack its behaviour",
-    "Injecting SQL into a chatbot",
-    "Training an AI on bad data"
-   ],
-   "answer": 1,
-   "why": "The AI can't reliably tell its user's instructions from text it's reading."
-  }
+  "checks": [
+   {
+    "q": "What is prompt injection?",
+    "options": [
+     "Typing very long prompts",
+     "Hiding instructions in content an AI processes to hijack its behaviour",
+     "Injecting SQL into a chatbot",
+     "Training an AI on bad data"
+    ],
+    "answer": 1,
+    "why": "The AI can't reliably tell its user's instructions from text it's reading.",
+    "see": "what"
+   },
+   {
+    "q": "Your boss appears on a video call asking for an urgent payment. What's the safe move?",
+    "options": [
+     "Reply in the call's chat",
+     "Verify through a separate channel you already trust",
+     "Ask them to switch the camera on",
+     "Pay: you can see their face"
+    ],
+    "answer": 1,
+    "why": "Faces and voices can be cloned. Check payment requests out-of-band, even on video.",
+    "see": "defend"
+   },
+   {
+    "q": "Why should an AI agent get only the access it needs?",
+    "options": [
+     "It saves on licence costs",
+     "It makes the agent faster",
+     "AI can't use permissions anyway",
+     "If prompt injection tricks it, the damage it can do is limited"
+    ],
+    "answer": 3,
+    "why": "Agents can be tricked by instructions hidden in what they read. Least access, plus approval for risky actions, limits the harm.",
+    "see": "defend"
+   }
+  ]
  },
  {
   "id": "cloud",
@@ -416,17 +811,44 @@
    "label": "Play flAWS, an AWS mistakes game",
    "url": "http://flaws.cloud/"
   },
-  "check": {
-   "q": "Under the shared responsibility model, who secures your S3 bucket permissions?",
-   "options": [
-    "Amazon",
-    "You, the customer",
-    "Nobody",
-    "Your internet provider"
-   ],
-   "answer": 1,
-   "why": "The provider secures the platform; configuration is on you."
-  }
+  "checks": [
+   {
+    "q": "Under the shared responsibility model, who secures your S3 bucket permissions?",
+    "options": [
+     "Amazon",
+     "You, the customer",
+     "Nobody",
+     "Your internet provider"
+    ],
+    "answer": 1,
+    "why": "The provider secures the platform; configuration is on you.",
+    "see": "what"
+   },
+   {
+    "q": "Which is one of the most common causes of cloud data leaks?",
+    "options": [
+     "Storage buckets left open to the public",
+     "Slow internet connections",
+     "Cloud providers being hacked",
+     "Turning on two-factor authentication"
+    ],
+    "answer": 0,
+    "why": "Most cloud breaches come from customer misconfiguration, such as public buckets and over-powered keys, not the provider.",
+    "see": "what"
+   },
+   {
+    "q": "Why is a leaked cloud access key so dangerous?",
+    "options": [
+     "Keys expire the moment they leak",
+     "Everything in the cloud is an API, so the key can control resources directly",
+     "It only affects billing",
+     "It only reveals your IP address"
+    ],
+    "answer": 1,
+    "why": "With the right key, an attacker can create, read or delete resources from anywhere, as if they owned the account.",
+    "see": "what"
+   }
+  ]
  },
  {
   "id": "identity",
@@ -455,16 +877,95 @@
    "label": "See which sites support 2FA",
    "url": "https://2fa.directory/"
   },
-  "check": {
-   "q": "Why are passkeys considered phishing-resistant?",
-   "options": [
-    "They're longer than passwords",
-    "They're tied to the real website's domain and can't be used on a fake one",
-    "They change every minute",
-    "They use your fingerprint"
+  "checks": [
+   {
+    "q": "Why are passkeys considered phishing-resistant?",
+    "options": [
+     "They're longer than passwords",
+     "They're tied to the real website's domain and can't be used on a fake one",
+     "They change every minute",
+     "They use your fingerprint"
+    ],
+    "answer": 1,
+    "why": "The browser won't release a passkey to a look-alike domain.",
+    "see": "what"
+   },
+   {
+    "q": "An attacker sends push MFA prompts over and over until someone taps Approve. What's this called, and what stops it?",
+    "options": [
+     "Credential stuffing; a VPN",
+     "Phishing; longer passwords",
+     "Brute force; CAPTCHAs",
+     "MFA fatigue; number matching on push prompts"
+    ],
+    "answer": 3,
+    "why": "MFA fatigue wears people down with prompts. Number matching means approving needs a code from the real login screen.",
+    "see": "defend"
+   },
+   {
+    "q": "Why are SMS codes weaker than other kinds of MFA?",
+    "options": [
+     "The codes are too long",
+     "An attacker can take over the phone number with a SIM swap",
+     "The codes never expire",
+     "Text messages are always encrypted"
+    ],
+    "answer": 1,
+    "why": "SMS codes can be SIM-swapped or relayed by fake login pages. Passkeys and security keys resist both.",
+    "see": "what"
+   }
+  ],
+  "diagram": {
+   "title": "Why a stolen password isn't enough with MFA",
+   "nodes": [
+    {
+     "id": "a",
+     "kind": "attacker",
+     "label": "Attacker"
+    },
+    {
+     "id": "l",
+     "kind": "server",
+     "label": "Login service"
+    },
+    {
+     "id": "p",
+     "kind": "phone",
+     "label": "Owner's phone"
+    }
    ],
-   "answer": 1,
-   "why": "The browser won't release a passkey to a look-alike domain."
+   "steps": [
+    {
+     "from": "a",
+     "to": "l",
+     "msg": "Correct username and password",
+     "text": "The password was leaked in a breach or captured by phishing.",
+     "tone": "bad"
+    },
+    {
+     "from": "l",
+     "to": "p",
+     "msg": "Asks for a second factor",
+     "text": "The service sends a push prompt, or asks for a code or passkey, to the real owner's device.",
+     "tone": "good"
+    },
+    {
+     "from": "p",
+     "to": "l",
+     "msg": "Owner doesn't approve",
+     "text": "The owner wasn't signing in, so they ignore or deny the request.",
+     "tone": "good",
+     "stop": "Number matching stops 'just tap Approve' fatigue attacks."
+    },
+    {
+     "from": "l",
+     "to": "a",
+     "msg": "Access denied",
+     "text": "Without the second factor, the password alone gets the attacker nowhere.",
+     "tone": "good",
+     "stop": "Passkeys go further: they only work on the real site, so a fake page gets nothing to replay."
+    }
+   ]
   }
  },
  {
@@ -494,17 +995,44 @@
    "label": "Read CISA's ICS advisories",
    "url": "https://www.cisa.gov/news-events/cybersecurity-advisories"
   },
-  "check": {
-   "q": "Why are OT systems hard to patch?",
-   "options": [
-    "They don't use software",
-    "Downtime can stop a factory or utility, and devices may run for decades",
-    "Patches are illegal",
-    "They're always offline"
-   ],
-   "answer": 1,
-   "why": "Availability and safety come first in OT, so changes are planned carefully."
-  }
+  "checks": [
+   {
+    "q": "Why are OT systems hard to patch?",
+    "options": [
+     "They don't use software",
+     "Downtime can stop a factory or utility, and devices may run for decades",
+     "Patches are illegal",
+     "They're always offline"
+    ],
+    "answer": 1,
+    "why": "Availability and safety come first in OT, so changes are planned carefully.",
+    "see": "what"
+   },
+   {
+    "q": "What does OT stand for?",
+    "options": [
+     "Open telemetry",
+     "Operational technology",
+     "Online tools",
+     "Over-the-air transfer"
+    ],
+    "answer": 1,
+    "why": "OT is the technology that runs physical processes: power grids, water plants and factories.",
+    "see": "what"
+   },
+   {
+    "q": "What's the most important rule for industrial control systems?",
+    "options": [
+     "Restart them every hour",
+     "Give every engineer admin access",
+     "Connect them to the office Wi-Fi",
+     "Never expose them directly to the internet"
+    ],
+    "answer": 3,
+    "why": "Control systems were often built before anyone expected them online. Keep them off the internet and separate from office IT.",
+    "see": "defend"
+   }
+  ]
  },
  {
   "id": "web-sqli",
@@ -533,16 +1061,95 @@
    "label": "PortSwigger SQL injection labs (free)",
    "url": "https://portswigger.net/web-security/sql-injection"
   },
-  "check": {
-   "q": "What's the real fix for SQL injection?",
-   "options": [
-    "Blocking the ' character",
-    "Parameterised queries",
-    "Hiding error messages",
-    "Using HTTPS"
+  "checks": [
+   {
+    "q": "What's the real fix for SQL injection?",
+    "options": [
+     "Blocking the ' character",
+     "Parameterised queries",
+     "Hiding error messages",
+     "Using HTTPS"
+    ],
+    "answer": 1,
+    "why": "Parameters keep data and code separate, so input can never become part of the query.",
+    "see": "defend"
+   },
+   {
+    "q": "Why does ' OR '1'='1 work against a vulnerable login form?",
+    "options": [
+     "It makes the query's condition always true, so it matches any user",
+     "It deletes the database",
+     "It encrypts the query",
+     "It guesses the password"
+    ],
+    "answer": 0,
+    "why": "The input closes the quote and adds OR '1'='1, which is always true, so the query returns users without a valid password.",
+    "see": "diagram"
+   },
+   {
+    "q": "What does a least-privilege database account limit?",
+    "options": [
+     "How much damage a successful injection can do",
+     "How fast queries run",
+     "Who can visit the website",
+     "How many users can sign up"
+    ],
+    "answer": 0,
+    "why": "If the website's database account can only read what it needs, an injection can't drop tables or read everything.",
+    "see": "defend"
+   }
+  ],
+  "diagram": {
+   "title": "How SQL injection turns a login form against its database",
+   "nodes": [
+    {
+     "id": "u",
+     "kind": "laptop",
+     "label": "Attacker's browser"
+    },
+    {
+     "id": "w",
+     "kind": "server",
+     "label": "Website"
+    },
+    {
+     "id": "d",
+     "kind": "db",
+     "label": "Database"
+    }
    ],
-   "answer": 1,
-   "why": "Parameters keep data and code separate, so input can never become part of the query."
+   "steps": [
+    {
+     "from": "u",
+     "to": "w",
+     "msg": "Username: ' OR '1'='1",
+     "text": "Instead of a name, the attacker types text that includes SQL.",
+     "tone": "bad"
+    },
+    {
+     "from": "w",
+     "to": "d",
+     "msg": "SELECT * FROM users WHERE name = '' OR '1'='1'",
+     "text": "The site pastes the input straight into its query, so the attacker's text becomes part of the SQL. '1'='1' is always true.",
+     "tone": "bad",
+     "stop": "Parameterised queries keep input as data, never as code. This is the real fix."
+    },
+    {
+     "from": "d",
+     "to": "w",
+     "msg": "Returns every user",
+     "text": "The database does exactly what the changed query asks.",
+     "tone": "bad",
+     "stop": "A least-privilege database account limits what an injection can reach."
+    },
+    {
+     "from": "w",
+     "to": "u",
+     "msg": "Logged in as the first user, often an admin",
+     "text": "The site treats the result as a successful login.",
+     "tone": "bad"
+    }
+   ]
   }
  },
  {
@@ -572,16 +1179,96 @@
    "label": "PortSwigger XSS labs (free)",
    "url": "https://portswigger.net/web-security/cross-site-scripting"
   },
-  "check": {
-   "q": "Where does an XSS payload actually run?",
-   "options": [
-    "On the web server",
-    "In the victim's browser",
-    "In the database",
-    "On the attacker's machine"
+  "checks": [
+   {
+    "q": "Where does an XSS payload actually run?",
+    "options": [
+     "On the web server",
+     "In the victim's browser",
+     "In the database",
+     "On the attacker's machine"
+    ],
+    "answer": 1,
+    "why": "That's why it can act as the victim on the trusted site.",
+    "see": "what"
+   },
+   {
+    "q": "What's the difference between stored and reflected XSS?",
+    "options": [
+     "There's no difference",
+     "Stored targets servers; reflected targets databases",
+     "Reflected only works on phones",
+     "Stored is saved on the site; reflected bounces off a link the victim clicks"
+    ],
+    "answer": 3,
+    "why": "A stored payload sits on the site, like a comment, and hits every visitor; a reflected one comes from a crafted link.",
+    "see": "what"
+   },
+   {
+    "q": "Which cookie setting stops a script from reading the session cookie?",
+    "options": [
+     "A longer password",
+     "HttpOnly",
+     "Using HTTPS",
+     "Disabling images"
+    ],
+    "answer": 1,
+    "why": "HttpOnly cookies are sent to the server but can't be read by JavaScript, so an XSS script can't steal them.",
+    "see": "defend"
+   }
+  ],
+  "diagram": {
+   "title": "How stored XSS steals a visitor's session",
+   "nodes": [
+    {
+     "id": "a",
+     "kind": "attacker",
+     "label": "Attacker"
+    },
+    {
+     "id": "w",
+     "kind": "server",
+     "label": "Website"
+    },
+    {
+     "id": "v",
+     "kind": "laptop",
+     "label": "Visitor"
+    }
    ],
-   "answer": 1,
-   "why": "That's why it can act as the victim on the trusted site."
+   "steps": [
+    {
+     "from": "a",
+     "to": "w",
+     "msg": "Posts a comment containing <script>…</script>",
+     "text": "The site saves the comment without making it safe.",
+     "tone": "bad",
+     "stop": "Encode output for where it appears; use frameworks that escape by default."
+    },
+    {
+     "from": "w",
+     "to": "v",
+     "msg": "Serves the page, script included",
+     "text": "Everyone who views the comment gets the attacker's script as part of the real page.",
+     "tone": "bad",
+     "stop": "A strict Content Security Policy stops inline scripts from running."
+    },
+    {
+     "from": "v",
+     "to": "a",
+     "msg": "Browser runs it and sends the session cookie",
+     "text": "The script runs in the visitor's browser with the site's permissions.",
+     "tone": "bad",
+     "stop": "HttpOnly cookies can't be read by scripts."
+    },
+    {
+     "from": "a",
+     "to": "w",
+     "msg": "Uses the cookie to act as the visitor",
+     "text": "With the session cookie, the attacker is logged in as the victim.",
+     "tone": "bad"
+    }
+   ]
   }
  },
  {
@@ -611,15 +1298,42 @@
    "label": "PortSwigger access control labs (free)",
    "url": "https://portswigger.net/web-security/access-control"
   },
-  "check": {
-   "q": "Using random IDs instead of 1001, 1002 fully fixes IDOR. True or false?",
-   "options": [
-    "True",
-    "False"
-   ],
-   "answer": 1,
-   "why": "It makes guessing harder, but the real fix is checking ownership on every request."
-  }
+  "checks": [
+   {
+    "q": "Using random IDs instead of 1001, 1002 fully fixes IDOR. True or false?",
+    "options": [
+     "True",
+     "False"
+    ],
+    "answer": 1,
+    "why": "It makes guessing harder, but the real fix is checking ownership on every request.",
+    "see": "defend"
+   },
+   {
+    "q": "Changing /invoice/1001 to /invoice/1002 shows a stranger's invoice. What's the bug?",
+    "options": [
+     "A DDoS attack",
+     "SQL injection",
+     "Cross-site scripting",
+     "IDOR: the server never checks who owns the record"
+    ],
+    "answer": 3,
+    "why": "This is an insecure direct object reference: the app trusts the ID in the URL instead of checking ownership.",
+    "see": "what"
+   },
+   {
+    "q": "Where must permission checks happen?",
+    "options": [
+     "On the server, for every request",
+     "Only on the login page",
+     "In the browser's JavaScript",
+     "In the page's URL"
+    ],
+    "answer": 0,
+    "why": "Anything in the browser is under the user's control. Only the server can be trusted to decide who sees what.",
+    "see": "defend"
+   }
+  ]
  },
  {
   "id": "networking",
@@ -648,16 +1362,96 @@
    "label": "Open real packet captures in Wireshark",
    "url": "https://wiki.wireshark.org/SampleCaptures"
   },
-  "check": {
-   "q": "Which port does HTTPS use by default?",
-   "options": [
-    "22",
-    "53",
-    "443",
-    "3389"
+  "checks": [
+   {
+    "q": "Which port does HTTPS use by default?",
+    "options": [
+     "22",
+     "53",
+     "443",
+     "3389"
+    ],
+    "answer": 2,
+    "why": "22 is SSH, 53 is DNS, 3389 is RDP.",
+    "see": "what"
+   },
+   {
+    "q": "What does DNS do?",
+    "options": [
+     "Blocks malware",
+     "Encrypts web traffic",
+     "Turns names like example.com into IP addresses",
+     "Assigns MAC addresses"
+    ],
+    "answer": 2,
+    "why": "DNS is the internet's phone book: your device asks it for the IP address behind a name.",
+    "see": "what"
+   },
+   {
+    "q": "What are the three steps of a TCP handshake?",
+    "options": [
+     "HELLO, KEY, DONE",
+     "DISCOVER, OFFER, ACK",
+     "SYN, SYN-ACK, ACK",
+     "GET, POST, PUT"
+    ],
+    "answer": 2,
+    "why": "TCP opens a reliable conversation with SYN, SYN-ACK, ACK. (Discover, Offer, Request, Acknowledge is DHCP.)",
+    "see": "what"
+   }
+  ],
+  "diagram": {
+   "title": "How a request leaves your network and comes back",
+   "nodes": [
+    {
+     "id": "p",
+     "kind": "pc",
+     "label": "Your PC"
+    },
+    {
+     "id": "s",
+     "kind": "switch",
+     "label": "Switch"
+    },
+    {
+     "id": "r",
+     "kind": "router",
+     "label": "Router"
+    },
+    {
+     "id": "w",
+     "kind": "cloud",
+     "label": "Website"
+    }
    ],
-   "answer": 2,
-   "why": "22 is SSH, 53 is DNS, 3389 is RDP."
+   "steps": [
+    {
+     "from": "p",
+     "to": "s",
+     "msg": "Frame for the router",
+     "text": "Your PC knows the site is on another network, so it sends the traffic to its default gateway, the router."
+    },
+    {
+     "from": "s",
+     "to": "r",
+     "msg": "Forwarded to the right port",
+     "text": "The switch delivers the frame only to the port the router is on."
+    },
+    {
+     "from": "r",
+     "to": "w",
+     "msg": "Routed onto the internet",
+     "text": "The router swaps your private IP for its public one (NAT) and sends the packet towards the website's IP, found with DNS.",
+     "stop": "A firewall here decides which traffic may pass."
+    },
+    {
+     "from": "w",
+     "to": "p",
+     "msg": "Reply comes back",
+     "text": "The website answers to the router's public IP, and the router hands it back to your PC.",
+     "tone": "good"
+    }
+   ]
   }
  },
  {
@@ -687,16 +1481,93 @@
    "label": "Learn by breaking crypto on CryptoHack",
    "url": "https://cryptohack.org/"
   },
-  "check": {
-   "q": "Why do sites hash passwords instead of encrypting them?",
-   "options": [
-    "Hashing is faster to reverse",
-    "Hashes can't be turned back into the password, so a leak reveals less",
-    "Encryption is illegal for passwords",
-    "Hashes are shorter"
+  "checks": [
+   {
+    "q": "Why do sites hash passwords instead of encrypting them?",
+    "options": [
+     "Hashing is faster to reverse",
+     "Hashes can't be turned back into the password, so a leak reveals less",
+     "Encryption is illegal for passwords",
+     "Hashes are shorter"
+    ],
+    "answer": 1,
+    "why": "The site only needs to check a match, never read the original.",
+    "see": "what"
+   },
+   {
+    "q": "Which kind of encryption uses a public key to lock and a private key to unlock?",
+    "options": [
+     "Symmetric, such as AES",
+     "Hashing",
+     "Asymmetric, such as RSA or elliptic curve",
+     "Base64 encoding"
+    ],
+    "answer": 2,
+    "why": "Asymmetric encryption is how HTTPS starts a secure connection with a site you've never met. Then both sides switch to a fast shared key.",
+    "see": "what"
+   },
+   {
+    "q": "Why should each password hash use a unique salt?",
+    "options": [
+     "So the hash can be reversed later",
+     "To encrypt the whole database",
+     "So identical passwords get different hashes and precomputed tables don't work",
+     "To make the hash shorter"
+    ],
+    "answer": 2,
+    "why": "A salt is random data added before hashing, so attackers can't crack many identical passwords at once with ready-made tables.",
+    "see": "what"
+   }
+  ],
+  "diagram": {
+   "title": "How HTTPS (TLS) protects you on shared Wi-Fi",
+   "nodes": [
+    {
+     "id": "c",
+     "kind": "laptop",
+     "label": "Your browser"
+    },
+    {
+     "id": "e",
+     "kind": "attacker",
+     "label": "Eavesdropper on the Wi-Fi"
+    },
+    {
+     "id": "s",
+     "kind": "server",
+     "label": "bank.example"
+    }
    ],
-   "answer": 1,
-   "why": "The site only needs to check a match, never read the original."
+   "steps": [
+    {
+     "from": "c",
+     "to": "s",
+     "msg": "Hello: let's talk securely",
+     "text": "Your browser starts a TLS connection and offers the encryption methods it supports."
+    },
+    {
+     "from": "s",
+     "to": "c",
+     "msg": "Certificate proving it's bank.example",
+     "text": "The server sends a certificate signed by a trusted authority, so you know it's the real site.",
+     "tone": "good"
+    },
+    {
+     "from": "c",
+     "to": "s",
+     "msg": "Key exchange",
+     "text": "Both sides work out the same secret key using public-key maths, without ever sending the key itself.",
+     "tone": "good"
+    },
+    {
+     "from": "c",
+     "to": "s",
+     "msg": "Encrypted data",
+     "text": "Everything after that, such as your password and balance, is encrypted with the shared key. The eavesdropper only sees scrambled bytes.",
+     "tone": "good",
+     "stop": "Use TLS everywhere, and never click through certificate warnings."
+    }
+   ]
   }
  },
  {
@@ -722,17 +1593,44 @@
    "label": "Play OverTheWire: Bandit",
    "url": "https://overthewire.org/wargames/bandit/"
   },
-  "check": {
-   "q": "Which command searches inside files for text?",
-   "options": [
-    "find",
-    "grep",
-    "chmod",
-    "ps"
-   ],
-   "answer": 1,
-   "why": "find searches for files by name; grep searches their contents."
-  }
+  "checks": [
+   {
+    "q": "Which command searches inside files for text?",
+    "options": [
+     "find",
+     "grep",
+     "chmod",
+     "ps"
+    ],
+    "answer": 1,
+    "why": "find searches for files by name; grep searches their contents.",
+    "see": "what"
+   },
+   {
+    "q": "Where do most Linux logs live?",
+    "options": [
+     "/var/log",
+     "/etc/passwd",
+     "/home",
+     "/tmp"
+    ],
+    "answer": 0,
+    "why": "System and security logs, such as auth.log for logins, are kept under /var/log.",
+    "see": "what"
+   },
+   {
+    "q": "What does a pipe (|) do?",
+    "options": [
+     "Deletes a file",
+     "Runs a command as admin",
+     "Lists hidden files",
+     "Sends one command's output into the next command"
+    ],
+    "answer": 3,
+    "why": "Pipes chain commands together, for example grep Failed auth.log | wc -l counts failed logins.",
+    "see": "what"
+   }
+  ]
  },
  {
   "id": "soc",
@@ -761,16 +1659,92 @@
    "label": "Investigate real scenarios on CyberDefenders",
    "url": "https://cyberdefenders.org/"
   },
-  "check": {
-   "q": "What does a SIEM mainly do?",
-   "options": [
-    "Blocks all malware",
-    "Collects and correlates logs to raise alerts",
-    "Encrypts the network",
-    "Replaces the firewall"
+  "checks": [
+   {
+    "q": "What does a SIEM mainly do?",
+    "options": [
+     "Blocks all malware",
+     "Collects and correlates logs to raise alerts",
+     "Encrypts the network",
+     "Replaces the firewall"
+    ],
+    "answer": 1,
+    "why": "It gives analysts one place to search and detect across everything.",
+    "see": "what"
+   },
+   {
+    "q": "Most alerts turn out to be false positives. What does that mean for an analyst?",
+    "options": [
+     "Triage fast: is it real, how bad is it, what's affected?",
+     "Ignore most alerts",
+     "Switch detections off",
+     "Escalate every alert"
+    ],
+    "answer": 0,
+    "why": "The skill is investigating quickly and calmly so the real incidents get attention.",
+    "see": "what"
+   },
+   {
+    "q": "Which logs matter most to collect for detection?",
+    "options": [
+     "Authentication, process creation, DNS and EDR",
+     "Screensaver settings",
+     "Desktop wallpaper changes",
+     "Printer page counts"
+    ],
+    "answer": 0,
+    "why": "These show who logged in, what ran, where devices connected and what endpoint protection saw.",
+    "see": "defend"
+   }
+  ],
+  "diagram": {
+   "title": "How a SOC turns logs into a response",
+   "nodes": [
+    {
+     "id": "e",
+     "kind": "laptop",
+     "label": "Employee laptop"
+    },
+    {
+     "id": "s",
+     "kind": "server",
+     "label": "SIEM"
+    },
+    {
+     "id": "a",
+     "kind": "pc",
+     "label": "SOC analyst"
+    }
    ],
-   "answer": 1,
-   "why": "It gives analysts one place to search and detect across everything."
+   "steps": [
+    {
+     "from": "e",
+     "to": "s",
+     "msg": "Logs: 30 failed logins, then a success",
+     "text": "Laptops, servers and cloud services send their logs to the SIEM."
+    },
+    {
+     "from": "s",
+     "to": "a",
+     "msg": "Alert: possible password guessing",
+     "text": "A detection rule matches the pattern and raises an alert."
+    },
+    {
+     "from": "a",
+     "to": "s",
+     "msg": "Investigates",
+     "text": "Which account? From where? What happened after the login? Most alerts are false positives, so triage is quick.",
+     "tone": "good"
+    },
+    {
+     "from": "a",
+     "to": "e",
+     "msg": "Contains: disables the account, isolates the laptop",
+     "text": "If it's real, the analyst contains it first and keeps the evidence.",
+     "tone": "good",
+     "stop": "Playbooks make the response fast and consistent."
+    }
+   ]
   }
  },
  {
@@ -800,17 +1774,44 @@
    "label": "Work through incident labs on CyberDefenders",
    "url": "https://cyberdefenders.org/"
   },
-  "check": {
-   "q": "You find malware on a laptop. What should usually come first?",
-   "options": [
-    "Wipe and reinstall it immediately",
-    "Isolate it from the network and preserve evidence",
-    "Email everyone in the company",
-    "Pay any ransom"
-   ],
-   "answer": 1,
-   "why": "Containment stops the spread; evidence tells you how they got in."
-  }
+  "checks": [
+   {
+    "q": "You find malware on a laptop. What should usually come first?",
+    "options": [
+     "Wipe and reinstall it immediately",
+     "Isolate it from the network and preserve evidence",
+     "Email everyone in the company",
+     "Pay any ransom"
+    ],
+    "answer": 1,
+    "why": "Containment stops the spread; evidence tells you how they got in.",
+    "see": "what"
+   },
+   {
+    "q": "Why can wiping an infected machine straight away be a mistake?",
+    "options": [
+     "It destroys evidence you need to find the root cause",
+     "It spreads the malware",
+     "Wiping is illegal",
+     "It voids the warranty"
+    ],
+    "answer": 0,
+    "why": "Contain first and preserve evidence; otherwise you may never learn how the attacker got in, and they'll come back.",
+    "see": "what"
+   },
+   {
+    "q": "What's the final phase of the classic incident response cycle?",
+    "options": [
+     "Detection and analysis",
+     "Containment",
+     "Lessons learned",
+     "Preparation"
+    ],
+    "answer": 2,
+    "why": "The cycle ends with a blameless review so the same incident doesn't happen again.",
+    "see": "what"
+   }
+  ]
  },
  {
   "id": "osint",
@@ -835,16 +1836,43 @@
    "label": "Explore the OSINT Framework",
    "url": "https://osintframework.com/"
   },
-  "check": {
-   "q": "Which of these is ethical OSINT practice?",
-   "options": [
-    "Logging in to someone's account with a guessed password",
-    "Reviewing your company's public DNS records and job ads",
-    "Buying a stolen database",
-    "Tracking a stranger's location"
-   ],
-   "answer": 1,
-   "why": "OSINT uses public information only and has a legitimate purpose."
-  }
+  "checks": [
+   {
+    "q": "Which of these is ethical OSINT practice?",
+    "options": [
+     "Logging in to someone's account with a guessed password",
+     "Reviewing your company's public DNS records and job ads",
+     "Buying a stolen database",
+     "Tracking a stranger's location"
+    ],
+    "answer": 1,
+    "why": "OSINT uses public information only and has a legitimate purpose.",
+    "see": "what"
+   },
+   {
+    "q": "How do defenders use OSINT?",
+    "options": [
+     "To buy breached data",
+     "To track employees at home",
+     "To see their organisation the way attackers do",
+     "To break into competitors"
+    ],
+    "answer": 2,
+    "why": "Looking at what's publicly exposed shows defenders what an attacker would find first.",
+    "see": "what"
+   },
+   {
+    "q": "A photo you publish contains GPS metadata. What's the risk, and the fix?",
+    "options": [
+     "It's illegal; delete your account",
+     "There's no risk",
+     "It can reveal where it was taken; strip metadata before publishing",
+     "It slows your website; compress it"
+    ],
+    "answer": 2,
+    "why": "Photo metadata can include location and device details. Strip it from files and photos before they go public.",
+    "see": "defend"
+   }
+  ]
  }
 ]
