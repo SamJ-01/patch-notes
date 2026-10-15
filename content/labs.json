@@ -1557,6 +1557,146 @@
   "passScore": 6
  },
  {
+  "id": "net-detective",
+  "kind": "nettools",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 12,
+  "lesson": "networking",
+  "skill": "Use ping, traceroute and nslookup to find why a site won't load",
+  "title": "Network detective: name resolution",
+  "host": "helpdesk",
+  "intro": "A user reports \"the internet is down\", but it isn't that simple. Work the tools in order to find the real cause.",
+  "net": {
+   "me": {
+    "name": "pc01",
+    "ip": "192.168.1.50",
+    "prefix": 24,
+    "gateway": "192.168.1.1",
+    "dns": [
+     "192.168.1.10"
+    ],
+    "mac": "a4-83-e7-11-22-33",
+    "connections": [
+     {
+      "proto": "TCP",
+      "local": "192.168.1.50:50512",
+      "remote": "8.8.8.8:443",
+      "state": "ESTABLISHED"
+     }
+    ]
+   },
+   "dnsServers": [
+    "192.168.1.10",
+    "8.8.8.8"
+   ],
+   "records": {
+    "intranet.corp": "192.168.1.20",
+    "www.example.com": "93.184.216.34"
+   },
+   "isp": [
+    {
+     "ip": "203.0.113.1",
+     "name": "isp-edge",
+     "up": true,
+     "ms": 9
+    }
+   ],
+   "hosts": [
+    {
+     "ip": "192.168.1.1",
+     "name": "gateway",
+     "up": true,
+     "ms": 1,
+     "mac": "00-11-22-aa-bb-cc"
+    },
+    {
+     "ip": "192.168.1.10",
+     "name": "dns01",
+     "up": false,
+     "mac": "00-11-22-dd-ee-ff"
+    },
+    {
+     "ip": "192.168.1.20",
+     "name": "intranet",
+     "up": true,
+     "ms": 1,
+     "mac": "00-11-22-33-44-55",
+     "ports": [
+      80,
+      443
+     ]
+    },
+    {
+     "ip": "8.8.8.8",
+     "name": "dns.google",
+     "up": true,
+     "ms": 14
+    },
+    {
+     "ip": "93.184.216.34",
+     "name": "example",
+     "up": true,
+     "ms": 18,
+     "http": "HTTP/2 200\ncontent-type: text/html\nserver: ECS"
+    }
+   ]
+  },
+  "tasks": [
+   {
+    "id": "ipc",
+    "text": "Check this PC's own IP settings.",
+    "hint": "ipconfig",
+    "check": {
+     "ran": [
+      "ipconfig"
+     ]
+    }
+   },
+   {
+    "id": "gw",
+    "text": "Ping the default gateway to prove the local network works.",
+    "hint": "ping 192.168.1.1",
+    "check": {
+     "pinged": "192.168.1.1"
+    }
+   },
+   {
+    "id": "net",
+    "text": "Ping 8.8.8.8 to prove the internet connection works.",
+    "hint": "ping 8.8.8.8",
+    "check": {
+     "pinged": "8.8.8.8"
+    }
+   },
+   {
+    "id": "dns",
+    "text": "Names won't resolve. Prove it's DNS by looking up the site through a working DNS server (8.8.8.8).",
+    "hint": "nslookup www.example.com 8.8.8.8",
+    "check": {
+     "resolved": "8.8.8.8"
+    }
+   },
+   {
+    "id": "note",
+    "text": "Read the handover note to confirm the fix.",
+    "hint": "cat notes.txt",
+    "check": {
+     "read": "notes.txt"
+    }
+   }
+  ],
+  "files": {
+   "notes.txt": "Ticket #4821 — 'internet down' on pc01\nFindings so far:\n- Local link OK (gateway 192.168.1.1 replies)\n- Internet OK (8.8.8.8 replies)\n- Names fail with the configured DNS server 192.168.1.10\n- Names resolve fine via 8.8.8.8\nConclusion: the DNS server 192.168.1.10 (dns01) is down. Fix: restore dns01 or point clients at a working resolver."
+  },
+  "next": [
+   {
+    "label": "Try these commands for real on your own machine",
+    "url": "https://www.comptia.org/en-us/certifications/network/"
+   }
+  ]
+ },
+ {
   "id": "linux-terminal",
   "title": "Linux terminal basics",
   "kind": "terminal",
@@ -1949,5 +2089,144 @@
    }
   ],
   "category": "Security operations"
+ },
+ {
+  "id": "recon-basics",
+  "kind": "nettools",
+  "category": "Ethical hacking",
+  "track": "Ethical hacking",
+  "minutes": 12,
+  "lesson": "osint",
+  "skill": "Stay inside an authorised scope while finding live hosts and open ports",
+  "title": "Authorised recon: staying in scope",
+  "host": "pentest-vm",
+  "intro": "Before any security test comes written permission that names exactly what you may touch. Here you practise finding hosts and open ports inside the authorised range, and what happens if you stray outside it.",
+  "net": {
+   "scope": "10.10.10.0/24",
+   "me": {
+    "name": "kali",
+    "ip": "10.10.10.5",
+    "prefix": 24,
+    "gateway": "10.10.10.1",
+    "dns": [
+     "10.10.10.1"
+    ],
+    "mac": "de-ad-be-ef-00-05",
+    "connections": [
+     {
+      "proto": "TCP",
+      "local": "10.10.10.5:22",
+      "remote": "0.0.0.0:0",
+      "state": "LISTENING"
+     }
+    ]
+   },
+   "dnsServers": [
+    "10.10.10.1"
+   ],
+   "records": {
+    "web.lab": "10.10.10.20"
+   },
+   "hosts": [
+    {
+     "ip": "10.10.10.1",
+     "name": "gateway",
+     "up": true,
+     "ms": 1,
+     "mac": "00-50-56-01-00-01"
+    },
+    {
+     "ip": "10.10.10.20",
+     "name": "web.lab",
+     "up": true,
+     "ms": 1,
+     "mac": "00-50-56-01-00-14",
+     "ports": [
+      22,
+      80,
+      443
+     ]
+    },
+    {
+     "ip": "10.10.10.25",
+     "name": "files.lab",
+     "up": true,
+     "ms": 1,
+     "mac": "00-50-56-01-00-19",
+     "ports": [
+      22,
+      445
+     ]
+    },
+    {
+     "ip": "10.10.10.30",
+     "name": "db.lab",
+     "up": true,
+     "ms": 1,
+     "mac": "00-50-56-01-00-1e",
+     "ports": [
+      22,
+      3389
+     ]
+    },
+    {
+     "ip": "10.10.20.5",
+     "name": "out-of-scope",
+     "up": true,
+     "ms": 1,
+     "ports": [
+      22,
+      80
+     ]
+    }
+   ]
+  },
+  "tasks": [
+   {
+    "id": "scope",
+    "text": "Read the engagement scope. Know exactly what you're allowed to test.",
+    "hint": "cat scope.txt",
+    "check": {
+     "read": "scope.txt"
+    }
+   },
+   {
+    "id": "sweep",
+    "text": "Find which hosts are up across the authorised range.",
+    "hint": "discover 10.10.10.0/24",
+    "check": {
+     "found": true
+    }
+   },
+   {
+    "id": "oos",
+    "text": "A teammate suggests checking 10.10.10.0's neighbour 10.10.20.5. Try it, and notice what the tool does.",
+    "hint": "discover 10.10.20.5",
+    "check": {
+     "refused": true
+    }
+   },
+   {
+    "id": "ports",
+    "text": "Look at the open ports on the web host inside scope.",
+    "hint": "discover 10.10.10.20",
+    "check": {
+     "found": true
+    }
+   }
+  ],
+  "files": {
+   "scope.txt": "RULES OF ENGAGEMENT — Lab exercise\nClient: Acme Lab (fictional)\nAuthorised scope: 10.10.10.0/24 ONLY\nOut of scope: everything else, including 10.10.20.0/24\nWindow: this session\nSigned off by: the lab\n\nTesting anything outside the authorised scope is not permitted and, in the real world, may be illegal. When in doubt, stop and ask."
+  },
+  "next": [
+   {
+    "label": "TryHackMe: free beginner security paths",
+    "url": "https://tryhackme.com/"
+   },
+   {
+    "label": "OverTheWire Bandit (free SSH wargame)",
+    "url": "https://overthewire.org/wargames/bandit/"
+   }
+  ]
  }
 ]

@@ -350,6 +350,10 @@
      "coverage": "partial",
      "activities": [
       {
+       "type": "lab",
+       "id": "net-detective"
+      },
+      {
        "type": "mission",
        "id": "dhcp"
       },
@@ -358,7 +362,7 @@
        "id": "subnetting"
       }
      ],
-     "gap": "DHCP failure is covered; VLAN, DNS and routing faults aren't yet."
+     "gap": "DHCP and DNS failures are covered; VLAN and routing faults aren't yet."
     },
     {
      "id": "5.4",
@@ -375,9 +379,13 @@
       {
        "type": "mission",
        "id": "dhcp"
+      },
+      {
+       "type": "lab",
+       "id": "net-detective"
       }
      ],
-     "gap": "ipconfig and ping appear in the DHCP challenge; traceroute, nslookup/dig, tcpdump, Wireshark and nmap aren't practised yet."
+     "gap": "ping, traceroute and nslookup are practised in Network detective; tcpdump, Wireshark and nmap aren't yet."
     }
    ]
   }

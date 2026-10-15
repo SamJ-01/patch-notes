@@ -237,3 +237,44 @@ test("device library: every device drawn anywhere exists and explains itself", a
   for (const k of used) assert.ok(lib.HW[k], `no drawing for "${k}"`);
   assert.match(lib.hw("router", 10, 20, 0.5, "me"), /class="hw hw-k-router me" transform="translate\(10,20\) scale\(0.5\)"/);
 });
+
+import * as nettools from "../static/js/labs/nettools.js";
+
+test("nettools: tools reflect the simulated network and complete the objectives", () => {
+  const L = lab("net-detective"), sh = nettools.createNetShell(L);
+  assert.match(sh.run("ipconfig").out, /192\.168\.1\.50/);
+  assert.ok(!sh.run("ping 192.168.1.1").error, "the gateway is up");
+  assert.ok(!sh.run("ping 8.8.8.8").error, "the internet is reachable");
+  assert.match(sh.run("nslookup www.example.com").out, /timed out/i, "the configured DNS server is down");
+  assert.match(sh.run("nslookup www.example.com 8.8.8.8").out, /93\.184\.216\.34/, "a working DNS server resolves it");
+  assert.match(sh.run("cat notes.txt").out, /dns01/);
+  for (const t of L.tasks) assert.ok(sh.isDone(t.check), t.id);
+});
+
+test("nettools: a traceroute to an unreachable WAN stops partway", () => {
+  const L = JSON.parse(JSON.stringify(lab("net-detective")));
+  L.net.wanDown = true;
+  const sh = nettools.createNetShell(L);
+  const out = sh.run("tracert 8.8.8.8").out;
+  assert.match(out, /\* \* \*/, "later hops time out");
+  assert.ok(!/Trace complete/.test(out));
+});
+
+test("nettools: recon only reports inside the authorised scope", () => {
+  const L = lab("recon-basics"), sh = nettools.createNetShell(L);
+  assert.equal(L.net.scope, "10.10.10.0/24");
+  const sweep = sh.run("discover 10.10.10.0/24");
+  assert.ok(!sweep.error && /10\.10\.10\.20/.test(sweep.out), "in-scope hosts are found");
+  assert.ok(!/10\.10\.20\.5/.test(sweep.out), "a /24 sweep never reaches another subnet");
+  sh.run("cat scope.txt");
+  const oos = sh.run("discover 10.10.20.5");
+  assert.ok(oos.error && /outside the authorised scope/.test(oos.out), "out-of-scope targets are refused");
+  assert.ok(!sh.run("discover 10.10.10.20").error);
+  for (const t of L.tasks) assert.ok(sh.isDone(t.check), t.id);
+});
+
+test("nettools: inCidr matches only addresses inside the range", () => {
+  assert.ok(nettools.inCidr("10.10.10.20", "10.10.10.0/24"));
+  assert.ok(!nettools.inCidr("10.10.20.5", "10.10.10.0/24"));
+  assert.ok(nettools.inCidr("192.168.1.255", "192.168.1.0/24"));
+});
