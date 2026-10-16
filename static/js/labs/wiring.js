@@ -65,7 +65,8 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     <section class="panel"><div class="panel-title"><h2>Straight-through or crossover?</h2></div>
       <p class="muted">Both ends wired the same way (both B, or both A) makes a <b>straight-through</b> cable for connecting different devices, like a PC to a switch. One end A and the other B makes a <b>crossover</b> cable for two of the same device. Reference order:</p>
       <div class="table-wrap" tabindex="0" role="region" aria-label="Pinout reference"><table class="wire-table"><thead><tr><th>Pin</th>${[1,2,3,4,5,6,7,8].map(n => `<th>${n}</th>`).join("")}</tr></thead>
-        <tbody><tr><th>T568B</th>${T568B.map(w => `<td>${swatch(w)}</td>`).join("")}</tr><tr><th>T568A</th>${T568A.map(w => `<td>${swatch(w)}</td>`).join("")}</tr></tbody></table></div>
+        <tbody><tr><th>T568B</th>${T568B.map((w, i) => `<td class="${[0,1,2,5].includes(i) ? "w-swap" : ""}">${swatch(w)}</td>`).join("")}</tr><tr><th>T568A</th>${T568A.map((w, i) => `<td class="${[0,1,2,5].includes(i) ? "w-swap" : ""}">${swatch(w)}</td>`).join("")}</tr></tbody></table></div>
+      <p class="wire-tip"><b>★ Memory hook:</b> A and B are identical except the <b>green and orange pairs swap</b> (the shaded pins 1-2 and 3-6). Blue (4-5) and brown (7-8) never move. Learn T568B; T568A is just B with green ↔ orange flipped.</p>
     </section>
   </div>`;
   const $ = id => root.querySelector("#" + id);

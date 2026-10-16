@@ -1078,7 +1078,26 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .try-else { margin: 0; font-size: 0.9rem; }
 .next-step { border-color: rgba(var(--brand-rgb), 0.5); }
 .next-step h2 { margin: 0; }
+.next-step .looptrack { margin: 2px 0; }
 [tabindex="-1"]:focus { outline: none; }
+/* The learning-loop strip: Understand → Experiment → Diagnose → Prove it, for one topic. */
+.looptrack { display: flex; flex-wrap: wrap; align-items: stretch; gap: 6px; }
+.loop-node { display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--card-line); border-radius: var(--radius-sm); padding: 8px 12px; min-width: 0; box-shadow: var(--elev); }
+a.loop-node:hover { border-color: var(--brand); }
+.loop-node.here { border-color: rgba(var(--brand-rgb), 0.55); background: var(--brand-soft); }
+.loop-dot { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; font: 600 0.78rem var(--font-mono); background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+.loop-node.done .loop-dot { background: var(--good-tint); color: var(--good); border-color: var(--good); }
+.loop-node.part .loop-dot { background: rgba(var(--sun-rgb), 0.12); color: var(--sun); border-color: var(--sun); }
+.loop-node.here .loop-dot { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+.loop-lbl { display: grid; line-height: 1.2; min-width: 0; }
+.loop-lbl b { font: 600 0.9rem var(--font-display); }
+.loop-lbl span { font: 0.72rem var(--font-mono); color: var(--muted); white-space: nowrap; }
+.loop-arr { display: flex; align-items: center; color: var(--faint); font-size: 0.9rem; }
+@media (max-width: 560px) { .loop-lbl span { display: none; } .loop-arr { font-size: 0.8rem; } }
+/* Quick tip: a memory hook / mnemonic that makes a concept stick. */
+.qtip { display: grid; gap: 4px; background: rgba(var(--sun-rgb), 0.07); border: 1px solid rgba(var(--sun-rgb), 0.35); border-left: 3px solid var(--sun); border-radius: var(--radius-sm); padding: 12px 14px; }
+.qtip-k { font: 600 0.68rem var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--sun); }
+.qtip p { font-size: 0.95rem; line-height: 1.5; max-width: 68ch; }
 .cert-note { margin: 0; font-size: 0.9rem; }
 .cert-h { font: 600 1rem var(--font-display); margin: 6px 0 0; }
 .cert-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
@@ -1169,6 +1188,9 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .wire-table { border-collapse: collapse; font-size: 0.85rem; }
 .wire-table th, .wire-table td { border: 1px solid var(--line); padding: 5px 8px; text-align: center; }
 .wire-table th { color: var(--muted); font-weight: 600; }
+.wire-table td.w-swap { background: rgba(var(--sun-rgb), 0.12); box-shadow: inset 0 0 0 1px rgba(var(--sun-rgb), 0.4); }
+.wire-tip { margin: 0; font-size: 0.9rem; line-height: 1.5; background: rgba(var(--sun-rgb), 0.07); border: 1px solid rgba(var(--sun-rgb), 0.35); border-left: 3px solid var(--sun); border-radius: var(--radius-sm); padding: 10px 12px; }
+.wire-tip b:first-child { color: var(--sun); }
 @media (max-width: 520px) { .rj45-pin { width: 30px; height: 66px; } .w-swatch { width: 28px; } }
 .tap { display: grid; gap: 18px; }
 .tap-wire { stroke: var(--dg-line); stroke-width: 2; }
@@ -2214,10 +2236,62 @@ function certView(id) {
     const qs = c.questions.slice().sort((a, b) => rank(a) - rank(b) || weight(b) - weight(a)).slice(0, 10);
     startPractice(c, "drill", qs, "Weak spots");
   }));
+  // Arrived from a lesson's "Prove it": jump straight into that topic's objective questions.
+  if (pendingProve && pendingProve.certId === c.id) {
+    const pp = pendingProve; pendingProve = null;
+    const qs = c.questions.filter(q => pp.objIds.includes(q.objective));
+    if (qs.length) startPractice(c, "drill", qs, pp.title);
+  }
 }
 // Objectives a lesson counts towards, shown as small links on the lesson page.
 function lessonObjectives(id) {
   return DATA.certs.flatMap(c => certObjectives(c).filter(o => o.activities.some(a => a.type === "lesson" && a.id === id)).map(o => ({ c, o })));
+}
+
+/* THE LEARNING LOOP: one topic, four stages — Understand (lesson) → Experiment (lab) → Diagnose (mission) → Prove it
+   (the mapped exam-objective questions). Only the stages that exist for a topic are shown, so the arc is honest. */
+let pendingProve = null;  // set by a "Prove it" click, consumed by certView to auto-start the objective drill
+// The exam questions that prove a lesson's topic: the first cert whose mapped objectives for this lesson have questions.
+function lessonProveTargets(id) {
+  for (const c of DATA.certs) {
+    if (!c.questions) continue;
+    const objIds = certObjectives(c).filter(o => o.activities.some(a => a.type === "lesson" && a.id === id))
+      .map(o => o.id).filter(oid => c.questions.some(q => q.objective === oid));
+    const questions = c.questions.filter(q => objIds.includes(q.objective));
+    if (questions.length) return { cert: c, objIds, questions };
+  }
+  return null;
+}
+function proveMastery(t) {
+  const seen = t.questions.filter(q => P.exam[q.id]);
+  const right = seen.filter(q => P.exam[q.id].last === 1).length;
+  return { answered: seen.length > 0, right, total: t.questions.length, level: !seen.length ? "new" : right === t.questions.length ? "strong" : "weak" };
+}
+const LOOP_META = { understand: ["Understand", "the idea"], experiment: ["Experiment", "hands-on"], diagnose: ["Diagnose", "a real fault"], prove: ["Prove it", "exam questions"] };
+function topicStages(lessonId) {
+  const l = LESSON[lessonId]; if (!l) return [];
+  const stages = [{ key: "understand", status: P.done[lessonId] ? "done" : "now", href: "#lesson-" + lessonId }];
+  const labs = DATA.labs.filter(x => x.lesson === lessonId);
+  if (labs.length) { const d = labs.filter(x => P.labs[x.id]).length, nx = labs.find(x => !P.labs[x.id]) || labs[0];
+    stages.push({ key: "experiment", status: d === labs.length ? "done" : d ? "part" : "open", href: "#lab-" + nx.id, count: labs.length > 1 ? `${d}/${labs.length}` : "" }); }
+  const missions = DATA.missions.filter(m => m.lesson === lessonId);
+  if (missions.length) { const d = missions.filter(m => count((P.missions || {})[m.id]) > 0).length, nx = missions.find(m => !(count((P.missions || {})[m.id]) > 0)) || missions[0];
+    stages.push({ key: "diagnose", status: d === missions.length ? "done" : d ? "part" : "open", href: "#mission-" + nx.id, count: missions.length > 1 ? `${d}/${missions.length}` : "" }); }
+  const prove = lessonProveTargets(lessonId);
+  if (prove) { const m = proveMastery(prove);
+    stages.push({ key: "prove", status: m.level === "strong" ? "done" : m.answered ? "part" : "open", href: "#cert-" + prove.cert.id,
+      prove: { certId: prove.cert.id, objIds: prove.objIds, title: `${l.title}: prove it` }, count: `${m.total} Q` }); }
+  return stages;
+}
+// The horizontal stage strip. `current` is the stage the learner is on now (not a link).
+function loopStrip(lessonId, current) {
+  const stages = topicStages(lessonId); if (stages.length < 2) return "";
+  const mark = s => s.status === "done" ? "✓" : s.key === "understand" ? "1" : s.key === "experiment" ? "2" : s.key === "diagnose" ? "3" : "4";
+  const node = s => { const [label, sub] = LOOP_META[s.key], here = s.key === current;
+    const inner = `<span class="loop-dot">${mark(s)}</span><span class="loop-lbl"><b>${label}</b><span>${s.count || sub}</span></span>`;
+    return here ? `<span class="loop-node ${s.status} here" aria-current="step">${inner}</span>`
+      : `<a class="loop-node ${s.status}" href="${s.href}"${s.prove ? ` data-prove='${esc(JSON.stringify(s.prove))}'` : ""}>${inner}</a>`; };
+  return `<nav class="looptrack" aria-label="This topic's learning path">${stages.map(node).join('<span class="loop-arr" aria-hidden="true">→</span>')}</nav>`;
 }
 
 // What to do after finishing something: the next unfinished step of a learning path that includes it
@@ -2229,23 +2303,34 @@ function nextStep(type, id) {
     const n = pathSteps(p).find(st => !st.done && !(st.type === type && st.id === id));
     if (n) return { ...n, why: `Next in ${p.title}` };
   }
-  if (type === "lesson") {
-    const practice = [...DATA.missions.filter(m => m.lesson === id).map(m => ({ label: m.title, href: "#mission-" + m.id, kind: "mission", done: count((P.missions || {})[m.id]) > 0 })),
-      ...DATA.labs.filter(x => x.lesson === id).map(x => ({ label: x.title, href: "#lab-" + x.id, kind: "lab", done: !!P.labs[x.id] }))].find(x => !x.done);
-    if (practice) return { ...practice, why: "Practise what you just learned" };
-    const l = LESSON[id], track = DATA.lessons.filter(x => x.track === l.track);
-    const nx = track.slice(track.indexOf(l) + 1).find(x => !P.done[x.id]) || DATA.lessons.find(x => !P.done[x.id] && x.id !== id);
-    if (nx) return { label: nx.title, href: "#lesson-" + nx.id, kind: "lesson", why: nx.track === l.track ? `Next in ${l.track}` : "A lesson you haven't done yet" };
-  } else {
-    const item = type === "lab" ? DATA.labs.find(x => x.id === id) : MISSION(id), ls = item && LESSON[item.lesson];
-    if (ls && !P.done[ls.id]) return { label: ls.title, href: "#lesson-" + ls.id, kind: "lesson", why: "Check you've got the theory" };
+  // Follow the topic's learning loop: the next stage that isn't done, in order.
+  const lessonId = type === "lesson" ? id : type === "lab" ? DATA.labs.find(x => x.id === id)?.lesson : MISSION(id)?.lesson;
+  if (lessonId && LESSON[lessonId]) {
+    const l = LESSON[lessonId];
+    // Coming from a lab or mission with the theory still unread: send there first.
+    if (type !== "lesson" && !P.done[lessonId]) return { label: l.title, href: "#lesson-" + lessonId, kind: "lesson", why: "Understand: check you've got the theory" };
+    const curKey = type === "lesson" ? "understand" : type === "lab" ? "experiment" : "diagnose";
+    const nx = topicStages(lessonId).find(s => s.status !== "done" && s.key !== curKey);
+    if (nx) { const step = loopNext(nx); if (step) return step; }
+    if (type === "lesson") {  // whole loop done (or understand-only topic): next lesson in the track
+      const track = DATA.lessons.filter(x => x.track === l.track);
+      const after = track.slice(track.indexOf(l) + 1).find(x => !P.done[x.id]) || DATA.lessons.find(x => !P.done[x.id] && x.id !== lessonId);
+      if (after) return { label: after.title, href: "#lesson-" + after.id, kind: "lesson", why: after.track === l.track ? `Next in ${l.track}` : "A lesson you haven't done yet" };
+    }
   }
   return null;
 }
-const GO_LABEL = { lesson: "Start the lesson", lab: "Open the lab", mission: "Open the mission", game: "Play", ctf: "Go hunting" };
+// Turn a loop stage into a next-step card.
+function loopNext(s) {
+  if (s.key === "experiment") { const x = DATA.labs.find(a => "#lab-" + a.id === s.href); return x && { label: x.title, href: s.href, kind: "lab", why: "Experiment: try it hands-on" }; }
+  if (s.key === "diagnose") { const m = DATA.missions.find(a => "#mission-" + a.id === s.href); return m && { label: m.title, href: s.href, kind: "mission", why: "Diagnose: fix a real fault" }; }
+  if (s.key === "prove") return { label: "Exam questions for this topic", href: s.href, kind: "prove", why: "Prove it: show you've got it", prove: s.prove };
+  return null;
+}
+const GO_LABEL = { lesson: "Start the lesson", lab: "Open the lab", mission: "Open the mission", game: "Play", ctf: "Go hunting", prove: "Start the questions" };
 function nextStepCard(type, id) {
   const n = nextStep(type, id);
-  return n ? `<section class="panel next-step"><div class="eyebrow">${esc(n.why)}</div><h2>Next: ${esc(n.label)}</h2><a class="btn brand" href="${n.href}" style="justify-self:start">${GO_LABEL[n.kind] || "Go"} ›</a></section>` : "";
+  return n ? `<section class="panel next-step"><div class="eyebrow">${esc(n.why)}</div><h2>Next: ${esc(n.label)}</h2><a class="btn brand" href="${n.href}"${n.prove ? ` data-prove='${esc(JSON.stringify(n.prove))}'` : ""} style="justify-self:start">${GO_LABEL[n.kind] || "Go"} ›</a></section>` : "";
 }
 // After a lab or mission: what was practised, where the theory lives, and what to do next.
 function showDoneCard(type, item, title) {
@@ -2253,9 +2338,10 @@ function showDoneCard(type, item, title) {
   if (!root) return;
   root.querySelector("#done-card")?.remove();
   const ls = LESSON[item.lesson], n = nextStep(type, item.id);
+  const strip = ls ? loopStrip(item.lesson, type === "lab" ? "experiment" : "diagnose") : "";
   root.insertAdjacentHTML("beforeend", `<section class="panel next-step" id="done-card" tabindex="-1"><div class="eyebrow">${esc(title)}</div>
-    <h2>${esc(item.title)}</h2><p class="muted" style="margin:0">${esc(item.skill || item.summary)}</p>
-    <div class="row">${n ? `<a class="btn brand" href="${n.href}">Next: ${esc(n.label)} ›</a>` : ""}${ls && (!n || n.href !== "#lesson-" + ls.id) ? `<a class="btn ghost" href="#lesson-${esc(ls.id)}">Revisit the lesson: ${esc(ls.title)}</a>` : ""}<a class="link-btn" href="#missions">All missions and labs</a></div></section>`);
+    <h2>${esc(item.title)}</h2><p class="muted" style="margin:0">${esc(item.skill || item.summary)}</p>${strip}
+    <div class="row">${n ? `<a class="btn brand" href="${n.href}"${n.prove ? ` data-prove='${esc(JSON.stringify(n.prove))}'` : ""}>Next: ${esc(n.label)} ›</a>` : ""}${ls && (!n || n.href !== "#lesson-" + ls.id) ? `<a class="btn ghost" href="#lesson-${esc(ls.id)}">Revisit the lesson: ${esc(ls.title)}</a>` : ""}<a class="link-btn" href="#missions">All missions and labs</a></div></section>`);
   setTimeout(() => { const c = root.querySelector("#done-card"); c?.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); c?.focus({ preventScroll: true }); }, 400);
 }
 
@@ -2271,7 +2357,9 @@ function lessonView(id) {
     <a class="link-btn" href="#learn">← All lessons</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">${esc(l.track)} · ${esc(l.level)} · ${l.minutes} min</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.hook)}</p>
       ${lessonObjectives(id).length ? `<p class="muted obj-links">Exam objectives: ${lessonObjectives(id).map(({ c, o }) => `<a href="#cert-${esc(c.id)}">${esc(c.name.replace("CompTIA ", ""))} ${esc(o.id)}</a>`).join(" · ")}</p>` : ""}</div>
+    ${loopStrip(id, "understand")}
     <section id="l-what" tabindex="-1"><h2>What it is</h2><p>${gloss(l.what, 6, lseen)}</p></section>
+    ${l.tip ? `<aside class="qtip"><span class="qtip-k">★ Quick tip</span><p>${gloss(l.tip, 3, lseen)}</p></aside>` : ""}
     ${l.diagram ? `<section class="panel wide" id="l-diagram" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">Step through it</span></div><div id="lflow"><div class="empty">Loading the diagram…</div></div></section>` : ""}
     ${l.concept ? `<section class="panel wide" id="l-concept" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">${l.concept.type === "cards" ? "At a glance" : "Select a part"}</span></div><div id="lconcept"><div class="empty">Loading the diagram…</div></div></section>` : ""}
     <section class="case" id="l-example" tabindex="-1"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h3>${esc(l.example.title)}</h3><p>${gloss(l.example.text, 4, lseen)}</p>${l.example.source ? `<p class="muted" style="font-size:0.85rem">Source: <a href="${esc(l.example.source.url)}" target="_blank" rel="noopener">${esc(l.example.source.label)} ↗</a></p>` : ""}</section>
@@ -3012,6 +3100,8 @@ cmdOut.addEventListener("click", e => { const r = e.target.closest(".cmdk-res");
 cmdk.addEventListener("click", e => { if (e.target === cmdk) closeCmd(); });
 $("cmd-btn").addEventListener("click", () => openCmd());
 document.addEventListener("click", e => { const c = e.target.closest("[data-cmd]"); if (c) { e.preventDefault(); openCmd(c.dataset.cmd, true); } });
+// A "Prove it" link carries which objective questions to run; stash it before the #cert hash navigation lands.
+document.addEventListener("click", e => { const p = e.target.closest("[data-prove]"); if (p) { try { pendingProve = JSON.parse(p.dataset.prove); } catch (err) {} } });
 document.addEventListener("keydown", e => {
   const typing = e.target.closest?.("input, textarea, select, [contenteditable]");
   if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) { e.preventDefault(); cmdk.hidden ? openCmd() : closeCmd(); return; }

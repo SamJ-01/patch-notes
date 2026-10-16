@@ -83,7 +83,8 @@
      "example": "A DDoS attack that knocks a site offline is an attack on availability."
     }
    ]
-  }
+  },
+  "tip": "Say it as a question — \"Can I Access?\": Confidentiality (kept secret), Integrity (kept correct), Availability (kept reachable). Every control and every attack targets one of the three."
  },
  {
   "id": "frameworks",
@@ -175,7 +176,8 @@
      "text": "Policies, risk ownership and meeting rules like GDPR or PCI DSS. Compliance is a floor, not a guarantee."
     }
    ]
-  }
+  },
+  "tip": "The five NIST CSF functions in order — Identify, Protect, Detect, Respond, Recover — spell the hook \"I Previously Detected Real Risk.\" The newer Govern function wraps around all five."
  },
  {
   "id": "phishing",
@@ -1403,7 +1405,8 @@
      "stop": "Passkeys go further: they only work on the real site, so a fake page gets nothing to replay."
     }
    ]
-  }
+  },
+  "tip": "MFA = something you know (password) + something you have (phone or key) + something you are (fingerprint). A passkey swaps the password for a private key your device keeps, so there's nothing to phish."
  },
  {
   "id": "iot-ot",
@@ -2057,7 +2060,8 @@
      "stop": "Use TLS everywhere, and never click through certificate warnings."
     }
    ]
-  }
+  },
+  "tip": "Encryption is two-way, hashing is one-way. You unlock an encrypted file with the key; you can't un-blend a hash back to the original — you can only check whether two things hash the same."
  },
  {
   "id": "linux",

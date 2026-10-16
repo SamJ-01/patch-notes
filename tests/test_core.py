@@ -328,6 +328,8 @@ class ContentIntegrity(unittest.TestCase):
                     self.assertIn("diagram", l, f"{l['id']}: a question points to a diagram the lesson doesn't have")
                 if c["see"] == "concept":
                     self.assertIn("concept", l, f"{l['id']}: a question points to a concept visual the lesson doesn't have")
+            if "tip" in l:
+                self.assertTrue(isinstance(l["tip"], str) and 20 <= len(l["tip"]) <= 320, f"{l['id']}: tip should be a short string")
             self.assertTrue(l["practice"]["url"].startswith(("https://", "http://", "#")), l["id"])
             src = l["example"].get("source")
             if src:
