@@ -239,7 +239,7 @@
       "note": "The IP packet. DNS to a resolver is normally sent straight to the configured server's address."
      },
      {
-      "line": "User Datagram Protocol, Src Port: 52344, Dst Port: 53",
+      "line": "User Datagram Protocol, Src Port: 41002, Dst Port: 53",
       "note": "DNS uses UDP port 53. It's connectionless, which is why a dead server just produces a timeout, not a refusal."
      },
      {
@@ -311,11 +311,11 @@
       "note": "The IP packet. DNS to a resolver is normally sent straight to the configured server's address."
      },
      {
-      "line": "User Datagram Protocol, Src Port: 52344, Dst Port: 53",
+      "line": "User Datagram Protocol, Src Port: 53, Dst Port: 41002",
       "note": "DNS uses UDP port 53. It's connectionless, which is why a dead server just produces a timeout, not a refusal."
      },
      {
-      "line": "Domain Name System (query)",
+      "line": "Domain Name System (response)",
       "note": "The response carries the answer record with the IP address and its TTL.",
       "children": [
        "Transaction ID: 0x5a0c",
@@ -396,7 +396,7 @@
       "note": "DNS uses UDP port 53. It's connectionless, which is why a dead server just produces a timeout, not a refusal."
      },
      {
-      "line": "Domain Name System (query)",
+      "line": "Domain Name System (response)",
       "note": "The resolver's reply to the PC, matching the original transaction ID.",
       "children": [
        "Transaction ID: 0x8f21",

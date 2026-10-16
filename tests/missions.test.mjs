@@ -217,7 +217,16 @@ test("every mission scenario is structurally consistent and playable", () => {
         assert.ok(devIds.has(d), where(`${id}: reaction from unknown device ${d}`));
         assert.ok(typeof r === "string" || (r.text && ["", "quiet"].includes(r.tone || "")), where(`${id}: bad reaction from ${d}`));
       }
-      if (msg.wireshark) assert.ok(msg.wireshark.layers.every(l => l.note), where(`${id}: every Wireshark layer is explained`));
+      if (msg.wireshark) {
+        assert.ok(msg.wireshark.layers.every(l => l.note), where(`${id}: every Wireshark layer is explained`));
+        // The UDP layer line must match the message's own "UDP ports" field, so the two never drift apart.
+        const ports = msg.fields.find(f => f.name === "UDP ports")?.value;
+        const udpLine = msg.wireshark.layers.find(l => /^User Datagram Protocol/.test(l.line))?.line;
+        if (ports && udpLine) {
+          const [a, b] = ports.split(" → ");
+          assert.equal(udpLine, `User Datagram Protocol, Src Port: ${a}, Dst Port: ${b}`, where(`${id}: Wireshark UDP ports match the field`));
+        }
+      }
     }
     // Modes
     for (const [k, mode] of Object.entries(m.modes)) {
