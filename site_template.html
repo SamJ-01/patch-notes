@@ -194,6 +194,8 @@ input[type="search"], select, .inline-form input {
   font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 9px 12px; min-width: 0;
 }
 input[type="search"] { flex: 1 1 240px; }
+.pcode { font: 0.78rem/1.4 var(--font-mono); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 9px 12px; width: 100%; resize: vertical; word-break: break-all; }
+.pcode:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.15); }
 
 /* Stories */
 .stories { display: grid; gap: 0; }
@@ -2773,9 +2775,34 @@ VIEWS.progress = () => {
       <li><span></span><span>Capture a hidden flag</span><b>+50</b></li><li><span></span><span>Complete a learning path</span><b>+${PATH_XP}</b></li><li><span></span><span>Unlock a badge</span><b>+${BADGE_XP}</b></li>
       <li><span></span><span>Correct quiz answer / spotted phish</span><b>+10 / +15</b></li><li><span></span><span>Set up your stack</span><b>+10</b></li><li><span></span><span>New glossary term or story explanation</span><b>+2</b></li></ul></section>
     <section class="panel"><h2>Keep your progress</h2>
-      <div class="row"><button class="btn brand" type="button" id="export">Download my progress</button><label class="btn ghost" for="import-file">Restore from a file</label><input type="file" id="import-file" accept="application/json,.json" class="sr-only"><button class="btn ghost" type="button" id="reset">Reset my progress</button></div>
+      <p class="muted" style="max-width:70ch">Your progress is saved <b>in this browser on this device</b>. It isn't tied to an account, so it won't follow you to another device, and some browsers (Safari especially) clear site data after a while. Back it up to keep it safe or move it to another device — copy the code below, or download a file.</p>
+      <details class="tbl" id="pcode-box"><summary>Back up / restore with a code</summary>
+        <div class="stack" style="gap:10px;margin-top:10px">
+          <div class="stack" style="gap:6px"><label class="eyebrow" for="pcode">Your progress code (copy and keep it safe)</label>
+            <textarea id="pcode" class="pcode" rows="3" readonly aria-label="Your progress code"></textarea>
+            <div class="row"><button class="btn ghost" type="button" id="pcode-copy">Copy code</button></div></div>
+          <div class="stack" style="gap:6px"><label class="eyebrow" for="pcode-in">Restore: paste a code and apply it</label>
+            <textarea id="pcode-in" class="pcode" rows="3" placeholder="Paste a progress code here" aria-label="Paste a progress code"></textarea>
+            <div class="row"><button class="btn" type="button" id="pcode-restore">Restore from code</button></div></div>
+        </div></details>
+      <div class="row"><button class="btn brand" type="button" id="export">Download a backup file</button><label class="btn ghost" for="import-file">Restore from a file</label><input type="file" id="import-file" accept="application/json,.json" class="sr-only"><button class="btn ghost" type="button" id="reset">Reset my progress</button></div>
       <p class="muted" id="reset-msg" role="status"></p></section>
   </div>`;
+  // A compact, copy-pasteable backup that works on any device (handy on phones, where downloading a file is fiddly).
+  const encodeProgress = () => btoa(unescape(encodeURIComponent(JSON.stringify({ app: "patch-notes", version: 1, progress: P }))));
+  const pcodeEl = $("pcode"); if (pcodeEl) pcodeEl.value = encodeProgress();
+  $("pcode-copy")?.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText($("pcode").value); $("reset-msg").textContent = "Progress code copied. Paste it somewhere safe."; }
+    catch (e) { $("pcode").select(); $("reset-msg").textContent = "Select the code and copy it (Ctrl/Cmd+C)."; }
+  });
+  $("pcode-restore")?.addEventListener("click", () => {
+    const code = $("pcode-in").value.trim();
+    if (!code) { $("reset-msg").textContent = "Paste a progress code first."; return; }
+    try {
+      const restored = restoreProgress(JSON.parse(decodeURIComponent(escape(atob(code)))));
+      P = restored; saveP(); renderXP(); VIEWS.progress(); toast("Progress restored");
+    } catch (err) { $("reset-msg").textContent = "That code isn't a valid Patch Notes progress code, so nothing was changed."; }
+  });
   $("export").addEventListener("click", () => {
     const blob = new Blob([JSON.stringify({ app: "patch-notes", version: 1, saved: new Date().toISOString(), progress: P }, null, 1)], { type: "application/json" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `patch-notes-progress-${todayStr()}.json`;
