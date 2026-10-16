@@ -59,7 +59,31 @@
     "why": "A matching hash shows the file is unchanged, which is integrity. (Proving who made it needs a signature.)",
     "see": "what"
    }
-  ]
+  ],
+  "concept": {
+   "type": "triad",
+   "title": "The three goals every control serves",
+   "items": [
+    {
+     "label": "Confidentiality",
+     "icon": "lock",
+     "text": "Only the right people can see the data. Built with encryption, authentication and least-privilege access.",
+     "example": "A leaked customer database breaks confidentiality — outsiders can now read private data."
+    },
+    {
+     "label": "Integrity",
+     "icon": "shield",
+     "text": "Data is correct and hasn't been tampered with. Built with hashing, digital signatures and change control.",
+     "example": "A matching file hash proves the download wasn't altered in transit."
+    },
+    {
+     "label": "Availability",
+     "icon": "gauge",
+     "text": "Systems are up when people need them. Built with backups, redundancy and DDoS protection.",
+     "example": "A DDoS attack that knocks a site offline is an attack on availability."
+    }
+   ]
+  }
  },
  {
   "id": "frameworks",
@@ -125,7 +149,33 @@
     "why": "ATT&CK catalogues how attackers behave, so teams can check what they would and wouldn't detect.",
     "see": "what"
    }
-  ]
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "The playbooks and who they serve",
+   "items": [
+    {
+     "label": "NIST CSF",
+     "icon": "cycle",
+     "text": "Six functions — Govern, Identify, Protect, Detect, Respond, Recover — to organise a whole security programme."
+    },
+    {
+     "label": "ISO 27001",
+     "icon": "doc",
+     "text": "International standard for running an information security management system you can be certified against."
+    },
+    {
+     "label": "MITRE ATT&CK",
+     "icon": "search",
+     "text": "A catalogue of real attacker tactics and techniques, used to find gaps in what you can detect."
+    },
+    {
+     "label": "Governance & compliance",
+     "icon": "shield",
+     "text": "Policies, risk ownership and meeting rules like GDPR or PCI DSS. Compliance is a floor, not a guarantee."
+    }
+   ]
+  }
  },
  {
   "id": "phishing",
@@ -448,7 +498,53 @@
     "why": "A loader fetches the next stage. Blocking it stops everything that would have followed.",
     "see": "what"
    }
-  ]
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "The main families",
+   "items": [
+    {
+     "label": "Virus",
+     "icon": "bug",
+     "text": "Attaches to a file or program and spreads when that file is run by a person."
+    },
+    {
+     "label": "Worm",
+     "icon": "globe",
+     "text": "Spreads by itself across a network, with no user action, exploiting weaknesses."
+    },
+    {
+     "label": "Trojan",
+     "icon": "doc",
+     "text": "Disguised as something useful; the user installs it believing it's safe."
+    },
+    {
+     "label": "Ransomware",
+     "icon": "lock",
+     "text": "Encrypts files and demands payment; often steals a copy first to add pressure."
+    },
+    {
+     "label": "Spyware / infostealer",
+     "icon": "eye",
+     "text": "Quietly harvests passwords, cookies and keystrokes and sends them to the attacker."
+    },
+    {
+     "label": "Rootkit",
+     "icon": "chip",
+     "text": "Hides deep in the system to stay invisible and keep access across reboots."
+    },
+    {
+     "label": "Botnet",
+     "icon": "users",
+     "text": "Many infected machines controlled together, rented out for spam or DDoS."
+    },
+    {
+     "label": "RAT",
+     "icon": "key",
+     "text": "A remote-access trojan gives the attacker a hands-on backdoor into the machine."
+    }
+   ]
+  }
  },
  {
   "id": "zero-day",
@@ -514,7 +610,33 @@
     "why": "Vendors often publish workarounds before a fix, and behaviour monitoring catches attacks that signatures miss.",
     "see": "defend"
    }
-  ]
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "The life of a flaw",
+   "items": [
+    {
+     "label": "Zero-day",
+     "icon": "alert",
+     "text": "A flaw the vendor doesn't know about yet — zero days to fix it. No patch exists."
+    },
+    {
+     "label": "In the wild",
+     "icon": "bug",
+     "text": "Attackers exploit it quietly before anyone defends against it. The most dangerous window."
+    },
+    {
+     "label": "Patch released",
+     "icon": "shield",
+     "text": "The vendor ships a fix once they learn of it. The race to install it begins."
+    },
+    {
+     "label": "N-day",
+     "icon": "search",
+     "text": "After disclosure the flaw is public; unpatched systems are easy targets for everyone."
+    }
+   ]
+  }
  },
  {
   "id": "vuln-management",
@@ -580,7 +702,33 @@
     "why": "A CVE ID is a shared name so everyone means the same bug. Severity comes from CVSS, and exploitation from CISA's KEV list.",
     "see": "what"
    }
-  ]
+  ],
+  "concept": {
+   "type": "cycle",
+   "title": "The patching loop",
+   "items": [
+    {
+     "label": "Identify",
+     "icon": "search",
+     "text": "Scan and inventory. You can't fix what you don't know you have."
+    },
+    {
+     "label": "Prioritise",
+     "icon": "gauge",
+     "text": "Rank by real risk — what's exploited now (KEV), exposed, and critical — not just raw severity."
+    },
+    {
+     "label": "Remediate",
+     "icon": "shield",
+     "text": "Patch, configure around it, or isolate it. Then move to the next most dangerous."
+    },
+    {
+     "label": "Verify",
+     "icon": "eye",
+     "text": "Re-scan to confirm the fix took, and feed what you learned back into the next round."
+    }
+   ]
+  }
  },
  {
   "id": "supply-chain",
@@ -646,7 +794,33 @@
     "why": "Attackers publish packages with names one typo away from popular libraries, hoping a developer installs theirs by mistake.",
     "see": "what"
    }
-  ]
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "Where the trust is abused",
+   "items": [
+    {
+     "label": "Vendor updates",
+     "icon": "doc",
+     "text": "A trusted software update is laced with malware, so every customer installs it (SolarWinds)."
+    },
+    {
+     "label": "Dependencies",
+     "icon": "chip",
+     "text": "A popular open-source package is poisoned; every project that pulls it in is affected."
+    },
+    {
+     "label": "Build pipeline",
+     "icon": "server",
+     "text": "Attackers compromise the build system so malicious code is signed and shipped as genuine."
+    },
+    {
+     "label": "Third-party access",
+     "icon": "key",
+     "text": "A supplier or MSP with a login into your network becomes the way in."
+    }
+   ]
+  }
  },
  {
   "id": "data-breach",
@@ -712,7 +886,38 @@
     "why": "Credential stuffing replays passwords leaked from one site on others, so it only works when a password is reused.",
     "see": "defend"
    }
-  ]
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "How breaches usually start",
+   "items": [
+    {
+     "label": "Stolen credentials",
+     "icon": "key",
+     "text": "Reused or phished passwords let attackers log in as a real user — the most common route."
+    },
+    {
+     "label": "Misconfiguration",
+     "icon": "cloud",
+     "text": "An exposed database or storage bucket left open to the internet with no password."
+    },
+    {
+     "label": "Unpatched flaw",
+     "icon": "bug",
+     "text": "A known vulnerability that was never fixed gives attackers a way in."
+    },
+    {
+     "label": "Phishing",
+     "icon": "mail",
+     "text": "A convincing email tricks someone into handing over access or running malware."
+    },
+    {
+     "label": "Insider",
+     "icon": "users",
+     "text": "A careless or malicious employee leaks or takes data they can already reach."
+    }
+   ]
+  }
  },
  {
   "id": "nation-state",
@@ -778,7 +983,33 @@
     "why": "MITRE ATT&CK catalogues how attackers behave, so teams can map their defences and find the gaps.",
     "see": "defend"
    }
-  ]
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "What makes an APT different",
+   "items": [
+    {
+     "label": "Well-resourced",
+     "icon": "shield",
+     "text": "Government backing means money, skilled teams and time ordinary criminals don't have."
+    },
+    {
+     "label": "Patient",
+     "icon": "eye",
+     "text": "They stay hidden for months or years (long dwell time), watching and waiting."
+    },
+    {
+     "label": "Custom tools",
+     "icon": "chip",
+     "text": "Bespoke malware and zero-days built for one target, hard to detect with signatures."
+    },
+    {
+     "label": "Chosen targets",
+     "icon": "search",
+     "text": "Espionage, sabotage or influence against specific governments, firms or infrastructure."
+    }
+   ]
+  }
  },
  {
   "id": "ddos",
@@ -844,7 +1075,33 @@
     "why": "Big providers absorb floods across their global networks before the traffic ever reaches you.",
     "see": "defend"
    }
-  ]
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "The shapes a flood takes",
+   "items": [
+    {
+     "label": "Volumetric",
+     "icon": "globe",
+     "text": "Raw bandwidth — fill the pipe with so much traffic nothing else gets through."
+    },
+    {
+     "label": "Protocol",
+     "icon": "bolt",
+     "text": "Abuse how connections are set up, like a SYN flood exhausting the server's queue."
+    },
+    {
+     "label": "Application-layer",
+     "icon": "server",
+     "text": "Cheap-looking requests that are expensive to answer, exhausting the app itself."
+    },
+    {
+     "label": "Amplification",
+     "icon": "wifi",
+     "text": "Bounce small spoofed requests off open servers so huge replies hit the victim."
+    }
+   ]
+  }
  },
  {
   "id": "ai-security",
@@ -910,7 +1167,33 @@
     "why": "Agents can be tricked by instructions hidden in what they read. Least access, plus approval for risky actions, limits the harm.",
     "see": "defend"
    }
-  ]
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "How AI changes the game",
+   "items": [
+    {
+     "label": "Phishing at scale",
+     "icon": "mail",
+     "text": "Flawless, personalised lures in any language, written in seconds instead of hours."
+    },
+    {
+     "label": "Deepfakes",
+     "icon": "eye",
+     "text": "Cloned voices and video used to impersonate a boss or a family member for fraud."
+    },
+    {
+     "label": "Prompt injection",
+     "icon": "chip",
+     "text": "Hidden instructions in data trick an AI assistant into leaking or acting against its user."
+    },
+    {
+     "label": "Defensive AI",
+     "icon": "shield",
+     "text": "The other side: models that spot anomalies and triage alerts faster than people can."
+    }
+   ]
+  }
  },
  {
   "id": "cloud",
@@ -976,7 +1259,33 @@
     "why": "With the right key, an attacker can create, read or delete resources from anywhere, as if they owned the account.",
     "see": "what"
    }
-  ]
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "Where cloud goes wrong",
+   "items": [
+    {
+     "label": "Shared responsibility",
+     "icon": "users",
+     "text": "The provider secures the hardware and platform; you secure your config, data and access."
+    },
+    {
+     "label": "Misconfiguration",
+     "icon": "cloud",
+     "text": "The number-one cloud risk — a setting left open, not a provider being hacked."
+    },
+    {
+     "label": "Exposed storage",
+     "icon": "database",
+     "text": "A public bucket or database with no authentication, found by anyone scanning."
+    },
+    {
+     "label": "Identity & keys",
+     "icon": "key",
+     "text": "Leaked API keys and over-permissive roles let one mistake reach everything."
+    }
+   ]
+  }
  },
  {
   "id": "identity",
@@ -1160,7 +1469,33 @@
     "why": "Control systems were often built before anyone expected them online. Keep them off the internet and separate from office IT.",
     "see": "defend"
    }
-  ]
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "Why these devices are hard to secure",
+   "items": [
+    {
+     "label": "Weak defaults",
+     "icon": "key",
+     "text": "Shipped with default or hard-coded passwords that are rarely changed."
+    },
+    {
+     "label": "No updates",
+     "icon": "bug",
+     "text": "Many never receive patches, so known flaws stay open for years."
+    },
+    {
+     "label": "Long lifespans",
+     "icon": "gauge",
+     "text": "Industrial kit runs for decades on software that's long out of support."
+    },
+    {
+     "label": "Physical impact",
+     "icon": "alert",
+     "text": "In OT, a breach can stop a production line or endanger safety, not just data."
+    }
+   ]
+  }
  },
  {
   "id": "web-sqli",
@@ -1461,7 +1796,33 @@
     "why": "Anything in the browser is under the user's control. Only the server can be trusted to decide who sees what.",
     "see": "defend"
    }
-  ]
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "Ways access control breaks",
+   "items": [
+    {
+     "label": "IDOR",
+     "icon": "key",
+     "text": "Change an id in the URL (/order/123 → /order/124) and see someone else's data."
+    },
+    {
+     "label": "Missing checks",
+     "icon": "shield",
+     "text": "The server trusts the client to hide a button instead of enforcing the rule itself."
+    },
+    {
+     "label": "Forced browsing",
+     "icon": "search",
+     "text": "Guess or find a hidden admin URL that was never meant to be reachable."
+    },
+    {
+     "label": "Privilege escalation",
+     "icon": "users",
+     "text": "A normal user finds a way to act as an admin and do more than they should."
+    }
+   ]
+  }
  },
  {
   "id": "networking",
@@ -1758,7 +2119,38 @@
     "why": "Pipes chain commands together, for example grep Failed auth.log | wc -l counts failed logins.",
     "see": "what"
    }
-  ]
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "Commands by job",
+   "items": [
+    {
+     "label": "Move around",
+     "icon": "search",
+     "text": "pwd (where am I), ls (list), cd (change directory), find (locate files)."
+    },
+    {
+     "label": "Read files",
+     "icon": "doc",
+     "text": "cat and less (view), grep (search text), head and tail (first/last lines)."
+    },
+    {
+     "label": "Permissions",
+     "icon": "lock",
+     "text": "chmod (change permissions), chown (change owner), sudo (run as admin)."
+    },
+    {
+     "label": "Processes",
+     "icon": "gauge",
+     "text": "ps and top (what's running), kill (stop it), systemctl (manage services)."
+    },
+    {
+     "label": "Network",
+     "icon": "wifi",
+     "text": "ip and ifconfig (interfaces), ping (reach a host), ss (open ports)."
+    }
+   ]
+  }
  },
  {
   "id": "soc",
@@ -1939,7 +2331,43 @@
     "why": "The cycle ends with a blameless review so the same incident doesn't happen again.",
     "see": "what"
    }
-  ]
+  ],
+  "concept": {
+   "type": "cycle",
+   "title": "The response lifecycle",
+   "items": [
+    {
+     "label": "Prepare",
+     "icon": "shield",
+     "text": "Plans, contacts, tooling and practice drills in place before anything happens."
+    },
+    {
+     "label": "Identify",
+     "icon": "search",
+     "text": "Detect and confirm it's a real incident, and work out its scope."
+    },
+    {
+     "label": "Contain",
+     "icon": "lock",
+     "text": "Stop the bleeding — isolate affected systems so it can't spread."
+    },
+    {
+     "label": "Eradicate",
+     "icon": "bug",
+     "text": "Remove the attacker and the malware, and close the way they got in."
+    },
+    {
+     "label": "Recover",
+     "icon": "gauge",
+     "text": "Restore clean systems and watch closely to be sure the threat is gone."
+    },
+    {
+     "label": "Lessons learned",
+     "icon": "doc",
+     "text": "Write up what happened and fix the gaps so it doesn't recur. Feeds back into Prepare."
+    }
+   ]
+  }
  },
  {
   "id": "osint",
@@ -2001,6 +2429,37 @@
     "why": "Photo metadata can include location and device details. Strip it from files and photos before they go public.",
     "see": "defend"
    }
-  ]
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "Where open-source intel comes from",
+   "items": [
+    {
+     "label": "Search & dorking",
+     "icon": "search",
+     "text": "Targeted search queries surface exposed files, logins and documents."
+    },
+    {
+     "label": "Social media",
+     "icon": "users",
+     "text": "Names, roles, locations and habits people post publicly, useful for pretexting."
+    },
+    {
+     "label": "DNS & WHOIS",
+     "icon": "globe",
+     "text": "Domains, subdomains and registration data map an organisation's footprint."
+    },
+    {
+     "label": "Breach data",
+     "icon": "database",
+     "text": "Credentials from past breaches, checked against sites like Have I Been Pwned."
+    },
+    {
+     "label": "Public records",
+     "icon": "doc",
+     "text": "Company filings, certificates and job ads that reveal tech and structure."
+    }
+   ]
+  }
  }
 ]

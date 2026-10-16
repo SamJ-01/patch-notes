@@ -323,9 +323,11 @@ class ContentIntegrity(unittest.TestCase):
                 self.assertTrue(c["q"] and c["why"], l["id"])
                 self.assertEqual(len(set(c["options"])), len(c["options"]), f"{l['id']}: duplicate options")
                 self.assertTrue(0 <= c["answer"] < len(c["options"]), l["id"])
-                self.assertIn(c.get("see"), {"what", "example", "defend", "diagram"}, l["id"])
+                self.assertIn(c.get("see"), {"what", "example", "defend", "diagram", "concept"}, l["id"])
                 if c["see"] == "diagram":
                     self.assertIn("diagram", l, f"{l['id']}: a question points to a diagram the lesson doesn't have")
+                if c["see"] == "concept":
+                    self.assertIn("concept", l, f"{l['id']}: a question points to a concept visual the lesson doesn't have")
             self.assertTrue(l["practice"]["url"].startswith(("https://", "http://", "#")), l["id"])
             src = l["example"].get("source")
             if src:
@@ -344,6 +346,30 @@ class ContentIntegrity(unittest.TestCase):
             for st in d["steps"]:
                 self.assertTrue({st["from"], st["to"]} <= ids and st["from"] != st["to"], l["id"])
                 self.assertTrue(st["msg"] and st["text"], l["id"])
+
+    def test_lesson_concepts_are_valid(self):
+        import re
+        icons = set(re.findall(r"^  (\w+):", (ROOT / "static" / "js" / "concept.js").read_text(), re.M))
+        with_concept = [l for l in self.lessons.values() if "concept" in l]
+        self.assertGreaterEqual(len(with_concept), 12)
+        for l in with_concept:
+            self.assertNotIn("diagram", l, f"{l['id']}: a lesson should have a flow diagram or a concept visual, not both")
+            c = l["concept"]
+            self.assertIn(c["type"], {"triad", "cycle", "cards"}, l["id"])
+            self.assertTrue(c.get("title"), f"{l['id']}: concept needs a title")
+            items = c["items"]
+            if c["type"] == "triad":
+                self.assertEqual(len(items), 3, f"{l['id']}: a triad needs exactly 3 items")
+            elif c["type"] == "cycle":
+                self.assertTrue(3 <= len(items) <= 7, f"{l['id']}: a cycle needs 3-7 items")
+            else:
+                self.assertTrue(2 <= len(items) <= 8, f"{l['id']}: cards need 2-8 items")
+            for it in items:
+                self.assertTrue(it.get("label"), f"{l['id']}: every item needs a label")
+                if it.get("icon"):
+                    self.assertIn(it["icon"], icons, f"{l['id']}: no icon '{it['icon']}' in concept.js")
+                if c["type"] in ("triad", "cards"):
+                    self.assertTrue(it.get("text"), f"{l['id']}: {it['label']} needs text")
 
     def test_labs_and_missions_point_to_real_lessons(self):
         for x in [*self.labs.values(), *(json.loads(f.read_text()) for f in (ROOT / "content" / "missions").glob("*.json"))]:
