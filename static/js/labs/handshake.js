@@ -43,7 +43,7 @@ const PATHS = {  // packet routes between the three devices in the scene
 export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = () => {}, onReset = () => {} } = {}) {
   const srv = createServer(lab);
   const done = new Set(solved);
-  let flooded = false, busy = false;
+  let flooded = false, busy = false, hsStep = 0;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   root.innerHTML = `<div class="hs">
@@ -107,24 +107,36 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
       const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
       g.setAttribute("class", `hs-pkt ${tone}`);
       g.innerHTML = `<rect x="-22" y="-10" width="44" height="20" rx="4"/><text x="0" y="4">${esc(label)}</text>
-        <animateMotion dur="0.75s" path="${PATHS[route]}" fill="freeze" calcMode="linear"/>`;
+        <animateMotion dur="1.05s" path="${PATHS[route]}" fill="freeze" calcMode="linear"/>`;
       svg.appendChild(g);
-      setTimeout(() => { g.remove(); resolve(); }, 760);
+      setTimeout(() => { g.remove(); resolve(); }, 1060);
     });
   }
 
-  async function normalConnection() {
+  // The three-way handshake, one message per click so you can watch each step at your own pace.
+  const HS_STEPS = [
+    { route: "client-server", label: "SYN", tone: "", pre: "<b>SYN</b> → you ask the server to open a connection." },
+    { route: "server-client", label: "SYN-ACK", tone: "good", pre: "<b>SYN-ACK</b> ← the server agrees and holds a half-open slot." },
+    { route: "client-server", label: "ACK", tone: "", pre: "<b>ACK</b> → you confirm, completing the handshake." },
+  ];
+  function updateConnectBtn() {
+    const b = $("hs-connect");
+    b.textContent = hsStep === 0 ? "1 · Send SYN ›" : hsStep === 1 ? "Send SYN-ACK ›" : hsStep === 2 ? "Send ACK ›" : "↺ Replay handshake";
+    b.classList.toggle("brand", hsStep === 0 && !done.has("handshake"));
+  }
+  async function handshakeStep() {
     if (busy) return; busy = true;
-    status("<b>SYN</b> → you ask the server to open a connection.");
-    await packet("client-server", "SYN");
-    status("<b>SYN-ACK</b> ← the server agrees and holds a half-open slot.");
-    srv.state.backlog;  // (visual only)
-    await packet("server-client", "SYN-ACK", "good");
-    status("<b>ACK</b> → you confirm. The connection is established.");
-    await packet("client-server", "ACK");
-    srv.syn("client"); drawQueue();
-    status("<b class='ok'>Connected.</b> A normal handshake is three messages: SYN, SYN-ACK, ACK.");
-    markPart("handshake"); busy = false;
+    if (hsStep >= HS_STEPS.length) hsStep = 0;  // replay from the start
+    const s = HS_STEPS[hsStep];
+    status(s.pre);
+    await packet(s.route, s.label, s.tone);
+    hsStep++;
+    if (hsStep === HS_STEPS.length) {
+      srv.syn("client"); drawQueue();
+      status("<b class='ok'>Connected.</b> A normal handshake is three messages: SYN, SYN-ACK, ACK.");
+      markPart("handshake");
+    }
+    updateConnectBtn(); busy = false;
   }
 
   // A burst of forged SYNs arrives. The server holds a slot for each and waits for an ACK that never comes,
@@ -133,7 +145,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     if (busy || flooded) return; busy = true;
     if (srv.state.cookies) {
       status("Flooding… but SYN cookies are on, so the server holds no slots. The queue stays empty.");
-      for (let n = 0; n < 4; n++) { srv.syn("flood"); if (!reduced) packet("attacker-server", "SYN", "bad"); await wait(120); }
+      for (let n = 0; n < 4; n++) { srv.syn("flood"); if (!reduced) packet("attacker-server", "SYN", "bad"); await wait(170); }
       busy = false; return;
     }
     status("A SYN flood is filling the server's half-open queue…");
@@ -142,7 +154,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
       srv.syn("flood");
       if (!reduced) packet("attacker-server", "SYN", "bad");
       drawQueue();
-      await wait(reduced ? 0 : 180);
+      await wait(reduced ? 0 : 250);
     }
     flooded = true; drawQueue();
     status("<b class='no'>The half-open queue is full.</b> Every slot holds a forged connection that will never finish, so new SYNs are refused. Try to connect now (button 3).");
@@ -165,7 +177,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     busy = false;
   }
 
-  $("hs-connect").addEventListener("click", normalConnection);
+  $("hs-connect").addEventListener("click", handshakeStep);
   $("hs-client").addEventListener("click", clientDuringFlood);
   $("hs-flood").addEventListener("click", launchFlood);
   $("hs-cookies").addEventListener("change", e => {
@@ -173,8 +185,8 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     if (e.target.checked) { srv.reset(); flooded = false; drawQueue(); markPart("defend"); status("<b class='ok'>SYN cookies on.</b> The server replies without reserving a slot, so the queue drains and can't be exhausted. Launch the flood again — the queue stays empty — then connect (button 3)."); }
     else { drawQueue(); status("SYN cookies off."); }
   });
-  $("hs-reset").addEventListener("click", () => { flooded = false; srv.reset(); $("hs-cookies").checked = false; srv.setCookies(false); drawQueue(); onReset(); status("Reset. Start with button 1."); });
+  $("hs-reset").addEventListener("click", () => { flooded = false; hsStep = 0; srv.reset(); $("hs-cookies").checked = false; srv.setCookies(false); drawQueue(); updateConnectBtn(); onReset(); status("Reset. Start with button 1."); });
 
-  drawParts(); drawQueue();
-  status("Start with button 1 to see a normal three-way handshake.");
+  drawParts(); drawQueue(); updateConnectBtn();
+  status("Start with button 1 and click to send each message — SYN, then SYN-ACK, then ACK — one step at a time.");
 }

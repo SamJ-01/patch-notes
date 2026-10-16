@@ -25,7 +25,8 @@ const SESSION = [
 
 export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = () => {}, onReset = () => {} } = {}) {
   const done = new Set(solved);
-  let protocol = "telnet", running = false;
+  let protocol = "telnet", running = false, tapStep = 0, tapSeed = (Date.now() % 100000) + 1;
+  const tapLines = [];
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   root.innerHTML = `<div class="tap">
@@ -68,41 +69,46 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
       const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
       g.setAttribute("class", `tap-pkt ${tone}`);
       g.innerHTML = `<rect x="-30" y="-9" width="60" height="18" rx="4"/><text x="0" y="4">${esc(label.length > 10 ? label.slice(0, 9) + "…" : label)}</text>
-        <animateMotion dur="0.9s" path="${fromClient ? "M70 110 L350 110" : "M350 110 L70 110"}" fill="freeze" calcMode="linear"/>`;
+        <animateMotion dur="1.2s" path="${fromClient ? "M70 110 L350 110" : "M350 110 L70 110"}" fill="freeze" calcMode="linear"/>`;
       svg.appendChild(g);
       // Flash the tap as the packet passes under the eavesdropper.
-      setTimeout(() => { $("tap-svg").querySelector(".tap-tap")?.classList.add("live"); setTimeout(() => $("tap-svg").querySelector(".tap-tap")?.classList.remove("live"), 200); }, 400);
-      setTimeout(() => { g.remove(); resolve(); }, 910);
+      setTimeout(() => { $("tap-svg").querySelector(".tap-tap")?.classList.add("live"); setTimeout(() => $("tap-svg").querySelector(".tap-tap")?.classList.remove("live"), 270); }, 540);
+      setTimeout(() => { g.remove(); resolve(); }, 1210);
     });
   }
 
-  async function run() {
+  // Send the login one line at a time, so you can watch each one cross the wire and land in the capture.
+  function updateGoBtn() {
+    $("tap-go").textContent = tapStep >= SESSION.length ? "↺ Send it again" : `Send: ${SESSION[tapStep].note} ›`;
+  }
+  function resetCapture() {
+    tapStep = 0; tapLines.length = 0; tapSeed = (Date.now() % 100000) + 1;
+    $("tap-capture").textContent = protocol === "ssh" ? "(SSH encrypts the session — send a line to see)" : "(Telnet sends clear text — send a line to see)";
+    $("tap-verdict").textContent = ""; updateGoBtn();
+  }
+  async function sendStep() {
     if (running) return; running = true;
-    $("tap-go").disabled = true;
-    $("tap-capture").textContent = ""; $("tap-verdict").textContent = "";
-    const seed = (Date.now() % 100000) + 1;
-    const lines = [];
-    for (let i = 0; i < SESSION.length; i++) {
-      const step = SESSION[i];
-      const onWire = protocol === "ssh" ? "encrypted" : step.send;
-      await packet(protocol === "ssh" ? "••••••" : step.send, protocol === "ssh" ? "enc" : "clear", step.who === "client");
-      lines.push(`${protocol === "ssh" ? "" : ""}${capture(protocol, step.send, seed + i)}`);
-      $("tap-capture").textContent = lines.join("\n");
+    if (tapStep >= SESSION.length) { tapStep = 0; tapLines.length = 0; tapSeed = (Date.now() % 100000) + 1; $("tap-capture").textContent = ""; $("tap-verdict").textContent = ""; }
+    const step = SESSION[tapStep];
+    await packet(protocol === "ssh" ? "••••••" : step.send, protocol === "ssh" ? "enc" : "clear", step.who === "client");
+    tapLines.push(capture(protocol, step.send, tapSeed + tapStep));
+    $("tap-capture").textContent = tapLines.join("\n");
+    tapStep++;
+    if (tapStep >= SESSION.length) {
+      if (protocol === "telnet") { $("tap-verdict").innerHTML = '<b class="no">Password stolen.</b>'; markPart("telnet"); }
+      else { $("tap-verdict").innerHTML = '<b class="ok">Only ciphertext.</b>'; markPart("ssh"); }
+      $("tap-capture").focus({ preventScroll: true });
     }
-    if (protocol === "telnet") { $("tap-verdict").innerHTML = '<b class="no">Password stolen.</b>'; markPart("telnet"); }
-    else { $("tap-verdict").innerHTML = '<b class="ok">Only ciphertext.</b>'; markPart("ssh"); }
-    $("tap-capture").focus({ preventScroll: true });
-    running = false; $("tap-go").disabled = false;
+    updateGoBtn(); running = false;
   }
 
-  $("tap-go").addEventListener("click", run);
+  $("tap-go").addEventListener("click", sendStep);
   root.querySelector('[data-proto="telnet"]').parentElement.addEventListener("click", e => {
     const b = e.target.closest("[data-proto]"); if (!b || running) return;
     protocol = b.dataset.proto; $("tap-proto").textContent = protocol === "ssh" ? "SSH" : "Telnet";
     root.querySelectorAll("[data-proto]").forEach(x => x.setAttribute("aria-pressed", x === b));
-    $("tap-capture").textContent = protocol === "ssh" ? "(SSH encrypts the session — send a login to see)" : "(Telnet sends clear text — send a login to see)";
-    $("tap-verdict").textContent = "";
+    resetCapture();
   });
 
-  drawParts();
+  drawParts(); updateGoBtn();
 }

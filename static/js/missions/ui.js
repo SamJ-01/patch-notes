@@ -207,7 +207,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
   }
   async function animateMessage(id, msg, { noReply = false } = {}) {
     const token = runId;
-    const ms = 700 / speed;
+    const ms = 980 / speed;  // packet travel time; slower so each step is easy to follow
     svg.querySelectorAll(".m-pkt").forEach(p => p.remove());
     clearBubbles();
     bubble(msg.from, msg.say, "say");
@@ -229,7 +229,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     svg.querySelector("#dev-" + msg.from)?.classList.remove("talk");
     if (noReply) bubble((msg.flood || msg.path.slice(-1))[0], "… (no answer)", "quiet");
     else Object.entries(msg.reactions || {}).forEach(([who, r]) => { const { text, tone } = reaction(r); bubble(who, text, tone); });
-    if (!reducedMotion) await wait(500 / speed);
+    if (!reducedMotion) await wait(700 / speed);
   }
 
   // ---------- inspector + transcript
@@ -309,7 +309,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     while (playing && !state.complete && !state.pending) {
       await stepOnce();
       // Without motion there's nothing to watch between messages, so pause long enough to read each one.
-      await wait((reducedMotion ? 2500 : 250) / speed);
+      await wait((reducedMotion ? 2500 : 350) / speed);
     }
     playing = false; updateControls();
   }

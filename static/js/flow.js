@@ -65,7 +65,7 @@ export function mount(el, d) {
     pkt.style.transform = `translate(${a.x}px, ${a.y}px)`;
     if (reduced || !animate) { pkt.style.transform = `translate(${b.x}px, ${b.y}px)`; return; }
     void pkt.offsetWidth;  // start from the sender, then glide to the receiver
-    pkt.style.transition = "transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)";
+    pkt.style.transition = "transform 1.2s cubic-bezier(0.4, 0, 0.2, 1)";
     pkt.style.transform = `translate(${b.x}px, ${b.y}px)`;
   }
   const box = el.querySelector(".flow-step");
