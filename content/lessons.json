@@ -1,5 +1,133 @@
 [
  {
+  "id": "cia-triad",
+  "title": "The CIA triad",
+  "track": "Foundations",
+  "level": "Beginner",
+  "minutes": 4,
+  "hook": "The three goals every security control serves: keep data secret, correct and available.",
+  "what": "Security has three core goals, the CIA triad. Confidentiality means only the right people can see data (passwords, encryption, access control). Integrity means data is correct and hasn't been tampered with (hashes, digital signatures, change control). Availability means systems are up when people need them (backups, redundancy, DDoS protection). Almost every control you'll meet protects one or more of these, and they can pull against each other: locking something down tightly (confidentiality) can make it harder to reach (availability).",
+  "example": {
+   "title": "Ransomware hits all three",
+   "year": "Ongoing",
+   "text": "A ransomware attack is a neat illustration: encrypting the files destroys availability, stealing a copy first breaks confidentiality, and altering or deleting data breaks integrity. That's why it's treated as a top business risk, not just an IT problem."
+  },
+  "defend": [
+   "Confidentiality: encryption, strong authentication and least-privilege access",
+   "Integrity: hashing, digital signatures, input validation and change management",
+   "Availability: tested backups, redundancy, capacity planning and DDoS protection",
+   "Balance the three: the right level depends on what the data is worth"
+  ],
+  "practice": {
+   "label": "Encryption & hashing lesson",
+   "url": "#lesson-encryption"
+  },
+  "checks": [
+   {
+    "q": "Which part of the CIA triad does encrypting a file protect?",
+    "options": [
+     "Confidentiality",
+     "Integrity",
+     "Availability",
+     "None of them"
+    ],
+    "answer": 0,
+    "why": "Encryption keeps data secret, so only someone with the key can read it. That's confidentiality.",
+    "see": "what"
+   },
+   {
+    "q": "A website is knocked offline by a flood of traffic. Which goal has been attacked?",
+    "options": [
+     "Availability",
+     "Confidentiality",
+     "Integrity",
+     "Authentication"
+    ],
+    "answer": 0,
+    "why": "If people can't reach the system when they need it, availability has failed. A DDoS attacks availability.",
+    "see": "what"
+   },
+   {
+    "q": "You compare a downloaded file's hash to the published one and they match. What have you confirmed?",
+    "options": [
+     "Its integrity: it wasn't changed",
+     "Its confidentiality",
+     "Its availability",
+     "Who created it"
+    ],
+    "answer": 0,
+    "why": "A matching hash shows the file is unchanged, which is integrity. (Proving who made it needs a signature.)",
+    "see": "what"
+   }
+  ]
+ },
+ {
+  "id": "frameworks",
+  "title": "Security frameworks & governance",
+  "track": "Foundations",
+  "level": "Beginner",
+  "minutes": 5,
+  "hook": "The playbooks organisations use to decide what to protect and how.",
+  "what": "A security framework is a structured set of good practices so organisations don't have to invent security from scratch. The NIST Cybersecurity Framework groups work into six functions: Govern, Identify, Protect, Detect, Respond and Recover. ISO 27001 is an international standard for running an information security management system. MITRE ATT&CK catalogues how real attackers behave, so defenders can check their coverage. Governance is the layer above the tools: policies, risk decisions and making sure rules are actually followed. Compliance (meeting rules like GDPR, HIPAA or PCI DSS) overlaps with security but isn't the same thing: you can be compliant and still insecure.",
+  "example": {
+   "title": "The NIST CSF in practice",
+   "year": "Everyday",
+   "text": "When a company says it is 'mapping to the NIST CSF', it means checking each function: do we know what we have (Identify)? Can we stop attacks (Protect) and spot them (Detect)? Do we have a plan to Respond and Recover? The newest version added Govern to put risk ownership at the centre.",
+   "source": {
+    "label": "NIST Cybersecurity Framework",
+    "url": "https://www.nist.gov/cyberframework"
+   }
+  },
+  "defend": [
+   "Pick a framework that fits your size and sector rather than starting from nothing",
+   "Use MITRE ATT&CK to find gaps in what you can detect",
+   "Treat compliance as a floor, not the goal: meeting rules is not the same as being secure",
+   "Write policies people can actually follow, and review them"
+  ],
+  "practice": {
+   "label": "Read the NIST Cybersecurity Framework",
+   "url": "https://www.nist.gov/cyberframework"
+  },
+  "checks": [
+   {
+    "q": "What are the six functions of the NIST Cybersecurity Framework?",
+    "options": [
+     "Govern, Identify, Protect, Detect, Respond, Recover",
+     "Plan, Do, Check, Act, Review, Repeat",
+     "Scan, Patch, Monitor, Alert, Block, Report",
+     "Confidentiality, Integrity, Availability, Audit, Comply, Insure"
+    ],
+    "answer": 0,
+    "why": "The NIST CSF groups work into Govern, Identify, Protect, Detect, Respond and Recover.",
+    "see": "what"
+   },
+   {
+    "q": "Which statement about compliance is true?",
+    "options": [
+     "You can be compliant and still insecure",
+     "Compliance guarantees security",
+     "Compliance only applies to governments",
+     "Compliance replaces the need for a framework"
+    ],
+    "answer": 0,
+    "why": "Meeting rules like PCI DSS is a minimum bar; it doesn't guarantee you're actually secure.",
+    "see": "what"
+   },
+   {
+    "q": "What is MITRE ATT&CK mainly used for?",
+    "options": [
+     "Mapping real attacker tactics so defenders can find gaps",
+     "Encrypting data at rest",
+     "Assigning IP addresses",
+     "Writing privacy policies"
+    ],
+    "answer": 0,
+    "why": "ATT&CK catalogues how attackers behave, so teams can check what they would and wouldn't detect.",
+    "see": "what"
+   }
+  ]
+ },
+ {
   "id": "phishing",
   "title": "Phishing & social engineering",
   "track": "Threats",

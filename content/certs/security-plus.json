@@ -1,0 +1,216 @@
+{
+ "id": "security-plus",
+ "name": "CompTIA Security+",
+ "exam": "SY0-701",
+ "source": {
+  "label": "CompTIA: Security+ certification",
+  "url": "https://www.comptia.org/en-us/certifications/security/"
+ },
+ "reviewed": "2026-10-15",
+ "note": "Mapped at the domain level: these are CompTIA's five published SY0-701 domains and weights. Each row lists the Patch Notes lessons and labs that cover that domain, with honest gaps. It's preparation, not a guarantee of passing, and uses no real exam questions. The Foundations lessons here also line up with the early courses of the Google Cybersecurity Certificate.",
+ "study": {
+  "label": "Professor Messer's free SY0-701 course",
+  "url": "https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/sy0-701-comptia-security-plus-course/"
+ },
+ "domains": [
+  {
+   "id": "1.0",
+   "name": "General security concepts",
+   "weight": 12,
+   "objectives": [
+    {
+     "id": "1.0",
+     "title": "General security concepts",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "cia-triad"
+      },
+      {
+       "type": "lesson",
+       "id": "encryption"
+      },
+      {
+       "type": "lesson",
+       "id": "identity"
+      },
+      {
+       "type": "lesson",
+       "id": "frameworks"
+      }
+     ],
+     "gap": "The CIA triad, encryption basics, authentication and zero trust are covered. Control categories and types, PKI in depth, physical security and change management aren't yet."
+    }
+   ]
+  },
+  {
+   "id": "2.0",
+   "name": "Threats, vulnerabilities & mitigations",
+   "weight": 22,
+   "objectives": [
+    {
+     "id": "2.0",
+     "title": "Threats, vulnerabilities & mitigations",
+     "coverage": "strong",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "phishing"
+      },
+      {
+       "type": "lesson",
+       "id": "malware"
+      },
+      {
+       "type": "lesson",
+       "id": "ransomware"
+      },
+      {
+       "type": "lesson",
+       "id": "ddos"
+      },
+      {
+       "type": "lab",
+       "id": "tcp-handshake"
+      },
+      {
+       "type": "lesson",
+       "id": "supply-chain"
+      },
+      {
+       "type": "lesson",
+       "id": "web-sqli"
+      },
+      {
+       "type": "lesson",
+       "id": "web-xss"
+      },
+      {
+       "type": "lesson",
+       "id": "web-access"
+      },
+      {
+       "type": "lesson",
+       "id": "zero-day"
+      },
+      {
+       "type": "lesson",
+       "id": "vuln-management"
+      },
+      {
+       "type": "lesson",
+       "id": "ai-security"
+      }
+     ],
+     "gap": "Social engineering, malware, web and network attacks (including a hands-on SYN flood) and patching are well covered. A few specific indicators and mitigation techniques aren't."
+    }
+   ]
+  },
+  {
+   "id": "3.0",
+   "name": "Security architecture",
+   "weight": 18,
+   "objectives": [
+    {
+     "id": "3.0",
+     "title": "Security architecture",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "networking"
+      },
+      {
+       "type": "lab",
+       "id": "topologies"
+      },
+      {
+       "type": "lab",
+       "id": "subnetting"
+      },
+      {
+       "type": "lesson",
+       "id": "cloud"
+      },
+      {
+       "type": "lesson",
+       "id": "iot-ot"
+      }
+     ],
+     "gap": "Network design, segmentation, cloud and IoT/OT are covered. Zero-trust architecture in depth, data protection design and resilience/recovery architecture aren't yet."
+    }
+   ]
+  },
+  {
+   "id": "4.0",
+   "name": "Security operations",
+   "weight": 28,
+   "objectives": [
+    {
+     "id": "4.0",
+     "title": "Security operations",
+     "coverage": "strong",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "soc"
+      },
+      {
+       "type": "lab",
+       "id": "log-detective"
+      },
+      {
+       "type": "lesson",
+       "id": "incident-response"
+      },
+      {
+       "type": "lab",
+       "id": "header-inspector"
+      },
+      {
+       "type": "lab",
+       "id": "net-detective"
+      },
+      {
+       "type": "lesson",
+       "id": "identity"
+      }
+     ],
+     "gap": "The SOC, log analysis, incident response and email investigation are hands-on. Vulnerability-management operations, automation and digital forensics in depth aren't yet."
+    }
+   ]
+  },
+  {
+   "id": "5.0",
+   "name": "Security program management & oversight",
+   "weight": 20,
+   "objectives": [
+    {
+     "id": "5.0",
+     "title": "Security program management & oversight",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "frameworks"
+      },
+      {
+       "type": "lesson",
+       "id": "vuln-management"
+      },
+      {
+       "type": "lesson",
+       "id": "data-breach"
+      },
+      {
+       "type": "lesson",
+       "id": "nation-state"
+      }
+     ],
+     "gap": "Frameworks, risk-based prioritisation and privacy are introduced. Formal risk management, third-party/vendor risk, audits and governance processes aren't covered in depth yet."
+    }
+   ]
+  }
+ ]
+}
