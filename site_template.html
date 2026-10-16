@@ -851,6 +851,10 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 /* Home hero: heading plus a live, clickable network drawn with the device library. */
 .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 460px); gap: 16px 32px; align-items: center; }
 .hero p { color: var(--muted); margin: 0; max-width: 46ch; }
+.hero-stats { display: flex; flex-wrap: wrap; gap: 8px; }
+.hero-stat { font: 0.8rem/1.3 var(--font-mono); color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; }
+.hero-stat b { color: var(--brand); font-weight: 600; }
+.hero-cta { gap: 10px; }
 .hero-art { display: grid; gap: 8px; min-width: 0; }
 .hero-net { width: 100%; height: auto; display: block; overflow: visible; }
 .hero-net .ln { stroke: var(--dg-line); stroke-width: 2; fill: none; }
@@ -1636,7 +1640,16 @@ VIEWS.today = () => {
 
   main.innerHTML = `<div class="view">
     ${P.intro ? "" : welcomeHtml()}
-    <div class="view-head hero"><div class="stack" style="gap:10px"><h1>Learn it. Break it. <em class="accent">Understand it.</em></h1><p>Hands-on cyber security and IT: see how attacks work, learn how to defend against them, and understand the news behind every headline.</p></div>${heroNet()}</div>
+    <div class="view-head hero"><div class="stack" style="gap:14px">
+      <div class="stack" style="gap:10px"><h1>Learn it. Break it. <em class="accent">Understand it.</em></h1><p>Hands-on cyber security and IT: see how attacks work, learn how to defend against them, and understand the news behind every headline. Free, visual, and built for real exams.</p></div>
+      <div class="hero-stats">
+        <span class="hero-stat"><b>${DATA.lessons.length}</b> visual lessons</span>
+        <span class="hero-stat"><b>${DATA.labs.length + DATA.missions.length}</b> interactive labs &amp; missions</span>
+        <span class="hero-stat"><b>Network+ · Security+</b> exam prep</span>
+        <span class="hero-stat"><b>Daily</b> news, explained</span>
+      </div>
+      <div class="row hero-cta"><a class="btn brand" href="#learn">Start learning →</a><a class="btn ghost" href="#play">Spot a phishing email</a></div>
+    </div>${heroNet()}</div>
     <div class="split">
       <div class="stack" style="gap:18px">
         ${continueCard()}
