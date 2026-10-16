@@ -1,0 +1,783 @@
+{
+ "id": "dns",
+ "title": "The internet's down — or is it just DNS?",
+ "topic": "Networking · DNS",
+ "minutes": 15,
+ "lesson": "networking",
+ "summary": "Diagnose a 'the internet is down' call that's really a DNS failure: ping the IP, isolate name resolution, fix the resolver and prove the cause.",
+ "simplification": "Simplified simulation: a real recursive lookup walks the root, TLD and authoritative servers, and DNS can use TCP for large answers. Tool output is scripted to mirror real nslookup, ping and ipconfig.",
+ "devices": {
+  "pc": {
+   "label": "Your PC",
+   "kind": "pc",
+   "ip": "192.168.1.50",
+   "mask": "255.255.255.0",
+   "gateway": "192.168.1.1",
+   "dns": "192.168.1.1",
+   "mac": "a4:83:e7:0a:10:50",
+   "state": "ok",
+   "status": "Online"
+  },
+  "gateway": {
+   "label": "Gateway + resolver",
+   "kind": "router",
+   "ip": "192.168.1.1",
+   "mac": "00:11:22:33:44:01",
+   "status": "Up"
+  },
+  "badns": {
+   "label": "DNS 10.0.0.9",
+   "kind": "server",
+   "ip": "10.0.0.9",
+   "status": "Secondary (unused)"
+  },
+  "web": {
+   "label": "shop.example.com",
+   "kind": "server",
+   "ip": "203.0.113.20",
+   "mac": "00:50:56:c0:00:20",
+   "status": "Up"
+  }
+ },
+ "links": [
+  [
+   "pc",
+   "gateway"
+  ],
+  [
+   "gateway",
+   "badns"
+  ],
+  [
+   "gateway",
+   "web"
+  ]
+ ],
+ "appearance": {
+  "pc": [
+   {
+    "when": {
+     "pc.state": "down"
+    },
+    "state": "bad"
+   },
+   {
+    "when": {
+     "pc.state": "workaround"
+    },
+    "state": "warn"
+   },
+   {
+    "when": {
+     "pc.state": "ok"
+    },
+    "state": "ok"
+   }
+  ],
+  "badns": [
+   {
+    "when": {
+     "badns.status": "Not responding"
+    },
+    "state": "bad"
+   }
+  ],
+  "web": [
+   {
+    "when": {
+     "web.status": "Up"
+    },
+    "state": "ok"
+   }
+  ]
+ },
+ "messages": {
+  "query": {
+   "name": "DNS query",
+   "short": "DNS query",
+   "from": "pc",
+   "path": [
+    "pc",
+    "gateway"
+   ],
+   "say": "What's the IP for shop.example.com?",
+   "explain": "Your PC asks its configured DNS resolver — here, the gateway — to turn the name shop.example.com into an IP address. DNS queries normally go out over UDP port 53.",
+   "reactions": {
+    "gateway": "Not in my cache — let me go and find it."
+   },
+   "fields": [
+    {
+     "name": "Query",
+     "value": "shop.example.com, type A",
+     "explain": "The name being looked up, and the record type: A means an IPv4 address.",
+     "level": 1
+    },
+    {
+     "name": "Destination IP",
+     "value": "192.168.1.1",
+     "explain": "The resolver the PC is configured to ask.",
+     "level": 1
+    },
+    {
+     "name": "Transaction ID",
+     "value": "0x8f21",
+     "explain": "A random ID so the PC can match the reply to this query.",
+     "level": 2
+    },
+    {
+     "name": "Source IP",
+     "value": "192.168.1.50",
+     "explain": "The PC making the request.",
+     "level": 2
+    },
+    {
+     "name": "UDP ports",
+     "value": "52344 → 53",
+     "explain": "A random high source port; destination 53 is DNS.",
+     "level": 2
+    },
+    {
+     "name": "Source MAC",
+     "value": "a4:83:e7:0a:10:50",
+     "explain": "The PC's hardware address on this link.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "pc.status": "Resolving shop…"
+   },
+   "wireshark": {
+    "src": "192.168.1.50",
+    "dst": "192.168.1.1",
+    "protocol": "DNS",
+    "info": "Standard query 0x8f21 A shop.example.com",
+    "layers": [
+     {
+      "line": "Ethernet II, Src: a4:83:e7:0a:10:50, Dst: 00:11:22:33:44:01",
+      "note": "The frame that carries this packet across one link, addressed by MAC."
+     },
+     {
+      "line": "Internet Protocol Version 4, Src: 192.168.1.50, Dst: 192.168.1.1",
+      "note": "The IP packet. DNS to a resolver is normally sent straight to the configured server's address."
+     },
+     {
+      "line": "User Datagram Protocol, Src Port: 52344, Dst Port: 53",
+      "note": "DNS uses UDP port 53. It's connectionless, which is why a dead server just produces a timeout, not a refusal."
+     },
+     {
+      "line": "Domain Name System (query)",
+      "note": "The DNS query itself: one question, asking for the A record of shop.example.com.",
+      "children": [
+       "Transaction ID: 0x8f21",
+       "Flags: 0x0100 Standard query",
+       "Questions: 1",
+       "Queries",
+       "  shop.example.com: type A, class IN"
+      ]
+     }
+    ]
+   }
+  },
+  "lookup": {
+   "name": "Recursive lookup",
+   "short": "Lookup",
+   "from": "gateway",
+   "path": [
+    "gateway",
+    "web"
+   ],
+   "say": "Who's authoritative for shop.example.com?",
+   "explain": "The resolver has no cached answer, so it looks the name up on your behalf. In reality this walks the root and TLD servers first; this simulation collapses that into a single hop to the authoritative server.",
+   "reactions": {
+    "web": "That's me — one moment."
+   },
+   "fields": [
+    {
+     "name": "Query",
+     "value": "shop.example.com, type A",
+     "explain": "The resolver repeats the question to the authoritative server.",
+     "level": 1
+    },
+    {
+     "name": "Destination IP",
+     "value": "203.0.113.20",
+     "explain": "The authoritative name server for the domain (simplified).",
+     "level": 1
+    },
+    {
+     "name": "Transaction ID",
+     "value": "0x5a0c",
+     "explain": "A new ID for this onward query.",
+     "level": 2
+    },
+    {
+     "name": "Source IP",
+     "value": "192.168.1.1",
+     "explain": "The resolver is now the one asking.",
+     "level": 2
+    },
+    {
+     "name": "UDP ports",
+     "value": "41002 → 53",
+     "explain": "Again DNS over UDP 53.",
+     "level": 2
+    }
+   ],
+   "effects": {},
+   "wireshark": {
+    "src": "192.168.1.1",
+    "dst": "203.0.113.20",
+    "protocol": "DNS",
+    "info": "Standard query 0x5a0c A shop.example.com",
+    "layers": [
+     {
+      "line": "Ethernet II, Src: 00:11:22:33:44:01, Dst: 00:50:56:c0:00:20",
+      "note": "The frame that carries this packet across one link, addressed by MAC."
+     },
+     {
+      "line": "Internet Protocol Version 4, Src: 192.168.1.1, Dst: 203.0.113.20",
+      "note": "The IP packet. DNS to a resolver is normally sent straight to the configured server's address."
+     },
+     {
+      "line": "User Datagram Protocol, Src Port: 52344, Dst Port: 53",
+      "note": "DNS uses UDP port 53. It's connectionless, which is why a dead server just produces a timeout, not a refusal."
+     },
+     {
+      "line": "Domain Name System (query)",
+      "note": "The resolver's onward query, sent recursively on the PC's behalf.",
+      "children": [
+       "Transaction ID: 0x5a0c",
+       "Flags: 0x0000 Standard query",
+       "Questions: 1",
+       "Queries",
+       "  shop.example.com: type A, class IN"
+      ]
+     }
+    ]
+   }
+  },
+  "answer": {
+   "name": "Authoritative answer",
+   "short": "A record",
+   "from": "web",
+   "path": [
+    "web",
+    "gateway"
+   ],
+   "say": "shop.example.com is 203.0.113.20.",
+   "explain": "The authoritative server returns the A record: the IPv4 address for the name, with a TTL saying how long it may be cached.",
+   "reactions": {
+    "gateway": "Thanks — caching that."
+   },
+   "fields": [
+    {
+     "name": "Answer",
+     "value": "shop.example.com A 203.0.113.20",
+     "explain": "The name resolves to this IPv4 address.",
+     "level": 1
+    },
+    {
+     "name": "TTL",
+     "value": "300 (5 min)",
+     "explain": "How long resolvers may cache this answer before asking again.",
+     "level": 1
+    },
+    {
+     "name": "Source IP",
+     "value": "203.0.113.20",
+     "explain": "The authoritative server replying.",
+     "level": 2
+    },
+    {
+     "name": "UDP ports",
+     "value": "53 → 41002",
+     "explain": "The reply comes back from port 53 to the resolver's port.",
+     "level": 2
+    }
+   ],
+   "effects": {},
+   "wireshark": {
+    "src": "203.0.113.20",
+    "dst": "192.168.1.1",
+    "protocol": "DNS",
+    "info": "Standard query response 0x5a0c A 203.0.113.20",
+    "layers": [
+     {
+      "line": "Ethernet II, Src: 00:50:56:c0:00:20, Dst: 00:11:22:33:44:01",
+      "note": "The frame that carries this packet across one link, addressed by MAC."
+     },
+     {
+      "line": "Internet Protocol Version 4, Src: 203.0.113.20, Dst: 192.168.1.1",
+      "note": "The IP packet. DNS to a resolver is normally sent straight to the configured server's address."
+     },
+     {
+      "line": "User Datagram Protocol, Src Port: 52344, Dst Port: 53",
+      "note": "DNS uses UDP port 53. It's connectionless, which is why a dead server just produces a timeout, not a refusal."
+     },
+     {
+      "line": "Domain Name System (query)",
+      "note": "The response carries the answer record with the IP address and its TTL.",
+      "children": [
+       "Transaction ID: 0x5a0c",
+       "Flags: 0x8400 Standard query response, No error",
+       "Answers: 1",
+       "  shop.example.com: type A, class IN, addr 203.0.113.20",
+       "  Time to live: 300"
+      ]
+     }
+    ]
+   }
+  },
+  "reply": {
+   "name": "DNS response",
+   "short": "DNS reply",
+   "from": "gateway",
+   "path": [
+    "gateway",
+    "pc"
+   ],
+   "say": "shop.example.com is 203.0.113.20.",
+   "explain": "The resolver returns the address to your PC, which caches it and can now open a connection straight to 203.0.113.20.",
+   "reactions": {
+    "pc": "Got it — connecting to the site now."
+   },
+   "fields": [
+    {
+     "name": "Answer",
+     "value": "shop.example.com A 203.0.113.20",
+     "explain": "The address handed back to the PC.",
+     "level": 1
+    },
+    {
+     "name": "Destination IP",
+     "value": "192.168.1.50",
+     "explain": "Back to the PC that asked.",
+     "level": 1
+    },
+    {
+     "name": "Transaction ID",
+     "value": "0x8f21",
+     "explain": "Matches the PC's original query ID.",
+     "level": 2
+    },
+    {
+     "name": "Source IP",
+     "value": "192.168.1.1",
+     "explain": "From the resolver.",
+     "level": 2
+    },
+    {
+     "name": "UDP ports",
+     "value": "53 → 52344",
+     "explain": "Reply from DNS port 53 to the PC's query port.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "pc.status": "Loaded shop.example.com",
+    "pc.state": "ok"
+   },
+   "wireshark": {
+    "src": "192.168.1.1",
+    "dst": "192.168.1.50",
+    "protocol": "DNS",
+    "info": "Standard query response 0x8f21 A 203.0.113.20",
+    "layers": [
+     {
+      "line": "Ethernet II, Src: 00:11:22:33:44:01, Dst: a4:83:e7:0a:10:50",
+      "note": "The frame that carries this packet across one link, addressed by MAC."
+     },
+     {
+      "line": "Internet Protocol Version 4, Src: 192.168.1.1, Dst: 192.168.1.50",
+      "note": "The IP packet. DNS to a resolver is normally sent straight to the configured server's address."
+     },
+     {
+      "line": "User Datagram Protocol, Src Port: 53, Dst Port: 52344",
+      "note": "DNS uses UDP port 53. It's connectionless, which is why a dead server just produces a timeout, not a refusal."
+     },
+     {
+      "line": "Domain Name System (query)",
+      "note": "The resolver's reply to the PC, matching the original transaction ID.",
+      "children": [
+       "Transaction ID: 0x8f21",
+       "Flags: 0x8180 Standard query response, No error",
+       "Answers: 1",
+       "  shop.example.com: type A, class IN, addr 203.0.113.20",
+       "  Time to live: 300"
+      ]
+     }
+    ]
+   }
+  },
+  "query_bad": {
+   "name": "DNS query to 10.0.0.9",
+   "short": "DNS query",
+   "from": "pc",
+   "path": [
+    "pc",
+    "gateway",
+    "badns"
+   ],
+   "say": "What's the IP for shop.example.com?",
+   "explain": "The PC sends its query to the DNS server it is configured to use — 10.0.0.9 — but that server never answers. With UDP there's no error back, so the lookup simply times out.",
+   "reactions": {},
+   "fields": [
+    {
+     "name": "Query",
+     "value": "shop.example.com, type A",
+     "explain": "The same question — the PC just asks the wrong server.",
+     "level": 1
+    },
+    {
+     "name": "Destination IP",
+     "value": "10.0.0.9",
+     "explain": "The configured DNS server, which isn't responding.",
+     "level": 1
+    },
+    {
+     "name": "Transaction ID",
+     "value": "0x8f21",
+     "explain": "The query ID; no matching reply ever arrives.",
+     "level": 2
+    },
+    {
+     "name": "Source IP",
+     "value": "192.168.1.50",
+     "explain": "The PC making the request.",
+     "level": 2
+    },
+    {
+     "name": "UDP ports",
+     "value": "52344 → 53",
+     "explain": "DNS over UDP 53, as normal.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "pc.status": "Resolving shop…"
+   },
+   "wireshark": {
+    "src": "192.168.1.50",
+    "dst": "10.0.0.9",
+    "protocol": "DNS",
+    "info": "Standard query 0x8f21 A shop.example.com",
+    "layers": [
+     {
+      "line": "Ethernet II, Src: a4:83:e7:0a:10:50, Dst: 00:50:56:c0:00:20",
+      "note": "The frame that carries this packet across one link, addressed by MAC."
+     },
+     {
+      "line": "Internet Protocol Version 4, Src: 192.168.1.50, Dst: 10.0.0.9",
+      "note": "The IP packet. DNS to a resolver is normally sent straight to the configured server's address."
+     },
+     {
+      "line": "User Datagram Protocol, Src Port: 52344, Dst Port: 53",
+      "note": "DNS uses UDP port 53. It's connectionless, which is why a dead server just produces a timeout, not a refusal."
+     },
+     {
+      "line": "Domain Name System (query)",
+      "note": "The query goes out to 10.0.0.9. No response row ever follows it — that silence is the symptom.",
+      "children": [
+       "Transaction ID: 0x8f21",
+       "Flags: 0x0100 Standard query",
+       "Questions: 1",
+       "Queries",
+       "  shop.example.com: type A, class IN"
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "modes": {
+  "guided": {
+   "label": "Guided",
+   "xp": 20,
+   "intro": "Watch a healthy DNS lookup turn the name shop.example.com into an IP address, one message at a time.",
+   "sequence": [
+    "query",
+    "lookup",
+    "answer",
+    "reply"
+   ],
+   "debrief": "That's name resolution: the PC asks its resolver, the resolver finds the authoritative answer, and the address comes back to be cached. When this breaks, you lose names but not necessarily the network itself."
+  },
+  "practice": {
+   "label": "Practice",
+   "xp": 25,
+   "intro": "Same lookup — but predict each step before it happens.",
+   "sequence": [
+    "query",
+    "lookup",
+    "answer",
+    "reply"
+   ],
+   "checkpoints": {
+    "lookup": {
+     "q": "The resolver has no cached answer. What does it do next?",
+     "options": [
+      "Give up and tell the PC the site is down",
+      "Look the name up itself, asking other DNS servers on the PC's behalf",
+      "Ask the PC to try a different website",
+      "Broadcast the question to every device on the LAN"
+     ],
+     "answer": 1,
+     "why": "A recursive resolver does the work for you: it queries the root, TLD and authoritative servers until it has the answer, then caches it."
+    },
+    "reply": {
+     "q": "The resolver now has 203.0.113.20. What happens last?",
+     "options": [
+      "It returns the address to the PC, which caches it and connects",
+      "It installs the website on the PC",
+      "It changes the PC's IP address",
+      "It asks the gateway for permission"
+     ],
+     "answer": 0,
+     "why": "DNS only maps names to addresses. Once the PC has the IP, it opens its own connection to the server — DNS is done."
+    }
+   },
+   "debrief": "You can now narrate a DNS lookup end to end. Next, put it to work: diagnose a real outage in Challenge mode."
+  },
+  "challenge": {
+   "label": "Challenge",
+   "xp": 40,
+   "intro": "A user says \"the internet is down\" — but is it really? Investigate, fix it, then prove what the cause was.",
+   "start": {
+    "pc.dns": "10.0.0.9",
+    "pc.state": "down",
+    "pc.status": "Can't reach shop",
+    "badns.status": "Not responding"
+   },
+   "opening": {
+    "device": "pc",
+    "say": "I can't open shop.example.com — the internet's down!",
+    "log": "Start: the PC can't load shop.example.com. Is the whole network down, or just name resolution?"
+   },
+   "hints": [
+    "Don't trust \"the internet is down.\" Can the PC reach anything by IP address? Try pinging the server's IP directly.",
+    "If the IP works but the name doesn't, the problem is name resolution — DNS — not connectivity.",
+    "Check which DNS server the PC is using (ipconfig), and whether it actually answers (nslookup).",
+    "Point the PC at a resolver you know works — the gateway at 192.168.1.1 — then look the name up again."
+   ],
+   "tools": [
+    {
+     "id": "ipconfig",
+     "label": "ipconfig /all",
+     "kind": "Investigate",
+     "outcomes": [
+      {
+       "when": {
+        "pc.dns": "192.168.1.1"
+       },
+       "output": "IPv4 Address . . . . . : 192.168.1.50\nSubnet Mask . . . . . : 255.255.255.0\nDefault Gateway . . . : 192.168.1.1\nDNS Servers . . . . . : 192.168.1.1",
+       "finding": "The PC's DNS server is now 192.168.1.1 (the gateway)."
+      },
+      {
+       "when": {},
+       "output": "IPv4 Address . . . . . : 192.168.1.50\nSubnet Mask . . . . . : 255.255.255.0\nDefault Gateway . . . : 192.168.1.1\nDNS Servers . . . . . : 10.0.0.9",
+       "finding": "The PC's DNS server is set to 10.0.0.9, not the gateway."
+      }
+     ]
+    },
+    {
+     "id": "pingip",
+     "label": "ping 203.0.113.20",
+     "kind": "Test",
+     "outcomes": [
+      {
+       "when": {},
+       "output": "Pinging 203.0.113.20 with 32 bytes of data:\nReply from 203.0.113.20: bytes=32 time=12ms TTL=118\nReply from 203.0.113.20: bytes=32 time=11ms TTL=118\n\nPackets: Sent = 4, Received = 4, Lost = 0 (0% loss)",
+       "finding": "The web server answers on its IP, so the network path and the server are both fine."
+      }
+     ]
+    },
+    {
+     "id": "nslookup",
+     "label": "nslookup shop.example.com",
+     "kind": "Test",
+     "outcomes": [
+      {
+       "when": {
+        "pc.dns": "192.168.1.1"
+       },
+       "play": [
+        "query",
+        "lookup",
+        "answer",
+        "reply"
+       ],
+       "set": {
+        "pc.state": "ok",
+        "pc.status": "Loaded shop.example.com"
+       },
+       "output": "Server:  gateway\nAddress: 192.168.1.1\n\nNon-authoritative answer:\nName:    shop.example.com\nAddress: 203.0.113.20",
+       "finding": "With DNS set to 192.168.1.1, shop.example.com resolves to 203.0.113.20."
+      },
+      {
+       "when": {
+        "pc.state": "workaround"
+       },
+       "output": "Name:    shop.example.com\nAddress: 203.0.113.20\n(resolved from the hosts file, not DNS)",
+       "finding": "The name resolves — but from the hosts file, not DNS. Other names still fail."
+      },
+      {
+       "when": {},
+       "play": [
+        "query_bad"
+       ],
+       "noReply": true,
+       "output": "Server:  UnKnown\nAddress: 10.0.0.9\n\nDNS request timed out.\n    timeout was 2 seconds.\n*** Request to UnKnown timed out\n*** Can't find shop.example.com: No response from server",
+       "finding": "The configured DNS server (10.0.0.9) isn't answering."
+      }
+     ]
+    },
+    {
+     "id": "setdns",
+     "label": "Set DNS to 192.168.1.1",
+     "kind": "Fix",
+     "outcomes": [
+      {
+       "when": {},
+       "set": {
+        "pc.dns": "192.168.1.1"
+       },
+       "output": "DNS server for the connection set to 192.168.1.1 (the gateway).\nRun the lookup again to test it.",
+       "finding": "Pointed the PC at a working resolver (192.168.1.1)."
+      }
+     ]
+    },
+    {
+     "id": "hosts",
+     "label": "Add a hosts-file entry",
+     "kind": "Fix",
+     "outcomes": [
+      {
+       "when": {},
+       "set": {
+        "pc.state": "workaround",
+        "pc.status": "Via hosts file"
+       },
+       "output": "Added to the hosts file:\n203.0.113.20  shop.example.com\nThis one name now resolves locally, bypassing DNS entirely.",
+       "finding": "Added a hosts-file override for shop.example.com (one name only)."
+      }
+     ]
+    }
+   ],
+   "goal": {
+    "pc.dns": "192.168.1.1",
+    "pc.state": "ok"
+   },
+   "workaround": {
+    "pc.state": "workaround"
+   },
+   "rootCause": {
+    "q": "It loads now. What was the actual cause of the outage?",
+    "options": [
+     "The shop's web server was down",
+     "The PC was pointed at a DNS server that wasn't answering, so names couldn't be resolved",
+     "The network cable or gateway was faulty",
+     "A firewall was blocking the website"
+    ],
+    "answer": 1,
+    "why": "Connectivity was fine all along — pinging the IP worked. Only name resolution failed, because the PC's configured DNS server (10.0.0.9) wasn't responding. Pointing it at a working resolver fixed it.",
+    "evidenceQ": "Which findings support that diagnosis? Tick the evidence, leave out what isn't.",
+    "evidence": [
+     {
+      "text": "Pinging the IP 203.0.113.20 directly got replies",
+      "tool": "pingip",
+      "supports": true,
+      "required": true,
+      "why": "This proves the network path and the server are fine, so the fault has to be name resolution, not connectivity."
+     },
+     {
+      "text": "nslookup to 10.0.0.9 timed out with no response",
+      "tool": "nslookup",
+      "supports": true,
+      "required": true,
+      "why": "The configured DNS server simply wasn't answering — the direct cause of the failed lookups."
+     },
+     {
+      "text": "ipconfig showed the DNS server set to 10.0.0.9",
+      "tool": "ipconfig",
+      "supports": true,
+      "required": true,
+      "why": "This identifies the wrong/unreachable resolver the PC was relying on."
+     },
+     {
+      "text": "After switching DNS to 192.168.1.1, the name resolved",
+      "tool": "nslookup",
+      "supports": true,
+      "required": false,
+      "why": "Confirms the fix addressed the real cause — useful, but not essential to the diagnosis."
+     },
+     {
+      "text": "The website returned a 500 server error",
+      "supports": false,
+      "required": false,
+      "why": "You never saw a server error. The browser couldn't even find the address — a different kind of failure."
+     },
+     {
+      "text": "The Wi-Fi signal was weak",
+      "supports": false,
+      "required": false,
+      "why": "Signal strength was never tested or implicated, and every ping to the IP succeeded."
+     }
+    ]
+   },
+   "debrief": "Textbook troubleshooting: you tested connectivity (ping by IP), isolated the fault to DNS, found the misconfigured resolver, fixed it properly rather than papering over it with a hosts entry, and backed your diagnosis with evidence. \"It's always DNS\" — but only after you've proved it."
+  }
+ },
+ "wide": {
+  "w": 760,
+  "h": 560,
+  "dw": 184,
+  "pos": {
+   "pc": [
+    110,
+    290
+   ],
+   "gateway": [
+    370,
+    290
+   ],
+   "badns": [
+    630,
+    150
+   ],
+   "web": [
+    630,
+    430
+   ]
+  }
+ },
+ "narrow": {
+  "w": 380,
+  "h": 900,
+  "dw": 176,
+  "pos": {
+   "pc": [
+    190,
+    120
+   ],
+   "gateway": [
+    190,
+    400
+   ],
+   "badns": [
+    94,
+    680
+   ],
+   "web": [
+    286,
+    680
+   ]
+  }
+ },
+ "wireshark": {
+  "filter": "dns",
+  "filterNote": "Matches DNS queries and responses.",
+  "honesty": "An illustration of how Wireshark shows a DNS message, built from this scenario — not a real capture.",
+  "tryIt": "On a network you're allowed to monitor, capture with the filter dns and watch a lookup. nslookup or dig shows the same answer on the command line."
+ },
+ "category": "Networking"
+}

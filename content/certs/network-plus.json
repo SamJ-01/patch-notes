@@ -230,6 +230,10 @@
        "id": "dhcp"
       },
       {
+       "type": "mission",
+       "id": "dns"
+      },
+      {
        "type": "lesson",
        "id": "networking"
       }
@@ -338,6 +342,10 @@
       {
        "type": "mission",
        "id": "dhcp"
+      },
+      {
+       "type": "mission",
+       "id": "dns"
       }
      ],
      "gap": "The DHCP challenge practises it; the full step-by-step method isn't taught on its own yet."
@@ -361,6 +369,10 @@
       {
        "type": "mission",
        "id": "dhcp"
+      },
+      {
+       "type": "mission",
+       "id": "dns"
       },
       {
        "type": "lab",

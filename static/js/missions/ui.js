@@ -346,7 +346,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     $("m-task").innerHTML = `<div class="eyebrow">Your tools</div>
       ${groups.map(g => `<div class="tool-group"><h3 class="eyebrow">${esc(KIND_LABEL[g] || g)}</h3><div class="row">${m.tools.filter(t => t.kind === g).map(t => `<button class="chip" data-tool="${t.id}">${esc(t.label)}</button>`).join("")}</div></div>`).join("")}
       <div class="console-head" id="m-console-label"><span class="sim-tag">Simulated output</span><span>Scripted results that mirror real tools. Nothing runs on your computer.</span></div>
-      <pre class="evidence console" id="m-console" aria-live="polite" aria-labelledby="m-console-label">Waiting for your first command…</pre>
+      <pre class="evidence console" id="m-console" tabindex="0" aria-live="polite" aria-labelledby="m-console-label">Waiting for your first command…</pre>
       <div id="m-findings"></div>
       <div class="row"><button class="link-btn" id="m-hint">Need a hint?</button></div><div id="m-hinttext" aria-live="polite"></div>
       <div id="m-rc"></div>`;

@@ -2,11 +2,16 @@
 // Run with:  node --test tests/missions.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import * as engine from "../static/js/missions/engine.js";
 
 const dhcp = JSON.parse(readFileSync(new URL("../content/missions/dhcp.json", import.meta.url), "utf8"));
 const run = (fn, ...args) => fn(dhcp, ...args);
+
+// Every mission scenario, for the protocol-agnostic structural checks.
+const missionsDir = new URL("../content/missions/", import.meta.url);
+const allMissions = readdirSync(missionsDir).filter(f => f.endsWith(".json"))
+  .map(f => [f, JSON.parse(readFileSync(new URL(f, missionsDir), "utf8"))]);
 
 function playAll(state) {
   const seen = [];
@@ -192,6 +197,59 @@ test("scenario data is internally consistent", () => {
     assert.ok(e.text && e.why, "every evidence item has text and an explanation");
     assert.ok(!e.required || e.supports, `${e.text}: only supporting evidence can be required`);
     if (e.tool) assert.ok(tools.has(e.tool), `${e.text}: unknown tool ${e.tool}`);
+  }
+});
+
+test("every mission scenario is structurally consistent and playable", () => {
+  assert.ok(allMissions.length >= 2, "there should be more than one mission");
+  for (const [file, m] of allMissions) {
+    const where = (s) => `${file}: ${s}`;
+    assert.ok(m.id && m.title && m.lesson, where("needs id, title and lesson"));
+    const devIds = new Set(Object.keys(m.devices));
+    for (const id of devIds) assert.ok(m.devices[id].kind, where(`${id} needs a kind`));
+    for (const [a, b] of m.links) { assert.ok(devIds.has(a) && devIds.has(b), where(`link ${a}-${b} uses a real device`)); }
+    // Messages
+    for (const [id, msg] of Object.entries(m.messages)) {
+      for (const d of [msg.from, ...msg.path, ...(msg.flood || [])]) assert.ok(devIds.has(d), where(`${id}: unknown device ${d}`));
+      assert.ok(msg.short && msg.short.length <= 12, where(`${id} needs a short label (≤12 chars)`));
+      assert.ok(msg.fields.some(f => f.level === 1) && msg.fields.some(f => f.level === 2), where(`${id} needs basic and detailed fields`));
+      for (const [d, r] of Object.entries(msg.reactions || {})) {
+        assert.ok(devIds.has(d), where(`${id}: reaction from unknown device ${d}`));
+        assert.ok(typeof r === "string" || (r.text && ["", "quiet"].includes(r.tone || "")), where(`${id}: bad reaction from ${d}`));
+      }
+      if (msg.wireshark) assert.ok(msg.wireshark.layers.every(l => l.note), where(`${id}: every Wireshark layer is explained`));
+    }
+    // Modes
+    for (const [k, mode] of Object.entries(m.modes)) {
+      assert.ok(mode.label && mode.xp && mode.intro && mode.debrief, where(`mode ${k} needs label, xp, intro, debrief`));
+      for (const sid of mode.sequence || []) assert.ok(m.messages[sid], where(`${k}: unknown message ${sid}`));
+      for (const cid of Object.keys(mode.checkpoints || {})) assert.ok((mode.sequence || []).includes(cid), where(`${k}: checkpoint ${cid} not in sequence`));
+      for (const t of mode.tools || []) {
+        assert.ok(t.id && t.label && t.kind, where(`${k}: a tool needs id, label and kind`));
+        assert.ok(t.outcomes.some(o => !Object.keys(o.when).length), where(`${k}: ${t.id} needs a fallback outcome`));
+        for (const o of t.outcomes) for (const pid of o.play || []) assert.ok(m.messages[pid], where(`${k}: ${t.id} plays unknown message ${pid}`));
+      }
+      if (mode.opening) assert.ok(devIds.has(mode.opening.device), where(`${k}: opening from unknown device`));
+      const rc = mode.rootCause;
+      if (rc?.evidence) {
+        const tools = new Set((mode.tools || []).map(t => t.id));
+        assert.ok(rc.evidence.some(e => e.required) && rc.evidence.some(e => !e.supports), where(`${k}: evidence needs key items and non-evidence`));
+        for (const e of rc.evidence) {
+          assert.ok(e.text && e.why, where(`${k}: every evidence item has text and why`));
+          assert.ok(!e.required || e.supports, where(`${k}: only supporting evidence can be required`));
+          if (e.tool) assert.ok(tools.has(e.tool), where(`${k}: evidence tool ${e.tool} is a real tool`));
+        }
+        assert.ok(typeof rc.answer === "number" && rc.options[rc.answer], where(`${k}: rootCause answer indexes a real option`));
+      }
+    }
+    // Appearance + layout
+    for (const [id, rules] of Object.entries(m.appearance || {})) {
+      assert.ok(devIds.has(id), where(`appearance for unknown device ${id}`));
+      for (const r of rules) assert.ok(["ok", "bad", "warn"].includes(r.state), where(`${id}: unknown appearance ${r.state}`));
+    }
+    for (const L of [m.wide, m.narrow].filter(Boolean)) for (const id of devIds) assert.ok(L.pos?.[id], where(`layout is missing ${id}`));
+    // Every mode starts and completes cleanly through the engine.
+    for (const k of Object.keys(m.modes)) assert.doesNotThrow(() => engine.start(m, k), where(`mode ${k} starts`));
   }
 });
 
