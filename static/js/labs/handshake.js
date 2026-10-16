@@ -43,7 +43,7 @@ const PATHS = {  // packet routes between the three devices in the scene
 export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = () => {}, onReset = () => {} } = {}) {
   const srv = createServer(lab);
   const done = new Set(solved);
-  let flooding = false, timer = null, busy = false;
+  let flooded = false, busy = false;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   root.innerHTML = `<div class="hs">
@@ -88,11 +88,14 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
 
   function drawQueue() {
     const s = srv.state;
+    // Show the queue filling from the left so it reads as a queue, not scattered slots.
     $("hs-queue").innerHTML = `<div class="eyebrow">Server half-open queue (${s.halfOpen}/${s.slots})</div>
-      <div class="hs-slots">${s.backlog.map(k => `<span class="hs-slot ${k || "empty"}"></span>`).join("")}</div>`;
-    $("hs-stats").innerHTML = `<div><dt>Connections made</dt><dd class="ok">${s.established}</dd></div><div><dt>Refused (queue full)</dt><dd class="${s.dropped ? "no" : ""}">${s.dropped}</dd></div><div><dt>SYN cookies</dt><dd>${s.cookies ? "on" : "off"}</dd></div>`;
-    $("hs-flood").classList.toggle("brand", !flooding && done.has("handshake"));
-    $("hs-flood").textContent = flooding ? "2 · Stop the flood" : "2 · Launch a SYN flood";
+      <div class="hs-slots">${Array.from({ length: s.slots }, (_, i) => `<span class="hs-slot ${i < s.halfOpen ? "flood" : "empty"}"></span>`).join("")}</div>`;
+    $("hs-stats").innerHTML = `<div><dt>Connections made</dt><dd class="ok">${s.established}</dd></div><div><dt>Refused</dt><dd class="${s.dropped ? "no" : ""}">${s.dropped}</dd></div><div><dt>SYN cookies</dt><dd>${s.cookies ? "on" : "off"}</dd></div>`;
+    const btn = $("hs-flood");
+    btn.classList.toggle("brand", !flooded && done.has("handshake") && !srv.state.cookies);
+    btn.disabled = flooded && !srv.state.cookies;
+    btn.textContent = flooded && !srv.state.cookies ? "2 · Queue is full" : "2 · Launch a SYN flood";
   }
   const status = msg => { $("hs-status").innerHTML = msg; };
   const wait = ms => new Promise(r => setTimeout(r, reduced ? 0 : ms));
@@ -124,21 +127,26 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     markPart("handshake"); busy = false;
   }
 
-  async function floodBurst() {
-    if (busy) return;  // a manual connection is animating: pause so the queue (and the status line) hold still
-    // Several forged SYNs arrive; the server answers each and holds a slot, but no ACK ever comes back.
-    for (let n = 0; n < 3 && flooding; n++) {
-      const before = srv.state.full;
-      const r = srv.syn("flood");
+  // A burst of forged SYNs arrives. The server holds a slot for each and waits for an ACK that never comes,
+  // so the queue fills and stays full. With SYN cookies on, the server holds nothing and the queue stays empty.
+  async function launchFlood() {
+    if (busy || flooded) return; busy = true;
+    if (srv.state.cookies) {
+      status("Flooding… but SYN cookies are on, so the server holds no slots. The queue stays empty.");
+      for (let n = 0; n < 4; n++) { srv.syn("flood"); if (!reduced) packet("attacker-server", "SYN", "bad"); await wait(120); }
+      busy = false; return;
+    }
+    status("A SYN flood is filling the server's half-open queue…");
+    const n = srv.state.slots;
+    for (let i = 0; i < n; i++) {
+      srv.syn("flood");
       if (!reduced) packet("attacker-server", "SYN", "bad");
       drawQueue();
-      if (r === "dropped" && !before) { /* just filled */ }
-      await wait(120);
+      await wait(reduced ? 0 : 180);
     }
-    srv.tick(); drawQueue();
-    if (srv.state.full && !srv.state.cookies) { status("<b class='no'>The half-open queue is full.</b> New SYNs are being refused. Try connecting now (button 3)."); markPart("flood"); }
-    else if (srv.state.cookies) status("SYN cookies are on: the server answers without holding a slot, so the queue stays empty.");
-    else status("A SYN flood is filling the server's half-open queue…");
+    flooded = true; drawQueue();
+    status("<b class='no'>The half-open queue is full.</b> Every slot holds a forged connection that will never finish, so new SYNs are refused. Try to connect now (button 3).");
+    markPart("flood"); busy = false;
   }
 
   async function clientDuringFlood() {
@@ -148,32 +156,24 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     const r = srv.syn("client"); drawQueue();
     if (r === "connect" || r === "cookie-connect") {
       await packet("server-client", "SYN-ACK", "good");
-      status("<b class='ok'>You got through.</b> " + (srv.state.cookies ? "SYN cookies kept a slot free for you." : "There was still room in the queue — flood a bit more and try again."));
+      status("<b class='ok'>You got through.</b> " + (srv.state.cookies ? "SYN cookies mean the server never ran out of room for you." : "The queue wasn't full yet. Launch the flood (button 2) first."));
     } else {
       await packet("server-client", "RST", "bad");
-      status("<b class='no'>Connection refused.</b> The queue is full of half-open flood connections, so your SYN was dropped. This is the denial of service. Now turn on SYN cookies (button 4).");
+      srv.state.dropped;  // a refused real client
+      status("<b class='no'>Connection refused.</b> The queue is full of half-open flood connections, so your SYN is dropped. That's the denial of service. Now turn on SYN cookies (button 4).");
     }
     busy = false;
   }
 
   $("hs-connect").addEventListener("click", normalConnection);
   $("hs-client").addEventListener("click", clientDuringFlood);
-  $("hs-flood").addEventListener("click", () => {
-    flooding = !flooding;
-    drawQueue();
-    if (flooding) { status("Flood started. Watch the queue fill."); timer = setInterval(floodBurst, 500); }
-    else { clearInterval(timer); timer = null; status("Flood stopped. Half-open slots will time out and free up."); }
-  });
+  $("hs-flood").addEventListener("click", launchFlood);
   $("hs-cookies").addEventListener("change", e => {
-    srv.setCookies(e.target.checked); drawQueue();
-    if (e.target.checked) { markPart("defend"); status("<b class='ok'>SYN cookies on.</b> The server now replies without reserving a slot. Try connecting during the flood (button 3) — it works."); }
-    else status("SYN cookies off.");
+    srv.setCookies(e.target.checked);
+    if (e.target.checked) { srv.reset(); flooded = false; drawQueue(); markPart("defend"); status("<b class='ok'>SYN cookies on.</b> The server replies without reserving a slot, so the queue drains and can't be exhausted. Launch the flood again — the queue stays empty — then connect (button 3)."); }
+    else { drawQueue(); status("SYN cookies off."); }
   });
-  $("hs-reset").addEventListener("click", () => { flooding = false; clearInterval(timer); timer = null; srv.reset(); $("hs-cookies").checked = false; srv.setCookies(false); onReset(); });
-
-  // Keep the timer from running after the user leaves the lab.
-  const stop = () => { if (!root.isConnected) { clearInterval(timer); } };
-  setInterval(stop, 2000);
+  $("hs-reset").addEventListener("click", () => { flooded = false; srv.reset(); $("hs-cookies").checked = false; srv.setCookies(false); drawQueue(); onReset(); status("Reset. Start with button 1."); });
 
   drawParts(); drawQueue();
   status("Start with button 1 to see a normal three-way handshake.");
