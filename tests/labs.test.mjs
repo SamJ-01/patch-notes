@@ -329,3 +329,15 @@ test("wiring: straight-through vs crossover", () => {
   assert.equal(wiring.cableType("T568B", null), null);
   assert.equal(Object.keys(wiring.WIRES).length, 8);
 });
+
+import * as wiretap from "../static/js/labs/wiretap.js";
+
+test("wiretap: Telnet shows clear text, SSH shows ciphertext", () => {
+  assert.equal(wiretap.capture("telnet", "password: hunter2", 5), "password: hunter2");
+  const enc = wiretap.capture("ssh", "password: hunter2", 5);
+  assert.notEqual(enc, "password: hunter2");
+  assert.match(enc, /^([0-9a-f]{2} )+[0-9a-f]{2}$/, "looks like hex bytes");
+  assert.ok(!enc.includes("hunter2"), "the password is not visible");
+  assert.equal(wiretap.encrypt("abc", 1), wiretap.encrypt("abc", 1), "stable for a given seed");
+  assert.notEqual(wiretap.encrypt("abc", 1), wiretap.encrypt("abc", 2), "differs by seed");
+});

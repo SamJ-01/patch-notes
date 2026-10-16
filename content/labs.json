@@ -1710,6 +1710,17 @@
   "holdTicks": 8
  },
  {
+  "id": "telnet-ssh",
+  "kind": "wiretap",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 6,
+  "lesson": "encryption",
+  "skill": "See why Telnet is unsafe and SSH is secure by watching what an eavesdropper captures",
+  "title": "Telnet vs SSH: what a sniffer sees",
+  "intro": "Old protocols like Telnet send your password across the network in plain text. Send a login over Telnet and then SSH, and watch exactly what someone listening on the wire captures."
+ },
+ {
   "id": "cable-wiring",
   "kind": "wiring",
   "category": "Networking",

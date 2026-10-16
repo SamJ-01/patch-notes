@@ -1140,6 +1140,17 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .wire-table th, .wire-table td { border: 1px solid var(--line); padding: 5px 8px; text-align: center; }
 .wire-table th { color: var(--muted); font-weight: 600; }
 @media (max-width: 520px) { .rj45-pin { width: 30px; height: 66px; } .w-swatch { width: 28px; } }
+.tap { display: grid; gap: 18px; }
+.tap-wire { stroke: var(--dg-line); stroke-width: 2; }
+.tap-tap { stroke: var(--dg-strong); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.tap-tap.live { stroke: var(--bad); stroke-width: 2.5; stroke-dasharray: none; }
+.tap-lbl { font: 500 10px var(--font-mono); fill: var(--muted); text-anchor: middle; }
+.tap-pkt rect { fill: var(--surface); stroke: var(--brand); stroke-width: 1.4; }
+.tap-pkt text { font: 600 8px var(--font-mono); fill: var(--brand); text-anchor: middle; }
+.tap-pkt.clear rect { stroke: var(--bad); } .tap-pkt.clear text { fill: var(--bad); }
+.tap-pkt.enc rect { stroke: var(--good); } .tap-pkt.enc text { fill: var(--good); }
+.tap-capture { margin: 0; min-height: 5em; max-height: 220px; overflow: auto; background: #05080C; color: #E6EDF3; border: 1px solid var(--dg-strong); border-radius: var(--radius-sm); padding: 10px 12px; font: 0.85rem/1.5 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.tap-sniff .panel-title .no { color: var(--bad); } .tap-sniff .panel-title .ok { color: var(--good); }
 </style>
 
 <!-- recon complete. you found flag 1 of 3: flag{v1ew_s0urce_is_r3con}  (submit it in the command palette: press / then type "submit" and the flag) -->
@@ -2354,6 +2365,7 @@ const termArt = () => { const id = `cterm-clip-${++termN}`; return `<defs><clipP
 const OSI_ART = [0, 1, 2, 3, 4, 5, 6].map(k => `<rect class="cosi" x="74" y="${14 + k * 8.6}" width="52" height="6" rx="1.5" style="fill:${["var(--critical)", "var(--high)", "var(--brand)", "var(--good)", "var(--sun)", "var(--likely)", "var(--exploited)"][k]}"/>`).join("");
 // d: devices [kind, x, y, scale], g: glyphs, l: links [x1, y1, x2, y2, air?], t: tags, p: packet paths, tone: packet colour
 const SCENE = {
+  "telnet-ssh": { d: [["laptop", 36, 50, 0.5], ["server", 166, 50, 0.56], ["attacker", 100, 20, 0.0001]], g: [["eye", 100, 24, 0.9, "bad"]], l: [[52, 50, 150, 50]], t: [["admin / ••••", 100, 78, "bad"]], p: ["M36 50L166 50"], tone: "bad" },
   "cia-triad": { g: [["shield", 100, 44, 2.1, "good"]], t: [["C · I · A", 100, 76]] },
   "frameworks": { d: [["server", 150, 46, 0.5]], g: [["shield", 52, 44, 1.5, "good"], ["search", 100, 60, 0.7]], l: [[70, 46, 134, 46]], t: [["NIST CSF", 100, 18]], p: ["M52 44L150 46"], tone: "good" },
   "cable-wiring": { raw: `${[0,1,2,3,4,5,6,7].map(k=>`<rect x="${64+k*9}" y="30" width="6" height="34" rx="1.5" style="fill:${["#E8820C","#E8820C","#2F9E44","#1971C2","#1971C2","#2F9E44","#8B5A2B","#8B5A2B"][k]}"/>`).join("")}<rect x="58" y="24" width="84" height="44" rx="4" fill="none" stroke="var(--dg-strong)" stroke-width="2"/>` },
@@ -2490,7 +2502,7 @@ function missionView(id) {
     $("mission-root").innerHTML = `<div class="empty">Couldn't load the mission code (js/missions/ui.js). If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`;
   });
 }
-const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring"];  // labs with their own module in static/js/labs/<kind>.js
+const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring", "wiretap"];  // labs with their own module in static/js/labs/<kind>.js
 function moduleLab(l) {
   main.innerHTML = `<div class="view" id="lab-root"><div class="empty">Loading lab…</div></div>`;
   import(`./js/labs/${l.kind}.js`).then(mod => {
