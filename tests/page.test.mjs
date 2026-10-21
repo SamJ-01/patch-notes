@@ -118,3 +118,33 @@ test("progress: restored or stored data is cleaned before use", () => {
   assert.throws(() => restoreProgress({ progress: { xp: 1 } }), "files must say they come from patch-notes");
   assert.equal(restoreProgress({ app: "patch-notes", progress: { xp: 5 } }).xp, 5);
 });
+
+// The home page route map: stops snake left-right then right-left, turn on the outside, and fit the drawing.
+const rctx = {};
+vm.createContext(rctx);
+// Whole top-level functions, up to the closing brace at the start of a line (routeLayout has braces in its parameters).
+const fn = start => { const i = template.indexOf(start); assert.ok(i >= 0, start); return template.slice(i, template.indexOf("\n}\n", i) + 2); };
+vm.runInContext([fn("function routeLayout(n, cols"), fn("function routePath(points, R)"), "this.api = { routeLayout, routePath };"].join("\n"), rctx);
+const { routeLayout, routePath } = rctx.api;
+
+test("route map: stops snake across rows and the road turns at the ends", () => {
+  const L = routeLayout(11, 6);
+  assert.equal(L.stops.length, 11);
+  assert.deepEqual(JSON.parse(JSON.stringify(L.stops.slice(0, 6).map(s => s.row))), [0, 0, 0, 0, 0, 0]);
+  assert.ok(L.stops[0].x < L.stops[5].x, "row 1 runs left to right");
+  assert.equal(L.stops[6].x, L.stops[5].x, "row 2 starts under the end of row 1");
+  assert.ok(L.stops[10].x < L.stops[6].x, "row 2 runs right to left");
+  for (const s of [L.start, ...L.stops, L.finish]) assert.ok(s.x >= 0 && s.x <= 1000 && s.y > 0 && s.y < L.height, "everything inside the drawing");
+  const d = routePath([L.start, ...L.stops, L.finish], L.R);
+  assert.equal((d.match(/ A/g) || []).length, 1, "one row change, one turn");
+  assert.match(d, new RegExp(` A${L.R} ${L.R} 0 0 1 `), "the first turn bulges right (clockwise)");
+});
+
+test("route map: a full last row sends the finish round the turn; phones use two stops a row", () => {
+  const L = routeLayout(6, 6);
+  assert.equal(L.finish.row, 1);
+  assert.equal(L.finish.x, L.stops[5].x);
+  const phone = routeLayout(6, 2, { W: 350, rowH: 145, R: 46, pad: 40 });
+  assert.deepEqual(JSON.parse(JSON.stringify(phone.stops.map(s => s.row))), [0, 0, 1, 1, 2, 2]);
+  for (const s of phone.stops) assert.ok(s.x - 60 >= 0 && s.x + 60 <= 350, "labels have room at phone width");
+});

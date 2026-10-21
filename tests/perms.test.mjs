@@ -9,7 +9,7 @@ import { rwx, octal, applyChmod, can, classOf, run, lsLine, loadWorld, checkTask
 
 const lab = JSON.parse(readFileSync(new URL("../content/labs.json", import.meta.url), "utf8")).find(l => l.id === "permissions");
 const fresh = () => loadWorld(lab.world);
-const S = "/srv/payroll/salaries.csv", D = "/srv/payroll", B = "/srv/scripts/backup.sh";
+const S = "/srv/payroll/salaries.csv", D = "/srv/payroll";
 
 test("modes: rwx strings and octal", () => {
   assert.equal(rwx(0o640), "rw-r-----");

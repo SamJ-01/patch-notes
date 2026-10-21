@@ -1396,3 +1396,31 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .pr-start .lessons { margin-top: 2px; }
 .pr-tracks { gap: 6px; }
 .pr-more { justify-self: start; }
+
+/* ---------- home: the route map ---------- */
+.home-head { gap: 8px; } .home-head p { max-width: 62ch; }
+.route-panel { gap: 10px; }
+.route-top { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; justify-content: space-between; }
+.route-top h2 { font: 600 1.25rem/1.25 var(--font-display); }
+.route-paths { gap: 6px; }
+.route-map { width: 100%; height: auto; display: block; overflow: visible; }
+.route-road { fill: none; stroke: var(--line); stroke-width: 12; stroke-linecap: round; stroke-linejoin: round; }
+.route-road.done { stroke: var(--brand); opacity: 0.85; }
+.route-dot { fill: var(--surface); stroke: var(--dg-strong); stroke-width: 3; }
+.route-stop.done .route-dot { fill: var(--brand); stroke: var(--brand); }
+.route-stop.next .route-dot { fill: var(--sun); stroke: var(--sun); }
+.route-n { font: 700 15px var(--font-mono); fill: var(--ink); }
+.route-stop.done .route-n, .route-stop.next .route-n { fill: var(--bg); }
+.route-kind { font: 600 10px var(--font-mono); letter-spacing: 0.12em; fill: var(--muted); }
+.route-lbl { font: 600 13.5px var(--font-body); fill: var(--ink); }
+.route-stop { cursor: pointer; text-decoration: none; outline: none; }
+.route-stop:hover .route-dot, .route-stop:focus-visible .route-dot { stroke: var(--brand); stroke-width: 5; }
+.route-stop:focus-visible .route-lbl { text-decoration: underline; }
+.route-pulse { fill: none; stroke: var(--sun); stroke-width: 3; opacity: 0.6; transform-box: fill-box; transform-origin: center; animation: route-pulse 1.8s ease-out infinite; }
+@keyframes route-pulse { from { transform: scale(0.75); opacity: 0.8; } to { transform: scale(1.25); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .route-pulse { animation: none; opacity: 0.6; } }
+.route-start rect, .route-finish rect { fill: var(--surface-2); stroke: var(--dg-strong); stroke-width: 2; }
+.route-start text, .route-finish text { font: 700 11px var(--font-mono); fill: var(--ink); letter-spacing: 0.08em; }
+.route-finish.done rect { fill: var(--sun); stroke: var(--sun); } .route-finish.done text { fill: var(--bg); font-size: 20px; }
+.route-next { gap: 8px 16px; align-items: center; } .route-next .btn { margin-left: auto; }
+@media (max-width: 600px) { .route-next .btn { margin-left: 0; } }

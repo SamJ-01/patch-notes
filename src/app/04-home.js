@@ -20,38 +20,71 @@ $("theme-btn").addEventListener("click", () => {
 });
 paintThemeBtn();
 
-/* Home hero network: two PCs, a switch, a router, the internet and a server, with packets moving between them. */
-/* Home hero network: every device is clickable and explains itself. Packets travel the real paths. */
-const HERO_DEV = [  // kind, x, y, label
-  ["laptop", 46, 50, "laptop"], ["phone", 46, 130, "phone"], ["pc", 46, 212, "PC"],
-  ["ap", 150, 44, "access point", "side"], ["switch", 150, 130, "switch"], ["server", 150, 218, "server"],
-  ["router", 258, 130, "router"], ["firewall", 344, 130, "firewall"], ["cloud", 424, 130, "internet"],
-];
-const HERO_LINKS = [[0, 4], [2, 4], [3, 4], [5, 4], [4, 6], [6, 7], [7, 8]];
-const HERO_PATHS = ["M46 50 L150 130 L258 130 L344 130 L424 130", "M424 130 L344 130 L258 130 L150 130 L46 212", "M46 130 L150 44 L150 130 L150 218"];
-function heroNet() {
-  const P = i => HERO_DEV[i];
-  return `<div class="hero-art"><svg class="hero-net hw-live" viewBox="-10 -10 490 272" role="group" aria-label="A small network. Select a device to learn what it does.">
-    ${HERO_LINKS.map(([a, b]) => `<line class="ln" x1="${P(a)[1]}" y1="${P(a)[2]}" x2="${P(b)[1]}" y2="${P(b)[2]}"/>`).join("")}
-    <line class="ln air" x1="46" y1="130" x2="150" y2="44"/>
-    ${HERO_PATHS.map((d, i) => `<circle class="pkt p${i + 1}" r="5"><animateMotion dur="${3.6 + i * 0.6}s" begin="${-i * 1.2}s" repeatCount="indefinite" path="${d}" calcMode="linear"/></circle>`).join("")}
-    ${HERO_DEV.map(([k, x, y, label, side]) => `<g class="hero-dev" data-k="${k}" tabindex="0" role="button" aria-label="${esc(HW_INFO[k][0])}: ${esc(HW_INFO[k][1])}">
-      <rect class="halo" x="${x - 34}" y="${y - 30}" width="68" height="${label ? 72 : 60}" rx="12"/>
-      ${hw(k, x, y, 0.72)}<text class="lbl" ${side ? `x="${x + 26}" y="${y + 4}" style="text-anchor:start"` : `x="${x}" y="${y + 33}"`}>${esc(label)}</text></g>`).join("")}
-  </svg><p class="hero-cap" id="hero-cap" aria-live="polite">Tap any device to see what it does.</p></div>`;
+/* THE ROUTE: the chosen learning path drawn as a winding road with numbered stops, like a transit map.
+   Done stops are ticked, the next one is highlighted, and the road is coloured as far as you've got. */
+// Positions for n stops in rows of `cols`, snaking left-right then right-left, plus the start and finish markers.
+// Pure (tested in tests/page.test.mjs). Units are pixels: the map is drawn at its real width W, so text stays
+// true size; rows are rowH apart and turn with radius R.
+function routeLayout(n, cols, { W = 1000, rowH = 150, top = 70, R = rowH / 2, pad = 50 } = {}) {
+  const m = R + pad, dx = cols > 1 ? (W - 2 * m) / (cols - 1) : 0;
+  const at = i => { const row = Math.floor(i / cols), col = i % cols; return { x: row % 2 ? W - m - col * dx : m + col * dx, y: top + row * rowH, row }; };
+  const stops = Array.from({ length: n }, (_, i) => at(i));
+  const last = stops[n - 1] || at(0), dir = last.row % 2 ? -1 : 1;
+  const finish = n % cols ? { x: last.x + dir * Math.min(dx * 0.75, 90), y: last.y, row: last.row } : at(n);
+  // Tall enough for the last stop's label (up to three lines) and the finish marker, and no taller.
+  return { stops, start: { x: Math.max(26, m - 70), y: top, row: 0 }, finish, height: Math.max(last.y + 112, finish.y + 40), R };
 }
-function wireHero() {
-  const svg = main.querySelector(".hero-net"); if (!svg) return;
-  const pick = g => {
-    svg.querySelectorAll(".hero-dev.sel").forEach(x => x.classList.remove("sel"));
-    g.classList.add("sel");
-    const [name, what] = HW_INFO[g.dataset.k];
-    $("hero-cap").innerHTML = `<b>${esc(name)}</b> · ${esc(what)}`;
-  };
-  svg.addEventListener("click", e => { const g = e.target.closest(".hero-dev"); if (g) pick(g); });
-  svg.addEventListener("keydown", e => { const g = e.target.closest(".hero-dev"); if (g && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pick(g); } });
-  svg.addEventListener("mouseover", e => { const g = e.target.closest(".hero-dev"); if (g && !g.classList.contains("sel")) pick(g); });
+// The road through a list of positions: straight along a row, a half-circle at each end where it turns.
+function routePath(points, R) {
+  let d = `M${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1], b = points[i];
+    if (b.row === a.row) { d += ` L${b.x} ${b.y}`; continue; }
+    const right = a.row % 2 === 0;  // even rows run left to right, so they turn on the right
+    d += ` A${R} ${R} 0 0 ${right ? 1 : 0} ${a.x} ${b.y} L${b.x} ${b.y}`;
+  }
+  return d;
 }
+const routeWrap = (text, max) => text.split(" ").reduce((lines, w) => { const l = lines[lines.length - 1]; if (l && (l + " " + w).length <= max) lines[lines.length - 1] = l + " " + w; else lines.push(w); return lines; }, []).slice(0, 3);
+const KIND_WORD = { lesson: "Lesson", lab: "Lab", mission: "Mission", agency: "Agency", game: "Game", ctf: "Flags", prove: "Exam" };
+let routeId = null;
+function routePathChoice() {
+  if (!routeId) { try { routeId = localStorage.getItem("pn-route"); } catch (e) {} }
+  const started = DATA.paths.find(p => !P.paths[p.id] && pathSteps(p).some(st => st.done));
+  return DATA.paths.find(p => p.id === routeId) || started || DATA.paths.find(p => p.id === "awareness") || DATA.paths[0];
+}
+function drawRoute() {
+  const box = $("route"); if (!box) return;
+  const p = routePathChoice(), steps = pathSteps(p), next = steps.findIndex(st => !st.done), done = steps.filter(st => st.done).length;
+  const W = Math.max(300, box.clientWidth), cols = W < 520 ? 2 : W < 820 ? 4 : 6, maxCh = cols <= 2 ? 16 : 17;
+  const L = routeLayout(steps.length, cols, cols <= 2 ? { W, rowH: 145, R: 46, pad: 40 } : { W });
+  routeWidth = box.clientWidth;
+  const reached = next === -1 ? [L.start, ...L.stops, L.finish] : [L.start, ...L.stops.slice(0, next + 1)];
+  const short = t => t.replace(/^Path to /, "");
+  box.innerHTML = `<div class="route-top"><h2 id="route-h">Your route: ${esc(short(p.title))}</h2><span class="muted">${done} of ${steps.length} stops · finish for +${PATH_XP} XP</span></div>
+    <div class="row route-paths" role="group" aria-label="Choose a route">${DATA.paths.map(x => `<button type="button" class="chip" data-route="${esc(x.id)}" aria-pressed="${x.id === p.id}">${esc(short(x.title))}</button>`).join("")}</div>
+    <svg class="route-map" viewBox="0 0 ${W} ${L.height}" role="group" aria-label="${esc(`${p.title}: ${steps.length} stops, ${done} done.`)}">
+      <path class="route-road" d="${routePath([L.start, ...L.stops, L.finish], L.R)}"/>
+      <path class="route-road done" d="${routePath(reached, L.R)}"/>
+      <g class="route-start" transform="translate(${L.start.x},${L.start.y})" aria-hidden="true"><rect x="-22" y="-22" width="44" height="44" rx="10"/><text y="5" text-anchor="middle">GO</text></g>
+      ${steps.map((st, i) => { const s = L.stops[i], state = st.done ? "done" : i === next ? "next" : "todo";
+        return `<a href="${st.href}" class="route-stop ${state}" aria-label="${esc(`Stop ${i + 1} of ${steps.length}: ${st.label} (${KIND_WORD[st.kind] || st.kind})${st.done ? ", done" : i === next ? ", next" : ""}`)}">
+          <g transform="translate(${s.x},${s.y})">${state === "next" ? '<circle class="route-pulse" r="27"/>' : ""}<circle class="route-dot" r="19"/>
+          <text class="route-n" y="5" text-anchor="middle">${st.done ? "✓" : i + 1}</text>
+          <text class="route-kind" y="38" text-anchor="middle">${esc((KIND_WORD[st.kind] || st.kind).toUpperCase())}</text>
+          ${routeWrap(st.label, maxCh).map((ln, k) => `<text class="route-lbl" y="${56 + k * 17}" text-anchor="middle">${esc(ln)}</text>`).join("")}</g></a>`; }).join("")}
+      <g class="route-finish${next === -1 ? " done" : ""}" transform="translate(${L.finish.x},${L.finish.y})" aria-hidden="true"><rect x="-26" y="-22" width="52" height="44" rx="10"/><text y="5" text-anchor="middle">${next === -1 ? "★" : "FINISH"}</text></g>
+    </svg>
+    <div class="row route-next">${next === -1 ? `<span><b>Route complete.</b> Pick another route above.</span>` : `<span>Next stop: <b>${esc(steps[next].label)}</b> <span class="muted">(${esc(KIND_WORD[steps[next].kind] || steps[next].kind)})</span></span><a class="btn brand" href="${steps[next].href}">${done ? "Continue" : "Start"} →</a>`}
+      <a class="link-btn" href="#path-${esc(p.id)}">Route details</a><a class="link-btn" href="#news">Just here for the news?</a></div>`;
+  box.querySelectorAll("[data-route]").forEach(b => b.addEventListener("click", () => {
+    routeId = b.dataset.route; try { localStorage.setItem("pn-route", routeId); } catch (e) {}
+    drawRoute(); box.querySelector(`[data-route="${routeId}"]`)?.focus();
+  }));
+}
+// The map is drawn at its real width, so redraw when that changes (once the resizing settles).
+let routeWidth = 0, routeTimer = null;
+addEventListener("resize", () => { clearTimeout(routeTimer); routeTimer = setTimeout(() => { const b = $("route"); if (b && Math.abs(b.clientWidth - routeWidth) > 8) drawRoute(); }, 120); });
 
 /* TODAY */
 VIEWS.today = () => {
@@ -65,21 +98,11 @@ VIEWS.today = () => {
   const featured = news.filter(n => n.topics.length);
 
   main.innerHTML = `<div class="view">
-    ${P.intro ? "" : welcomeHtml()}
-    <div class="view-head hero"><div class="stack" style="gap:14px">
-      <div class="stack" style="gap:10px"><h1>Learn it. Break it. <em class="accent">Understand it.</em></h1><p>Hands-on cyber security and IT: see how attacks work, learn how to defend against them, and understand the news behind every headline. Free, visual, and built for real exams.</p></div>
-      <div class="hero-stats">
-        <span class="hero-stat"><b>${DATA.lessons.length}</b> visual lessons</span>
-        <span class="hero-stat"><b>${DATA.labs.length + DATA.missions.length}</b> interactive labs &amp; missions</span>
-        <span class="hero-stat"><b>Network+ · Security+</b> exam prep</span>
-        <span class="hero-stat"><b>Daily</b> news, explained</span>
-      </div>
-      <div class="row hero-cta"><a class="btn brand" href="#learn">Choose a learning path →</a><a class="btn ghost" href="#play">Spot a phishing email</a></div>
-    </div>${heroNet()}</div>
+    <div class="view-head home-head"><h1>Learn it. Break it. <em class="accent">Understand it.</em></h1>
+      <p>Hands-on cyber security and IT: see how attacks work, learn how to defend against them, and understand the news behind every headline. Free, visual, and built for real exams.</p></div>
+    <section class="panel route-panel" aria-labelledby="route-h"><div id="route"></div></section>
     <div class="split">
       <div class="stack" style="gap:18px">
-        ${continueCard()}
-        ${missionSuggestionCard()}
         <section class="changelog" aria-labelledby="today-h">
           <div class="win-bar"><b>this-week.log</b><span>v${esc(m.version)} · ${esc(m.dateLong)}</span></div>
           <div class="win-body">
@@ -109,27 +132,10 @@ VIEWS.today = () => {
     </div>
   </div>`;
   renderDaily();
-  wireHero();
+  drawRoute();
 };
 
-/* WELCOME: first visit only */
-const WELCOME = [
-  { id: "new", title: "I'm new to cyber security", text: "Start with the basics: scams, passwords and how attacks work. About 20 minutes.", href: "#path-awareness", cta: "Start the basics path" },
-  { id: "career", title: "I want a job in cyber", text: "See the entry-level roles, what they involve, and a learning path for each.", href: "#careers", cta: "Explore careers" },
-  { id: "news", title: "Just here for the news", text: "Today's security news, with every story linked to a plain-English explanation.", href: "#news", cta: "Read the news" },
-];
-function welcomeHtml() {
-  return `<section class="panel welcome" aria-labelledby="welcome-h">
-    <div class="panel-title"><h2 id="welcome-h">Welcome. What brings you here?</h2><button class="link-btn" data-intro="skip">Skip</button></div>
-    <div class="welcome-grid">${WELCOME.map(w => `<a class="lcard" href="${w.href}" data-intro="${w.id}"><h3>${esc(w.title)}</h3><p>${esc(w.text)}</p><span class="link-btn">${esc(w.cta)} →</span></a>`).join("")}</div>
-    </section>`;
-}
 document.addEventListener("click", e => { const r = e.target.closest?.("[data-reset-lab]"); if (r) resetLab(r.dataset.resetLab); });
-document.addEventListener("click", e => {
-  const w = e.target.closest?.("[data-intro]"); if (!w) return;
-  P.intro = w.dataset.intro; saveP();
-  if (w.dataset.intro === "skip") rerender();
-});
 
 /* STACK ("Am I affected?") */
 const STACK = Object.fromEntries(DATA.stack.map(s => [s.id, s]));
@@ -156,26 +162,6 @@ function stackCard() {
     <p><strong>${stories.length}</strong> ${stories.length === 1 ? "story mentions" : "stories mention"} your tech this week${stories.length ? ` · <a href="#news" data-news-stack="1">show them</a>` : ""}.</p>
     ${advice || `<p class="muted" style="font-size:0.9rem">No exploited or critical vulnerabilities for your stack ${CVES_READY ? "this week" : "in the exploited list"}. Nice.</p>`}
   </section>`;
-}
-function continueCard() {
-  const started = DATA.paths.find(p => !P.paths[p.id] && pathSteps(p).some(st => st.done));
-  const p = started || DATA.paths.find(p => p.id === "soc" && !P.paths[p.id]) || DATA.paths.find(p => !P.paths[p.id]);
-  if (!p) return "";
-  const steps = pathSteps(p), next = steps.find(st => !st.done), done = steps.filter(st => st.done).length;
-  return `<section class="panel continue"><div class="eyebrow">${started ? "Pick up where you left off" : "Suggested path"} · ${done}/${steps.length}</div>
-    <h2>${esc(p.title)}</h2>
-    <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(done / steps.length * 100)}%"></i></span></div>
-    <p>Next: <strong>${esc(next.label)}</strong> <span class="muted">(${esc(next.kind)})</span></p>
-    <div class="row"><a class="btn brand" href="${next.href}">${started ? "Continue" : "Start"}</a><a class="link-btn" href="#path-${esc(p.id)}">See the whole path</a></div></section>`;
-}
-function missionSuggestionCard() {
-  const m = DATA.missions.find(x => !count((P.missions || {})[x.id])) || DATA.missions[0];
-  if (!m) return "";
-  const modesDone = Object.keys((P.missions || {})[m.id] || {});
-  return `<section class="panel"><div class="eyebrow">Mission · ${m.minutes} min · ${esc(m.topic)}</div>
-    <h2>${esc(m.title)}</h2><p class="muted">${esc(m.summary)}</p>
-    <div class="row">${Object.keys(m.modes).map(k => `<span class="pchip">${modesDone.includes(k) ? "✓ " : ""}${esc(m.modes[k].label)}</span>`).join("")}</div>
-    <a class="btn brand" href="#mission-${esc(m.id)}" style="justify-self:start">Open mission</a></section>`;
 }
 VIEWS.stack = () => {
   const chosen = new Set(P.stack || []);
