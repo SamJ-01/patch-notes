@@ -33,6 +33,10 @@ These are investigations of logs and timelines rather than packet journeys. They
 
 After mission 7 comes **PATCH//AGENCY** (`docs/agency-pilot.md`): a whole SOC shift of alerts built from the same log search, evidence check and rules.
 
+## How networks are drawn
+
+Any diagram of a network should come from `static/js/net/model.js` and `static/js/net/view.js`: one colour per broadcast domain, links as bundles of the domains they carry, and a legend that says who's in each. That keeps the picture honest (it's computed, not drawn by hand) and the same everywhere.
+
 ## Rules for writing one
 
 1. Start from the root cause and its evidence, then design the wrong turns.
@@ -51,6 +55,7 @@ After mission 7 comes **PATCH//AGENCY** (`docs/agency-pilot.md`): a whole SOC sh
 | **Ports and protocols** ✅ | `ports.js` | 24 flip cards for the Network+ port list, insecure-to-secure pairs, and a 12-question drill (port, protocol, TCP/UDP, secure swap) |
 | **Subnetting trainer** ✅ | `subnet.js` | Live binary view of the network/host split, mask, network, broadcast, host range and block size; typed practice with worked answers |
 | **Hashing: fingerprints, MD5, SHA-1 and passwords** ✅ | `hashing.js` | Live MD5 (own RFC 1321 code), SHA-1 and SHA-256; the avalanche effect; checking a download against its SHA-256; why MD5 and SHA-1 are retired (collisions, Flame, SHAttered); fast vs slow hashing measured in the browser (PBKDF2, OWASP's 600,000 rounds); a fictional leaked table unsalted then salted; storing passwords properly |
+| **Network builder** ✅ | `netbuilder.js` on `net/model.js` + `net/view.js` | Packet-Tracer-style sandbox: add, drag and cable PCs, switches and routers; set IPs, VLANs, trunks and router subinterfaces with forms or IOS; every broadcast domain in its own colour, live; who can reach whom and why not; four goals; saved in the browser |
 | **VLANs: one network, kept apart** ✅ | `vlan.js` | Three simulated Cisco 2960s (IOS commands, abbreviations, `?`, real error and log messages) and six Windows PCs: `show vlan brief`, create and name VLANs, access and voice ports (`mls qos trust cos`), why VLANs don't cross untrunked links (DTP), 802.1Q trunks, native VLAN mismatch. Covers the Packet Tracer "VLAN Configuration" activity and its fix |
 | **Subnet calculator** ✅ (tool, `#subnet-calc/<ip>/<prefix>`) | `subnet.js` (`mountCalc`) | Live network diagram, class and address type, CIDR, masks, ranges, subnet map, binary AND, splitter; also embedded in the trainer |
 

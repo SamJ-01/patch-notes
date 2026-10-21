@@ -43,7 +43,7 @@ function deviceSvg(topo, id, [x, y], seg, opts) {
   const sel = opts.selected === id ? " sel" : "";
   const ring = d.kind === "pc" && mine.length ? ` ${segClass(mine[0])}` : "";
   const dots = d.kind !== "pc" ? mine.map((s, i) => `<circle class="nv-dot ${segClass(s)}" cx="${-w / 2 + 9 + i * 9}" cy="${-h / 2 - 1}" r="4"/>`).join("") : "";
-  const sub = d.kind === "pc" ? (d.ip || "no IP") : d.kind === "router" ? `${Object.values(d.ports).reduce((n, p) => n + p.subs.length, 0)} addresses` : "";
+  const sub = d.kind === "pc" ? (d.ip || "no IP") : "";  // router and switch details are in the legend
   const r = opts.reach?.[id];
   const badge = r ? `<g class="nv-badge ${r.result === "ok" ? "ok" : "no"}" transform="translate(${w / 2 - 4},${-h / 2 + 4})"><circle r="9"/><text y="4" text-anchor="middle">${r.result === "ok" ? "✓" : "✗"}</text></g>` : "";
   const scale = d.kind === "switch" ? 0.95 : d.kind === "router" ? 0.7 : 0.6;
@@ -68,7 +68,7 @@ export function describe(topo, id, seg, reach) {
   return `${own}, ${where}.${reach ? ` ${reach.result === "ok" ? "Reachable" : "Not reachable"}: ${reach.reason}` : ""}`;
 }
 
-// The whole picture. opts: { layout: { id: [x, y] }, width, height, focus: segment index, selected: device id,
+// The whole picture. opts: { layout: { id: [x, y] }, width, height (or viewBox), focus: segment index, selected: device id,
 // reach: { id: pingResult } (badges), interactive: devices are focusable buttons }.
 export function svg(topo, opts) {
   const seg = opts.seg || M.segments(topo), pos = opts.layout;
@@ -76,7 +76,7 @@ export function svg(topo, opts) {
   const links = topo.links.filter(l => pos[l.a[0]] && pos[l.b[0]]).map(l => linkSvg(topo, l, pos, seg, opts.focus)).join("");
   const devs = ids.map(id => deviceSvg(topo, id, pos[id], seg, opts)).join("");
   const summary = seg.segments.length ? seg.segments.map(s => `${s.name}: ${[...s.hosts, ...s.routers.map(r => r.id)].join(", ") || "no devices"}`).join(". ") : "No working networks yet";
-  return `<svg class="netview" viewBox="0 0 ${opts.width} ${opts.height}" ${opts.interactive ? 'role="group"' : 'role="img"'} aria-label="${esc(`Network diagram. ${summary}.`)}">${links}${devs}</svg>`;
+  return `<svg class="netview" viewBox="${opts.viewBox || `0 0 ${opts.width} ${opts.height}`}" ${opts.interactive ? 'role="group"' : 'role="img"'} aria-label="${esc(`Network diagram. ${summary}.`)}">${links}${devs}</svg>`;
 }
 
 // The key to the colours: one row per broadcast domain with devices in it (who, and which subnets). Domains

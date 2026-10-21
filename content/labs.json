@@ -2101,6 +2101,442 @@
   ]
  },
  {
+  "id": "network-builder",
+  "kind": "netbuilder",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 20,
+  "lesson": "networking",
+  "title": "Network builder: see who can talk to whom",
+  "skill": "Build networks with switches, VLANs, trunks and a router, and see every broadcast domain light up as you change it",
+  "intro": "A sandbox in the spirit of Packet Tracer, built so you can see the structure. Add PCs, switches and routers, cable them, and set addresses and VLANs with forms or the command line. Every broadcast domain gets its own colour, cables show which networks they carry, and picking a PC shows who it can reach and why not.",
+  "simplification": "Simplified for learning: switches model Cisco Catalyst 2960 VLANs, trunks and DTP; routers only know the networks they have an address on (no static or dynamic routing); PCs are Windows with one network card and a fixed address. Spanning tree, MAC address tables, ARP caches and DHCP aren't modelled. Switch commands follow IOS 15 and ping output follows Windows. Your network is saved in this browser only.",
+  "goals": [
+   {
+    "id": "ping",
+    "text": "Get a ping reply from one PC to another.",
+    "why": "Same subnet and the same broadcast domain (the same colour), so the PC's ARP request finds the other one."
+   },
+   {
+    "id": "split",
+    "text": "Put two PCs on one switch into different VLANs, and watch the colours split.",
+    "why": "Each VLAN is its own broadcast domain, even on one switch. Different colours can't hear each other without a router."
+   },
+   {
+    "id": "trunk",
+    "text": "Link two switches with a trunk that carries at least two VLANs with PCs in them.",
+    "why": "A trunk tags every frame with its VLAN, so one cable carries several networks: that's the bundle of colours."
+   },
+   {
+    "id": "route",
+    "text": "Route between VLANs: get a ping reply from a PC in one VLAN to a PC in another.",
+    "why": "The router has an address in each network, and each PC sends traffic for other networks to its default gateway. Load \"Router between two VLANs\" for a head start."
+   }
+  ],
+  "scenarios": [
+   {
+    "id": "starter",
+    "label": "Two PCs and a switch",
+    "about": "Two PCs on one switch. Pick PC1 to see who it can reach, then try changing an IP address or a VLAN.",
+    "network": {
+     "devices": {
+      "S1": {
+       "kind": "switch"
+      },
+      "PC1": {
+       "kind": "pc",
+       "ip": "192.168.1.10",
+       "mask": "255.255.255.0",
+       "gw": ""
+      },
+      "PC2": {
+       "kind": "pc",
+       "ip": "192.168.1.20",
+       "mask": "255.255.255.0",
+       "gw": ""
+      }
+     },
+     "links": [
+      {
+       "a": [
+        "PC1",
+        "NIC"
+       ],
+       "b": [
+        "S1",
+        "Fa0/1"
+       ]
+      },
+      {
+       "a": [
+        "PC2",
+        "NIC"
+       ],
+       "b": [
+        "S1",
+        "Fa0/2"
+       ]
+      }
+     ],
+     "layout": {
+      "S1": [
+       450,
+       200
+      ],
+      "PC1": [
+       300,
+       400
+      ],
+      "PC2": [
+       600,
+       400
+      ]
+     }
+    }
+   },
+   {
+    "id": "college",
+    "label": "Harbourside College (three switches)",
+    "about": "Three switches with staff, student and guest VLANs, but the links between switches aren't trunks yet. Spot why each colour is cut in two, then fix it.",
+    "network": {
+     "devices": {
+      "S1": {
+       "kind": "switch",
+       "vlans": {
+        "10": "Staff",
+        "20": "Students",
+        "30": "Guest"
+       }
+      },
+      "S2": {
+       "kind": "switch",
+       "vlans": {
+        "10": "Staff",
+        "20": "Students",
+        "30": "Guest"
+       },
+       "ports": {
+        "Fa0/1": {
+         "mode": "access",
+         "access": 10
+        },
+        "Fa0/2": {
+         "mode": "access",
+         "access": 20
+        },
+        "Fa0/3": {
+         "mode": "access",
+         "access": 30
+        }
+       }
+      },
+      "S3": {
+       "kind": "switch",
+       "vlans": {
+        "10": "Staff",
+        "20": "Students",
+        "30": "Guest"
+       },
+       "ports": {
+        "Fa0/1": {
+         "mode": "access",
+         "access": 10
+        },
+        "Fa0/2": {
+         "mode": "access",
+         "access": 20
+        },
+        "Fa0/3": {
+         "mode": "access",
+         "access": 30
+        }
+       }
+      },
+      "PC1": {
+       "kind": "pc",
+       "ip": "10.10.10.11",
+       "mask": "255.255.255.0",
+       "gw": ""
+      },
+      "PC2": {
+       "kind": "pc",
+       "ip": "10.10.20.12",
+       "mask": "255.255.255.0",
+       "gw": ""
+      },
+      "PC3": {
+       "kind": "pc",
+       "ip": "10.10.30.13",
+       "mask": "255.255.255.0",
+       "gw": ""
+      },
+      "PC4": {
+       "kind": "pc",
+       "ip": "10.10.10.14",
+       "mask": "255.255.255.0",
+       "gw": ""
+      },
+      "PC5": {
+       "kind": "pc",
+       "ip": "10.10.20.15",
+       "mask": "255.255.255.0",
+       "gw": ""
+      },
+      "PC6": {
+       "kind": "pc",
+       "ip": "10.10.30.16",
+       "mask": "255.255.255.0",
+       "gw": ""
+      }
+     },
+     "links": [
+      {
+       "a": [
+        "S1",
+        "Gi0/1"
+       ],
+       "b": [
+        "S2",
+        "Gi0/1"
+       ]
+      },
+      {
+       "a": [
+        "S1",
+        "Gi0/2"
+       ],
+       "b": [
+        "S3",
+        "Gi0/1"
+       ]
+      },
+      {
+       "a": [
+        "PC1",
+        "NIC"
+       ],
+       "b": [
+        "S2",
+        "Fa0/1"
+       ]
+      },
+      {
+       "a": [
+        "PC2",
+        "NIC"
+       ],
+       "b": [
+        "S2",
+        "Fa0/2"
+       ]
+      },
+      {
+       "a": [
+        "PC3",
+        "NIC"
+       ],
+       "b": [
+        "S2",
+        "Fa0/3"
+       ]
+      },
+      {
+       "a": [
+        "PC4",
+        "NIC"
+       ],
+       "b": [
+        "S3",
+        "Fa0/1"
+       ]
+      },
+      {
+       "a": [
+        "PC5",
+        "NIC"
+       ],
+       "b": [
+        "S3",
+        "Fa0/2"
+       ]
+      },
+      {
+       "a": [
+        "PC6",
+        "NIC"
+       ],
+       "b": [
+        "S3",
+        "Fa0/3"
+       ]
+      }
+     ],
+     "layout": {
+      "S1": [
+       450,
+       95
+      ],
+      "S2": [
+       230,
+       265
+      ],
+      "S3": [
+       670,
+       265
+      ],
+      "PC1": [
+       110,
+       440
+      ],
+      "PC2": [
+       230,
+       440
+      ],
+      "PC3": [
+       350,
+       440
+      ],
+      "PC4": [
+       550,
+       440
+      ],
+      "PC5": [
+       670,
+       440
+      ],
+      "PC6": [
+       790,
+       440
+      ]
+     }
+    }
+   },
+   {
+    "id": "router",
+    "label": "Router between two VLANs",
+    "about": "Two VLANs and a router with an address in each. The switch port to the router isn't a trunk yet, so the PCs can't reach their gateways.",
+    "network": {
+     "devices": {
+      "R1": {
+       "kind": "router",
+       "ports": {
+        "G0/0": {
+         "subs": [
+          {
+           "tag": 10,
+           "ip": "10.0.10.1",
+           "mask": "255.255.255.0"
+          },
+          {
+           "tag": 20,
+           "ip": "10.0.20.1",
+           "mask": "255.255.255.0"
+          }
+         ]
+        }
+       }
+      },
+      "S1": {
+       "kind": "switch",
+       "vlans": {
+        "10": "Staff",
+        "20": "Students"
+       },
+       "ports": {
+        "Fa0/1": {
+         "mode": "access",
+         "access": 10
+        },
+        "Fa0/2": {
+         "mode": "access",
+         "access": 20
+        }
+       }
+      },
+      "PC1": {
+       "kind": "pc",
+       "ip": "10.0.10.11",
+       "mask": "255.255.255.0",
+       "gw": "10.0.10.1"
+      },
+      "PC2": {
+       "kind": "pc",
+       "ip": "10.0.20.12",
+       "mask": "255.255.255.0",
+       "gw": "10.0.20.1"
+      }
+     },
+     "links": [
+      {
+       "a": [
+        "R1",
+        "G0/0"
+       ],
+       "b": [
+        "S1",
+        "Gi0/1"
+       ]
+      },
+      {
+       "a": [
+        "PC1",
+        "NIC"
+       ],
+       "b": [
+        "S1",
+        "Fa0/1"
+       ]
+      },
+      {
+       "a": [
+        "PC2",
+        "NIC"
+       ],
+       "b": [
+        "S1",
+        "Fa0/2"
+       ]
+      }
+     ],
+     "layout": {
+      "R1": [
+       450,
+       100
+      ],
+      "S1": [
+       450,
+       270
+      ],
+      "PC1": [
+       290,
+       440
+      ],
+      "PC2": [
+       610,
+       440
+      ]
+     }
+    }
+   },
+   {
+    "id": "blank",
+    "label": "Empty canvas",
+    "about": "Start from nothing: add devices with the buttons above.",
+    "network": {
+     "devices": {},
+     "links": [],
+     "layout": {}
+    }
+   }
+  ],
+  "next": [
+   {
+    "label": "Cisco Packet Tracer: build this for real (free with a Networking Academy account)",
+    "url": "https://www.netacad.com/cisco-packet-tracer"
+   }
+  ]
+ },
+ {
   "id": "linux-terminal",
   "title": "Linux terminal basics",
   "kind": "terminal",
