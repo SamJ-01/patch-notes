@@ -152,9 +152,14 @@
     {
      "id": "2.2",
      "title": "Switching technologies and features",
-     "coverage": "none",
-     "activities": [],
-     "gap": "VLANs, trunking (802.1Q), spanning tree and MTU aren't covered yet."
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "vlans"
+      }
+     ],
+     "gap": "VLANs, 802.1Q trunks, native and voice VLANs are covered hands-on; spanning tree and MTU aren't yet."
     },
     {
      "id": "2.3",
@@ -377,9 +382,13 @@
       {
        "type": "lab",
        "id": "subnetting"
+      },
+      {
+       "type": "lab",
+       "id": "vlans"
       }
      ],
-     "gap": "DHCP and DNS failures are covered; VLAN and routing faults aren't yet."
+     "gap": "DHCP and DNS failures are covered, and a VLAN fault (links that don't trunk); routing faults aren't yet."
     },
     {
      "id": "5.4",

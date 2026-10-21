@@ -798,6 +798,20 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .term-tasks li:not(.got):not(.now) { color: var(--muted); }
 .term-tasks code { color: var(--sun); }
 @media (max-width: 860px) { .term-grid { grid-template-columns: 1fr; } .term-shell { height: 380px; } }
+/* VLAN lab: IOS output keeps its columns (and the ^ marker its place), so it scrolls sideways inside the console. */
+.vlan-lab .term-out { white-space: pre; overflow-wrap: normal; overflow-x: auto; }
+.vl-tabs { justify-content: flex-start; flex-wrap: wrap; gap: 6px; }
+.vl-tabs .chip { padding: 4px 9px; font-size: 0.74rem; }
+.vl-diagram svg { width: 100%; max-height: 340px; display: block; }
+.vl-node .plate { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
+.vl-name { font: 600 11px var(--font-mono); fill: var(--ink); }
+.vl-port { font: 10px var(--font-mono); fill: var(--muted); }
+.vl-link { stroke: var(--dg-line); stroke-width: 2.5; }
+.vl-link.trunk { stroke: var(--brand); stroke-width: 5; }
+.vl-link.v10 { stroke: var(--high); } .vl-link.v20 { stroke: var(--sun); } .vl-link.v30 { stroke: var(--good); } .vl-link.vx { stroke-dasharray: 4 4; }
+.vl-table { margin-top: 10px; font-size: 0.86rem; overflow-x: auto; }
+.vl-table th, .vl-table td { text-align: left; padding: 4px 10px 4px 0; white-space: nowrap; }
+.vl-why { display: block; font-weight: 400; font-size: 0.82rem; color: var(--muted); margin-top: 3px; }
 
 /* ---------- Dashboard ---------- */
 .view-head h1 .accent { font-style: normal; color: var(--brand); }
@@ -2596,6 +2610,7 @@ const termArt = () => { const id = `cterm-clip-${++termN}`; return `<defs><clipP
 const OSI_ART = [0, 1, 2, 3, 4, 5, 6].map(k => `<rect class="cosi" x="74" y="${14 + k * 8.6}" width="52" height="6" rx="1.5" style="fill:${["var(--critical)", "var(--high)", "var(--brand)", "var(--good)", "var(--sun)", "var(--likely)", "var(--exploited)"][k]}"/>`).join("");
 // d: devices [kind, x, y, scale], g: glyphs, l: links [x1, y1, x2, y2, air?], t: tags, p: packet paths, tone: packet colour
 const SCENE = {
+  vlans: { d: [["switch", 100, 24, 0.75], ["pc", 36, 66, 0.42], ["pc", 100, 70, 0.42], ["pc", 164, 66, 0.42]], l: [[84, 30, 46, 56], [100, 32, 100, 58], [116, 30, 154, 56]], t: [["VLAN 10", 36, 94], ["20", 100, 96], ["30", 164, 94]] },
   "telnet-ssh": { d: [["laptop", 36, 50, 0.5], ["server", 166, 50, 0.56], ["attacker", 100, 20, 0.0001]], g: [["eye", 100, 24, 0.9, "bad"]], l: [[52, 50, 150, 50]], t: [["admin / ••••", 100, 78, "bad"]], p: ["M36 50L166 50"], tone: "bad" },
   "cia-triad": { g: [["shield", 100, 44, 2.1, "good"]], t: [["C · I · A", 100, 76]] },
   "frameworks": { d: [["server", 150, 46, 0.5]], g: [["shield", 52, 44, 1.5, "good"], ["search", 100, 60, 0.7]], l: [[70, 46, 134, 46]], t: [["NIST CSF", 100, 18]], p: ["M52 44L150 46"], tone: "good" },
@@ -2766,7 +2781,7 @@ function missionView(id) {
     $("mission-root").innerHTML = `<div class="empty">Couldn't load the mission code (js/missions/ui.js). If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`;
   });
 }
-const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring", "wiretap"];  // labs with their own module in static/js/labs/<kind>.js
+const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring", "wiretap", "vlan"];  // labs with their own module in static/js/labs/<kind>.js
 function moduleLab(l) {
   main.innerHTML = `<div class="view" id="lab-root"><div class="empty">Loading lab…</div></div>`;
   import(`./js/labs/${l.kind}.js`).then(mod => {

@@ -50,6 +50,7 @@ After mission 7 comes **PATCH//AGENCY** (`docs/agency-pilot.md`): a whole SOC sh
 | **Linux terminal basics** ✅ | `terminal.js` | `pwd`, `whoami`, `ls -a/-l`, `cd`, `cat`, `grep`, `find`, `chmod`, `mkdir`, `touch`, `rm`, pipes into `head`, `tail`, `wc`, `sort`, `uniq`, `cut`, and running scripts over a simulated file system; 11 objectives |
 | **Ports and protocols** ✅ | `ports.js` | 24 flip cards for the Network+ port list, insecure-to-secure pairs, and a 12-question drill (port, protocol, TCP/UDP, secure swap) |
 | **Subnetting trainer** ✅ | `subnet.js` | Live binary view of the network/host split, mask, network, broadcast, host range and block size; typed practice with worked answers |
+| **VLANs: one network, kept apart** ✅ | `vlan.js` | Three simulated Cisco 2960s (IOS commands, abbreviations, `?`, real error and log messages) and six Windows PCs: `show vlan brief`, create and name VLANs, access and voice ports (`mls qos trust cos`), why VLANs don't cross untrunked links (DTP), 802.1Q trunks, native VLAN mismatch. Covers the Packet Tracer "VLAN Configuration" activity and its fix |
 | **Subnet calculator** ✅ (tool, `#subnet-calc/<ip>/<prefix>`) | `subnet.js` (`mountCalc`) | Live network diagram, class and address type, CIDR, masks, ranges, subnet map, binary AND, splitter; also embedded in the trainer |
 
-Next for Network+ (Oct 2026 focus): hub vs switch vs router (MAC tables, collision and broadcast domains), DNS (mission #2 above).
+Next for Network+ (Oct 2026 focus): hub vs switch vs router (MAC tables, collision and broadcast domains), inter-VLAN routing (router on a stick) on the VLAN lab's switches, spanning tree.

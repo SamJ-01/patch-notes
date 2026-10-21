@@ -1732,6 +1732,375 @@
   "intro": "Ever wondered what's inside the clear plug on a network cable? Eight tiny wires in a set order. Arrange them correctly, learn the two standards, and see what makes a cable straight-through or crossover."
  },
  {
+  "id": "vlans",
+  "kind": "vlan",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 25,
+  "lesson": "networking",
+  "title": "VLANs: one network, kept apart",
+  "skill": "Create VLANs, assign access and voice ports, and trunk them between Cisco switches",
+  "intro": "Harbourside College has three Cisco switches and one flat network: staff, students and guests all share VLAN 1. Split them into VLANs from the switch command line, find out why that breaks things between switches, and fix it with trunks.",
+  "simplification": "Simplified simulation of Cisco Catalyst 2960 switches running IOS 15: only the commands this lab needs are modelled, and some long outputs are shortened (marked [Simulator]). VLAN changes apply at once (real IOS applies them when you leave VLAN mode). Spanning tree, VTP and CDP are not modelled, except the CDP native VLAN mismatch warning. On a real 2960, mls qos trust cos only takes effect once QoS is enabled with the global command mls qos. PCs are Windows and have no default gateway; ping output follows Windows. Addresses are private (10.10.x.x) and the college is fictional.",
+  "vlans": {
+   "10": "Staff",
+   "20": "Students",
+   "30": "Guest",
+   "99": "Management",
+   "150": "Voice"
+  },
+  "switches": {
+   "S1": {
+    "links": {
+     "Gi0/1": [
+      "S2",
+      "Gi0/1"
+     ],
+     "Gi0/2": [
+      "S3",
+      "Gi0/1"
+     ]
+    }
+   },
+   "S2": {
+    "links": {
+     "Gi0/1": [
+      "S1",
+      "Gi0/1"
+     ]
+    }
+   },
+   "S3": {
+    "links": {
+     "Gi0/1": [
+      "S1",
+      "Gi0/2"
+     ]
+    }
+   }
+  },
+  "pcs": {
+   "PC1": {
+    "ip": "10.10.10.11",
+    "mask": "255.255.255.0",
+    "sw": "S2",
+    "port": "Fa0/11",
+    "vlan": 10
+   },
+   "PC2": {
+    "ip": "10.10.20.12",
+    "mask": "255.255.255.0",
+    "sw": "S2",
+    "port": "Fa0/18",
+    "vlan": 20
+   },
+   "PC3": {
+    "ip": "10.10.30.13",
+    "mask": "255.255.255.0",
+    "sw": "S2",
+    "port": "Fa0/6",
+    "vlan": 30
+   },
+   "PC4": {
+    "ip": "10.10.10.14",
+    "mask": "255.255.255.0",
+    "sw": "S3",
+    "port": "Fa0/11",
+    "vlan": 10,
+    "phone": true
+   },
+   "PC5": {
+    "ip": "10.10.20.15",
+    "mask": "255.255.255.0",
+    "sw": "S3",
+    "port": "Fa0/18",
+    "vlan": 20
+   },
+   "PC6": {
+    "ip": "10.10.30.16",
+    "mask": "255.255.255.0",
+    "sw": "S3",
+    "port": "Fa0/6",
+    "vlan": 30
+   }
+  },
+  "layout": {
+   "S1": [
+    300,
+    40
+   ],
+   "S2": [
+    150,
+    135
+   ],
+   "S3": [
+    450,
+    135
+   ],
+   "PC1": [
+    60,
+    250
+   ],
+   "PC2": [
+    150,
+    250
+   ],
+   "PC3": [
+    240,
+    250
+   ],
+   "PC4": [
+    360,
+    250
+   ],
+   "PC5": [
+    450,
+    250
+   ],
+   "PC6": [
+    540,
+    250
+   ]
+  },
+  "tasks": [
+   {
+    "id": "look",
+    "text": "On S1, enter privileged mode and show which VLAN every port is in.",
+    "hint": "enable, then show vlan brief (sh vl br works too)",
+    "check": {
+     "ran": {
+      "device": "S1",
+      "cmd": "show vlan brief"
+     }
+    },
+    "why": "Out of the box every port is in VLAN 1: one big broadcast domain. show vlan brief is the command that shows just each VLAN's name, status and ports."
+   },
+   {
+    "id": "same",
+    "text": "From PC1, ping PC4 (10.10.10.14). They share a subnet.",
+    "hint": "Choose PC1, then: ping 10.10.10.14",
+    "check": {
+     "pinged": {
+      "from": "PC1",
+      "to": "PC4",
+      "ok": true,
+      "vlan": 1
+     }
+    },
+    "why": "Same subnet, same VLAN (1): the switches forward between them, even across S1."
+   },
+   {
+    "id": "other",
+    "text": "From PC1, ping PC2 (10.10.20.12).",
+    "hint": "On PC1: ping 10.10.20.12",
+    "check": {
+     "pinged": {
+      "from": "PC1",
+      "to": "PC2",
+      "ok": false
+     }
+    },
+    "why": "PC2 is in another subnet and PC1 has no default gateway, so Windows can't even send it: \"General failure\". Different subnets need a router to talk, whatever the VLANs."
+   },
+   {
+    "id": "create",
+    "text": "On S1, create and name VLANs 10 Staff, 20 Students, 30 Guest, 99 Management and 150 Voice. Names are case-sensitive.",
+    "hint": "configure terminal, vlan 10, name Staff, vlan 20, name Students… (vlan works straight from VLAN mode)",
+    "check": {
+     "vlans": {
+      "devices": [
+       "S1"
+      ],
+      "names": {
+       "10": "Staff",
+       "20": "Students",
+       "30": "Guest",
+       "99": "Management",
+       "150": "Voice"
+      }
+     }
+    },
+    "why": "VLANs split one switch into separate broadcast domains: staff, students and guests stop seeing each other's broadcasts, and moving someone is a config change, not a re-cable. That's the benefit."
+   },
+   {
+    "id": "create-all",
+    "text": "Create the same VLANs, with the same names, on S2 and S3.",
+    "hint": "Choose S2: enable, conf t, then the same vlan and name commands. Then S3.",
+    "check": {
+     "vlans": {
+      "devices": [
+       "S2",
+       "S3"
+      ],
+      "names": {
+       "10": "Staff",
+       "20": "Students",
+       "30": "Guest",
+       "99": "Management",
+       "150": "Voice"
+      }
+     }
+    },
+    "why": "Here each switch keeps its own VLAN list (VTP can share one, but isn't used). A switch drops traffic for a VLAN it doesn't have."
+   },
+   {
+    "id": "access-s2",
+    "text": "On S2, make Fa0/11, Fa0/18 and Fa0/6 access ports in VLANs 10, 20 and 30.",
+    "hint": "interface fa0/11, switchport mode access, switchport access vlan 10. Then fa0/18 (20) and fa0/6 (30).",
+    "check": {
+     "access": {
+      "device": "S2",
+      "ports": {
+       "Fa0/11": 10,
+       "Fa0/18": 20,
+       "Fa0/6": 30
+      }
+     }
+    },
+    "why": "switchport mode access stops the port negotiating a trunk; switchport access vlan puts the PC's traffic in its VLAN."
+   },
+   {
+    "id": "access-s3",
+    "text": "Do the same on S3: Fa0/11 in VLAN 10, Fa0/18 in 20, Fa0/6 in 30.",
+    "hint": "Same commands on S3.",
+    "check": {
+     "access": {
+      "device": "S3",
+      "ports": {
+       "Fa0/11": 10,
+       "Fa0/18": 20,
+       "Fa0/6": 30
+      }
+     }
+    },
+    "why": "Each switch decides which VLAN its own ports are in."
+   },
+   {
+    "id": "voice",
+    "text": "S3 Fa0/11 also has an IP phone (PC4 plugs into the phone). Trust the phone's CoS markings and put voice in VLAN 150.",
+    "hint": "interface fa0/11, mls qos trust cos, switchport voice vlan 150",
+    "check": {
+     "voice": {
+      "device": "S3",
+      "port": "Fa0/11",
+      "vlan": 150,
+      "trust": true
+     }
+    },
+    "why": "The phone tags its calls with VLAN 150 and a priority (CoS); the PC behind it stays untagged in VLAN 10. Trusting CoS lets the switch give calls priority. show vlan brief now lists Fa0/11 under both VLAN 10 and VLAN 150."
+   },
+   {
+    "id": "broken",
+    "text": "Ping PC4 from PC1 again. Both are in VLAN 10 now. Why does it fail?",
+    "hint": "On PC1: ping 10.10.10.14, then on S2: show vlan brief. Look at Gi0/1.",
+    "check": {
+     "pinged": {
+      "from": "PC1",
+      "to": "PC4",
+      "ok": false,
+      "vlan": 10
+     }
+    },
+    "why": "The links between the switches are still access ports in VLAN 1 (two \"dynamic auto\" ends never form a trunk), so VLAN 10 can't cross them. Windows prints \"Destination host unreachable\" and still counts those as received: read the lines, not just the summary."
+   },
+   {
+    "id": "trunk",
+    "text": "Turn both links between the switches into 802.1Q trunks.",
+    "hint": "On S1: interface range gi0/1 - 2, switchport mode trunk. Then show interfaces trunk.",
+    "check": {
+     "trunks": [
+      [
+       "S1",
+       "Gi0/1"
+      ],
+      [
+       "S1",
+       "Gi0/2"
+      ],
+      [
+       "S2",
+       "Gi0/1"
+      ],
+      [
+       "S3",
+       "Gi0/1"
+      ]
+     ]
+    },
+    "why": "A trunk carries every VLAN, tagging each frame with its VLAN ID. S2 and S3 were on \"dynamic auto\", so they agreed to trunk when S1 asked (DTP). Many admins set both ends to trunk to avoid relying on negotiation."
+   },
+   {
+    "id": "native",
+    "text": "Set native VLAN 99 on both ends of both trunks.",
+    "hint": "switchport trunk native vlan 99 on S1 Gi0/1 and Gi0/2, S2 Gi0/1 and S3 Gi0/1",
+    "check": {
+     "native": {
+      "vlan": 99,
+      "ports": [
+       [
+        "S1",
+        "Gi0/1"
+       ],
+       [
+        "S1",
+        "Gi0/2"
+       ],
+       [
+        "S2",
+        "Gi0/1"
+       ],
+       [
+        "S3",
+        "Gi0/1"
+       ]
+      ]
+     }
+    },
+    "why": "Untagged frames on a trunk belong to the native VLAN. Moving it off VLAN 1 to an unused VLAN makes VLAN hopping harder. Both ends must match: until they do, CDP warns of a mismatch and untagged traffic lands in the wrong VLAN."
+   },
+   {
+    "id": "verify",
+    "text": "Prove it: ping PC4 from PC1, PC5 from PC2 and PC6 from PC3.",
+    "hint": "PC1: ping 10.10.10.14, PC2: ping 10.10.20.15, PC3: ping 10.10.30.16",
+    "check": {
+     "all": [
+      {
+       "pinged": {
+        "from": "PC1",
+        "to": "PC4",
+        "ok": true,
+        "vlan": 10
+       }
+      },
+      {
+       "pinged": {
+        "from": "PC2",
+        "to": "PC5",
+        "ok": true,
+        "vlan": 20
+       }
+      },
+      {
+       "pinged": {
+        "from": "PC3",
+        "to": "PC6",
+        "ok": true,
+        "vlan": 30
+       }
+      }
+     ]
+    },
+    "why": "Each VLAN now reaches across the trunks, and the VLANs still can't reach each other: that's the point. To let them talk, add a router or a layer 3 switch (inter-VLAN routing)."
+   }
+  ],
+  "next": [
+   {
+    "label": "Cisco Packet Tracer: build this for real (free with a Networking Academy account)",
+    "url": "https://www.netacad.com/cisco-packet-tracer"
+   }
+  ]
+ },
+ {
   "id": "linux-terminal",
   "title": "Linux terminal basics",
   "kind": "terminal",
