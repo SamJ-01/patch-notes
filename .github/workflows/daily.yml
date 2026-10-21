@@ -50,7 +50,13 @@ jobs:
       - name: Build site
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: python build.py --days 7
+        # On failure, the last lines also go into an annotation, readable through the API without the full log.
+        run: |
+          set -o pipefail
+          python build.py --days 7 2>&1 | tee build.log || {
+            echo "::error title=Build site failed::$(tail -n 25 build.log | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')"
+            exit 1
+          }
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: site
