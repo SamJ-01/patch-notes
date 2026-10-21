@@ -1127,6 +1127,19 @@ a.loop-node:hover { border-color: var(--brand); }
 .ex-review li.no > b { color: var(--bad); } .ex-review li.ok > b { color: var(--good); }
 .ex-review ul { margin: 4px 0 0; padding-left: 1.1em; font-size: 0.9rem; }
 .cert-badge.bad { color: var(--bad); }
+.ready-verdict { margin: 0; padding: 10px 14px; border-left: 3px solid var(--muted); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); }
+.ready-verdict.good { border-left-color: var(--good); } .ready-verdict.sun { border-left-color: var(--sun); } .ready-verdict.bad { border-left-color: var(--bad); }
+.ready-domains { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ready-domains li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; }
+.ready-domains .rd-name { grid-column: 1 / -1; }
+.ready-domains .trk { height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.ready-domains .trk i { display: block; height: 100%; background: var(--muted); }
+.ready-domains .trk i.good { background: var(--good); } .ready-domains .trk i.sun { background: var(--sun); } .ready-domains .trk i.bad { background: var(--bad); }
+.ready-domains .rd-pct { font-size: 0.85rem; min-width: 3.5ch; text-align: right; }
+.ready-domains .rd-ev { grid-column: 1 / -1; font-size: 0.82rem; }
+button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; }
+.ready-how summary { cursor: pointer; color: var(--muted); font-size: 0.88rem; }
+.ready-how p { margin: 6px 0 0; font-size: 0.88rem; }
 .scope-note { margin: 0; padding: 10px 14px; border: 1px solid rgba(var(--sun-rgb), 0.5); border-left: 3px solid var(--sun); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--sun) 8%, var(--surface)); font-size: 0.92rem; }
 .scope-note b { color: var(--sun); }
 .ex-letter { font: 700 0.85rem var(--font-mono); color: var(--muted); flex: none; width: 1.4em; text-align: center; }
@@ -1405,7 +1418,7 @@ const mixOptions = (q, rand = Math.random) => { const order = shuffle(q.options.
 /* ---------- progress & XP (stored only in this browser) ---------- */
 const PKEY = "patch-notes-progress";
 const RANKS = [[0, "guest"], [100, "intern"], [300, "analyst"], [700, "hunter"], [1500, "responder"], [3000, "root"]];
-const FRESH = () => ({ xp: 0, done: {}, daily: null, streak: 0, lastDaily: null, best: {}, flags: {}, labs: {}, labSteps: {}, paths: {}, terms: {}, read: {}, badges: {}, stack: null, log: [], days: {}, missions: {}, exam: {} });
+const FRESH = () => ({ xp: 0, done: {}, daily: null, streak: 0, lastDaily: null, best: {}, flags: {}, labs: {}, labSteps: {}, paths: {}, terms: {}, read: {}, badges: {}, stack: null, log: [], days: {}, missions: {}, exam: {}, mocks: {} });
 // Progress is untrusted input: it lives in the browser (anyone can edit it) and can be restored from a file.
 // Keep only known fields of the right type, and coerce the XP history so nothing in it can become HTML.
 function cleanProgress(src) {
@@ -1421,6 +1434,9 @@ function cleanProgress(src) {
   out.xp = Math.max(0, Math.round(out.xp));
   out.log = out.log.filter(x => x && typeof x === "object").slice(0, 200)
     .map(x => ({ d: String(x.d ?? "").slice(0, 20), why: String(x.why ?? "").slice(0, 120), n: Number(x.n) || 0 }));
+  // Mock exam scores per cert: keep only plain numbers and a short date, the last 20 of each.
+  out.mocks = Object.fromEntries(Object.entries(out.mocks).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && Array.isArray(v))
+    .map(([k, v]) => [k, v.filter(x => x && typeof x === "object").slice(-20).map(x => ({ d: String(x.d ?? "").slice(0, 10), score: Math.max(0, Number(x.score) || 0), total: Math.max(0, Number(x.total) || 0) }))]));
   return out;
 }
 const restoreProgress = file => cleanProgress(file && file.app === "patch-notes" ? file.progress : null);
@@ -2202,21 +2218,56 @@ function startPractice(c, mode, questions, title) {
     window.scrollTo(0, 0);
     ex.mount($("ex-root"), { title, mode, questions: mode === "mock" ? ex.buildMock(c.questions, c.domains) : questions,
       objectiveName: id => names[id] || id, onAnswer: recordAnswer,
-      onFinish: r => { if (r.mode === "mock") { award(20, "Mock exam completed"); celebrate("Mock exam done", `${r.score} of ${r.total} correct`); } },
+      onFinish: r => { if (r.mode === "mock") { (P.mocks[c.id] || (P.mocks[c.id] = [])).push({ d: todayStr(), score: r.score, total: r.total }); P.mocks[c.id] = P.mocks[c.id].slice(-20); saveP(); award(20, "Mock exam completed"); celebrate("Mock exam done", `${r.score} of ${r.total} correct`); } },
       onExit: () => { certView(c.id); window.scrollTo(0, 0); } });
   }).catch(() => toast("Couldn't load the practice questions"));
+}
+// "Am I ready?": readiness per domain from practice and question results (logic in exam.js, tested there).
+const READY_VERDICT = {
+  start: ["Not started yet", "muted", "Answer a few practice questions or finish a lesson and this fills in."],
+  building: ["Building the foundations", "bad", "Work through the plan below: it starts with your weakest areas."],
+  close: ["Getting close", "sun", ""],
+  ready: ["Looking ready on everything Patch Notes can check", "good", ""],
+};
+const pctOf = v => Math.round((v || 0) * 100);
+const readyTone = v => (v >= 0.7 ? "good" : v >= 0.4 ? "sun" : "bad");
+function readinessPanel(c, progress) {
+  import("./js/exam.js").then(ex => {
+    const el = $("cert-ready"); if (!el || parseRoute().path !== "learn/certs/" + c.id) return;
+    const progressOf = o => { const p = progress.get(o.id); return { done: p.done, total: p.total, next: p.acts.find(a => a.done === false) || null }; };
+    const r = ex.readiness({ domains: c.domains, questions: c.questions, stats: P.exam, progressOf, mocks: P.mocks[c.id] || [] });
+    const [head, tone, base] = READY_VERDICT[r.verdict];
+    const weakest = r.rows.filter(x => x.score !== null && x.score < ex.READY.domain).sort((a, b) => a.score - b.score)[0];
+    const missing = [weakest && `${weakest.d.id} ${weakest.d.name} is at ${pctOf(weakest.score)}% (aim for ${pctOf(ex.READY.domain)}%+ in every domain)`,
+      r.qTotal && (r.mockPct === null ? "you haven't taken a mock exam yet" : r.mockPct < ex.READY.mock && `your last mock was ${pctOf(r.mockPct)}% (aim for ${pctOf(ex.READY.mock)}%+)`)].filter(Boolean);
+    const detail = r.verdict === "close" ? `Still to do: ${missing.join("; ") || "push your overall score past " + pctOf(ex.READY.overall) + "%"}.`
+      : r.verdict === "ready" ? `${r.elsewhere ? `Before you book, cover the ${r.elsewhere} objective${r.elsewhere === 1 ? "" : "s"} Patch Notes doesn't teach yet, and ` : "Before you book, "}try a full-length practice exam from another provider too.` : base;
+    const qLine = x => { const qs = x.objs.reduce((s, o) => s + o.m.total, 0), right = x.objs.reduce((s, o) => s + o.m.right, 0), ad = x.objs.reduce((s, o) => s + o.p.done, 0), at = x.objs.reduce((s, o) => s + o.p.total, 0);
+      return [qs && `${right}/${qs} questions right`, at && `${ad}/${at} activities done`].filter(Boolean).join(" · ") || "Nothing to check here yet"; };
+    const planRow = it => {
+      if (it.kind === "mock") return `<button class="try-row" type="button" data-practice="mock"><span class="eyebrow">Mock exam</span><b>Take a mock exam</b><span class="muted">${ex.MOCK_SIZE} questions in ${ex.MOCK_MINUTES} minutes. ${pctOf(ex.READY.mock)}% or more counts towards ready.</span></button>`;
+      const tag = `${esc(it.o.id)} · ${esc(it.o.title)}`;
+      if (it.kind === "activity") return `<a class="try-row" href="${it.next.href}"><span class="eyebrow">${tag}</span><b>${esc(it.next.label)}</b><span class="muted">${it.fresh ? "Start here" : "One of your weakest domains"}: ${esc(it.domain.name)}</span></a>`;
+      const why = { wrong: ["Revise", "You got a question here wrong last time."], new: ["Try", "Not tried yet."], finish: ["Finish", "Some questions here are still unanswered."] }[it.why];
+      return `<button class="try-row" type="button" data-practice-obj="${esc(it.o.id)}"><span class="eyebrow">${tag}</span><b>${why[0]} the ${esc(it.o.id)} questions</b><span class="muted">${why[1]}</span></button>`;
+    };
+    const mock = r.lastMock ? `Last mock exam: <b>${r.lastMock.score}/${r.lastMock.total}</b> (${pctOf(r.mockPct)}%) on ${esc(new Date(r.lastMock.d + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }))}.` : r.qTotal ? "No mock exam yet." : "";
+    el.innerHTML = `<div class="panel-title"><h2 id="ready-h">Am I ready?</h2><span class="eyebrow">${pctOf(r.overall)}% on what Patch Notes can check</span></div>
+      <p class="ready-verdict ${tone}"><b>${esc(head)}.</b> ${esc(detail)}</p>
+      <ul class="ready-domains">${r.rows.map(x => `<li><span class="rd-name"><b class="mono">${esc(x.d.id)}</b> ${esc(x.d.name)} <span class="muted">${x.d.weight}% of the exam</span></span>
+        <span class="trk" aria-hidden="true"><i class="${x.score === null ? "" : readyTone(x.score)}" style="width:${pctOf(x.score)}%"></i></span>
+        <span class="rd-pct mono">${x.score === null ? "–" : pctOf(x.score) + "%"}</span><span class="muted rd-ev">${qLine(x)}${x.elsewhere ? ` · ${x.elsewhere} not taught here yet` : ""}</span></li>`).join("")}</ul>
+      ${mock ? `<p class="muted" style="margin:0">${mock}</p>` : ""}
+      ${r.plan.length ? `<h3 class="cert-h">Your study plan</h3><div class="try-list ready-plan">${r.plan.map(planRow).join("")}</div>` : ""}
+      ${r.elsewhere && c.study ? `<p class="muted" style="margin:0">${r.elsewhere} objective${r.elsewhere === 1 ? " has" : "s have"} practice questions here but no lessons yet. Learn ${r.elsewhere === 1 ? "it" : "them"} with <a href="${esc(c.study.url)}" target="_blank" rel="noopener">${esc(c.study.label)} ↗</a>, then come back to test yourself.</p>` : ""}
+      <details class="ready-how"><summary>How this is worked out</summary><p class="muted">Each objective scores from the questions you got right last time (counted double, because they test you) and the lessons, labs and missions you've finished. Domains are weighted like the real exam. "Ready" means ${pctOf(ex.READY.overall)}%+ overall, ${pctOf(ex.READY.domain)}%+ in every domain${r.qTotal ? ` and ${pctOf(ex.READY.mock)}%+ on your latest mock` : ""}. That's Patch Notes' own bar, not CompTIA's scoring, so it's a guide to what to study, not a promise you'll pass.</p></details>`;
+  }).catch(() => { const el = $("cert-ready"); if (el) el.innerHTML = `<div class="panel-title"><h2 id="ready-h">Am I ready?</h2></div><p class="muted" style="margin:0">Couldn't load the readiness check. Try reloading the page.</p>`; });
 }
 function certView(id) {
   const c = DATA.certs.find(x => x.id === id); if (!c) return VIEWS.learn();
   const objs = certObjectives(c), cov = k => objs.filter(o => o.coverage === k).length;
   const progress = new Map(objs.map(o => [o.id, objectiveProgress(o)]));
   const practised = objs.filter(o => { const p = progress.get(o.id); return p.total && p.done === p.total; }).length;
-  // Revise next: unfinished practice in the heaviest-weighted domains first.
-  const used = new Set(), next = [];
-  for (const o of objs.filter(o => { const p = progress.get(o.id); return p.total && p.done < p.total; }).sort((a, b) => b.domain.weight - a.domain.weight)) {
-    const a = progress.get(o.id).acts.find(x => x.done === false && !used.has(x.href));
-    if (a && next.length < 3) { used.add(a.href); next.push({ o, a }); }  // three different things to do, not one thing three times
-  }
   const qCount = oid => c.questions.filter(q => q.objective === oid).length;
   const objMastery = oid => { const qs = c.questions.filter(q => q.objective === oid), seen = qs.filter(q => P.exam[q.id]), right = seen.filter(q => P.exam[q.id].last === 1).length;
     return { answered: seen.length, right, total: qs.length, level: !seen.length ? "new" : right < seen.length ? "weak" : seen.length < qs.length ? "started" : "strong" }; };
@@ -2229,8 +2280,8 @@ function certView(id) {
     <section class="panel wide"><div class="panel-title"><h2>Your progress</h2><span class="eyebrow">${practised} of ${objs.length} objectives practised</span></div>
       <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(practised / objs.length * 100)}%"></i></span></div>
       <p class="muted" style="margin:0">Coverage on Patch Notes: ${cov("strong")} with hands-on practice · ${cov("partial")} partly covered · ${cov("none")} not covered yet.</p>
-      ${next.length ? `<h3 class="cert-h">Revise next</h3><div class="try-list">${next.map(({ o, a }) => { return `<a class="try-row" href="${a.href}"><span class="eyebrow">${esc(o.id)} · ${esc(o.domain.name)} (${o.domain.weight}%)</span><b>${esc(o.title)}</b><span class="muted">Next: ${esc(a.label)}</span></a>`; }).join("")}</div>` : ""}
     </section>
+    <section class="panel wide ready" id="cert-ready" aria-labelledby="ready-h"><div class="panel-title"><h2 id="ready-h">Am I ready?</h2></div><p class="muted" style="margin:0">Working it out…</p></section>
     ${c.questions.length ? `<section class="panel wide"><div class="panel-title"><h2>Practice questions</h2><span class="eyebrow">${c.questions.length} original questions · not real exam questions</span></div>
       <p class="muted" style="margin:0">Every answer explains why it's right or wrong. Your results mark each objective below as started, to revise, or all correct.</p>
       <div class="row"><button class="btn brand" type="button" data-practice="weak">Revise weak spots</button><button class="btn ghost" type="button" data-practice="mock">Mock exam: 20 questions, 20 minutes</button></div></section>` : ""}
@@ -2241,7 +2292,9 @@ function certView(id) {
           ${o.gap ? `<p class="muted cert-gap">${esc(o.gap)}</p>` : ""}</li>`; }).join("")}</ul></section>`).join("")}
     ${c.study ? `<p class="muted cert-note">For the parts not covered here, <a href="${esc(c.study.url)}" target="_blank" rel="noopener">${esc(c.study.label)} ↗</a> follows the same objective numbers.</p>` : ""}
   </article></div>`;
-  main.querySelectorAll("[data-practice], [data-practice-obj]").forEach(b => b.addEventListener("click", () => {
+  readinessPanel(c, progress);
+  main.querySelector("article").addEventListener("click", e => {
+    const b = e.target.closest("[data-practice], [data-practice-obj]"); if (!b) return;
     const oid = b.dataset.practiceObj;
     if (oid) return startPractice(c, "drill", c.questions.filter(q => q.objective === oid), `Objective ${oid}`);
     if (b.dataset.practice === "mock") return startPractice(c, "mock", null, `${c.name} mock exam`);
@@ -2250,7 +2303,7 @@ function certView(id) {
     const rank = q => (P.exam[q.id] ? (P.exam[q.id].last ? 2 : 0) : 1);
     const qs = c.questions.slice().sort((a, b) => rank(a) - rank(b) || weight(b) - weight(a)).slice(0, 10);
     startPractice(c, "drill", qs, "Weak spots");
-  }));
+  });
   // Arrived from a lesson's "Prove it": jump straight into that topic's objective questions.
   if (pendingProve && pendingProve.certId === c.id) {
     const pp = pendingProve; pendingProve = null;

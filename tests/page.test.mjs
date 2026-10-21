@@ -102,6 +102,12 @@ test("progress: restored or stored data is cleaned before use", () => {
   assert.equal(p.log[0].n, 0, "a non-number XP value becomes 0, never markup");
   assert.equal(typeof p.done, "object");
   assert.equal(p.hacked, undefined, "unknown fields are dropped");
+  const m = cleanProgress({ xp: 1, mocks: { "network-plus": [{ d: evil, score: evil, total: 20 }, "junk"], [evil]: [{ score: 1, total: 1 }], "security-plus": "nope" } });
+  assert.deepEqual(Object.keys(m.mocks), ["network-plus"], "only well-formed cert ids with lists survive");
+  assert.equal(m.mocks["network-plus"].length, 1);
+  assert.equal(m.mocks["network-plus"][0].score, 0, "a non-number score becomes 0, never markup");
+  assert.equal(m.mocks["network-plus"][0].d.length, 10, "dates are cut short");
+  assert.equal(Object.keys(cleanProgress({ xp: 1 }).mocks).length, 0, "older saves without mocks still load");
   assert.throws(() => cleanProgress({ xp: "lots" }));
   assert.throws(() => cleanProgress([1, 2]));
   assert.throws(() => restoreProgress({ progress: { xp: 1 } }), "files must say they come from patch-notes");

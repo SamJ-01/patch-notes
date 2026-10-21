@@ -48,7 +48,7 @@ Wrong answers never end a lab: every quiz offers a retry of the questions you mi
 | **News** | Headlines from 12 outlets, auto-tagged by topic, linked to lessons and CVEs, with "What this means" explanations (AI-written, fact-checked against each article and official records) |
 | **CVE Radar** | Every new CVE, enriched with CISA KEV and FIRST EPSS, prioritised by real-world risk, with trend charts |
 | **Am I affected?** | Pick the tech you use (phone, browser, router, work apps) for personal alerts |
-| **Exam prep** | CompTIA Network+ (N10-009): all 25 objectives mapped to the lessons, labs and missions that practise them, with honest coverage (4 hands-on, 13 partial, 8 not yet), per-objective progress and "revise next" suggestions. Preparation, not a guarantee; no real exam questions |
+| **Exam prep** | CompTIA Network+ (N10-009): all 25 objectives mapped to the lessons, labs and missions that practise them, with honest coverage (4 hands-on, 13 partial, 8 not yet), per-objective progress, and an **"Am I ready?"** check: readiness per domain from your practice and question results, a study plan of what to do next, and your latest mock score. Preparation, not a guarantee; no real exam questions |
 | **Learn** | 22 lessons with sourced real-world cases, 4 learning paths (e.g. Path to SOC Analyst) and a glossary of 250+ terms, including the common CWE bug types |
 | **Play** | "Phish or Legit?", a quick-fire quiz and a 3-flag CTF hunt hidden in the site itself |
 | **Careers** | Five entry paths with skills, certs and first job titles, plus a directory of free resources |

@@ -39,6 +39,49 @@ export function weakObjectives(objectives, questions, stats) {
     .sort((a, b) => (a.m.level === "weak" ? 0 : 1) - (b.m.level === "weak" ? 0 : 1) || a.m.answered - b.m.answered || b.o.weight - a.o.weight);
 }
 
+// ---------- "Am I ready?": an honest estimate from the evidence on this site, never a pass prediction.
+// Each objective scores 0..1 from its questions (right last time / all of them) and its mapped
+// activities (done / all), questions counting double because they test rather than show.
+// Objectives carry an equal share of their domain's weight. "Ready" needs a strong overall score,
+// no weak domain, and (when the cert has questions) a recent mock of 80%+: our own bar, not CompTIA's.
+export const READY = { overall: 0.8, domain: 0.7, mock: 0.8 };
+// opts: { domains, questions, stats, progressOf(objective) -> { done, total, next }, mocks: [{ d, score, total }] }
+export function readiness({ domains, questions = [], stats = {}, progressOf = () => ({ done: 0, total: 0, next: null }), mocks = [] }) {
+  const qsFor = id => questions.filter(q => q.objective === id);
+  const rows = domains.map(d => {
+    const objs = d.objectives.map(o => {
+      const m = mastery(qsFor(o.id), stats), p = progressOf(o);
+      const parts = [m.total && [m.right / m.total, 2], p.total && [p.done / p.total, 1]].filter(Boolean);
+      const score = parts.length ? parts.reduce((s, [v, w]) => s + v * w, 0) / parts.reduce((s, [, w]) => s + w, 0) : null;
+      return { o, m, p, score, weight: d.weight / d.objectives.length };
+    });
+    const scored = objs.filter(x => x.score !== null);
+    const score = scored.length ? scored.reduce((s, x) => s + x.score, 0) / scored.length : null;
+    return { d, objs, score, elsewhere: objs.filter(x => x.o.coverage === "none").length };
+  });
+  const all = rows.flatMap(r => r.objs).filter(x => x.score !== null);
+  const totalW = all.reduce((s, x) => s + x.weight, 0);
+  const overall = totalW ? all.reduce((s, x) => s + x.score * x.weight, 0) / totalW : 0;
+  const answered = all.reduce((s, x) => s + x.m.answered, 0), qTotal = questions.length;
+  const lastMock = mocks.length ? mocks[mocks.length - 1] : null, mockPct = lastMock && lastMock.total ? lastMock.score / lastMock.total : null;
+  const mockOk = !qTotal || (mockPct !== null && mockPct >= READY.mock);
+  const anyEvidence = all.some(x => x.m.answered || x.p.done);
+  const verdict = !anyEvidence ? "start"
+    : overall >= READY.overall && rows.every(r => r.score === null || r.score >= READY.domain) && mockOk ? "ready"
+    : overall >= 0.5 ? "close" : "building";
+
+  // The study plan: what to do next, most useful first, never the same objective twice.
+  const plan = [], used = new Set(), add = item => { if (plan.length < 5 && !used.has(item.o?.id)) { item.o && used.add(item.o.id); plan.push(item); } };
+  const byWeight = (a, b) => b.weight - a.weight;
+  all.filter(x => x.m.level === "weak").sort(byWeight).slice(0, 3).forEach(x => add({ kind: "drill", o: x.o, why: "wrong" }));  // room left for hands-on steps
+  rows.filter(r => r.score !== null).sort((a, b) => a.score - b.score || b.d.weight - a.d.weight).slice(0, 2)
+    .forEach(r => { const x = r.objs.filter(x => x.p.next).sort((a, b) => a.score - b.score || byWeight(a, b))[0]; if (x) add({ kind: "activity", o: x.o, next: x.p.next, domain: r.d, fresh: !r.score }); });
+  all.filter(x => x.m.total && x.m.level === "new").sort(byWeight).forEach(x => add({ kind: "drill", o: x.o, why: "new" }));
+  if (qTotal && answered >= qTotal / 2 && !mockOk && plan.length < 5) plan.push({ kind: "mock" });
+  all.filter(x => x.m.level === "started").sort(byWeight).forEach(x => add({ kind: "drill", o: x.o, why: "finish" }));
+  return { verdict, overall, rows, answered, qTotal, lastMock, mockPct, plan, elsewhere: rows.reduce((s, r) => s + r.elsewhere, 0) };
+}
+
 // ---------- the practice screen
 const letter = k => String.fromCharCode(65 + k);
 // opts: { title, questions, mode: "drill"|"mock", objectiveName(id), onAnswer(q, right), onFinish(summary), onExit() }

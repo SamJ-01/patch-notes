@@ -40,3 +40,49 @@ test("mastery and weak objectives reflect the latest answers", () => {
   const weak = ex.weakObjectives(objs, questions, { [qs[0].id]: { r: 0, w: 1, last: 0 } });
   assert.equal(weak[0].o.id, "2.2", "an objective answered wrong comes first");
 });
+
+test("readiness starts empty, stays honest, and only says ready with a strong mock", () => {
+  const none = () => ({ done: 0, total: 0, next: null });
+  const fresh = ex.readiness({ domains: cert.domains, questions, stats: {}, progressOf: none });
+  assert.equal(fresh.verdict, "start");
+  assert.equal(fresh.overall, 0);
+  assert.equal(fresh.elsewhere, cert.domains.flatMap(d => d.objectives).filter(o => o.coverage === "none").length);
+
+  const allRight = Object.fromEntries(questions.map(q => [q.id, { r: 1, w: 0, last: 1 }]));
+  const allDone = () => ({ done: 1, total: 1, next: null });
+  const noMock = ex.readiness({ domains: cert.domains, questions, stats: allRight, progressOf: allDone });
+  assert.ok(noMock.overall > 0.99);
+  assert.equal(noMock.verdict, "close", "a perfect score without a mock isn't ready");
+  assert.ok(noMock.plan.some(p => p.kind === "mock"), "the plan asks for a mock");
+  const lowMock = ex.readiness({ domains: cert.domains, questions, stats: allRight, progressOf: allDone, mocks: [{ d: "2026-10-21", score: 10, total: 20 }] });
+  assert.equal(lowMock.verdict, "close");
+  const ready = ex.readiness({ domains: cert.domains, questions, stats: allRight, progressOf: allDone, mocks: [{ d: "2026-10-21", score: 17, total: 20 }] });
+  assert.equal(ready.verdict, "ready");
+
+  // One weak domain blocks "ready" even when the overall score is high.
+  const d5 = new Set(questions.filter(q => q.objective[0] === "5").map(q => q.id));
+  const weak5 = Object.fromEntries(questions.map(q => [q.id, { r: 1, w: 0, last: d5.has(q.id) ? 0 : 1 }]));
+  const blocked = ex.readiness({ domains: cert.domains, questions, stats: weak5, progressOf: allDone, mocks: [{ d: "2026-10-21", score: 18, total: 20 }] });
+  assert.notEqual(blocked.verdict, "ready");
+  assert.ok(blocked.rows.find(r => r.d.id === "5.0").score < ex.READY.domain);
+  assert.equal(blocked.plan[0].kind, "drill");
+  assert.equal(blocked.plan[0].why, "wrong");
+  assert.equal(blocked.plan[0].o.id[0], "5", "the plan starts with what was answered wrong");
+});
+
+test("the study plan has at most five steps and never repeats an objective", () => {
+  const next = { label: "A lesson", href: "#lesson-x" };
+  const stats = Object.fromEntries(questions.filter((_, i) => i % 3 === 0).map((q, i) => [q.id, { r: 0, w: 1, last: i % 2 }]));
+  const r = ex.readiness({ domains: cert.domains, questions, stats, progressOf: () => ({ done: 0, total: 2, next }) });
+  assert.ok(r.plan.length <= 5 && r.plan.length > 0);
+  const ids = r.plan.filter(p => p.o).map(p => p.o.id);
+  assert.equal(new Set(ids).size, ids.length);
+});
+
+test("the study plan mixes hands-on steps in, even with many wrong answers", () => {
+  const next = { label: "A lab", href: "#lab-x" };
+  const stats = Object.fromEntries(questions.map(q => [q.id, { r: 0, w: 1, last: 0 }]));
+  const r = ex.readiness({ domains: cert.domains, questions, stats, progressOf: () => ({ done: 0, total: 1, next }) });
+  assert.ok(r.plan.filter(p => p.why === "wrong").length <= 3);
+  assert.ok(r.plan.some(p => p.kind === "activity"));
+});
