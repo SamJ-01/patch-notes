@@ -14,7 +14,6 @@ Run on its own for a terminal summary:  python3 cve_watch.py --days 7 --notify
 
 import argparse
 import datetime as dt
-import gzip
 import http.client
 import json
 import os
@@ -39,19 +38,16 @@ USER_AGENT = "cve-watch/1.0 (personal vulnerability tracker)"
 # --------------------------------------------------------------------------- HTTP
 
 def get_json(url, headers=None, retries=5):
-    """GET a URL and parse JSON, retrying on rate limits / transient errors.
+    """GET a URL and parse JSON, retrying on rate limits and transient errors (waits 10, 20, 40, 60 s).
 
-    Asks for gzip: NVD pages are several MB of JSON, and a body that big is sometimes cut off mid-transfer
-    (http.client.IncompleteRead). Compressed, it is about a tenth of the size. Waits grow 10, 20, 40, 60 s.
+    Deliberately doesn't ask for gzip: on 21 Oct 2026 NVD's compressed responses failed 3 times in 5 (cut off,
+    404, a 142 s timeout) while plain ones succeeded 4 in 4.
     """
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept-Encoding": "gzip", **(headers or {})})
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, **(headers or {})})
     for attempt in range(1, retries + 1):
         try:
-            with urllib.request.urlopen(req, timeout=60) as resp:
-                body = resp.read()
-                if resp.headers.get("Content-Encoding", "").lower() == "gzip":
-                    body = gzip.decompress(body)
-                return json.loads(body)
+            with urllib.request.urlopen(req, timeout=90) as resp:
+                return json.loads(resp.read())
         except (OSError, ValueError, EOFError, http.client.HTTPException) as exc:  # network, 403/429/5xx, truncated or bad JSON
             if attempt == retries:
                 raise
@@ -78,7 +74,7 @@ def fetch_nvd(days):
         params = {
             "pubStartDate": start.strftime(fmt),
             "pubEndDate": end.strftime(fmt),
-            "resultsPerPage": 2000,
+            "resultsPerPage": 1000,  # NVD allows 2,000, but a page that size takes about a minute and gets cut off
             "startIndex": index,
         }
         page = get_json(f"{NVD_URL}?{urllib.parse.urlencode(params)}", headers)
@@ -233,9 +229,12 @@ def save(db, cves):
     known = {row[0] for row in db.execute("SELECT id FROM cves")}
     for cve in cves:
         cve["first_seen"] = now if cve["id"] not in known else None
+        # A KEV-only stand-in (NVD was down) never replaces full NVD details saved earlier.
         db.execute(
             """INSERT INTO cves (id, first_seen, data) VALUES (?, ?, ?)
-               ON CONFLICT(id) DO UPDATE SET data = excluded.data""",
+               ON CONFLICT(id) DO UPDATE SET data = excluded.data
+               WHERE json_extract(excluded.data, '$.status') != 'KEV addition'
+                  OR json_extract(cves.data, '$.status') = 'KEV addition'""",
             (cve["id"], now, json.dumps(cve)),
         )
     db.commit()
@@ -258,11 +257,39 @@ def notify(title, message):
 
 # --------------------------------------------------------------------------- Main
 
+NVD_FIELDS = ("id", "published", "status", "description", "cvss", "severity", "vector", "cvss_version", "cwes", "products")
+
+
+def cached_cves(days=None, ids=()):
+    """CVEs saved by earlier runs, as parse_nvd() returns them: those published within `days`, plus any in `ids`."""
+    if not DB_PATH.exists():
+        return {}
+    cutoff = (dt.date.today() - dt.timedelta(days=days)).isoformat() if days else None
+    out = {}
+    for (data,) in open_db().execute("SELECT data FROM cves"):
+        cve = json.loads(data)
+        if (cutoff and (cve.get("published") or "") >= cutoff) or cve["id"] in ids:
+            out[cve["id"]] = {k: cve.get(k) for k in NVD_FIELDS}
+    return out
+
+
 def collect(days):
-    """Fetch, enrich, prioritise and store CVEs. Returns (rows sorted by priority, meta)."""
+    """Fetch, enrich, prioritise and store CVEs. Returns (rows sorted by priority, meta).
+
+    If NVD is unreachable even after retries, carry on with the CVEs saved from earlier runs (the build keeps
+    cves.db between runs), so one upstream outage doesn't stop the site deploying. KEV and EPSS still refresh.
+    """
     days = max(1, min(days, 120))
     print(f"Fetching CVEs published in the last {days} days...")
-    cves = {c["id"]: parse_nvd(c) for c in fetch_nvd(days)}
+    try:
+        cves = {c["id"]: parse_nvd(c) for c in fetch_nvd(days)}
+        nvd_ok = True
+    except (OSError, ValueError, EOFError, http.client.HTTPException) as exc:
+        cves = cached_cves(days)
+        if not cves:
+            raise
+        nvd_ok = False
+        print(f"  ! NVD unavailable ({exc}); using {len(cves)} CVEs saved by earlier runs", file=sys.stderr)
 
     print("Fetching CISA Known Exploited Vulnerabilities...")
     kev = fetch_kev()
@@ -270,10 +297,16 @@ def collect(days):
     # KEV often adds OLD CVEs that just started being exploited. Include recent additions
     # even if NVD published them years ago - these are usually the most urgent items.
     cutoff = (dt.date.today() - dt.timedelta(days=days)).isoformat()
+    saved = {} if nvd_ok else cached_cves(ids={i for i, e in kev.items() if e["dateAdded"] >= cutoff})
     for cve_id, entry in kev.items():
         if entry["dateAdded"] < cutoff or cve_id in cves:
             continue
+        if cve_id in saved:  # NVD is down, but an earlier run saved its details
+            cves[cve_id] = saved[cve_id]
+            continue
         try:
+            if not nvd_ok:
+                raise OSError("NVD is unavailable this run")  # don't wait on retries for each one
             cves[cve_id] = parse_nvd(fetch_nvd_cve(cve_id))
             print(f"  NVD: fetched older KEV addition {cve_id}")
         except Exception as exc:
@@ -323,6 +356,7 @@ def collect(days):
         "watchlist": watchlist,
         "total": len(rows),
         "new": len(new_ids),
+        "nvd_fresh": nvd_ok,
     }
     return rows, meta
 

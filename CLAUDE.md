@@ -13,6 +13,8 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - `content/`: all content as JSON. Missions in `content/missions/*.json` and Agency shifts in `content/agency/*.json` (picked up automatically), certs in `content/certs/`,
   learning paths in `paths.json`. Missions build order and rules: `docs/missions.md`. Roadmap/audit: `docs/horizon-1-plan.md`.
 - `build.py` → `site/` (gitignored). `news.py`, `cve_watch.py`, `explain.py`: daily data pipeline (Python stdlib only).
+  If NVD is down, `cve_watch.collect()` falls back to CVEs saved in `cves.db` (kept between CI runs by actions/cache).
+  Locally, unset a placeholder `NVD_API_KEY`: NVD answers invalid keys with 404.
 
 ## Commands
 - Tests (must pass; CI blocks deploy on failure): `python3 -m unittest discover -s tests -q` and
@@ -42,4 +44,5 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - VLAN lab (`#lab-vlans`, `static/js/labs/vlan.js`, tests `tests/vlan.test.mjs`): simulated Cisco 2960 IOS + Windows PCs.
 - Feedback: public GitHub issue form (`.github/ISSUE_TEMPLATE/feedback.yml`), linked from every done card, the Agency debrief
   and the footer (`DATA.site.feedback`). Read new `feedback` issues before planning.
-- Next: learner feedback on the shift and VLAN lab, inter-VLAN routing, more Security+ questions (PKI, control types), Security+ question bank. No accounts/backend until real users need cross-device saves.
+- Next: learner feedback on the shift and the new labs, inter-VLAN routing lab on the network model, more Security+
+  questions (PKI, control types). No accounts/backend until real users need cross-device saves.

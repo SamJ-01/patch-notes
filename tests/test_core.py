@@ -76,10 +76,10 @@ class NvdParsing(unittest.TestCase):
 
 
 class Fetching(unittest.TestCase):
-    """get_json survives a truncated body and reads gzip, without real network or real waits."""
+    """get_json survives a truncated body, without real network or real waits."""
     class Resp:
-        def __init__(self, body, encoding=""):
-            self.body, self.headers = body, {"Content-Encoding": encoding}
+        def __init__(self, body):
+            self.body = body
         def read(self):
             if isinstance(self.body, Exception):
                 raise self.body
@@ -96,22 +96,72 @@ class Fetching(unittest.TestCase):
         def urlopen(req, timeout):
             seen.append(req.get_header("Accept-encoding"))
             r = responses.pop(0)
-            return self.Resp(http.client.IncompleteRead(b"{", 10) if r == "cut" else r[0], r[1])
+            return self.Resp(http.client.IncompleteRead(b"{", 10) if r == "cut" else r)
         with mock.patch("urllib.request.urlopen", urlopen), mock.patch("time.sleep") as sleep, mock.patch("sys.stderr"):
             return cve_watch.get_json("https://example.test/"), seen, sleep
 
-    def test_retries_a_cut_off_body_then_reads_gzip(self):
-        import gzip
-        data, seen, sleep = self.fetch(["cut", "cut", (gzip.compress(b'{"ok": 1}'), "gzip")])
+    def test_retries_a_cut_off_body(self):
+        data, seen, sleep = self.fetch(["cut", "cut", b'{"ok": 1}'])
         self.assertEqual(data, {"ok": 1})
-        self.assertEqual(seen, ["gzip"] * 3, "asks for compression every time")
+        self.assertEqual(seen, [None] * 3, "no gzip: NVD's compressed responses were the unreliable ones")
         self.assertEqual([c.args[0] for c in sleep.call_args_list], [10, 20])
 
-    def test_plain_json_still_works_and_gives_up_eventually(self):
-        self.assertEqual(self.fetch([(b'{"a": [1]}', "")])[0], {"a": [1]})
+    def test_gives_up_after_five_tries(self):
         import http.client
         with self.assertRaises(http.client.IncompleteRead):
             self.fetch(["cut"] * 5)
+
+
+class NvdOutage(unittest.TestCase):
+    """If NVD stays down after retries, the build uses CVEs saved by earlier runs instead of failing."""
+
+    def test_collect_falls_back_to_saved_cves(self):
+        import http.client
+        import tempfile
+        from pathlib import Path
+        from unittest import mock
+        today = __import__("datetime").date.today().isoformat()
+        with tempfile.TemporaryDirectory() as tmp:
+            db = Path(tmp) / "cves.db"
+            with mock.patch.object(cve_watch, "DB_PATH", db):
+                conn = cve_watch.open_db()
+                saved = {"id": "CVE-2026-0001", "published": today + "T10:00:00.000", "status": "Analyzed", "description": "A flaw.",
+                         "cvss": 9.8, "severity": "CRITICAL", "vector": "AV:N", "cvss_version": "3.1", "cwes": ["CWE-79"], "products": ["acme widget"],
+                         "kev": None, "epss": 0.5, "priority": 2}
+                old = dict(saved, id="CVE-2020-0001", published="2020-01-01T00:00:00.000")
+                cve_watch.save(conn, [saved, old])
+                cut = mock.Mock(side_effect=http.client.IncompleteRead(b"{", 10))
+                with mock.patch.object(cve_watch, "fetch_nvd", cut), mock.patch.object(cve_watch, "fetch_kev", return_value={}), \
+                        mock.patch.object(cve_watch, "fetch_epss", return_value={}), mock.patch.object(cve_watch, "fetch_nvd_cve") as one, \
+                        mock.patch("sys.stderr"):
+                    rows, meta = cve_watch.collect(7)
+                self.assertEqual([r["id"] for r in rows], ["CVE-2026-0001"], "saved CVEs inside the window only")
+                self.assertFalse(meta["nvd_fresh"])
+                self.assertIsNone(rows[0]["epss"], "enrichment is redone, not copied from the old row")
+                one.assert_not_called()
+
+    def test_kev_stand_in_never_overwrites_saved_details(self):
+        import tempfile
+        from pathlib import Path
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(cve_watch, "DB_PATH", Path(tmp) / "c.db"):
+            db = cve_watch.open_db()
+            full = {"id": "CVE-2019-1", "published": "2019-01-01", "status": "Analyzed", "description": "Full NVD text.", "products": []}
+            cve_watch.save(db, [full])
+            cve_watch.save(db, [dict(full, status="KEV addition", description="Short KEV text.")])
+            self.assertEqual(cve_watch.cached_cves(ids={"CVE-2019-1"})["CVE-2019-1"]["description"], "Full NVD text.")
+            cve_watch.save(db, [dict(full, description="Updated NVD text.")])
+            self.assertEqual(cve_watch.cached_cves(ids={"CVE-2019-1"})["CVE-2019-1"]["description"], "Updated NVD text.", "real updates still apply")
+
+    def test_collect_still_fails_with_nothing_saved(self):
+        import http.client
+        import tempfile
+        from pathlib import Path
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(cve_watch, "DB_PATH", Path(tmp) / "none.db"), \
+                mock.patch.object(cve_watch, "fetch_nvd", side_effect=http.client.IncompleteRead(b"", 1)):
+            with self.assertRaises(http.client.IncompleteRead):
+                cve_watch.collect(7)
 
 
 class Feeds(unittest.TestCase):
