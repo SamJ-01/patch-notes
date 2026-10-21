@@ -38,6 +38,7 @@ CONTENT = HERE / "content"
 DATA_DIR = HERE / "data"
 SITE_DIR = HERE / "site"
 TEMPLATE = HERE / "site_template.html"
+SRC = HERE / "src"  # the page's CSS (src/site.css) and script (src/app/*.js, joined in name order)
 STATIC = HERE / "static"  # copied into site/ as-is (e.g. the social preview image)
 
 # Fields the page actually uses; everything else is dropped to keep the download small.
@@ -178,6 +179,16 @@ def social_meta(site, title, description, path=""):
         '<meta name="twitter:card" content="summary_large_image">',
         '<meta name="theme-color" content="#070A10">',
     ])
+
+def assemble_template():
+    """The page template with its stylesheet and script pasted in. The script files share one scope and run in
+    name order (01-core.js first), exactly as if they were one file."""
+    template = TEMPLATE.read_text()
+    app = "".join(p.read_text() for p in sorted((SRC / "app").glob("*.js")))
+    for mark in ("/*__CSS__*/", "/*__APP__*/"):
+        assert template.count(mark) == 1, f"{mark} must appear once in site_template.html"
+    return template.replace("/*__APP__*/", app).replace("/*__CSS__*/", (SRC / "site.css").read_text())
+
 
 def page_css(template):
     """Reuse the app's own fonts and stylesheet for the static lesson pages."""
@@ -368,7 +379,7 @@ def main():
         "explainers": explainers,
     }
 
-    template = TEMPLATE.read_text()
+    template = assemble_template()
     SITE_DIR.mkdir(exist_ok=True)
     (SITE_DIR / "data").mkdir(exist_ok=True)
     (SITE_DIR / "lessons").mkdir(exist_ok=True)

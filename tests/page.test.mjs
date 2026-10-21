@@ -1,13 +1,15 @@
 // Tests for the page's pure logic (CVSS scoring, glossary matching, vector decoding).
-// The functions are pulled straight out of site_template.html, so these test the real code.
+// The functions are pulled straight out of the page script (src/app/*.js), so these test the real code.
 // Run with:  node --test tests/page.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import vm from "node:vm";
 
 const root = new URL("..", import.meta.url);
-const template = readFileSync(new URL("site_template.html", root), "utf8");
+// The page script is src/app/*.js, joined in name order by build.py (one shared scope).
+const appDir = new URL("src/app/", root);
+const template = readdirSync(appDir).filter(f => f.endsWith(".js")).sort().map(f => readFileSync(new URL(f, appDir), "utf8")).join("");
 const glossary = JSON.parse(readFileSync(new URL("content/glossary.json", root), "utf8"));
 
 // Return the source of a declaration starting at `start`, up to its matching closing brace.

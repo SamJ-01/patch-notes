@@ -181,7 +181,7 @@ class PageGeneration(unittest.TestCase):
     def test_lesson_page_escapes_content(self):
         lessons = content("lessons.json")
         lesson = dict(lessons[0], title="<script>x</script>")
-        fonts, css = build.page_css((ROOT / "site_template.html").read_text())
+        fonts, css = build.page_css(build.assemble_template())
         page = build.lesson_page(lesson, lessons[1], fonts, css, {"url": "https://example.com/"})
         self.assertNotIn("<script>x</script>", page)
         self.assertIn("&lt;script&gt;", page)
@@ -268,20 +268,20 @@ class Styles(unittest.TestCase):
     def test_glossary_term_style_is_inline_only(self):
         """Regression: a lab once reused the class name "term", turning every glossary word into a 460px box."""
         import re
-        css = re.search(r"<style>(.*?)</style>", (ROOT / "site_template.html").read_text(), re.S).group(1)
+        css = re.search(r"<style>(.*?)</style>", build.assemble_template(), re.S).group(1)
         for body in re.findall(r"(?:^|\n)\.term\s*\{([^}]*)\}", css):
             self.assertNotRegex(body, r"\b(height|display|grid)\s*:", "the glossary .term class must stay an inline text style")
 
     def test_light_theme_covers_every_token(self):
         """Every colour token the dark theme defines must be redefined for light, or light mode shows dark patches."""
         import re
-        css = re.search(r"<style>(.*?)</style>", (ROOT / "site_template.html").read_text(), re.S).group(1)
+        css = re.search(r"<style>(.*?)</style>", build.assemble_template(), re.S).group(1)
         dark = re.search(r":root \{(.*?)\}", css, re.S).group(1)
         light = re.search(r':root\[data-theme="light"\] \{(.*?)\}', css, re.S).group(1)
         skip = {"--font-display", "--font-body", "--font-mono", "--radius", "--radius-sm"}
         missing = set(re.findall(r"(--[\w-]+):", dark)) - set(re.findall(r"(--[\w-]+):", light)) - skip
         self.assertEqual(missing, set())
-        self.assertNotIn('fill="${SEV_COLORS', (ROOT / "site_template.html").read_text(), "SVG fill attributes can't read CSS variables")
+        self.assertNotIn('fill="${SEV_COLORS', build.assemble_template(), "SVG fill attributes can't read CSS variables")
 
 
 class SecurityControls(unittest.TestCase):
@@ -333,9 +333,20 @@ class SecurityControls(unittest.TestCase):
 class QuizFairness(unittest.TestCase):
     def test_answer_position_is_shuffled_everywhere(self):
         """Most authored answers are option 2, so every quiz must mix its options before showing them."""
-        page = (ROOT / "site_template.html").read_text()
+        page = build.assemble_template()
         for use in ("mixOptions(DATA.quiz[", "map(q => mixOptions(q))", "quizBlock(mixOptions(q)"):
             self.assertIn(use, page)
+
+
+class PageAssembly(unittest.TestCase):
+    def test_template_assembles_whole(self):
+        """site_template.html holds the HTML; build.py pastes in src/site.css and src/app/*.js. Nothing may be lost."""
+        page = build.assemble_template()
+        for mark in ("/*__CSS__*/", "/*__APP__*/"):
+            self.assertNotIn(mark, page)
+        self.assertIn("const DATA = /*__DATA__*/null;", page, "01-core.js must come first: everything else uses DATA")
+        self.assertIn("function route()", page)
+        self.assertTrue(page.rstrip().endswith("</script>"), "the app script closes the page, as before the split")
 
 
 class DeviceLibrary(unittest.TestCase):
@@ -343,7 +354,7 @@ class DeviceLibrary(unittest.TestCase):
         """build.py pastes static/js/hw.js into the page with "export" removed, so it must not import anything."""
         src = (ROOT / "static" / "js" / "hw.js").read_text()
         self.assertNotRegex(src, r"^\s*import ", "hw.js is inlined into the page and can't import")
-        self.assertIn("/*__HW__*/", (ROOT / "site_template.html").read_text())
+        self.assertIn("/*__HW__*/", build.assemble_template())
 
 
 class ContentIntegrity(unittest.TestCase):

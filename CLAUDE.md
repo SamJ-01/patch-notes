@@ -4,8 +4,10 @@ A static, free cyber security and IT learning site (GitHub Pages). Live: https:/
 Built by one person with AI help: keep changes small, tested and reusable. Read this instead of re-auditing the repo.
 
 ## Layout
-- `site_template.html` (~265 KB): the whole app (CSS + JS + views). Too big to read whole: `grep -n` for the
-  function or CSS class you need, then read that range. Views are `VIEWS.x` / `xxxView()` functions; routes in `parseRoute()`.
+- The page: `site_template.html` (HTML skeleton, ~5 KB) + `src/site.css` + `src/app/*.js`, joined by `build.assemble_template()`.
+  The app files share one scope and run in name order: 01-core (DATA, helpers), 02-glossary, 03-progress, 04-home,
+  05-news-cves, 06-learn (lessons, certs, loop), 07-labs (missions, labs, Agency), 08-you (progress, play, careers),
+  09-shell (status bar, palette, router). Views are `VIEWS.x` / `xxxView()` functions; routes in `parseRoute()`.
 - `static/js/`: ES modules loaded on demand. `missions/engine.js` (pure rules, no DOM), `missions/ui.js`, `missions/layout.js`,
   `exam.js` (cert practice + `readiness()`), `labs/*.js`, `hw.js` (device drawings), `flow.js`, `concept.js`.
 - `content/`: all content as JSON. Missions in `content/missions/*.json` and Agency shifts in `content/agency/*.json` (picked up automatically), certs in `content/certs/`,
