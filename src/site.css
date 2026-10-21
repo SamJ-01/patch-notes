@@ -2,6 +2,7 @@
 /* Layout: a security operations console. Two-row masthead (prompt + command bar, then numbered tabs), one 1120px working column split main/side,
    panels styled as terminal windows, and a tmux-style status bar pinned to the bottom on wide screens. Deliberately one dark world. */
 :root {
+  --seg0: #5AA9FF; --seg1: #FFB000; --seg2: #3DDC97; --seg3: #FF6FB5; --seg4: #B794F6; --seg5: #2DD4BF; --seg6: #FF8A4C; --seg7: #C3E85C;  /* one colour per broadcast domain (net/view.js) */
   --bg: #070A10;          /* console black, blue-biased */
   --surface: #0F1621;     /* panel */
   --surface-2: #142030;   /* raised / hover */
@@ -45,6 +46,7 @@
 }
 /* Light theme: same identity, daylight palette. Set by the theme toggle (or the viewer) via data-theme. */
 :root[data-theme="light"] {
+  --seg0: #1F6FD1; --seg1: #A86E00; --seg2: #12855A; --seg3: #C2307A; --seg4: #7346C8; --seg5: #0B8478; --seg6: #C2530F; --seg7: #5F7D00;
   --bg: #EEF2F7; --surface: #FFFFFF; --surface-2: #E7EDF5; --ink: #0F1B2D; --muted: #4F5E77; --line: #CDD6E3;
   --grid: rgba(20, 80, 140, 0.05);
   --brand: #08717D; --brand-ink: #FFFFFF; --brand-soft: #DDF1F3; --brand-rgb: 8, 113, 125;
@@ -793,7 +795,7 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .vlan-lab .term-out { white-space: pre; overflow-wrap: normal; overflow-x: auto; }
 .vl-tabs { justify-content: flex-start; flex-wrap: wrap; gap: 6px; }
 .vl-tabs .chip { padding: 4px 9px; font-size: 0.74rem; }
-.vl-diagram svg { width: 100%; max-height: 340px; display: block; }
+.vl-diagram .netview { max-height: 460px; margin: 0 auto; }
 .vl-node .plate { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
 .vl-name { font: 600 11px var(--font-mono); fill: var(--ink); }
 .vl-port { font: 10px var(--font-mono); fill: var(--muted); }
@@ -1277,3 +1279,39 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .tap-pkt.enc rect { stroke: var(--good); } .tap-pkt.enc text { fill: var(--good); }
 .tap-capture { margin: 0; min-height: 5em; max-height: 220px; overflow: auto; background: #05080C; color: #E6EDF3; border: 1px solid var(--dg-strong); border-radius: var(--radius-sm); padding: 10px 12px; font: 0.85rem/1.5 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
 .tap-sniff .panel-title .no { color: var(--bad); } .tap-sniff .panel-title .ok { color: var(--good); }
+
+/* ---------- network view (static/js/net/view.js): broadcast domains in colour ---------- */
+.netview { width: 100%; height: auto; display: block; overflow: visible; }
+.nv-wire { stroke-width: 3.2; stroke-linecap: round; }
+.nv-wire.dead { stroke: var(--muted); stroke-dasharray: 5 5; opacity: 0.7; }
+.nv-wire.seg0 { stroke: var(--seg0); } .nv-dot.seg0, .nv-swatch.seg0 { fill: var(--seg0); background: var(--seg0); } .nv-plate.seg0 { stroke: var(--seg0); }
+.nv-wire.seg1 { stroke: var(--seg1); } .nv-dot.seg1, .nv-swatch.seg1 { fill: var(--seg1); background: var(--seg1); } .nv-plate.seg1 { stroke: var(--seg1); }
+.nv-wire.seg2 { stroke: var(--seg2); } .nv-dot.seg2, .nv-swatch.seg2 { fill: var(--seg2); background: var(--seg2); } .nv-plate.seg2 { stroke: var(--seg2); }
+.nv-wire.seg3 { stroke: var(--seg3); } .nv-dot.seg3, .nv-swatch.seg3 { fill: var(--seg3); background: var(--seg3); } .nv-plate.seg3 { stroke: var(--seg3); }
+.nv-wire.seg4 { stroke: var(--seg4); } .nv-dot.seg4, .nv-swatch.seg4 { fill: var(--seg4); background: var(--seg4); } .nv-plate.seg4 { stroke: var(--seg4); }
+.nv-wire.seg5 { stroke: var(--seg5); } .nv-dot.seg5, .nv-swatch.seg5 { fill: var(--seg5); background: var(--seg5); } .nv-plate.seg5 { stroke: var(--seg5); }
+.nv-wire.seg6 { stroke: var(--seg6); } .nv-dot.seg6, .nv-swatch.seg6 { fill: var(--seg6); background: var(--seg6); } .nv-plate.seg6 { stroke: var(--seg6); }
+.nv-wire.seg7 { stroke: var(--seg7); } .nv-dot.seg7, .nv-swatch.seg7 { fill: var(--seg7); background: var(--seg7); } .nv-plate.seg7 { stroke: var(--seg7); }
+.nv-plate { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
+.nv-pc .nv-plate[class*="seg"] { stroke-width: 3; }
+.nv-name { font: 600 11px var(--font-mono); fill: var(--ink); }
+.nv-sub, .nv-port, .nv-tag { font: 9.5px var(--font-mono); fill: var(--muted); }
+.nv-tag { font-weight: 600; fill: var(--ink); paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
+.nv-port { paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
+.nv-dot { stroke: var(--bg); stroke-width: 1.5; }
+.nv-link, .nv-dev { transition: opacity 0.2s; }
+.nv-link.dim, .nv-dev.dim { opacity: 0.18; }
+.nv-dev[role="button"] { cursor: grab; outline: none; }
+.nv-dev[role="button"]:focus-visible .nv-plate, .nv-dev.sel .nv-plate { stroke: var(--brand); stroke-width: 3.5; }
+.nv-badge circle { stroke: var(--bg); stroke-width: 2; } .nv-badge text { font: 700 11px var(--font-body); fill: var(--bg); }
+.nv-badge.ok circle { fill: var(--good); } .nv-badge.no circle { fill: var(--bad); }
+.nv-legend { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); }
+.nv-key { width: 100%; display: grid; grid-template-columns: 14px auto 1fr; gap: 4px 8px; align-items: baseline; text-align: left; cursor: pointer; font: inherit; font-size: 0.86rem; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 6px 10px; }
+.nv-key .muted { grid-column: 2 / -1; font-size: 0.8rem; overflow-wrap: anywhere; }
+.nv-key:hover, .nv-key.on { border-color: var(--brand); }
+.nv-swatch { width: 12px; height: 12px; border-radius: 3px; align-self: center; }
+@media (prefers-reduced-motion: reduce) { .nv-link, .nv-dev { transition: none; } }
+.nv-idle { font-size: 0.82rem; margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.nv-chip { display: inline-flex; gap: 6px; align-items: center; font: inherit; font-size: 0.8rem; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; cursor: pointer; }
+.nv-chip:hover, .nv-chip.on { border-color: var(--brand); }
+.nv-chip .nv-swatch { width: 9px; height: 9px; }

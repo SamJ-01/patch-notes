@@ -4,14 +4,14 @@
 // submodes, and IOS's own error messages. Output formats follow a 2960 (show vlan brief, show interfaces
 // trunk) and Windows (ping, ipconfig). Simplifications are listed in the lab's "simplification" text.
 
-import { HW } from "../hw.js";
+import * as M from "../net/model.js";
+import * as V from "../net/view.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const clone = v => JSON.parse(JSON.stringify(v));
 const pad = (s, n) => String(s).padEnd(n);
 
 // ---------- ports: a 2960-24TT has Fa0/1-24 and Gi0/1-2
-export const PORTS = [...Array.from({ length: 24 }, (_, i) => `Fa0/${i + 1}`), "Gi0/1", "Gi0/2"];
+export const PORTS = M.SWITCH_PORTS;
 const LONG = { Fa: "FastEthernet", Gi: "GigabitEthernet" };
 const longName = p => LONG[p.slice(0, 2)] + p.slice(2);
 // "fa0/11", "f0/11", "FastEthernet0/11", or type and number as two words. Returns the short name or null.
@@ -48,8 +48,6 @@ export function compress(list) {
 }
 
 const RESERVED = { 1002: "fddi-default", 1003: "token-ring-default", 1004: "fddinet-default", 1005: "trnet-default" };
-const freshPort = () => ({ mode: "dynamic auto", access: 1, voice: null, native: 1, allowed: null, trust: false, shutdown: false });
-const freshSwitch = () => ({ vlans: { 1: "default" }, ports: Object.fromEntries(PORTS.map(p => [p, freshPort()])), mode: "user", ctx: [] });
 
 // ---------- command grammar. Each node: help text, whether the command may end here, and what can follow.
 // Special children: $vlan (one VLAN id), $vlans (a list), $word, $port (one or two words), $rest (anything).
@@ -129,71 +127,29 @@ export function options(mode, words) {
   return Object.entries(kids || {}).map(([k, v]) => ({ word: k.startsWith("$") ? { $vlan: "<1-4094>", $vlans: "WORD", $word: "WORD", $port: "<interface>", $rest: "LINE" }[k] : k, help: v.help }));
 }
 
-export function createNet(lab) {
-  const state = {
-    switches: Object.fromEntries(Object.keys(lab.switches).map(id => [id, freshSwitch()])),
-    pcs: Object.fromEntries(Object.keys(lab.pcs).map(id => [id, { history: [] }])),
-    ran: [], pings: [],
-  };
-  const sw = id => state.switches[id];
-  const prompt = dev => (lab.pcs[dev] ? "C:\\>" : `${dev}${PROMPT[sw(dev).mode]}`);
+// The lab's network as a model topology (static/js/net/model.js), which does the data plane: DTP, trunks,
+// broadcast domains and ping results.
+export function fromLab(lab) {
+  const topo = { devices: {}, links: [] };
+  for (const id of Object.keys(lab.switches)) topo.devices[id] = M.makeSwitch();
+  for (const [id, pc] of Object.entries(lab.pcs)) topo.devices[id] = M.makePc({ ip: pc.ip, mask: pc.mask, gw: pc.gw || "" });
+  for (const [s, def] of Object.entries(lab.switches)) for (const [p, [t, q]] of Object.entries(def.links || {})) if (s < t) topo.links.push({ a: [s, p], b: [t, q] });
+  for (const [id, pc] of Object.entries(lab.pcs)) topo.links.push({ a: [id, "NIC"], b: [pc.sw, pc.port] });
+  return topo;
+}
 
-  // ---------- the data plane: which VLAN a port puts traffic in, and where it can go
+// Command lines for every device in a topology: IOS on switches, the Windows prompt on PCs. Commands change the
+// topology in place, so a diagram drawn from it stays in step. `ran` and `pings` record what was done.
+export function createCli(topo) {
+  const cli = {}, ran = [], pings = [];
+  const st = id => (cli[id] ||= { mode: "user", ctx: [], history: [] });
+  const sw = id => topo.devices[id];
+  const kind = id => topo.devices[id]?.kind;
+  const prompt = dev => (kind(dev) === "pc" ? "C:\\>" : kind(dev) === "router" ? `${dev}#` : `${dev}${PROMPT[st(dev).mode]}`);
   const hasVlan = (s, v) => v in sw(s).vlans;
-  // A link trunks if either end is "trunk" and the other isn't "access", or one end is "desirable" and the
-  // other dynamic (DTP). Two "dynamic auto" ends (the default) never trunk: they stay access ports in VLAN 1.
-  function linkTrunks(a, b) {
-    const ma = a.mode, mb = b.mode;
-    if (ma === "access" || mb === "access") return false;
-    return ma === "trunk" || mb === "trunk" || ma === "dynamic desirable" || mb === "dynamic desirable";
-  }
-  const peerOf = (s, p) => lab.switches[s].links?.[p] || null;
-  // Operational mode: "trunk" or "access". A port set to trunk sends tagged frames even if the far end won't trunk.
-  function opMode(s, p) {
-    const port = sw(s).ports[p], peer = peerOf(s, p);
-    if (port.mode === "trunk") return "trunk";
-    if (port.mode === "access" || !peer) return "access";
-    return linkTrunks(port, sw(peer[0]).ports[peer[1]]) ? "trunk" : "access";
-  }
+  const opMode = (s, p) => M.opMode(topo, s, p);
+  const peerOf = (s, p) => { const l = M.linkOf(topo, s, p); return l ? (l.a[0] === s && l.a[1] === p ? l.b : l.a) : null; };
   const allowed = (port, v) => !port.allowed || port.allowed.includes(v);
-  // A frame in VLAN v leaves switch s on port p. Which VLAN does it arrive in on the far switch, if any?
-  function cross(s, p, v) {
-    const peer = peerOf(s, p);
-    if (!peer) return null;
-    const [t, q] = peer, a = sw(s).ports[p], b = sw(t).ports[q];
-    if (a.shutdown || b.shutdown) return null;
-    const ma = opMode(s, p), mb = opMode(t, q);
-    let tagged;
-    if (ma === "trunk") { if (!allowed(a, v)) return null; tagged = v !== a.native; }
-    else { if (v !== a.access) return null; tagged = false; }
-    // Untagged frames join the far port's native (trunk) or access VLAN; an access port drops tagged frames.
-    const into = tagged ? (mb === "trunk" ? v : null) : (mb === "trunk" ? b.native : b.access);
-    if (into == null || (mb === "trunk" && !allowed(b, into)) || !hasVlan(t, into)) return null;
-    return into;
-  }
-  // The VLAN a PC's frames enter (a PC sends untagged frames; behind an IP phone they stay untagged).
-  function pcVlan(id) {
-    const pc = lab.pcs[id], port = sw(pc.sw).ports[pc.port];
-    if (port.shutdown) return null;
-    const v = opMode(pc.sw, pc.port) === "trunk" ? port.native : port.access;
-    return hasVlan(pc.sw, v) ? v : null;
-  }
-  // Can a frame from PC a reach PC b? Search (switch, VLAN) pairs across the links.
-  function oneWay(a, b) {
-    const va = pcVlan(a), vb = pcVlan(b);
-    if (va == null || vb == null) return false;
-    const goal = `${lab.pcs[b].sw}|${vb}`, seen = new Set([`${lab.pcs[a].sw}|${va}`]), queue = [[lab.pcs[a].sw, va]];
-    while (queue.length) {
-      const [s, v] = queue.shift();
-      if (`${s}|${v}` === goal) return true;
-      for (const p of Object.keys(lab.switches[s].links || {})) {
-        const into = cross(s, p, v), key = into != null && `${peerOf(s, p)[0]}|${into}`;
-        if (key && !seen.has(key)) { seen.add(key); queue.push([peerOf(s, p)[0], into]); }
-      }
-    }
-    return false;
-  }
-  const reachable = (a, b) => oneWay(a, b) && oneWay(b, a);  // ARP needs the reply to get back too
 
   // ---------- IOS output
   function showVlanBrief(s) {
@@ -263,55 +219,55 @@ export function createNet(lab) {
   };
   const CONFIG_I = "%SYS-5-CONFIG_I: Configured from console by console";
   // CDP notices when the two ends of a trunk disagree about the native VLAN (a real switch repeats this every minute).
-  const mismatches = s => sw(s).ctx.filter(p => peerOf(s, p) && opMode(s, p) === "trunk").flatMap(p => {
+  const mismatches = s => st(s).ctx.filter(p => peerOf(s, p) && kind(peerOf(s, p)[0]) === "switch" && opMode(s, p) === "trunk").flatMap(p => {
     const [t, q] = peerOf(s, p), a = sw(s).ports[p].native, b = sw(t).ports[q].native;
     return a !== b && opMode(t, q) === "trunk" ? [`%CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on ${longName(p)} (${a}), with ${t} ${longName(q)} (${b}).`] : [];
   }).join("\n");
   function iosLine(s, line) {
-    const S = sw(s), words = line.trim().split(/\s+/).filter(Boolean);
+    const C = st(s), words = line.trim().split(/\s+/).filter(Boolean);
     if (!words.length) return { out: "" };
     if (words.at(-1).endsWith("?")) {
       const last = words.at(-1).slice(0, -1);  // "sh?" lists words starting "sh"; "show ?" lists what follows show
-      const opts = options(S.mode, words.slice(0, -1)).filter(o => !last || o.word.startsWith(last.toLowerCase()));
+      const opts = options(C.mode, words.slice(0, -1)).filter(o => !last || o.word.startsWith(last.toLowerCase()));
       return { out: opts.length ? opts.map(o => `  ${pad(o.word, 17)}${o.help}`).join("\n") : "% Unrecognized command" };
     }
-    let r = parse(S.mode, words);
+    let r = parse(C.mode, words);
     // IOS runs global configuration commands from any configuration submode, and moves to that mode.
-    if (r.error && ["vlan", "if", "range"].includes(S.mode)) {
+    if (r.error && ["vlan", "if", "range"].includes(C.mode)) {
       const g = parse("config", words);
-      if (!g.error) { r = g; S.mode = "config"; S.ctx = []; }
+      if (!g.error) { r = g; C.mode = "config"; C.ctx = []; }
     }
     if (r.error === "ambiguous") return { out: `% Ambiguous command:  "${line.trim()}"`, error: true };
     if (r.error === "incomplete") return { out: "% Incomplete command.", error: true };
     if (r.error) {
-      if (["user", "priv"].includes(S.mode) && r.at === 0 && words.length === 1)
+      if (["user", "priv"].includes(C.mode) && r.at === 0 && words.length === 1)
         return { out: `Translating "${words[0]}"...domain server (255.255.255.255)\n% Unknown command or computer name, or unable to find computer address`, error: true };
       return { out: caret(s, line, words, r.at), error: true };
     }
     const out = run(s, r.path, r.args, line, words);
-    if (!out.error) state.ran.push(`${s}:${r.path}`);
+    if (!out.error) ran.push(`${s}:${r.path}`);
     return out;
   }
   function run(s, path, args, line, words) {
-    const S = sw(s);
-    const each = fn => S.ctx.forEach(p => fn(S.ports[p], p));
+    const S = sw(s), C = st(s);
+    const each = fn => C.ctx.forEach(p => fn(S.ports[p], p));
     const create = (v, kind) => (hasVlan(s, v) ? "" : ((S.vlans[v] = `VLAN${String(v).padStart(4, "0")}`), `% ${kind} VLAN does not exist. Creating vlan ${v}`));
     switch (path) {
-      case "enable": S.mode = "priv"; return { out: "" };
-      case "disable": S.mode = "user"; return { out: "" };
+      case "enable": C.mode = "priv"; return { out: "" };
+      case "disable": C.mode = "user"; return { out: "" };
       case "exit":
-        if (S.mode === "user" || S.mode === "priv") { S.mode = "user"; return { out: `\n${s} con0 is now available\n\nPress RETURN to get started.` }; }
-        if (S.mode === "config") { S.mode = "priv"; return { out: CONFIG_I }; }
-        S.mode = "config"; S.ctx = []; return { out: "" };
-      case "end": S.mode = "priv"; S.ctx = []; return { out: CONFIG_I };
-      case "configure terminal": S.mode = "config"; return { out: "Enter configuration commands, one per line.  End with CNTL/Z." };
+        if (C.mode === "user" || C.mode === "priv") { C.mode = "user"; return { out: `\n${s} con0 is now available\n\nPress RETURN to get started.` }; }
+        if (C.mode === "config") { C.mode = "priv"; return { out: CONFIG_I }; }
+        C.mode = "config"; C.ctx = []; return { out: "" };
+      case "end": C.mode = "priv"; C.ctx = []; return { out: CONFIG_I };
+      case "configure terminal": C.mode = "config"; return { out: "Enter configuration commands, one per line.  End with CNTL/Z." };
       case "do $rest": {
-        const mode = S.mode, ctx = S.ctx, inner = args[0].split(/\s+/);
+        const mode = C.mode, ctx = C.ctx, inner = args[0].split(/\s+/);
         const r = parse("priv", inner);
         if (r.error || r.path.startsWith("configure") || ["exit", "disable", "enable"].includes(r.path)) return { out: caret(s, line, words, 1 + (r.at || 0)), error: true };
         const out = run(s, r.path, r.args, line, words);
-        S.mode = mode; S.ctx = ctx;
-        if (!out.error) state.ran.push(`${s}:${r.path}`);
+        C.mode = mode; C.ctx = ctx;
+        if (!out.error) ran.push(`${s}:${r.path}`);
         return out;
       }
       case "show vlan brief": return { out: showVlanBrief(s) };
@@ -320,13 +276,13 @@ export function createNet(lab) {
       case "show interfaces": case "show interfaces $port": return { out: "[Simulator: interface counters aren't modelled. Try show interfaces trunk, or show interfaces fa0/11 switchport.]" };
       case "show interfaces $port switchport": return { out: showSwitchport(s, args[0]) };
       case "show running-config": return { out: showRun(s) };
-      case "hostname $word": return { out: "[Simulator: the switches keep their names (S1, S2, S3) in this lab.]" };
+      case "hostname $word": return { out: `[Simulator: switch names are fixed here (${s}).]` };
       case "vlan $vlans": {
         const ext = args[0].filter(v => v > 1005);
         if (ext.length) return { out: `Extended VLAN(s) not allowed in current VTP mode.\n%Failed to commit extended VLAN(s) changes.`, error: true };
         if (args[0].some(v => RESERVED[v])) return { out: `Default VLAN ${args[0].find(v => RESERVED[v])} may not be modified.`, error: true };
         for (const v of args[0]) if (!hasVlan(s, v)) S.vlans[v] = `VLAN${String(v).padStart(4, "0")}`;
-        S.mode = "vlan"; S.ctx = args[0]; return { out: "" };
+        C.mode = "vlan"; C.ctx = args[0]; return { out: "" };
       }
       case "no vlan $vlans": {
         if (args[0].includes(1) || args[0].some(v => RESERVED[v])) return { out: `Default VLAN ${args[0].includes(1) ? 1 : args[0].find(v => RESERVED[v])} may not be deleted.`, error: true };
@@ -334,12 +290,12 @@ export function createNet(lab) {
         return { out: "" };
       }
       case "name $word":
-        if (S.ctx.includes(1)) return { out: "Default VLAN 1 may not have its name changed.", error: true };
+        if (C.ctx.includes(1)) return { out: "Default VLAN 1 may not have its name changed.", error: true };
         if (args[0].length > 32) return { out: caret(s, line, words, 1), error: true };
-        if (S.ctx.length > 1) return { out: "% Applying VLAN changes may take few minutes.  Please wait...\n[Simulator: name each VLAN on its own; a name has to be unique.]", error: true };
-        if (Object.entries(S.vlans).some(([id, n]) => n === args[0] && Number(id) !== S.ctx[0])) return { out: `VLAN name ${args[0]} is already in use by another VLAN.`, error: true };
-        S.vlans[S.ctx[0]] = args[0]; return { out: "" };
-      case "interface $port": S.mode = "if"; S.ctx = [args[0]]; return { out: "" };
+        if (C.ctx.length > 1) return { out: "% Applying VLAN changes may take few minutes.  Please wait...\n[Simulator: name each VLAN on its own; a name has to be unique.]", error: true };
+        if (Object.entries(S.vlans).some(([id, n]) => n === args[0] && Number(id) !== C.ctx[0])) return { out: `VLAN name ${args[0]} is already in use by another VLAN.`, error: true };
+        S.vlans[C.ctx[0]] = args[0]; return { out: "" };
+      case "interface $port": C.mode = "if"; C.ctx = [args[0]]; return { out: "" };
       case "interface range $rest": {
         const ports = [];
         for (const part of args[0].split(",")) {
@@ -348,7 +304,7 @@ export function createNet(lab) {
           if (!first || !last || PORTS.indexOf(last) < PORTS.indexOf(first)) return { out: caret(s, line, words, 2), error: true };
           ports.push(...PORTS.slice(PORTS.indexOf(first), PORTS.indexOf(last) + 1));
         }
-        S.mode = "range"; S.ctx = [...new Set(ports)]; return { out: "" };
+        C.mode = "range"; C.ctx = [...new Set(ports)]; return { out: "" };
       }
       case "switchport mode access": each(p => { p.mode = "access"; }); return { out: "" };
       case "switchport mode trunk": each(p => { p.mode = "trunk"; }); return { out: "" };
@@ -382,8 +338,7 @@ export function createNet(lab) {
           if (p.shutdown === down) return;
           p.shutdown = down;
           msgs.push(`%LINK-5-CHANGED: Interface ${longName(name)}, changed state to ${down ? "administratively down" : "up"}`);
-          if (lab.switches[s].links?.[name] || Object.values(lab.pcs).some(pc => pc.sw === s && pc.port === name))
-            msgs.push(`%LINEPROTO-5-UPDOWN: Line protocol on Interface ${longName(name)}, changed state to ${down ? "down" : "up"}`);
+          if (peerOf(s, name)) msgs.push(`%LINEPROTO-5-UPDOWN: Line protocol on Interface ${longName(name)}, changed state to ${down ? "down" : "up"}`);
         });
         return { out: msgs.join("\n") };
       }
@@ -391,51 +346,56 @@ export function createNet(lab) {
     return { out: "[Simulator: that command isn't modelled here.]", error: true };
   }
 
-  // ---------- Windows PCs
-  const ipNum = ip => ip.split(".").reduce((n, o) => n * 256 + Number(o), 0);
-  const sameSubnet = (a, b, mask) => (ipNum(a) & ipNum(mask)) === (ipNum(b) & ipNum(mask));
+  // ---------- Windows PCs: ping results come from the model, printed the way Windows prints them
   function pcLine(id, line) {
-    const pc = lab.pcs[id], words = line.trim().split(/\s+/).filter(Boolean);
+    const pc = sw(id), words = line.trim().split(/\s+/).filter(Boolean);
     if (!words.length) return { out: "" };
     const cmd = words[0].toLowerCase();
     if (cmd === "ipconfig") {
-      state.ran.push(`${id}:ipconfig`);
-      return { out: `\nWindows IP Configuration\n\n\nEthernet adapter Ethernet:\n\n   Connection-specific DNS Suffix  . :\n   IPv4 Address. . . . . . . . . . . : ${pc.ip}\n   Subnet Mask . . . . . . . . . . . : ${pc.mask}\n   Default Gateway . . . . . . . . . :\n` };
+      ran.push(`${id}:ipconfig`);
+      return { out: `\nWindows IP Configuration\n\n\nEthernet adapter Ethernet:\n\n   Connection-specific DNS Suffix  . :\n   IPv4 Address. . . . . . . . . . . : ${pc.ip}\n   Subnet Mask . . . . . . . . . . . : ${pc.mask}\n   Default Gateway . . . . . . . . . : ${pc.gw || ""}\n` };
     }
     if (cmd !== "ping") return { out: `'${words[0]}' is not recognized as an internal or external command,\noperable program or batch file.`, error: true };
     const ip = words[1];
     if (!ip) return { out: "\nUsage: ping [-t] [-a] [-n count] [-l size] target_name\n[Simulator: try ping followed by an IP address, e.g. ping 10.10.10.14]", error: true };
-    if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(ip) || ip.split(".").some(o => Number(o) > 255))
-      return { out: `Ping request could not find host ${ip}. Please check the name and try again.`, error: true };
-    const to = Object.keys(lab.pcs).find(k => lab.pcs[k].ip === ip);
-    const head = `\nPinging ${ip} with 32 bytes of data:`;
+    if (M.ipNum(ip) == null) return { out: `Ping request could not find host ${ip}. Please check the name and try again.`, error: true };
+    const r = M.ping(topo, id, ip), to = M.owners(topo, ip)[0]?.id;
+    const head = `\nPinging ${ip} with 32 bytes of data:`, four = l => `${l}\n`.repeat(4);
     const stats = (rx, rtt) => `\nPing statistics for ${ip}:\n    Packets: Sent = 4, Received = ${rx}, Lost = ${4 - rx} (${(4 - rx) * 25}% loss),${rtt ? "\nApproximate round trip times in milli-seconds:\n    Minimum = 0ms, Maximum = 0ms, Average = 0ms" : ""}`;
-    let out, ok = false;
-    // A shut switch port looks like an unplugged cable to Windows, as does sending off-subnet with no gateway.
-    if (sw(pc.sw).ports[pc.port].shutdown || !sameSubnet(pc.ip, ip, pc.mask)) out = `${head}\nPING: transmit failed. General failure.\nPING: transmit failed. General failure.\nPING: transmit failed. General failure.\nPING: transmit failed. General failure.\n${stats(0)}`;
-    else if (to === id || (to && reachable(id, to))) { ok = true; out = `${head}\n${`Reply from ${ip}: bytes=32 time<1ms TTL=128\n`.repeat(4)}${stats(4, true)}`; }
-    else out = `${head}\n${`Reply from ${pc.ip}: Destination host unreachable.\n`.repeat(4)}${stats(4)}`;  // Windows counts these as "received"
-    state.pings.push({ from: id, to: to || ip, ok, vlan: pcVlan(id) });
-    return { out };
+    const body = {
+      ok: () => `${four(`Reply from ${ip}: bytes=32 time<1ms TTL=${to && kind(to) === "router" ? 255 : 128}`)}${stats(4, true)}`,
+      general: () => `${four("PING: transmit failed. General failure.")}${stats(0)}`,
+      host: () => `${four(`Reply from ${pc.ip}: Destination host unreachable.`)}${stats(4)}`,  // Windows counts these as "received"
+      net: () => `${four(`Reply from ${r.reply}: Destination net unreachable.`)}${stats(4)}`,
+      timeout: () => `${four("Request timed out.")}${stats(0)}`,
+    }[r.result]();
+    pings.push({ from: id, to: to || ip, ok: r.result === "ok", vlan: M.vlanOf(topo, id), result: r.result, reason: r.reason });
+    return { out: `${head}\n${body}`, ping: r };
   }
 
   function exec(dev, line) {
-    const hist = lab.pcs[dev] ? state.pcs[dev].history : (sw(dev).history ||= []);
-    if (line.trim()) hist.push(line);
-    return lab.pcs[dev] ? pcLine(dev, line) : iosLine(dev, line);
+    if (line.trim()) st(dev).history.push(line);
+    if (kind(dev) === "pc") return pcLine(dev, line);
+    if (kind(dev) === "router") return { out: "[Simulator: configure routers with the settings panel.]", error: true };
+    return iosLine(dev, line);
   }
   // Tab: complete the last word if exactly one keyword fits (IOS beeps otherwise).
   function complete(dev, line) {
-    if (lab.pcs[dev]) return line;
+    if (kind(dev) !== "switch") return line;
     const words = line.split(/\s+/), last = words.pop() || "";
-    const hits = options(sw(dev).mode, words.filter(Boolean)).map(o => o.word).filter(w => /^[a-z]/.test(w) && w.startsWith(last.toLowerCase()));
+    const hits = options(st(dev).mode, words.filter(Boolean)).map(o => o.word).filter(w => /^[a-z]/.test(w) && w.startsWith(last.toLowerCase()));
     return hits.length === 1 && last ? [...words, hits[0]].join(" ") + " " : line;
   }
+  return { prompt, exec, complete, history: dev => st(dev).history, ran, pings, forget: id => { delete cli[id]; } };
+}
 
+export function createNet(lab) {
+  const topo = fromLab(lab), cli = createCli(topo);
+  const sw = id => topo.devices[id], opMode = (s, p) => M.opMode(topo, s, p);
   // ---------- objectives
   function isDone(c) {
-    if (c.ran) return state.ran.includes(`${c.ran.device}:${c.ran.cmd}`);
-    if (c.pinged) return state.pings.some(p => p.from === c.pinged.from && p.to === c.pinged.to && p.ok === c.pinged.ok && (c.pinged.vlan === undefined || p.vlan === c.pinged.vlan));
+    if (c.ran) return cli.ran.includes(`${c.ran.device}:${c.ran.cmd}`);
+    if (c.pinged) return cli.pings.some(p => p.from === c.pinged.from && p.to === c.pinged.to && p.ok === c.pinged.ok && (c.pinged.vlan === undefined || p.vlan === c.pinged.vlan));
     if (c.vlans) return c.vlans.devices.every(d => Object.entries(c.vlans.names).every(([v, n]) => sw(d).vlans[v] === n));
     if (c.access) return Object.entries(c.access.ports).every(([p, v]) => sw(c.access.device).ports[p].mode === "access" && sw(c.access.device).ports[p].access === v);
     if (c.voice) { const p = sw(c.voice.device).ports[c.voice.port]; return p.voice === c.voice.vlan && p.trust === c.voice.trust; }
@@ -444,11 +404,10 @@ export function createNet(lab) {
     if (c.all) return c.all.every(isDone);
     return false;
   }
-
   return {
-    state, prompt, exec, complete, isDone, reachable, pcVlan, opMode,
-    history: dev => (lab.pcs[dev] ? state.pcs[dev].history : sw(dev).history || []),
-    snapshot: () => clone(state),
+    topo, state: { ran: cli.ran, pings: cli.pings }, prompt: cli.prompt, exec: cli.exec, complete: cli.complete, history: cli.history,
+    isDone, opMode, pcVlan: id => M.vlanOf(topo, id),
+    reachable: (a, b) => M.ping(topo, a, sw(b).ip).result === "ok",
   };
 }
 
@@ -482,25 +441,14 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   const $ = id => root.querySelector("#" + id);
   const out = $("v-out"), input = $("v-in");
 
+  // The live diagram: each broadcast domain in its own colour, trunks as bundles of the colours they carry.
+  let focus = null;
   function drawDiagram() {
-    const pos = lab.layout, W = 600, H = 300;
-    const node = (id, kind) => { const [x, y] = pos[id]; return `<g class="vl-node" transform="translate(${x},${y})"><rect class="plate" x="-36" y="-26" width="72" height="52" rx="8"/><text class="vl-name" y="-14" text-anchor="middle">${id}</text><g transform="translate(0,6) scale(${kind === "switch" ? 0.9 : 0.55})">${HW[kind]}</g></g>`; };
-    const lines = [];
-    for (const [s, def] of Object.entries(lab.switches)) for (const [p, [t, q]] of Object.entries(def.links || {})) {
-      if (s > t) continue;
-      const [x1, y1] = pos[s], [x2, y2] = pos[t], trunk = net.opMode(s, p) === "trunk" && net.opMode(t, q) === "trunk";
-      lines.push(`<line class="vl-link ${trunk ? "trunk" : ""}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><text class="vl-port" x="${(x1 + x2) / 2 + (x2 < x1 ? -10 : 10)}" y="${(y1 + y2) / 2 - 4}" text-anchor="${x2 < x1 ? "end" : "start"}">${trunk ? "trunk" : "access, VLAN " + net.state.switches[s].ports[p].access}</text>`);
-    }
-    for (const [id, pc] of Object.entries(lab.pcs)) {
-      const [x1, y1] = pos[pc.sw], [x2, y2] = pos[id], v = net.pcVlan(id);
-      lines.push(`<line class="vl-link v${v ?? "x"}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><text class="vl-port" x="${x2}" y="${y2 + 38}" text-anchor="middle">${pc.port}</text><text class="vl-port" x="${x2}" y="${y2 + 50}" text-anchor="middle">${v == null ? "inactive" : "VLAN " + v}</text>`);
-    }
-    $("v-diagram").innerHTML = `<svg viewBox="0 0 ${W} ${H + 20}" role="img" aria-label="${esc(diagramText())}">${lines.join("")}${Object.keys(lab.switches).map(s => node(s, "switch")).join("")}${Object.keys(lab.pcs).map(p => node(p, "pc")).join("")}</svg>`;
-  }
-  function diagramText() {
-    const links = [];
-    for (const [s, def] of Object.entries(lab.switches)) for (const [p, [t]] of Object.entries(def.links || {})) if (s < t) links.push(`${s} to ${t}: ${net.opMode(s, p) === "trunk" ? "trunk" : "access link"}`);
-    return `Network diagram. ${links.join(". ")}. ${Object.keys(lab.pcs).map(id => `${id} on ${lab.pcs[id].sw} ${lab.pcs[id].port}, VLAN ${net.pcVlan(id) ?? "inactive"}`).join(". ")}.`;
+    const seg = M.segments(net.topo);
+    if (focus != null && !seg.segments[focus]) focus = null;
+    $("v-diagram").innerHTML = V.svg(net.topo, { layout: lab.layout, width: 600, height: 320, seg, focus })
+      + `<h3 class="eyebrow">Who can talk to whom</h3>${V.legend(net.topo, seg, focus)}`;
+    $("v-diagram").querySelectorAll("[data-seg]").forEach(b => b.addEventListener("click", () => { focus = focus === Number(b.dataset.seg) ? null : Number(b.dataset.seg); drawDiagram(); $("v-diagram").querySelector(`[data-seg="${b.dataset.seg}"]`)?.focus(); }));
   }
   const print = html => { outs[dev] += html; out.insertAdjacentHTML("beforeend", html); out.scrollTop = out.scrollHeight; };
   function renderTasks() {
