@@ -182,7 +182,7 @@ main { padding-inline: 16px; }
 .chip { font: 700 0.82rem var(--font-body); cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; color: var(--ink); }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .chip .n { font-family: var(--font-mono); font-weight: 400; margin-left: 4px; }
-.topic { font: 700 0.75rem var(--font-body); text-decoration: none; color: var(--brand); background: var(--brand-soft); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+.topic { font: 700 0.75rem var(--font-body); text-decoration: none; color: var(--brand); background: var(--brand-soft); border-radius: 999px; padding: 3px 10px; max-width: 100%; }  /* wraps only when a chip is wider than its line */
 .topic:hover { text-decoration: underline; }
 .cvetag { font: 600 0.72rem var(--font-mono); text-decoration: none; color: var(--muted); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 2px 7px; cursor: pointer; background: none; }
 .pill { font: 700 0.72rem/1 var(--font-body); letter-spacing: 0.04em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; color: var(--c); background: var(--t); }

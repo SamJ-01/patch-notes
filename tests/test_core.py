@@ -446,8 +446,13 @@ class ContentIntegrity(unittest.TestCase):
                         self.assertIn(a["id"], known, f"{o['id']}: unknown {a['type']} {a['id']}")
 
     def test_practice_questions_are_complete(self):
-        bank = json.loads((ROOT / "content" / "certs" / "network-plus-questions.json").read_text())
-        cert = json.loads((ROOT / "content" / "certs" / "network-plus.json").read_text())
+        banks = sorted((ROOT / "content" / "certs").glob("*-questions.json"))
+        self.assertGreaterEqual(len(banks), 2)
+        for f in banks:
+            with self.subTest(bank=f.name):
+                self.check_bank(json.loads(f.read_text()), json.loads(f.with_name(f.name.replace("-questions", "")).read_text()))
+
+    def check_bank(self, bank, cert):
         objectives = {o["id"] for d in cert["domains"] for o in d["objectives"]}
         self.assertIn("not real exam questions", bank["note"])
         ids = [q["id"] for q in bank["questions"]]
