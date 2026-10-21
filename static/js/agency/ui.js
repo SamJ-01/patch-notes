@@ -6,7 +6,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
 const STATUS_WORDS = { pending: "waiting for a reply", asks: "they asked for a reason", done: "done", refused: "refused" };
 
-export function mount(root, shift, { done = false, onComplete = () => {}, onAgain = null } = {}) {
+export function mount(root, shift, { done = false, onComplete = () => {}, onAgain = null, feedback = "" } = {}) {
   let state, selected = null, source = null;
   const all = A.findings(shift);
   const clockAt = m => { const [h, mi] = shift.startsAt.split(":").map(Number), t = h * 60 + mi + m; return `${String(Math.floor(t / 60) % 24).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`; };
@@ -220,7 +220,8 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
       ${rep.pending.length ? `<p class="muted">Still on their way at handover: ${rep.pending.map(esc).join("; ")}.</p>` : ""}
       <h3 class="eyebrow">Handover notes</h3>
       <div class="ag-notes"><div><b>Yours</b><p>${rep.note ? esc(rep.note) : '<span class="muted">(none)</span>'}</p></div><div><b>A model handover</b><p>${esc(rep.modelNote)}</p></div></div>
-      <div class="row"><button class="btn brand" type="button" id="ag-again">Work the shift again</button><a class="btn ghost" href="#mission-ssh-brute">Mission: The 3am logins</a></div>`;
+      <div class="row"><button class="btn brand" type="button" id="ag-again">Work the shift again</button><a class="btn ghost" href="#mission-ssh-brute">Mission: The 3am logins</a></div>
+      ${feedback ? `<p class="muted">This is a pilot. <a href="${esc(feedback)}" target="_blank" rel="noopener">Tell us how the shift went ↗</a> (a public GitHub form; needs a free account).</p>` : ""}`;
     $("ag-again").addEventListener("click", () => (onAgain ? onAgain() : mount(root, shift, { done: true, onComplete })));
     $("ag-d-h").focus();
     onComplete(rep);

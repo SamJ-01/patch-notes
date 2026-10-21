@@ -271,6 +271,7 @@ function nextStepCard(type, id) {
   return n ? `<section class="panel next-step"><div class="eyebrow">${esc(n.why)}</div><h2>Next: ${esc(n.label)}</h2><a class="btn brand" href="${n.href}"${n.prove ? ` data-prove='${esc(JSON.stringify(n.prove))}'` : ""} style="justify-self:start">${GO_LABEL[n.kind] || "Go"} ›</a></section>` : "";
 }
 // After a lab or mission: what was practised, where the theory lives, and what to do next.
+const feedbackLine = what => (feedbackHref(what) ? `<p class="muted feedback-line">How was it? <a href="${esc(feedbackHref(what))}" target="_blank" rel="noopener">Tell us what worked and what didn't ↗</a> (a public GitHub form; needs a free account).</p>` : "");
 function showDoneCard(type, item, title) {
   const root = type === "lab" ? ($("lab-root") || main.querySelector(".view")) : $("mission-root");
   if (!root) return;
@@ -279,7 +280,7 @@ function showDoneCard(type, item, title) {
   const strip = ls ? loopStrip(item.lesson, type === "lab" ? "experiment" : "diagnose") : "";
   root.insertAdjacentHTML("beforeend", `<section class="panel next-step" id="done-card" tabindex="-1"><div class="eyebrow">${esc(title)}</div>
     <h2>${esc(item.title)}</h2><p class="muted" style="margin:0">${esc(item.skill || item.summary)}</p>${strip}
-    <div class="row">${n ? `<a class="btn brand" href="${n.href}"${n.prove ? ` data-prove='${esc(JSON.stringify(n.prove))}'` : ""}>Next: ${esc(n.label)} ›</a>` : ""}${ls && (!n || n.href !== "#lesson-" + ls.id) ? `<a class="btn ghost" href="#lesson-${esc(ls.id)}">Revisit the lesson: ${esc(ls.title)}</a>` : ""}<a class="link-btn" href="#missions">All missions and labs</a></div></section>`);
+    <div class="row">${n ? `<a class="btn brand" href="${n.href}"${n.prove ? ` data-prove='${esc(JSON.stringify(n.prove))}'` : ""}>Next: ${esc(n.label)} ›</a>` : ""}${ls && (!n || n.href !== "#lesson-" + ls.id) ? `<a class="btn ghost" href="#lesson-${esc(ls.id)}">Revisit the lesson: ${esc(ls.title)}</a>` : ""}<a class="link-btn" href="#missions">All missions and labs</a></div>${feedbackLine(item.title)}</section>`);
   setTimeout(() => { const c = root.querySelector("#done-card"); c?.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); c?.focus({ preventScroll: true }); }, 400);
 }
 

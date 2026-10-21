@@ -4,6 +4,8 @@ const DATA = /*__DATA__*/null;
 /*__HW__*/
 
 /* ---------- helpers ---------- */
+// A link to the public feedback form (a GitHub issue form), titled with the page it came from.
+const feedbackHref = what => (DATA.site.feedback ? `${DATA.site.feedback}&title=${encodeURIComponent("Feedback: " + what)}` : "");
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 const pct = x => x == null ? "—" : (x * 100 < 1 ? (x * 100).toFixed(2) : (x * 100).toFixed(1)) + "%";

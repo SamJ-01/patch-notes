@@ -38,4 +38,6 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   tests `tests/agency.test.mjs`). Design and decisions: `docs/agency-pilot.md`. Logs are searched with `engine.searchLines`.
 - Hashing lab (`#lab-hashing`, `static/js/labs/hashing.js`, tests `tests/hashing.test.mjs`): MD5/SHA-1/SHA-256, salts, slow hashes.
 - VLAN lab (`#lab-vlans`, `static/js/labs/vlan.js`, tests `tests/vlan.test.mjs`): simulated Cisco 2960 IOS + Windows PCs.
+- Feedback: public GitHub issue form (`.github/ISSUE_TEMPLATE/feedback.yml`), linked from every done card, the Agency debrief
+  and the footer (`DATA.site.feedback`). Read new `feedback` issues before planning.
 - Next: learner feedback on the shift and VLAN lab, inter-VLAN routing, more Security+ questions (PKI, control types), Security+ question bank. No accounts/backend until real users need cross-device saves.

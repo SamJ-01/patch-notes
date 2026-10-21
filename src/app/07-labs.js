@@ -166,6 +166,7 @@ function agencyView(id) {
     agencyShift = ui.mount($("agency-root"), sh, {
       done: !!(P.agency || {})[id],
       onAgain: () => agencyView(id),
+      feedback: feedbackHref("Agency " + sh.title),
       onComplete: rep => {
         P.agency = P.agency || {};
         const prev = P.agency[id], first = !prev;

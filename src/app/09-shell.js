@@ -274,6 +274,7 @@ $("foot-meta").textContent = `Updated ${DATA.meta.generated}.` + (DATA.site.auth
 $("xp").addEventListener("click", () => { location.hash = "progress"; });
 $("xp").style.cursor = "pointer";
 if (DATA.site.url) $("lessons-link").href = DATA.site.url + "lessons/";
+if (DATA.site.feedback) $("feedback-link").href = DATA.site.feedback;
 // The full CVE list (~600 KB) is only fetched by the views that use it.
 let cvesLoading = null;
 function loadCves() {

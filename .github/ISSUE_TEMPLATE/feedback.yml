@@ -1,0 +1,40 @@
+name: Learner feedback
+description: Tell us how a lesson, lab, mission or the Agency shift went for you.
+title: "Feedback: "
+labels: ["feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for trying Patch Notes. Issues here are **public**, so please don't include your name, email or anything personal.
+  - type: input
+    id: page
+    attributes:
+      label: Which page?
+      description: For example "VLAN lab" or "Agency shift". The title is filled in for you if you came from the site.
+    validations:
+      required: true
+  - type: dropdown
+    id: level
+    attributes:
+      label: Your experience before this
+      options:
+        - Brand new to IT and security
+        - Studying (for example Network+ or Security+)
+        - Working in IT, new to security
+        - Working in security
+    validations:
+      required: false
+  - type: textarea
+    id: worked
+    attributes:
+      label: What worked?
+  - type: textarea
+    id: confusing
+    attributes:
+      label: What was confusing, too hard or too easy?
+  - type: textarea
+    id: wrong
+    attributes:
+      label: Anything wrong or inaccurate?
+      description: Tool output, log lines or facts that don't match the real thing. Say which tool or OS if you can.

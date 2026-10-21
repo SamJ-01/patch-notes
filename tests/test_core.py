@@ -338,6 +338,16 @@ class QuizFairness(unittest.TestCase):
             self.assertIn(use, page)
 
 
+class FeedbackForm(unittest.TestCase):
+    def test_feedback_link_points_at_a_real_issue_form(self):
+        import re
+        url = content("site.json")["feedback"]
+        self.assertTrue(url.startswith("https://github.com/SamJ-01/patch-notes/issues/new?template="))
+        form = ROOT / ".github" / "ISSUE_TEMPLATE" / re.search(r"template=([\w.-]+)", url).group(1)
+        self.assertTrue(form.exists(), form.name)
+        self.assertIn("public", form.read_text(), "the form must warn that issues are public")
+
+
 class PageAssembly(unittest.TestCase):
     def test_template_assembles_whole(self):
         """site_template.html holds the HTML; build.py pastes in src/site.css and src/app/*.js. Nothing may be lost."""
