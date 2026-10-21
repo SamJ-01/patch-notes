@@ -1391,3 +1391,8 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .pm-matrix tr.pm-owner .pm-cls { color: var(--seg1); } .pm-matrix tr.pm-group .pm-cls { color: var(--seg2); } .pm-matrix tr.pm-root .pm-cls { color: var(--sun); }
 .pm-why { font-size: 0.84rem; margin: 8px 0 0; }
 @media (max-width: 900px) { .pm-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- practise page ---------- */
+.pr-start .lessons { margin-top: 2px; }
+.pr-tracks { gap: 6px; }
+.pr-more { justify-self: start; }

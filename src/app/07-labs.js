@@ -99,20 +99,52 @@ document.addEventListener("mouseover", e => {
   anims.forEach((a, i) => { try { setTimeout(() => a.beginElement(), Math.floor(i / 2) * 220); } catch (err) {} });
   setTimeout(() => delete card.dataset.playing, 2200);
 });
-const CATEGORY_ORDER = ["Networking", "Linux", "Cryptography", "Security operations", "Ethical hacking", "Games"];
-VIEWS.missions = () => {
-  const items = [
-    ...DATA.missions.map(m => ({ cat: m.category || "Networking", html: missionCard(m) })),
-    ...DATA.labs.map(l => ({ cat: l.category || "Security operations", html: labCard(l) })),
-    { cat: "Networking", html: toolCard() },
-    { cat: "Games", html: gamesCard() },
-    ...(DATA.agency || []).map(sh => ({ cat: "Security operations", html: shiftCard(sh) })),
+// Practise page: security tracks first, so networking (the biggest track) doesn't bury the rest.
+const CATEGORY_ORDER = ["Security operations", "Cryptography", "Linux", "Networking", "Ethical hacking", "Games"];
+// "Start here": one pick per track. When a pick is done, the next unfinished item in its track takes its place.
+const PRACTISE_PICKS = ["agency:shift-01", "lab:hashing", "lab:permissions", "lab:network-builder"];
+const PS = { track: "All", open: {} };  // the chosen filter and which tracks are expanded, for this visit
+function practiseItems() {
+  return [
+    ...(DATA.agency || []).map(sh => ({ key: `agency:${sh.id}`, cat: "Security operations", done: !!(P.agency || {})[sh.id], html: shiftCard(sh) })),
+    ...DATA.missions.map(m => ({ key: `mission:${m.id}`, cat: m.category || "Networking", done: Object.keys((P.missions || {})[m.id] || {}).length === Object.keys(m.modes).length, html: missionCard(m) })),
+    ...DATA.labs.map(l => ({ key: `lab:${l.id}`, cat: l.category || "Security operations", done: !!P.labs[l.id], html: labCard(l) })),
+    { key: "tool:subnet-calc", cat: "Networking", done: false, html: toolCard() },
+    { key: "games", cat: "Games", done: false, html: gamesCard() },
   ];
+}
+VIEWS.missions = () => {
+  const items = practiseItems();
   const cats = [...new Set([...CATEGORY_ORDER, ...items.map(i => i.cat)])].filter(c => items.some(i => i.cat === c));
+  if (PS.track !== "All" && !cats.includes(PS.track)) PS.track = "All";
+  const picks = PRACTISE_PICKS.map(k => items.find(i => i.key === k)).filter(Boolean)
+    .map(p => (p.done ? items.find(i => i.cat === p.cat && !i.done && !PRACTISE_PICKS.includes(i.key)) || p : p));
   main.innerHTML = `<div class="view">
-    <div class="view-head with-art">${headArt("missions")}<h1>Learn it. Break it. Understand it.</h1><p>Missions, labs, the Agency shift and games: everything hands-on, in one place.</p></div>
-    ${cats.map(c => `<section class="stack"><h2 class="cat-h">${esc(c)}</h2><div class="lessons">${items.filter(i => i.cat === c).map(i => i.html).join("")}</div></section>`).join("")}
+    <div class="view-head with-art">${headArt("missions")}<h1>Practise by doing</h1><p>Missions, labs, the Agency shift and games. Start with one from each track, or pick what you want to get better at.</p></div>
+    <section class="stack pr-start"><h2 class="cat-h">Start here: one from each track</h2><div class="lessons">${picks.map(p => p.html).join("")}</div></section>
+    <div class="row pr-tracks" role="group" aria-label="Show a track">${["All", ...cats].map(c => `<button type="button" class="chip" data-t="${esc(c)}" aria-pressed="${PS.track === c}">${esc(c)} <span class="n">${c === "All" ? items.length : items.filter(i => i.cat === c).length}</span></button>`).join("")}</div>
+    <div class="stack" id="pr-grid" style="gap:30px"></div>
   </div>`;
+  const SHOW = 4;
+  const draw = () => {
+    const shown = PS.track === "All" ? cats : [PS.track];
+    $("pr-grid").innerHTML = shown.map(c => {
+      const list = items.filter(i => i.cat === c), all = PS.track !== "All" || PS.open[c] || list.length <= SHOW + 1;
+      return `<section class="stack"><h2 class="cat-h">${esc(c)}</h2><div class="lessons">${(all ? list : list.slice(0, SHOW)).map(i => i.html).join("")}</div>
+        ${all ? "" : `<button type="button" class="btn ghost pr-more" data-more="${esc(c)}">Show all ${list.length} in ${esc(c)}</button>`}</section>`;
+    }).join("");
+  };
+  main.querySelector(".pr-tracks").addEventListener("click", e => {
+    const b = e.target.closest("[data-t]"); if (!b) return;
+    PS.track = b.dataset.t; main.querySelectorAll(".pr-tracks [data-t]").forEach(x => x.setAttribute("aria-pressed", x === b)); draw();
+  });
+  $("pr-grid").addEventListener("click", e => {
+    const b = e.target.closest("[data-more]"); if (!b) return;
+    PS.open[b.dataset.more] = true; draw();
+    const sec = [...$("pr-grid").querySelectorAll(".cat-h")].find(h => h.textContent === b.dataset.more)?.parentElement;
+    sec?.querySelectorAll(".lcard")[SHOW]?.focus();  // keep keyboard users where they were
+  });
+  draw();
 };
 function gamesCard() {
   return `<a class="lcard art-card" href="#play">${cardArt("play")}
