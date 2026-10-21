@@ -2340,6 +2340,225 @@
   ]
  },
  {
+  "id": "hashing",
+  "kind": "hashing",
+  "category": "Cryptography",
+  "track": "Foundations",
+  "minutes": 20,
+  "lesson": "encryption",
+  "title": "Hashing: fingerprints, MD5, SHA-1 and passwords",
+  "skill": "Use hashes to check files, explain why MD5 and SHA-1 are retired, and see why passwords need salts and slow hashes",
+  "intro": "Hashes are everywhere in security: checking downloads, signing software, identifying malware and storing passwords. Compute real MD5, SHA-1 and SHA-256 hashes, catch a tampered download, then see what happens when a password table leaks.",
+  "simplification": "Simplified for learning: the leaked tables use six made-up accounts and a 20-word guess list. Real breaches involve millions of accounts, and attackers use far bigger lists and dedicated hardware. Hashes are computed live in your browser (MD5 by this page's own code, SHA and PBKDF2 by the Web Crypto API). The salted table uses salted SHA-256 to show what a salt does; a real system should use a slow function such as Argon2id or bcrypt instead.",
+  "parts": [
+   {
+    "id": "fingerprint",
+    "label": "Hash some text"
+   },
+   {
+    "id": "avalanche",
+    "label": "Change one character"
+   },
+   {
+    "id": "integrity",
+    "label": "Check a download"
+   },
+   {
+    "id": "retired",
+    "label": "Why MD5 and SHA-1 are retired"
+   },
+   {
+    "id": "speed",
+    "label": "Fast vs slow"
+   },
+   {
+    "id": "shared",
+    "label": "Spot shared passwords"
+   },
+   {
+    "id": "guess",
+    "label": "Test a leaked table"
+   },
+   {
+    "id": "salt",
+    "label": "Add salt"
+   },
+   {
+    "id": "defend",
+    "label": "Store passwords properly"
+   }
+  ],
+  "text": {
+   "fingerprint": "A hash function turns any input, a word or a whole film, into a fixed-length fingerprint. The same input always gives the same hash, and you can't work backwards from the hash to the input. Type below: all three are computed live in your browser.",
+   "avalanche": "Good hash functions scramble completely: change one character and about half the bits flip, so similar inputs give unrelated hashes. Edit either box.",
+   "integrity": "Software sites often publish a file's SHA-256 so you can check what you downloaded. Two mirrors offer the same small file. Hash each and pick the one that matches. A published hash only helps if you get it from somewhere an attacker can't change, such as the official site over HTTPS.",
+   "retired": [
+    "A hash is only safe as a fingerprint if nobody can find two different inputs with the same hash (a collision). For MD5 that became practical in 2004, and the Flame malware (2012) used an MD5 collision to forge a Microsoft code-signing certificate.",
+    "SHA-1 followed. In 2017 researchers from CWI Amsterdam and Google published two different PDF files with the same SHA-1 hash, 38762cf7f55934b34d179ae6a4c80cadccbb7f0a (the SHAttered attack); their SHA-256 hashes differ. Major browsers stopped trusting SHA-1 certificates that year, and NIST plans to retire SHA-1 completely by the end of 2030.",
+    "Use SHA-256 or stronger (the SHA-2 or SHA-3 families) for fingerprints and signatures. MD5 and SHA-1 still turn up as quick checks against accidental corruption, but not where an attacker could be involved."
+   ],
+   "speed": "For fingerprints, fast is good. For passwords it's a problem: if a password table leaks, attackers test guesses by hashing them, and a fast hash lets them try enormous numbers. Password storage uses deliberately slow functions instead. This measures both in your browser.",
+   "speedResult": "In your browser the slow function makes each guess about {ratio} times more expensive. Attackers use graphics cards that are far faster than a browser at both, but the ratio holds: slow hashing turns a quick job into a very long one. OWASP recommends 600,000 rounds for PBKDF2-HMAC-SHA256.",
+   "unsalted": "Marlow Garden Centre (a fictional shop) stored customer passwords as plain SHA-1 hashes with no salt, as LinkedIn did before its 2012 breach. This is the leaked table: made-up accounts, real hashes.",
+   "sharedRight": "Identical hashes mean identical passwords. Whoever works out one has both, and nobody had to guess anything to know they match.",
+   "guess": "Attackers don't reverse hashes: they hash guesses and look for matches, starting with the passwords people choose most. Here are 20 of the most common, as they appear in published lists of leaked passwords.",
+   "unsaltedResult": "Each guess was hashed once and compared with every account at the same time.",
+   "salted": "The same passwords stored with a salt: each account has its own random value, added to the password before hashing. The two accounts that shared a password no longer share a hash.",
+   "saltedResult": "Each guess had to be hashed again for every account, and tables of precomputed hashes are useless. But the weak passwords still fell: a salt slows attackers down, it doesn't save a password from the top of the list. Only a long, unique password does that.",
+   "defend": [
+    "Store passwords with a slow, salted password-hashing function. OWASP recommends Argon2id first, then scrypt, then bcrypt for older systems, or PBKDF2 where FIPS-140 approved algorithms are required.",
+    "For people: long passphrases beat short complicated ones, a password manager makes every password unique, and multi-factor authentication protects the account even if a password leaks. NIST's guidance favours length and checking new passwords against known-breached ones over forced complexity rules."
+   ]
+  },
+  "download": {
+   "name": "harbour-notes-2.4.1-notes.txt (Harbour Notes is fictional)",
+   "sha256": "d864f73be43bf984ef664a0223b98a55be46677bb4353350c96c163d4043251c",
+   "mirrors": [
+    {
+     "label": "Mirror A",
+     "content": "Harbour Notes 2.4.1 release notes\n- Faster search in large notebooks\n- Fixed: export to PDF lost page numbers\nUpdates are downloaded from https://updates.harbournotes.example.net/",
+     "why": "Mirror A's hash is completely different, because one part of the file changed: its update address ends .example.net, a different domain someone else could control. One character or one word: any change gives a new hash."
+    },
+    {
+     "label": "Mirror B",
+     "content": "Harbour Notes 2.4.1 release notes\n- Faster search in large notebooks\n- Fixed: export to PDF lost page numbers\nUpdates are downloaded from https://updates.harbournotes.example/",
+     "why": "Mirror B's SHA-256 matches the published one exactly, so it's the file the developers published. Mirror A differs in one place: its update address points to a different domain."
+    }
+   ]
+  },
+  "questions": {
+   "retired": {
+    "part": "retired",
+    "q": "SHA-1 can't be reversed and still gives a 160-bit fingerprint. So why is it no longer trusted for digital signatures and certificates?",
+    "options": [
+     "It's too slow for modern computers",
+     "Attackers can make two different files with the same SHA-1 hash, so a signature on one would also fit the other",
+     "Anyone can turn a SHA-1 hash back into the original file",
+     "Its hashes are too long to store"
+    ],
+    "answer": 1,
+    "why": "That's a collision. A signature signs the hash, so if a harmless file and a harmful one share a hash, the signature fits both.",
+    "wrong": "Think about what SHAttered produced: two different files with one hash. What does that do to a signature, which signs the hash?"
+   },
+   "defend": {
+    "part": "defend",
+    "q": "A new web app needs to store user passwords. Which is right?",
+    "options": [
+     "SHA-256 of each password: it's a modern hash",
+     "Encrypt each password with AES so support staff can read it back if needed",
+     "A slow password-hashing function such as Argon2id, bcrypt, scrypt or PBKDF2, with a unique random salt per user",
+     "MD5 with a salt"
+    ],
+    "answer": 2,
+    "why": "Slow and salted: each guess is expensive, and identical passwords look different. Nobody, staff included, should be able to read a password back.",
+    "wrong": "Fast hashes (salted or not) make guessing cheap, and encryption can be reversed by anyone who gets the key."
+   }
+  },
+  "pbkdf2Iterations": 600000,
+  "guesses": [
+   "123456",
+   "password",
+   "123456789",
+   "qwerty",
+   "12345678",
+   "111111",
+   "1234567",
+   "iloveyou",
+   "password1",
+   "abc123",
+   "sunshine",
+   "letmein",
+   "football",
+   "monkey",
+   "dragon",
+   "welcome",
+   "admin",
+   "princess",
+   "000000",
+   "shadow"
+  ],
+  "unsalted": [
+   {
+    "user": "m.reyes",
+    "hash": "8d6e34f987851aa599257d3831a1af040886842f",
+    "password": "sunshine"
+   },
+   {
+    "user": "t.osei",
+    "hash": "7c4a8d09ca3762af61e59520943dc26494f8941b",
+    "password": "123456"
+   },
+   {
+    "user": "j.burke",
+    "hash": "8d6e34f987851aa599257d3831a1af040886842f",
+    "password": "sunshine"
+   },
+   {
+    "user": "s.khan",
+    "hash": "baa59d9cf5c98d0512d61c0fc8d11e0a8174d633",
+    "password": "correct-otter-lantern-meadow"
+   },
+   {
+    "user": "l.novak",
+    "hash": "e38ad214943daad1d64c102faec29de4afe9da3d",
+    "password": "password1"
+   },
+   {
+    "user": "d.price",
+    "hash": "2d04cdf4e907d3593756aa70eda25b2ba53c2ff6",
+    "password": "Marigold!42"
+   }
+  ],
+  "salted": [
+   {
+    "user": "m.reyes",
+    "salt": "3f9a1c07",
+    "hash": "25d3c1b5388fc981035926227122ce57ffc62d5625a0cc687ceef0b894433171",
+    "password": "sunshine"
+   },
+   {
+    "user": "t.osei",
+    "salt": "b84e02d1",
+    "hash": "ec4e2f48f3fc5e0ce13b082812bd35399835877569bced6a347949276e436ced",
+    "password": "123456"
+   },
+   {
+    "user": "j.burke",
+    "salt": "5c6d7e11",
+    "hash": "9b1d5f179de8f8cae3bca755153bddf166b0be3c765141c6b7b7fae4b160ba99",
+    "password": "sunshine"
+   },
+   {
+    "user": "s.khan",
+    "salt": "e02f9b44",
+    "hash": "f66e8939ccdedf060ac59eda2a10565f411c7e68b46993e33bb158ce0cba19b9",
+    "password": "correct-otter-lantern-meadow"
+   },
+   {
+    "user": "l.novak",
+    "salt": "71a0c3de",
+    "hash": "4abe597d047785bd7ff14180e34c4ca30df598f63544ebc0df54bbd2ca75e549",
+    "password": "password1"
+   },
+   {
+    "user": "d.price",
+    "salt": "9d4b6f20",
+    "hash": "5eb75904cf2577bbebf604fa814164fee4a18c7c60a70bc8cf66f18ed9a5fb3c",
+    "password": "Marigold!42"
+   }
+  ],
+  "next": [
+   {
+    "label": "OWASP Password Storage Cheat Sheet",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html"
+   },
+   {
+    "label": "SHAttered: the first SHA-1 collision",
+    "url": "https://shattered.io/"
+   }
+  ]
+ },
+ {
   "id": "log-detective",
   "title": "Log detective",
   "track": "SOC",

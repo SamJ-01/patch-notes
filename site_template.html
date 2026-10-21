@@ -811,6 +811,18 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .vl-link.v10 { stroke: var(--high); } .vl-link.v20 { stroke: var(--sun); } .vl-link.v30 { stroke: var(--good); } .vl-link.vx { stroke-dasharray: 4 4; }
 .vl-table { margin-top: 10px; font-size: 0.86rem; overflow-x: auto; }
 .vl-table th, .vl-table td { text-align: left; padding: 4px 10px 4px 0; white-space: nowrap; }
+.hash-lab textarea, .hash-lab .hl-two input { width: 100%; font: 0.9rem var(--font-mono); background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 8px; }
+.hash-lab p { overflow-wrap: anywhere; }  /* hashes are long unbroken words; "anywhere" also lets grid cells shrink */
+.hl-label { display: block; font-size: 0.88rem; margin: 6px 0 4px; }
+.hl-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; } .hl-two label { display: grid; gap: 4px; font-size: 0.88rem; }
+.hl-out { margin-top: 10px; } .hl-out dd { overflow-wrap: anywhere; } .hl-out dd .mono { display: block; }
+.hl-hash { overflow-wrap: anywhere; font-size: 0.8rem; }
+.hl-mirrors { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.hl-file { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.78rem; max-height: none; }
+.hl-guesses { font-size: 0.8rem; overflow-wrap: anywhere; }
+.hl-table td.hl-hit { color: var(--bad); font-weight: 600; }
+.hl-q { margin-top: 10px; }
+@media (max-width: 700px) { .hl-two, .hl-mirrors { grid-template-columns: minmax(0, 1fr); } }
 .vl-why { display: block; font-weight: 400; font-size: 0.82rem; color: var(--muted); margin-top: 3px; }
 
 /* ---------- Dashboard ---------- */
@@ -2608,6 +2620,7 @@ const termArt = () => { const id = `cterm-clip-${++termN}`; return `<defs><clipP
 const OSI_ART = [0, 1, 2, 3, 4, 5, 6].map(k => `<rect class="cosi" x="74" y="${14 + k * 8.6}" width="52" height="6" rx="1.5" style="fill:${["var(--critical)", "var(--high)", "var(--brand)", "var(--good)", "var(--sun)", "var(--likely)", "var(--exploited)"][k]}"/>`).join("");
 // d: devices [kind, x, y, scale], g: glyphs, l: links [x1, y1, x2, y2, air?], t: tags, p: packet paths, tone: packet colour
 const SCENE = {
+  hashing: { d: [["laptop", 40, 52, 0.5]], g: [["key", 160, 50, 1.4]], l: [[60, 52, 140, 50]], t: [["a1f3…9c", 100, 26], ["sha256", 100, 80]], p: ["M40 52L160 50"] },
   vlans: { d: [["switch", 100, 24, 0.75], ["pc", 36, 66, 0.42], ["pc", 100, 70, 0.42], ["pc", 164, 66, 0.42]], l: [[84, 30, 46, 56], [100, 32, 100, 58], [116, 30, 154, 56]], t: [["VLAN 10", 36, 94], ["20", 100, 96], ["30", 164, 94]] },
   "telnet-ssh": { d: [["laptop", 36, 50, 0.5], ["server", 166, 50, 0.56], ["attacker", 100, 20, 0.0001]], g: [["eye", 100, 24, 0.9, "bad"]], l: [[52, 50, 150, 50]], t: [["admin / ••••", 100, 78, "bad"]], p: ["M36 50L166 50"], tone: "bad" },
   "cia-triad": { g: [["shield", 100, 44, 2.1, "good"]], t: [["C · I · A", 100, 76]] },
@@ -2680,7 +2693,7 @@ document.addEventListener("mouseover", e => {
   anims.forEach((a, i) => { try { setTimeout(() => a.beginElement(), Math.floor(i / 2) * 220); } catch (err) {} });
   setTimeout(() => delete card.dataset.playing, 2200);
 });
-const CATEGORY_ORDER = ["Networking", "Linux", "Security operations", "Ethical hacking"];
+const CATEGORY_ORDER = ["Networking", "Linux", "Cryptography", "Security operations", "Ethical hacking"];
 VIEWS.missions = () => {
   const items = [
     ...DATA.missions.map(m => ({ cat: m.category || "Networking", html: missionCard(m) })),
@@ -2779,7 +2792,7 @@ function missionView(id) {
     $("mission-root").innerHTML = `<div class="empty">Couldn't load the mission code (js/missions/ui.js). If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`;
   });
 }
-const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring", "wiretap", "vlan"];  // labs with their own module in static/js/labs/<kind>.js
+const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring", "wiretap", "vlan", "hashing"];  // labs with their own module in static/js/labs/<kind>.js
 function moduleLab(l) {
   main.innerHTML = `<div class="view" id="lab-root"><div class="empty">Loading lab…</div></div>`;
   import(`./js/labs/${l.kind}.js`).then(mod => {

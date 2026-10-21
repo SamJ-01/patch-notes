@@ -32,6 +32,10 @@
        "id": "encryption"
       },
       {
+       "type": "lab",
+       "id": "hashing"
+      },
+      {
        "type": "lesson",
        "id": "identity"
       },
