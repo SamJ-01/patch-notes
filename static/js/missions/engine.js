@@ -19,11 +19,12 @@ function set(obj, path, value) {
 
 const applyEffects = (devices, effects = {}) => Object.entries(effects).forEach(([path, v]) => set(devices, path, v));
 
-// A condition matches when every path equals its value, or satisfies { startsWith }.
+// A condition matches when every path equals its value, or satisfies { startsWith } or { oneOf: [...] }.
 export function matches(when = {}, devices) {
   return Object.entries(when).every(([path, want]) => {
     const have = get(devices, path);
     if (want && typeof want === "object" && "startsWith" in want) return String(have ?? "").startsWith(want.startsWith);
+    if (want && typeof want === "object" && Array.isArray(want.oneOf)) return want.oneOf.includes(have);
     return have === want;
   });
 }
@@ -148,6 +149,18 @@ export function answerRootCause(scenario, state, choice) {
   return { state: s, events: [{ type: "answer", id: "rootCause", correct: false, why: null }] };
 }
 
+// Mark a set of ticked evidence (`chosen`: indexes into `evidence`). It passes when every required item is
+// ticked and nothing that isn't evidence is; optional supporting items can be ticked or not.
+export function judgeEvidence(evidence, chosen) {
+  const picked = new Set(chosen);
+  const items = evidence.map((e, i) => {
+    const selected = picked.has(i);
+    const ok = e.supports ? selected || !e.required : !selected;
+    return { index: i, selected, supports: !!e.supports, required: !!e.required, ok, why: e.why };
+  });
+  return { pass: items.every(r => r.ok), items };
+}
+
 // The reasoning check: `chosen` is the list of evidence indexes the learner ticked.
 // It passes when every required item is ticked and nothing that isn't evidence is. Optional
 // supporting items can be ticked or not. Every item gets feedback either way, so a wrong attempt teaches.
@@ -155,13 +168,7 @@ export function answerEvidence(scenario, state, chosen) {
   const rc = scenario.modes[state.mode].rootCause;
   if (!state.rootCauseFound || state.complete || !rc.evidence?.length) return { state, events: [] };
   const s = clone(state);
-  const picked = new Set(chosen);
-  const items = rc.evidence.map((e, i) => {
-    const selected = picked.has(i);
-    const ok = e.supports ? selected || !e.required : !selected;
-    return { index: i, selected, supports: !!e.supports, required: !!e.required, ok, why: e.why };
-  });
-  const pass = items.every(r => r.ok);
+  const { pass, items } = judgeEvidence(rc.evidence, chosen);
   s.evidenceTries = (s.evidenceTries || 0) + 1;
   if (!pass) {
     s.mistakes += 1;
@@ -180,24 +187,30 @@ export function hint(scenario, state) {
   return { state: s, events: [{ type: "hint", text, last: s.hintsUsed >= hints.length }] };
 }
 
-// Log viewer: search the scenario's log (scenario.log.lines) like grep. Every space-separated term
-// must appear in a line (case-insensitive). A focused search (non-empty, and narrower than the whole
-// log) that turns up a line containing a finding's `match` records that finding as evidence.
-// The log is one fixed source, so whatever a learner searches, the results can't contradict each other.
+// Search one log ({ lines, findings }) like grep. Every space-separated term must appear in a line
+// (case-insensitive). A focused search (non-empty, and narrower than the whole log) that turns up a line
+// containing a finding's `match` reports that finding (the finding objects themselves). Pure: the caller decides what to record.
+// Shared by mission log viewers and Agency shifts, which have several logs.
+export function searchLines(log, query) {
+  const words = String(query || "").split(/\s+/).filter(Boolean), terms = words.map(w => w.toLowerCase());
+  const lines = log.lines.filter(l => terms.every(t => l.toLowerCase().includes(t)));
+  const focused = terms.length > 0 && lines.length > 0 && lines.length < log.lines.length;
+  const findings = focused ? (log.findings || []).filter(f => lines.some(l => l.toLowerCase().includes(f.match.toLowerCase()))) : [];
+  return { query: words.join(" "), lines, total: log.lines.length, focused, findings };
+}
+
+// Log viewer: search the scenario's log (scenario.log). Findings turned up by a focused search are
+// recorded as evidence. The log is one fixed source, so whatever a learner searches, the results
+// can't contradict each other.
 export function searchLog(scenario, state, query) {
   const log = scenario.log;
   if (!log || state.complete) return { state, events: [] };
-  const words = String(query || "").split(/\s+/).filter(Boolean), terms = words.map(w => w.toLowerCase());
-  const lines = log.lines.filter(l => terms.every(t => l.toLowerCase().includes(t)));
+  const { findings, ...r } = searchLines(log, query);
   const s = clone(state);
-  const focused = terms.length > 0 && lines.length > 0 && lines.length < log.lines.length;
   const found = [];
-  for (const f of focused ? log.findings || [] : []) {
-    if (lines.some(l => l.toLowerCase().includes(f.match.toLowerCase())) && !s.evidence.some(e => e.finding === f.finding)) {
-      s.evidence.push({ tool: "log", finding: f.finding });
-      found.push(f.finding);
-    }
+  for (const { finding } of findings) {
+    if (!s.evidence.some(e => e.finding === finding)) { s.evidence.push({ tool: "log", finding }); found.push(finding); }
   }
   if (!s.toolsUsed.includes("log")) s.toolsUsed.push("log");
-  return { state: s, events: [{ type: "log", query: words.join(" "), lines, total: log.lines.length, focused, found }] };
+  return { state: s, events: [{ type: "log", ...r, found }] };
 }
