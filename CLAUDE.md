@@ -34,7 +34,9 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - UK English, plain language, no em dashes in new copy. Commit messages explain why, and list what was verified.
 
 ## Status (Oct 2026)
-- Missions: DHCP, DNS, SSH brute force ("The 3am logins": the first with a log viewer, `scenario.log` + `engine.searchLog`).
+- Missions: DHCP, DNS, SSH brute force ("The 3am logins": the first with a log viewer, `scenario.log` + `engine.searchLog`),
+  phishing triage ("Which email was it?", `phish-triage.json`: the email inspector, `scenario.emails` with raw headers parsed by
+  `engine.parseHeaders`; findings come from `engine.inspectEmail`). Keep its headers, log lines and findings in step: tests check they agree.
 - Exam prep: Network+ N10-009 (25 objectives, 60 questions, "Am I ready?" panel), Security+ map (5 domains, 42 questions, mock exams).
 - PATCH//AGENCY pilot: one SOC shift (`content/agency/shift-01.json`, `static/js/agency/`, route `#agency-shift-01`,
   tests `tests/agency.test.mjs`). Design and decisions: `docs/agency-pilot.md`. Logs are searched with `engine.searchLines`.
@@ -45,4 +47,4 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - Feedback: public GitHub issue form (`.github/ISSUE_TEMPLATE/feedback.yml`), linked from every done card, the Agency debrief
   and the footer (`DATA.site.feedback`). Read new `feedback` issues before planning.
 - Next: learner feedback on the shift and the new labs, inter-VLAN routing lab on the network model, more Security+
-  questions (PKI, control types). No accounts/backend until real users need cross-device saves.
+  questions (PKI, control types), ransomware first-response mission. No accounts/backend until real users need cross-device saves.

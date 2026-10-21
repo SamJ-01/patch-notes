@@ -77,6 +77,11 @@
     "id": "header-inspector"
    },
    {
+    "type": "mission",
+    "id": "phish-triage",
+    "mode": "challenge"
+   },
+   {
     "type": "lesson",
     "id": "malware"
    },

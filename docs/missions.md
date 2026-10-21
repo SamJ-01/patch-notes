@@ -27,7 +27,7 @@ These are investigations of logs and timelines rather than packet journeys. They
 | # | Mission | What it teaches |
 |---|---|---|
 | 7 | **The 3am logins** ✅ | SSH brute force in `auth.log`: failed vs accepted logins, source IPs, containment (session, account, key-only SSH) vs just blocking the IP. Introduced the log viewer: `scenario.log` (lines + findings) searched with `engine.searchLog` |
-| 8 | **Which email was it?** | Phishing triage: headers, SPF/DKIM/DMARC results, the link that matters (upgrades Header Inspector) |
+| 8 | **Which email was it?** ✅ | Phishing triage: three reported emails (a real supplier, a spoof of the firm's own domain that failed DMARC, a lookalike domain that passed everything), Postfix/Dovecot/Squid logs, who clicked, containment order (purge everywhere, block, reset, then end sessions). Introduced the email inspector: `scenario.emails` (raw headers, body, links, findings) read with `engine.parseHeaders`, `engine.linkFacts` and `engine.inspectEmail` |
 | 9 | **Who can read this file?** ✅ (built as a lab) | Linux permissions and ownership (`rwx`, `chmod`, groups); the over-shared secret |
 | 10 | **The night the files changed** | Ransomware first response: timeline, patient zero, isolate vs shut down |
 

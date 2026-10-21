@@ -1,0 +1,885 @@
+{
+ "id": "phish-triage",
+ "title": "Which email was it?",
+ "topic": "Security operations · Phishing & email headers",
+ "minutes": 15,
+ "lesson": "phishing",
+ "category": "Security operations",
+ "summary": "Three reported emails, one real attack: read the headers, search the mail and proxy logs, find who clicked, contain it and prove how it got through.",
+ "simplification": "Simplified simulation: headers are trimmed to the ones an analyst reads, and the logs to the lines that matter. Log lines follow Ubuntu 22.04's Postfix, Dovecot 2.3, OpenDKIM, OpenDMARC and policyd-spf formats, and Squid's native access log sent to syslog; every server keeps UTC. doveadm's column spacing is approximate. Domains use the reserved .example name (so the whois record is illustrative: .example names can't really be registered) and IP addresses are documentation ranges.",
+ "devices": {
+  "attacker": {
+   "label": "Attacker's server",
+   "kind": "attacker",
+   "ip": "203.0.113.77",
+   "status": "Sending email"
+  },
+  "mail": {
+   "label": "mail01 (mail server)",
+   "kind": "server",
+   "ip": "192.0.2.30",
+   "state": "ok",
+   "status": "Online",
+   "phish": "none",
+   "session": "none",
+   "pw": "ok",
+   "senderBlocked": false
+  },
+  "user": {
+   "label": "Priya's laptop",
+   "kind": "laptop",
+   "ip": "10.0.5.41",
+   "status": "Reading email"
+  },
+  "proxy": {
+   "label": "proxy01 (web proxy)",
+   "kind": "firewall",
+   "ip": "10.0.0.3",
+   "status": "Forwarding web traffic",
+   "blocked": false
+  }
+ },
+ "links": [
+  [
+   "attacker",
+   "mail"
+  ],
+  [
+   "mail",
+   "user"
+  ],
+  [
+   "user",
+   "proxy"
+  ],
+  [
+   "proxy",
+   "attacker"
+  ]
+ ],
+ "appearance": {
+  "mail": [
+   {
+    "when": {
+     "mail.session": "ended",
+     "mail.phish": "gone"
+    },
+    "state": "ok"
+   },
+   {
+    "when": {
+     "mail.state": "compromised"
+    },
+    "state": "bad"
+   }
+  ],
+  "user": [
+   {
+    "when": {
+     "mail.pw": "stolen"
+    },
+    "state": "warn"
+   }
+  ],
+  "proxy": [
+   {
+    "when": {
+     "proxy.blocked": true
+    },
+    "state": "ok"
+   }
+  ],
+  "attacker": [
+   {
+    "when": {
+     "proxy.blocked": true,
+     "mail.session": "ended"
+    },
+    "state": "warn"
+   }
+  ]
+ },
+ "messages": {
+  "send": {
+   "name": "Email sent (SMTP)",
+   "short": "SMTP",
+   "from": "attacker",
+   "path": [
+    "attacker",
+    "mail"
+   ],
+   "say": "From: Ashby Lane IT <it-support@ashby1ane.example>. Your mailbox password expires today.",
+   "explain": "The attacker's server hands the email to Ashby Lane's mail server, like any other sender. It goes to three people at once.",
+   "fields": [
+    {
+     "name": "From (shown)",
+     "value": "Ashby Lane IT <it-support@ashby1ane.example>",
+     "explain": "What the reader sees. The name is anything the sender types; only the address after it is checked, and this one is ashby1ane, with a 1.",
+     "level": 1
+    },
+    {
+     "name": "Subject",
+     "value": "Action required: your mailbox password expires today",
+     "explain": "Urgency and a deadline: classic pressure to act before thinking.",
+     "level": 1
+    },
+    {
+     "name": "Recipients",
+     "value": "accounts, owen.reed, priya.shah",
+     "explain": "One message, three mailboxes. Postfix logs this as nrcpt=3.",
+     "level": 2
+    },
+    {
+     "name": "Sending server",
+     "value": "mail.ashby1ane.example [203.0.113.77]",
+     "explain": "The attacker's own server. The Received header records this name and address.",
+     "level": 2
+    },
+    {
+     "name": "Envelope sender",
+     "value": "it-support@ashby1ane.example",
+     "explain": "The MAIL FROM address in the SMTP conversation. SPF checks this domain.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "mail.status": "Checking the sender…"
+   }
+  },
+  "spf_ask": {
+   "name": "SPF lookup (DNS)",
+   "short": "SPF lookup",
+   "from": "mail",
+   "path": [
+    "mail",
+    "attacker"
+   ],
+   "say": "TXT ashby1ane.example? Which servers may send its mail?",
+   "explain": "SPF: the receiving server asks the sender's domain, through DNS, which addresses may send its email. The attacker registered ashby1ane.example, so they run its DNS and write that answer.",
+   "fields": [
+    {
+     "name": "Question",
+     "value": "Who may send for ashby1ane.example?",
+     "explain": "SPF only proves the server is allowed by the domain it claims. It says nothing about whether the domain is trustworthy.",
+     "level": 1
+    },
+    {
+     "name": "DNS query",
+     "value": "TXT ashby1ane.example",
+     "explain": "SPF records are TXT records starting v=spf1.",
+     "level": 2
+    },
+    {
+     "name": "Also checked",
+     "value": "DKIM signature, DMARC policy",
+     "explain": "DKIM checks a signature against a public key in the domain's DNS; DMARC checks the From domain matches what SPF or DKIM proved.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "mail.status": "Looking up SPF…"
+   }
+  },
+  "spf_reply": {
+   "name": "SPF record",
+   "short": "SPF record",
+   "from": "attacker",
+   "path": [
+    "attacker",
+    "mail"
+   ],
+   "say": "v=spf1 ip4:203.0.113.77 -all",
+   "explain": "The record says 203.0.113.77 may send for ashby1ane.example, and that's the address the email came from. SPF passes, and so do DKIM and DMARC: the attacker set up all three for their own domain.",
+   "fields": [
+    {
+     "name": "Result",
+     "value": "SPF, DKIM and DMARC: pass",
+     "explain": "Passing proves the email really came from ashby1ane.example. It doesn't prove ashby1ane.example is who it claims to be.",
+     "level": 1
+    },
+    {
+     "name": "SPF record",
+     "value": "v=spf1 ip4:203.0.113.77 -all",
+     "explain": "Only 203.0.113.77 may send; -all means fail everything else.",
+     "level": 2
+    },
+    {
+     "name": "Logged as",
+     "value": "opendmarc: ashby1ane.example pass",
+     "explain": "The DMARC check's log line on mail01.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "mail.status": "SPF, DKIM, DMARC: pass"
+   }
+  },
+  "deliver": {
+   "name": "Delivered to the inbox",
+   "short": "IMAP",
+   "from": "mail",
+   "path": [
+    "mail",
+    "user"
+   ],
+   "say": "New message: Action required: your mailbox password expires today",
+   "explain": "Every check passed, so the email lands in the inbox, not Junk. Priya's mail app fetches it over IMAP.",
+   "fields": [
+    {
+     "name": "Folder",
+     "value": "Inbox",
+     "explain": "The filter had no reason to doubt it: the domain is new, not known to be bad, and it passed every check.",
+     "level": 1
+    },
+    {
+     "name": "Link text",
+     "value": "https://mail.ashbylane.example/reset",
+     "explain": "What the link says.",
+     "level": 1
+    },
+    {
+     "name": "Link goes to",
+     "value": "https://login.ashby1ane.example/ashbylane/reset?u=priya.shah",
+     "explain": "Where it really goes. Hovering over a link (or long-pressing on a phone) shows this before you click.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "mail.phish": "everywhere",
+    "mail.status": "Delivered to 3 mailboxes",
+    "user.status": "New: password expires today"
+   }
+  },
+  "click": {
+   "name": "Link clicked (HTTPS)",
+   "short": "HTTPS",
+   "from": "user",
+   "path": [
+    "user",
+    "proxy",
+    "attacker"
+   ],
+   "say": "CONNECT login.ashby1ane.example:443",
+   "explain": "Priya clicks. Her browser asks the web proxy to open a tunnel to the fake site. HTTPS is encrypted, so the proxy sees only the site's name and port, not the page or anything typed into it.",
+   "fields": [
+    {
+     "name": "Site",
+     "value": "login.ashby1ane.example",
+     "explain": "A copy of the firm's webmail sign-in page, on the attacker's server.",
+     "level": 1
+    },
+    {
+     "name": "Padlock?",
+     "value": "Yes",
+     "explain": "The attacker got a certificate for their own domain. A padlock means the connection is encrypted, not that the site is honest.",
+     "level": 1
+    },
+    {
+     "name": "Proxy sees",
+     "value": "CONNECT login.ashby1ane.example:443",
+     "explain": "Squid logs the tunnel as TCP_TUNNEL/200 when it closes, with how long it was open.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "user.status": "On a fake sign-in page",
+    "proxy.status": "Tunnel to login.ashby1ane.example"
+   }
+  },
+  "creds": {
+   "name": "Password typed in",
+   "short": "Password",
+   "from": "user",
+   "path": [
+    "user",
+    "proxy",
+    "attacker"
+   ],
+   "say": "Email: priya.shah@ashbylane.example, password: ••••••••",
+   "explain": "Priya types her email and password. The fake page saves them, says 'wrong password' and sends her on to the real webmail, so nothing seems odd.",
+   "fields": [
+    {
+     "name": "Sent to",
+     "value": "login.ashby1ane.example",
+     "explain": "The attacker now has her password.",
+     "level": 1
+    },
+    {
+     "name": "What Priya saw",
+     "value": "'Wrong password', then the real webmail",
+     "explain": "A common trick: the second attempt works, so the victim shrugs it off.",
+     "level": 1
+    },
+    {
+     "name": "In the proxy log",
+     "value": "Nothing new",
+     "explain": "The form travels inside the encrypted tunnel. The only trace is the tunnel itself.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "user.status": "'Wrong password', then real webmail",
+    "attacker.status": "Has Priya's password",
+    "mail.pw": "stolen",
+    "proxy.status": "Forwarding web traffic"
+   }
+  },
+  "login": {
+   "name": "Attacker signs in (IMAP)",
+   "short": "IMAP login",
+   "from": "attacker",
+   "path": [
+    "attacker",
+    "mail"
+   ],
+   "say": "LOGIN priya.shah ••••••••",
+   "explain": "Twelve minutes later the attacker signs in to Priya's mailbox with her real password. The server can't tell them apart: the password is right.",
+   "fields": [
+    {
+     "name": "Account",
+     "value": "priya.shah",
+     "explain": "Now the attacker can read her email and send as her, to clients or to colleagues.",
+     "level": 1
+    },
+    {
+     "name": "From",
+     "value": "203.0.113.77",
+     "explain": "Outside the firm: the same address that sent the email.",
+     "level": 1
+    },
+    {
+     "name": "Logged as",
+     "value": "imap-login: Login: user=<priya.shah>, method=PLAIN, rip=203.0.113.77",
+     "explain": "Dovecot's sign-in line. rip is the remote IP, the address that signed in.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "mail.session": "attacker",
+    "mail.state": "compromised",
+    "mail.status": "priya.shah signed in from 203.0.113.77",
+    "attacker.status": "Signed in as priya.shah"
+   }
+  }
+ },
+ "emails": {
+  "org": "ashbylane.example",
+  "intro": "Three emails staff reported this morning. Pick one to see who really sent it, the route it took, the receiving server's checks and where its links go.",
+  "items": [
+   {
+    "id": "harlow",
+    "label": "Proof ready",
+    "reportedBy": "Tom Bell",
+    "folder": "Inbox",
+    "headers": "Return-Path: <proofs@harlowprint.example>\nReceived: from mail.harlowprint.example (mail.harlowprint.example [198.51.100.140])\n\tby mail01.ashbylane.example (Postfix) with ESMTPS id 2B7E41C0A5\n\tfor <tom.bell@ashbylane.example>; Wed, 21 Oct 2026 08:51:13 +0000 (UTC)\nAuthentication-Results: mail01.ashbylane.example; spf=pass smtp.mailfrom=harlowprint.example\nAuthentication-Results: mail01.ashbylane.example; dkim=pass header.d=harlowprint.example header.s=hp2026\nAuthentication-Results: mail01.ashbylane.example; dmarc=pass (p=reject dis=none) header.from=harlowprint.example\nFrom: Harlow Print <proofs@harlowprint.example>\nTo: tom.bell@ashbylane.example\nSubject: Proof ready: Ashby Lane letterheads (job 44817)\nDate: Wed, 21 Oct 2026 09:51:11 +0100\nMessage-ID: <20261021085111.3F2A@harlowprint.example>",
+    "note": "Tom: \"Not expecting this. Is it real?\"",
+    "body": "Hi Tom,\n\nThe proof for your letterheads (job 44817) is ready. Please approve it by Friday so we can print next week.\n\nThanks,\nHarlow Print",
+    "links": [
+     {
+      "text": "View your proof",
+      "href": "https://proofs.harlowprint.example/job/44817"
+     }
+    ],
+    "findings": [
+     "Harlow Print's email passed SPF, DKIM and DMARC for harlowprint.example, a printer the firm uses, and its link goes to harlowprint.example: a real email."
+    ]
+   },
+   {
+    "id": "boss",
+    "label": "Quick favour",
+    "reportedBy": "Mel Ortiz",
+    "folder": "Junk",
+    "headers": "Return-Path: <daniel.ashby@ashbylane.example>\nReceived: from relay7.sendfast.example (relay7.sendfast.example [198.51.100.61])\n\tby mail01.ashbylane.example (Postfix) with ESMTP id 6C1F92A0B3\n\tfor <mel.ortiz@ashbylane.example>; Wed, 21 Oct 2026 09:02:37 +0000 (UTC)\nAuthentication-Results: mail01.ashbylane.example; spf=softfail smtp.mailfrom=ashbylane.example\nAuthentication-Results: mail01.ashbylane.example; dkim=none\nAuthentication-Results: mail01.ashbylane.example; dmarc=fail (p=quarantine dis=none) header.from=ashbylane.example\nFrom: \"Daniel Ashby\" <daniel.ashby@ashbylane.example>\nReply-To: <d.ashby.office@freemail.example>\nTo: mel.ortiz@ashbylane.example\nSubject: Quick favour - are you at your desk?\nDate: Wed, 21 Oct 2026 10:02:31 +0100\nMessage-ID: <a81f0c2e9b@relay7.sendfast.example>",
+    "note": "Mel: \"Found this in Junk. Daniel never emails like this.\"",
+    "body": "Mel,\n\nI'm in meetings all day. I need you to buy six £100 gift cards for a client today and send me the codes. Reply to this address only, I can't take calls.\n\nDaniel",
+    "links": [],
+    "findings": [
+     "The 'Daniel Ashby' email used the firm's own domain but came from 198.51.100.61, failed DMARC and was filed in Junk. Its Reply-To is a freemail address: a gift card scam the filters caught."
+    ]
+   },
+   {
+    "id": "itreset",
+    "label": "Password expires",
+    "reportedBy": "Priya Shah",
+    "folder": "Inbox",
+    "headers": "Return-Path: <it-support@ashby1ane.example>\nReceived: from mail.ashby1ane.example (mail.ashby1ane.example [203.0.113.77])\n\tby mail01.ashbylane.example (Postfix) with ESMTPS id 4A7B21C0D9;\n\tWed, 21 Oct 2026 09:14:22 +0000 (UTC)\nAuthentication-Results: mail01.ashbylane.example; spf=pass smtp.mailfrom=ashby1ane.example\nAuthentication-Results: mail01.ashbylane.example; dkim=pass header.d=ashby1ane.example header.s=default\nAuthentication-Results: mail01.ashbylane.example; dmarc=pass (p=none dis=none) header.from=ashby1ane.example\nFrom: \"Ashby Lane IT\" <it-support@ashby1ane.example>\nTo: undisclosed-recipients:;\nSubject: Action required: your mailbox password expires today\nDate: Wed, 21 Oct 2026 09:14:19 +0000\nMessage-ID: <20261021091419.77f3@ashby1ane.example>",
+    "note": "Priya: \"I clicked it and typed my password. It said wrong password, then opened normal webmail.\"",
+    "body": "Your mailbox password expires today.\n\nTo keep access to your email, confirm your current password before 12:00. After that your mailbox will be locked.\n\nAshby Lane IT Service Desk",
+    "links": [
+     {
+      "text": "https://mail.ashbylane.example/reset",
+      "href": "https://login.ashby1ane.example/ashbylane/reset?u=priya.shah"
+     }
+    ],
+    "findings": [
+     "The 'password expires' email is from ashby1ane.example (a 1, not an l). It passed SPF, DKIM and DMARC because the attacker owns that lookalike domain.",
+     "Its link reads mail.ashbylane.example but really goes to login.ashby1ane.example."
+    ]
+   }
+  ]
+ },
+ "log": {
+  "name": "mail01 + proxy01 (syslog)",
+  "intro": "The mail server's and web proxy's logs from 08:30 to 09:50 this morning (30 lines, UTC). Search them like grep: every word you type must appear in a line.",
+  "lines": [
+   "Oct 21 08:30:12 mail01 dovecot: imap-login: Login: user=<priya.shah>, method=PLAIN, rip=10.0.5.41, lip=192.0.2.30, mpid=31877, TLS, session=<Vq3mK0YjtLsKAAUp>",
+   "Oct 21 08:45:40 mail01 dovecot: imap-login: Login: user=<owen.reed>, method=PLAIN, rip=10.0.5.52, lip=192.0.2.30, mpid=30112, TLS, session=<pT8sYQEkuNoKAAU0>",
+   "Oct 21 08:51:13 mail01 policyd-spf[30885]: prepend Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=198.51.100.140; helo=mail.harlowprint.example; envelope-from=proofs@harlowprint.example; receiver=<UNKNOWN>",
+   "Oct 21 08:51:13 mail01 postfix/smtpd[30881]: 2B7E41C0A5: client=mail.harlowprint.example[198.51.100.140]",
+   "Oct 21 08:51:13 mail01 postfix/cleanup[30887]: 2B7E41C0A5: message-id=<20261021085111.3F2A@harlowprint.example>",
+   "Oct 21 08:51:13 mail01 opendkim[805]: 2B7E41C0A5: DKIM verification successful",
+   "Oct 21 08:51:13 mail01 opendmarc[812]: 2B7E41C0A5: harlowprint.example pass",
+   "Oct 21 08:51:13 mail01 postfix/qmgr[1187]: 2B7E41C0A5: from=<proofs@harlowprint.example>, size=14212, nrcpt=1 (queue active)",
+   "Oct 21 08:51:13 mail01 postfix/lmtp[30889]: 2B7E41C0A5: to=<tom.bell@ashbylane.example>, relay=mail01.ashbylane.example[private/dovecot-lmtp], delay=0.42, delays=0.3/0.01/0.03/0.08, dsn=2.0.0, status=sent (250 2.0.0 <tom.bell@ashbylane.example> kF2nB2Q9NmmqeAAAc0Ld4g Saved)",
+   "Oct 21 09:02:37 mail01 policyd-spf[31002]: prepend Received-SPF: Softfail (mailfrom) identity=mailfrom; client-ip=198.51.100.61; helo=relay7.sendfast.example; envelope-from=daniel.ashby@ashbylane.example; receiver=<UNKNOWN>",
+   "Oct 21 09:02:37 mail01 postfix/smtpd[30998]: 6C1F92A0B3: client=relay7.sendfast.example[198.51.100.61]",
+   "Oct 21 09:02:37 mail01 postfix/cleanup[30887]: 6C1F92A0B3: message-id=<a81f0c2e9b@relay7.sendfast.example>",
+   "Oct 21 09:02:37 mail01 opendmarc[812]: 6C1F92A0B3: ashbylane.example fail",
+   "Oct 21 09:02:37 mail01 postfix/qmgr[1187]: 6C1F92A0B3: from=<daniel.ashby@ashbylane.example>, size=3108, nrcpt=1 (queue active)",
+   "Oct 21 09:02:38 mail01 dovecot: lmtp(mel.ortiz)<31010><cE4uFj1BNmmgeQAAc0Ld4g>: sieve: msgid=<a81f0c2e9b@relay7.sendfast.example>: fileinto action: stored mail into mailbox 'Junk'",
+   "Oct 21 09:02:38 mail01 postfix/lmtp[30889]: 6C1F92A0B3: to=<mel.ortiz@ashbylane.example>, relay=mail01.ashbylane.example[private/dovecot-lmtp], delay=0.51, delays=0.38/0.01/0.03/0.09, dsn=2.0.0, status=sent (250 2.0.0 <mel.ortiz@ashbylane.example> cE4uFj1BNmmgeQAAc0Ld4g Saved)",
+   "Oct 21 09:14:22 mail01 policyd-spf[31140]: prepend Received-SPF: Pass (mailfrom) identity=mailfrom; client-ip=203.0.113.77; helo=mail.ashby1ane.example; envelope-from=it-support@ashby1ane.example; receiver=<UNKNOWN>",
+   "Oct 21 09:14:22 mail01 postfix/smtpd[31136]: 4A7B21C0D9: client=mail.ashby1ane.example[203.0.113.77]",
+   "Oct 21 09:14:22 mail01 postfix/cleanup[30887]: 4A7B21C0D9: message-id=<20261021091419.77f3@ashby1ane.example>",
+   "Oct 21 09:14:22 mail01 opendkim[805]: 4A7B21C0D9: DKIM verification successful",
+   "Oct 21 09:14:22 mail01 opendmarc[812]: 4A7B21C0D9: ashby1ane.example pass",
+   "Oct 21 09:14:22 mail01 postfix/qmgr[1187]: 4A7B21C0D9: from=<it-support@ashby1ane.example>, size=9876, nrcpt=3 (queue active)",
+   "Oct 21 09:14:23 mail01 postfix/lmtp[31150]: 4A7B21C0D9: to=<accounts@ashbylane.example>, relay=mail01.ashbylane.example[private/dovecot-lmtp], delay=0.61, delays=0.33/0.01/0.04/0.23, dsn=2.0.0, status=sent (250 2.0.0 <accounts@ashbylane.example> jU7aLz1DNmmgegAAc0Ld4g Saved)",
+   "Oct 21 09:14:23 mail01 postfix/lmtp[31150]: 4A7B21C0D9: to=<owen.reed@ashbylane.example>, relay=mail01.ashbylane.example[private/dovecot-lmtp], delay=0.61, delays=0.33/0.01/0.04/0.23, dsn=2.0.0, status=sent (250 2.0.0 <owen.reed@ashbylane.example> jU7aLz1DNmmgegAAc0Ld4g Saved)",
+   "Oct 21 09:14:23 mail01 postfix/lmtp[31150]: 4A7B21C0D9: to=<priya.shah@ashbylane.example>, relay=mail01.ashbylane.example[private/dovecot-lmtp], delay=0.61, delays=0.33/0.01/0.04/0.23, dsn=2.0.0, status=sent (250 2.0.0 <priya.shah@ashbylane.example> jU7aLz1DNmmgegAAc0Ld4g Saved)",
+   "Oct 21 09:20:03 proxy01 squid[2210]: 1792574403.118   4120 10.0.5.33 TCP_TUNNEL/200 61237 CONNECT proofs.harlowprint.example:443 - HIER_DIRECT/198.51.100.140 -",
+   "Oct 21 09:28:55 proxy01 squid[2210]: 1792574935.115  73911 10.0.5.41 TCP_TUNNEL/200 48213 CONNECT login.ashby1ane.example:443 - HIER_DIRECT/203.0.113.77 -",
+   "Oct 21 09:35:12 proxy01 squid[2210]: 1792575312.402  60004 10.0.5.41 TCP_TUNNEL/200 182044 CONNECT mail.ashbylane.example:443 - HIER_DIRECT/192.0.2.30 -",
+   "Oct 21 09:41:06 mail01 dovecot: imap-login: Login: user=<priya.shah>, method=PLAIN, rip=203.0.113.77, lip=192.0.2.30, mpid=31904, TLS, session=<x9Ql0b0jmpDLcU1N>",
+   "Oct 21 09:47:30 proxy01 squid[2210]: 1792575650.077  30211 10.0.5.52 TCP_TUNNEL/200 20480 CONNECT www.lawsociety.example:443 - HIER_DIRECT/198.51.100.9 -"
+  ],
+  "findings": [
+   {
+    "match": "nrcpt=3",
+    "finding": "The fake IT email went to 3 mailboxes (nrcpt=3): accounts, owen.reed and priya.shah."
+   },
+   {
+    "match": "login.ashby1ane.example",
+    "finding": "Only Priya's laptop (10.0.5.41) opened login.ashby1ane.example, for 74 seconds from 09:27. Then it went to the real webmail."
+   },
+   {
+    "match": "rip=203.0.113.77",
+    "finding": "At 09:41 priya.shah signed in to mail01 from 203.0.113.77, the address that sent the fake email: the attacker is using her password."
+   },
+   {
+    "match": "fileinto action",
+    "finding": "Sieve filed the 'Daniel Ashby' email in Mel's Junk folder: the filters caught it."
+   },
+   {
+    "match": "harlowprint.example pass",
+    "finding": "Harlow Print's email passed DMARC (opendmarc: harlowprint.example pass)."
+   }
+  ]
+ },
+ "modes": {
+  "guided": {
+   "label": "Guided",
+   "xp": 20,
+   "intro": "Follow one phishing email from the attacker's server to a stolen password, and see why every check let it through.",
+   "sequence": [
+    "send",
+    "spf_ask",
+    "spf_reply",
+    "deliver",
+    "click",
+    "creds",
+    "login"
+   ],
+   "debrief": "You've followed a phish end to end: a lookalike domain that passes SPF, DKIM and DMARC, a link that says one thing and goes to another, and a password used twelve minutes later. Next, predict each step in Practice mode."
+  },
+  "practice": {
+   "label": "Practice",
+   "xp": 30,
+   "intro": "Same email, but predict what happens before each step.",
+   "sequence": [
+    "send",
+    "spf_ask",
+    "spf_reply",
+    "deliver",
+    "click",
+    "creds",
+    "login"
+   ],
+   "checkpoints": {
+    "spf_reply": {
+     "q": "mail01 asks ashby1ane.example's DNS which servers may send its mail. What will the SPF check say?",
+     "options": [
+      "Fail: it's pretending to be Ashby Lane",
+      "Pass: the attacker owns that domain and listed their own server",
+      "Softfail: new domains always softfail",
+      "No result: SPF only works for big companies"
+     ],
+     "answer": 1,
+     "why": "SPF checks the domain the email says it's from, and ashby1ane.example really did send it. The attacker controls that domain's DNS, so it passes. Checks catch forgeries, not lookalikes."
+    },
+    "deliver": {
+     "q": "Every check passed. Where does the email land?",
+     "options": [
+      "Junk, because the domain is new",
+      "Rejected at the server",
+      "The inbox",
+      "Held for an administrator"
+     ],
+     "answer": 2,
+     "why": "Nothing failed, so it goes to the inbox. Some filters score brand-new domains as risky, but that isn't guaranteed, which is why people are the last line of defence."
+    },
+    "creds": {
+     "q": "Priya is on the fake page and types her password. What can the web proxy see?",
+     "options": [
+      "Her password, in plain text",
+      "The site's name and how long the connection lasted, but not what she typed",
+      "Nothing at all",
+      "The whole page as she saw it"
+     ],
+     "answer": 1,
+     "why": "HTTPS is encrypted between her browser and the site. The proxy only opened a tunnel (CONNECT login.ashby1ane.example:443), so its log shows the name, time and bytes, never the password."
+    },
+    "login": {
+     "q": "The attacker has Priya's password. What do they most likely do next?",
+     "options": [
+      "Sign in to her mailbox",
+      "Nothing: passwords expire anyway",
+      "Send her a thank-you email",
+      "Attack the web proxy"
+     ],
+     "answer": 0,
+     "why": "A mailbox is valuable: client conversations, invoices to alter, and a trusted account to phish colleagues from. That's why speed matters once someone reports typing a password."
+    }
+   },
+   "debrief": "You can predict how a lookalike phish gets through and what it leaves behind. Now investigate one in Challenge mode."
+  },
+  "challenge": {
+   "label": "Challenge",
+   "xp": 50,
+   "intro": "It's 09:52. Three people have reported emails this morning. Inspect each one, search the mail and proxy logs, contain whatever is real, then prove how it happened.",
+   "start": {
+    "mail.phish": "everywhere",
+    "mail.pw": "stolen",
+    "mail.session": "attacker",
+    "mail.state": "compromised",
+    "mail.status": "priya.shah signed in from 203.0.113.77",
+    "attacker.status": "Signed in as priya.shah",
+    "user.status": "Priya reported a password email"
+   },
+   "opening": {
+    "device": "user",
+    "say": "I clicked the IT password link and typed my password. It said wrong password, then opened normal webmail. Is that bad?",
+    "log": "Start: Tom, Mel and Priya have each reported an email. Priya thinks she typed her password into something. Which email was it, and what happened next?"
+   },
+   "hints": [
+    "Open each reported email. Compare who it says it's from with the real address, and check where its links really go.",
+    "One email passed every check. Read its domain letter by letter. Then search the logs for that domain to see who else got it and who visited it.",
+    "Search the log for the attacker's address, 203.0.113.77. Did anything sign in from there? Run doveadm who.",
+    "Contain it: remove the email from every mailbox, block the domain, reset Priya's password, then end her sessions. Order matters: ending sessions before the reset lets the attacker straight back in."
+   ],
+   "tools": [
+    {
+     "id": "who",
+     "label": "doveadm who",
+     "kind": "Investigate",
+     "outcomes": [
+      {
+       "when": {
+        "mail.session": "ended"
+       },
+       "output": "username  # proto (pids)  (ips)\nowen.reed 1 imap  (30112) (10.0.5.52)\ntom.bell  1 imap  (30440) (10.0.5.33)",
+       "finding": "No session for priya.shah is left: the attacker is out."
+      },
+      {
+       "when": {},
+       "output": "username   # proto (pids)        (ips)\nowen.reed  1 imap  (30112)       (10.0.5.52)\npriya.shah 2 imap  (31877 31904) (10.0.5.41 203.0.113.77)\ntom.bell   1 imap  (30440)       (10.0.5.33)",
+       "finding": "priya.shah has two IMAP sessions: her laptop (10.0.5.41) and 203.0.113.77, the address that sent the fake email."
+      }
+     ]
+    },
+    {
+     "id": "search",
+     "label": "doveadm search -A mailbox '*' header Message-ID '<20261021091419.77f3@ashby1ane.example>'",
+     "kind": "Investigate",
+     "outcomes": [
+      {
+       "when": {
+        "mail.phish": "gone"
+       },
+       "output": "(no output: no mailbox holds it now)",
+       "finding": "The fake IT email is gone from every mailbox."
+      },
+      {
+       "when": {
+        "mail.phish": "others"
+       },
+       "output": "accounts 6f0c3b1d8a2e4f97b1c05d3e9a7f2b14 1187\nowen.reed b83e5a91c4d27f06e1a9b3c58d4f7e20 642",
+       "finding": "The fake IT email is still in 2 mailboxes: accounts and owen.reed."
+      },
+      {
+       "when": {},
+       "output": "accounts 6f0c3b1d8a2e4f97b1c05d3e9a7f2b14 1187\nowen.reed b83e5a91c4d27f06e1a9b3c58d4f7e20 642\npriya.shah 2d9a47e1f05c8b3a96e7d1c4b0f53a88 2215",
+       "finding": "The fake IT email is in 3 mailboxes: accounts, owen.reed and priya.shah."
+      }
+     ]
+    },
+    {
+     "id": "whois",
+     "label": "whois ashby1ane.example",
+     "kind": "Investigate",
+     "outcomes": [
+      {
+       "when": {},
+       "output": "Domain Name: ASHBY1ANE.EXAMPLE\nRegistrar: Example Registrar Ltd\nUpdated Date: 2026-10-19T22:41:07Z\nCreation Date: 2026-10-19T22:41:07Z\nRegistry Expiry Date: 2027-10-19T22:41:07Z\nRegistrant Organization: Privacy service provided by Example Registrar Ltd\nName Server: NS1.ASHBY1ANE.EXAMPLE\nName Server: NS2.ASHBY1ANE.EXAMPLE",
+       "finding": "ashby1ane.example was registered on 19 October 2026, two days before the email, behind a privacy service."
+      }
+     ]
+    },
+    {
+     "id": "delone",
+     "label": "Delete it from Priya's inbox",
+     "kind": "Fix",
+     "outcomes": [
+      {
+       "when": {
+        "mail.phish": "gone"
+       },
+       "output": "Nothing to delete: it's gone from every mailbox."
+      },
+      {
+       "when": {
+        "mail.phish": "others"
+       },
+       "output": "Already deleted from priya.shah's Inbox."
+      },
+      {
+       "when": {},
+       "output": "Deleted from priya.shah's Inbox.",
+       "set": {
+        "mail.phish": "others"
+       }
+      }
+     ]
+    },
+    {
+     "id": "purge",
+     "label": "doveadm expunge -A mailbox '*' header Message-ID '<20261021091419.77f3@ashby1ane.example>'",
+     "kind": "Fix",
+     "outcomes": [
+      {
+       "when": {
+        "mail.phish": "gone"
+       },
+       "output": "(no output: nothing left to remove)"
+      },
+      {
+       "when": {
+        "mail.phish": "others"
+       },
+       "output": "(no output)\nRemoved from the 2 mailboxes that still had it: accounts and owen.reed.",
+       "set": {
+        "mail.phish": "gone"
+       }
+      },
+      {
+       "when": {},
+       "output": "(no output)\nRemoved from all 3 mailboxes that had it: accounts, owen.reed and priya.shah.",
+       "set": {
+        "mail.phish": "gone"
+       }
+      }
+     ]
+    },
+    {
+     "id": "block",
+     "label": "Block ashby1ane.example for mail and web",
+     "kind": "Fix",
+     "outcomes": [
+      {
+       "when": {
+        "proxy.blocked": true
+       },
+       "output": "Already blocked on mail01 and proxy01."
+      },
+      {
+       "when": {},
+       "output": "mail01$ echo 'ashby1ane.example REJECT' | sudo tee -a /etc/postfix/sender_access\nashby1ane.example REJECT\nmail01$ sudo postmap /etc/postfix/sender_access && sudo postfix reload\npostfix/postfix-script: refreshing the Postfix mail system\nproxy01$ sudo squid -k reconfigure   (after adding: acl phish dstdomain .ashby1ane.example / http_access deny phish)\n(no output)\nNew mail from ashby1ane.example is refused, and nobody can open its pages through the proxy.",
+       "set": {
+        "mail.senderBlocked": true,
+        "proxy.blocked": true,
+        "proxy.status": "Blocking ashby1ane.example"
+       }
+      }
+     ]
+    },
+    {
+     "id": "reset",
+     "label": "Reset priya.shah's password",
+     "kind": "Fix",
+     "outcomes": [
+      {
+       "when": {
+        "mail.pw": "reset"
+       },
+       "output": "Already reset. Priya has a new password."
+      },
+      {
+       "when": {},
+       "output": "Password reset in the directory. Priya sets a new one with the service desk.\nThe stolen password won't work for new sign-ins. Sessions that are already signed in stay open: Dovecot checks the password when a session starts, not after.",
+       "set": {
+        "mail.pw": "reset",
+        "attacker.status": "Still connected as priya.shah"
+       }
+      }
+     ]
+    },
+    {
+     "id": "kick",
+     "label": "doveadm kick priya.shah",
+     "kind": "Fix",
+     "outcomes": [
+      {
+       "when": {
+        "mail.session": "ended"
+       },
+       "output": "no users kicked"
+      },
+      {
+       "when": {
+        "mail.pw": "reset"
+       },
+       "output": "kicked connections from the following users:\npriya.shah",
+       "set": {
+        "mail.session": "ended",
+        "mail.state": "ok",
+        "mail.status": "Contained",
+        "attacker.status": "Locked out"
+       }
+      },
+      {
+       "when": {},
+       "output": "kicked connections from the following users:\npriya.shah\n\n(A minute later, doveadm who shows priya.shah connected again from 203.0.113.77: the attacker still has the password.)"
+      }
+     ]
+    }
+   ],
+   "goal": {
+    "mail.phish": "gone",
+    "mail.pw": "reset",
+    "mail.session": "ended",
+    "proxy.blocked": true
+   },
+   "workaround": {
+    "mail.phish": "others"
+   },
+   "rootCause": {
+    "q": "Priya's mailbox is contained. How did the attacker get in?",
+    "options": [
+     "Ashby Lane's mail server was hacked and sent the email itself",
+     "A lookalike domain the attacker owns passed SPF, DKIM and DMARC, and Priya typed her password into its fake sign-in page",
+     "The 'Daniel Ashby' email got past the spam filter",
+     "Malware on Priya's laptop stole her password"
+    ],
+    "answer": 1,
+    "why": "The email came from ashby1ane.example, which the attacker registered and set up properly, so every check passed. Its link went to a copy of the sign-in page, the proxy shows only Priya opened it, and fourteen minutes later her account signed in from the attacker's address. Nothing was hacked: a password was handed over.",
+    "evidenceQ": "Which findings support that diagnosis? Tick the evidence, leave out what isn't.",
+    "evidence": [
+     {
+      "text": "Headers: the 'password expires' email is from ashby1ane.example, a lookalike of ashbylane.example",
+      "tool": "email",
+      "supports": true,
+      "required": true,
+      "why": "The heart of it: a domain one character away from the firm's, which a busy reader takes as the real thing."
+     },
+     {
+      "text": "Proxy log: only Priya's laptop opened login.ashby1ane.example, at 09:27",
+      "tool": "log",
+      "supports": true,
+      "required": true,
+      "why": "Shows she reached the fake sign-in page, and that nobody else did, so only her password is at risk."
+     },
+     {
+      "text": "Mail log: priya.shah signed in from 203.0.113.77 at 09:41",
+      "tool": "log",
+      "supports": true,
+      "required": true,
+      "why": "Proof the password was captured and used: a sign-in from the address that sent the email, 14 minutes after her visit."
+     },
+     {
+      "text": "SPF, DKIM and DMARC all passed for ashby1ane.example",
+      "tool": "email",
+      "supports": true,
+      "required": false,
+      "why": "Explains why the filter let it through, which is the lesson: passing checks proves who sent it, not that they're honest. Useful, but optional here."
+     },
+     {
+      "text": "whois: ashby1ane.example was registered two days earlier",
+      "tool": "whois",
+      "supports": true,
+      "required": false,
+      "why": "A brand-new domain is a strong warning sign and worth reporting. It backs up the diagnosis but isn't needed to prove it."
+     },
+     {
+      "text": "The 'Daniel Ashby' email failed DMARC and went to Junk",
+      "tool": "email",
+      "supports": false,
+      "why": "A different scam, and the filters caught it. Spoofing the firm's own domain fails DMARC; registering a lookalike doesn't. That contrast is worth knowing, but it isn't how this attacker got in."
+     },
+     {
+      "text": "Tom's Harlow Print email passed every check",
+      "tool": "email",
+      "supports": false,
+      "why": "A real email from a real supplier. Telling it apart from the phish is part of triage, but it isn't evidence of the cause."
+     }
+    ]
+   },
+   "debrief": "You triaged three reports like a SOC analyst: a real supplier, a spoof the filters caught, and a lookalike that passed every check. You removed it from every mailbox, blocked the domain, and reset the password before ending the sessions so the attacker couldn't walk back in. Real next steps: turn on multi-factor sign-in so a stolen password isn't enough, check Priya's mailbox for new forwarding rules or sent mail, warn Owen and the accounts team, and report the domain to its registrar."
+  }
+ },
+ "wide": {
+  "w": 760,
+  "h": 540,
+  "dw": 184,
+  "pos": {
+   "attacker": [
+    110,
+    150
+   ],
+   "mail": [
+    650,
+    150
+   ],
+   "user": [
+    650,
+    420
+   ],
+   "proxy": [
+    110,
+    420
+   ]
+  }
+ },
+ "narrow": {
+  "w": 380,
+  "h": 820,
+  "dw": 176,
+  "pos": {
+   "attacker": [
+    94,
+    170
+   ],
+   "mail": [
+    286,
+    170
+   ],
+   "user": [
+    286,
+    640
+   ],
+   "proxy": [
+    94,
+    640
+   ]
+  }
+ }
+}

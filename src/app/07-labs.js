@@ -68,6 +68,8 @@ const SCENE = {
   osint: { d: [["cloud", 52, 46, 0.6]], g: [["search", 140, 44, 1.8]], l: [[70, 46, 120, 44, 1]], t: [["@handle", 100, 18]] },
 };
 SCENE["subnet-calc"] = SCENE.subnetting;
+SCENE["ssh-brute"] = SCENE["log-detective"];
+SCENE["phish-triage"] = { d: [["attacker", 34, 46, 0.58], ["laptop", 166, 48, 0.55]], g: [["mail", 100, 46, 1.1]], t: [["1 ≠ l", 100, 20, "bad"]], l: [[50, 46, 86, 46], [114, 46, 148, 48]], p: ["M34 46L166 48"], tone: "bad" };
 SCENE.agency = SCENE.soc;
 function sceneSvg(sc) {
   const pk = (sc.p || []).map((d, i) => `<circle class="cpkt ${sc.tone || ""}" r="4" opacity="0"><animateMotion begin="indefinite" dur="1.5s" path="${d}" fill="freeze"/><animate attributeName="opacity" begin="indefinite" dur="1.5s" values="0;1;1;0" keyTimes="0;0.1;0.85;1" fill="freeze"/></circle>`).join("");

@@ -45,6 +45,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
         <section class="panel" id="m-inspect"></section>
       </aside>
     </div>
+    <section class="panel m-mailview" id="m-mailview" hidden></section>
     <section class="panel m-logview" id="m-logview" hidden></section>
     <section class="panel"><h2>What happened (text version)</h2><ol class="transcript" id="m-log" aria-live="polite"></ol></section>
     <section class="panel debrief" id="m-debrief" hidden></section>
@@ -290,6 +291,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
       else if (ev.type === "answer") showAnswer(ev);
       else if (ev.type === "tool") await showTool(ev);
       else if (ev.type === "log") showLog(ev);
+      else if (ev.type === "email") showEmail(ev);
       else if (ev.type === "workaround") logLine(`<span class="warnline">Workaround applied. It looks fixed for this device, but is it really solved?</span>`);
       else if (ev.type === "goal") showRootCause(ev);
       else if (ev.type === "evidenceCheck") showEvidenceCheck(ev);
@@ -345,7 +347,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
   function challengePanel() {
     const m = scenario.modes[state.mode];
     const groups = [...new Set(m.tools.map(t => t.kind))];
-    $("m-task").innerHTML = `<div class="eyebrow">Your tools</div>${scenario.log ? `<div class="tool-group"><h3 class="eyebrow">Logs</h3><div class="row"><button class="chip" type="button" id="m-tolog">Search ${esc(scenario.log.name)} ↓</button></div></div>` : ""}
+    $("m-task").innerHTML = `<div class="eyebrow">Your tools</div>${scenario.emails ? `<div class="tool-group"><h3 class="eyebrow">Reported emails</h3><div class="row"><button class="chip" type="button" id="m-tomail">Inspect ${scenario.emails.items.length} emails ↓</button></div></div>` : ""}${scenario.log ? `<div class="tool-group"><h3 class="eyebrow">Logs</h3><div class="row"><button class="chip" type="button" id="m-tolog">Search ${esc(scenario.log.name)} ↓</button></div></div>` : ""}
       ${groups.map(g => `<div class="tool-group"><h3 class="eyebrow">${esc(KIND_LABEL[g] || g)}</h3><div class="row">${m.tools.filter(t => t.kind === g).map(t => `<button class="chip" data-tool="${t.id}">${esc(t.label)}</button>`).join("")}</div></div>`).join("")}
       <div class="console-head" id="m-console-label"><span class="sim-tag">Simulated output</span><span>Scripted results that mirror real tools. Nothing runs on your computer.</span></div>
       <pre class="evidence console" id="m-console" tabindex="0" aria-live="polite" aria-labelledby="m-console-label">Waiting for your first command…</pre>
@@ -357,6 +359,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
       try { await run(engine.useTool(scenario, state, b.dataset.tool)); } finally { busy = false; }
     }));
     $("m-hint").addEventListener("click", () => run(engine.hint(scenario, state)));
+    $("m-tomail")?.addEventListener("click", () => { $("m-mailview").scrollIntoView({ block: "start", behavior: reducedMotion ? "auto" : "smooth" }); $("m-mailview").querySelector("[data-email]")?.focus({ preventScroll: true }); });
     $("m-tolog")?.addEventListener("click", () => { $("m-logview").scrollIntoView({ block: "start", behavior: reducedMotion ? "auto" : "smooth" }); $("m-logq").focus({ preventScroll: true }); });
   }
   async function showTool(ev) {
@@ -394,6 +397,43 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     drawLog(ev.lines, terms);
     $("m-logcount").textContent = ev.query ? `${ev.lines.length} of ${ev.total} lines contain “${ev.query}”.` : `Showing all ${ev.total} lines. Search to narrow it down.`;
     if (ev.query) logLine(`You searched the log for <strong>${esc(ev.query)}</strong>: ${ev.lines.length} line${ev.lines.length === 1 ? "" : "s"}${ev.found.length ? ` → ${ev.found.map(esc).join(" ")}` : ""}`);
+    renderFindings();
+  }
+  // ---------- email inspector (challenge modes of scenarios with reported emails): read headers as pictures
+  function emailViewer() {
+    const v = $("m-mailview"), on = isToolMode(scenario.modes[state.mode]) && !!scenario.emails;
+    v.hidden = !on; if (!on) return;
+    v.innerHTML = `<div class="panel-title"><h2>Reported emails</h2><span class="sim-tag">Simulated email</span></div>
+      <p class="muted" style="margin:0">${esc(scenario.emails.intro)}</p>
+      <div class="row mail-tabs" role="group" aria-label="Choose a reported email">${scenario.emails.items.map(e => `<button class="chip" type="button" data-email="${esc(e.id)}" aria-pressed="false">${esc(e.label)} <span class="n">${esc(e.reportedBy)}</span></button>`).join("")}</div>
+      <div id="m-mail" aria-live="polite"><p class="muted">Pick an email above to inspect it.</p></div>`;
+    v.querySelectorAll("[data-email]").forEach(b => b.addEventListener("click", () => run(engine.inspectEmail(scenario, state, b.dataset.email))));
+  }
+  const RESULT_TONE = { pass: "ok", fail: "bad", softfail: "warn", neutral: "warn", none: "warn", temperror: "warn", permerror: "bad" };
+  // The domain part of an address, set apart in a fixed-width font so a 1 and an l look different.
+  const showAddr = a => a.domain ? `${esc(a.address.slice(0, -a.domain.length))}<b class="mail-domain">${esc(a.domain)}</b>` : esc(a.address);
+  const hostAt = l => (l.real ? l.href.toLowerCase().indexOf(l.real) : -1);
+  const outside = d => d !== scenario.emails.org && !d.endsWith("." + scenario.emails.org);
+  function showEmail(ev) {
+    const { email: e, parsed: h, links } = ev, auth = h.auth;
+    $("m-mailview").querySelectorAll("[data-email]").forEach(b => b.setAttribute("aria-pressed", b.dataset.email === e.id));
+    const reply = h.replyTo && h.replyTo.address.toLowerCase() !== h.from.address.toLowerCase()
+      ? `<p class="mail-row warn"><span class="mail-k">Replies go to</span><span class="mono">${showAddr(h.replyTo)}</span><span class="tag">not the From address</span></p>` : "";
+    const verdict = (k, label, what) => { const r = auth[k]; return `<li class="mail-check ${RESULT_TONE[r.result] || "warn"}"><b>${label}</b><span class="mail-res">${esc(r.result)}</span><span class="muted">${esc(what)}</span>${r.detail ? `<code>${esc(r.detail)}</code>` : ""}</li>`; };
+    const hops = h.received.map(r => `<li><span class="mail-hop ${outside(r.rdns || r.helo) ? "out" : "in"}"><b>${esc(r.rdns || r.helo || "unknown")}</b><span class="mono">${esc(r.ip)}</span><span class="tag">${outside(r.rdns || r.helo) ? "outside" : "your network"}</span></span><span class="mail-arrow" aria-hidden="true">→</span><span class="mail-hop in"><b>${esc(r.by)}</b><span class="tag">your server</span></span></li>`).join("");
+    const linkRows = links.length ? `<ul class="mail-links">${links.map(l => `<li class="${l.mismatch ? "bad" : ""}"><span class="mail-k">Link says</span><span class="mono">${esc(l.text)}</span><span class="mail-k">Really goes to</span><span class="mono">${hostAt(l) >= 0 ? `${esc(l.href.slice(0, hostAt(l)))}<b class="mail-domain">${esc(l.href.slice(hostAt(l), hostAt(l) + l.real.length))}</b>${esc(l.href.slice(hostAt(l) + l.real.length))}` : esc(l.href)}</span>${l.mismatch ? `<span class="tag no">doesn't match the text</span>` : ""}</li>`).join("")}</ul>` : `<p class="muted">No links.</p>`;
+    $("m-mail").innerHTML = `<article class="mail-card">
+      <header><div class="eyebrow">Reported by ${esc(e.reportedBy)} · found in ${esc(e.folder)}</div><h3>${esc(h.subject)}</h3>${e.note ? `<p class="mail-note">${esc(e.note)}</p>` : ""}</header>
+      <section><h4 class="eyebrow">Who sent it</h4>
+        <p class="mail-row"><span class="mail-k">Name shown</span><span class="mail-name">${esc(h.from.name || "(none)")}</span><span class="muted">anyone can type any name</span></p>
+        <p class="mail-row"><span class="mail-k">Real address</span><span class="mono">${showAddr(h.from)}</span><span class="tag ${outside(h.from.domain) ? "" : "watch"}">${outside(h.from.domain) ? "outside the firm" : "claims to be from the firm"}</span></p>${reply}</section>
+      <section><h4 class="eyebrow">How it reached you</h4><ol class="mail-route">${hops}</ol></section>
+      <section><h4 class="eyebrow">${esc(h.received.at(-1)?.by || "Your server")}'s checks</h4><ul class="mail-checks">
+        ${verdict("spf", "SPF", "Was the sending server allowed to send for this domain?")}${verdict("dkim", "DKIM", "Was it signed by the domain, unchanged?")}${verdict("dmarc", "DMARC", "Does the From domain match what SPF or DKIM proved?")}</ul>
+        <p class="muted mail-fine">Passing proves which domain sent it, not that the domain is honest.</p></section>
+      <section><h4 class="eyebrow">The message</h4><div class="mail-body">${esc(e.body)}</div>${linkRows}</section>
+      <details class="tbl"><summary>Raw headers</summary><pre class="evidence console mail-raw" tabindex="0">${esc(e.headers)}</pre></details></article>`;
+    logLine(`You inspected <strong>${esc(e.label)}</strong> (reported by ${esc(e.reportedBy)})${ev.found.length ? ` → ${ev.found.map(esc).join(" ")}` : ""}`);
     renderFindings();
   }
   function renderFindings() {
@@ -473,6 +513,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     svg.querySelectorAll(".m-pkt").forEach(p => p.remove()); clearBubbles();
     drawTopology();
     isToolMode(m) ? challengePanel() : taskIdle();
+    emailViewer();
     logViewer();
     if (m.opening) { bubble(m.opening.device, m.opening.say, "say"); logLine(esc(engine.fill(m.opening.log, state.devices))); }
     updateControls();

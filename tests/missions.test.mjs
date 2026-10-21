@@ -246,7 +246,7 @@ test("every mission scenario is structurally consistent and playable", () => {
         for (const e of rc.evidence) {
           assert.ok(e.text && e.why, where(`${k}: every evidence item has text and why`));
           assert.ok(!e.required || e.supports, where(`${k}: only supporting evidence can be required`));
-          if (e.tool) assert.ok(tools.has(e.tool) || (e.tool === "log" && m.log), where(`${k}: evidence tool ${e.tool} is a real tool`));
+          if (e.tool) assert.ok(tools.has(e.tool) || (e.tool === "log" && m.log) || (e.tool === "email" && m.emails), where(`${k}: evidence tool ${e.tool} is a real tool`));
         }
         assert.ok(typeof rc.answer === "number" && rc.options[rc.answer], where(`${k}: rootCause answer indexes a real option`));
       }
@@ -257,6 +257,16 @@ test("every mission scenario is structurally consistent and playable", () => {
       for (const r of rules) assert.ok(["ok", "bad", "warn"].includes(r.state), where(`${id}: unknown appearance ${r.state}`));
     }
     for (const L of [m.wide, m.narrow].filter(Boolean)) for (const id of devIds) assert.ok(L.pos?.[id], where(`layout is missing ${id}`));
+    // Reported emails: each parses, has a reporter and a finding, and ids are unique.
+    if (m.emails) {
+      assert.ok(m.emails.org && m.emails.intro && m.emails.items.length, where("emails need org, intro and items"));
+      assert.equal(new Set(m.emails.items.map(e => e.id)).size, m.emails.items.length, where("email ids are unique"));
+      for (const e of m.emails.items) {
+        const h = engine.parseHeaders(e.headers);
+        assert.ok(e.label && e.reportedBy && e.body && e.findings?.length, where(`${e.id} needs label, reportedBy, body and findings`));
+        assert.ok(h.from.address && h.received.length && h.received.every(r => r.ip), where(`${e.id}: headers parse`));
+      }
+    }
     // Every mode starts and completes cleanly through the engine.
     for (const k of Object.keys(m.modes)) assert.doesNotThrow(() => engine.start(m, k), where(`mode ${k} starts`));
   }
@@ -372,6 +382,110 @@ test("ssh-brute: guided and practice play through", () => {
     const r = engine.next(ssh, s); s = r.state;
     const q = r.events.find(e => e.type === "question");
     if (q) s = engine.answer(ssh, s, q.answer).state;
+  }
+  assert.ok(s.complete);
+});
+
+// ---------- "Which email was it?": the email inspector and a phishing triage
+const phish = JSON.parse(readFileSync(new URL("../content/missions/phish-triage.json", import.meta.url), "utf8"));
+const email = id => phish.emails.items.find(e => e.id === id);
+
+test("headers parse like an analyst reads them: real sender, reply-to, route and verdicts", () => {
+  const boss = engine.parseHeaders(email("boss").headers);
+  assert.deepEqual(boss.from, { name: "Daniel Ashby", address: "daniel.ashby@ashbylane.example", domain: "ashbylane.example" });
+  assert.equal(boss.replyTo.domain, "freemail.example");
+  assert.deepEqual(boss.received.map(r => [r.rdns, r.ip, r.by]), [["relay7.sendfast.example", "198.51.100.61", "mail01.ashbylane.example"]]);
+  assert.deepEqual([boss.auth.spf.result, boss.auth.dkim.result, boss.auth.dmarc.result], ["softfail", "none", "fail"]);
+  assert.match(boss.auth.dmarc.detail, /p=quarantine/);
+  const look = engine.parseHeaders(email("itreset").headers);
+  assert.equal(look.from.domain, "ashby1ane.example");
+  assert.equal(look.replyTo, null);
+  assert.deepEqual([look.auth.spf.result, look.auth.dkim.result, look.auth.dmarc.result], ["pass", "pass", "pass"], "the lookalike passes everything");
+  // Received headers are newest first; the parser puts them in travel order.
+  const two = engine.parseHeaders("Received: from b.example (b.example [192.0.2.2])\n\tby c.example; date\nReceived: from a.example (a.example [192.0.2.1]) by b.example; date\nFrom: x@a.example");
+  assert.deepEqual(two.received.map(r => r.by), ["b.example", "c.example"]);
+  assert.equal(engine.parseHeaders("").from.address, "");
+});
+
+test("links: the host in the href is what counts, not the text", () => {
+  assert.deepEqual(engine.linkFacts({ text: "https://mail.ashbylane.example/reset", href: "https://login.ashby1ane.example/x" }).mismatch, true);
+  assert.equal(engine.linkFacts({ text: "View your proof", href: "https://proofs.harlowprint.example/job" }).mismatch, false, "plain words aren't a claim");
+  assert.equal(engine.linkFacts({ text: "x", href: "javascript:alert(1)" }).real, "");
+});
+
+test("phish-triage: the headers, logs and findings agree", () => {
+  const A = phish.devices.attacker.ip, lines = phish.log.lines;
+  for (const f of phish.log.findings) {
+    assert.ok(lines.some(l => l.includes(f.match)), `${f.match} is in the log`);
+    assert.ok(engine.searchLog(phish, engine.start(phish, "challenge"), f.match).state.evidence.some(e => e.finding === f.finding), `searching "${f.match}" records its finding`);
+  }
+  // Every email's queue ID and Message-ID in its Received header match the mail log.
+  for (const e of phish.emails.items) {
+    const qid = e.headers.match(/ id ([0-9A-F]{10})/)[1], mid = engine.parseHeaders(e.headers).messageId;
+    assert.ok(lines.some(l => l.includes(`${qid}: message-id=${mid}`)), `${e.id}: cleanup line for ${qid}`);
+    assert.ok(lines.some(l => l.includes(`client=`) && l.includes(qid) && l.includes(engine.parseHeaders(e.headers).received[0].ip)), `${e.id}: sending IP`);
+  }
+  const delivered = lines.filter(l => l.includes("4A7B21C0D9: to=<")).map(l => l.match(/to=<([^@]+)@/)[1]);
+  assert.deepEqual(delivered, ["accounts", "owen.reed", "priya.shah"]);
+  assert.ok(lines.some(l => l.includes("4A7B21C0D9") && l.includes(`nrcpt=${delivered.length}`)));
+  const visits = lines.filter(l => l.includes("login.ashby1ane.example"));
+  assert.equal(visits.length, 1, "one person visited the fake page");
+  assert.ok(visits[0].includes("10.0.5.41") && visits[0].includes(`HIER_DIRECT/${A}`));
+  // Squid logs when the tunnel closes: its epoch matches the syslog time, and the elapsed time matches "74 seconds from 09:27".
+  const [, hhmmss, epoch, ms] = visits[0].match(/(\d\d:\d\d:\d\d) proxy01 squid\[\d+\]: (\d+)\.\d+\s+(\d+)/);
+  assert.equal(new Date(Number(epoch) * 1000).toISOString().slice(11, 19), hhmmss);
+  assert.equal(Math.round(ms / 1000), 74);
+  assert.equal(new Date((epoch - ms / 1000) * 1000).toISOString().slice(11, 16), "09:27");
+  const logins = lines.filter(l => l.includes("Login: user=<priya.shah>"));
+  assert.deepEqual(logins.map(l => l.match(/rip=([\d.]+)/)[1]), [phish.devices.user.ip, A]);
+  assert.ok(lines.every((l, i) => i === 0 || l.slice(7, 15) >= lines[i - 1].slice(7, 15)), "the log is in time order");
+  assert.match(phish.log.intro, new RegExp(`\\(${lines.length} lines`));
+  assert.ok(!JSON.stringify(phish).includes("—"), "no em dashes");
+});
+
+test("phish-triage: inspecting an email records its findings once, and only in tool modes", () => {
+  let s = engine.start(phish, "challenge");
+  const r = engine.inspectEmail(phish, s, "itreset");
+  assert.equal(r.events[0].type, "email");
+  assert.equal(r.events[0].links[0].mismatch, true);
+  assert.equal(r.state.evidence.length, email("itreset").findings.length);
+  assert.ok(r.state.toolsUsed.includes("email"));
+  assert.equal(engine.inspectEmail(phish, r.state, "itreset").events[0].found.length, 0, "no duplicate evidence");
+  assert.deepEqual(engine.inspectEmail(phish, s, "nope").events, []);
+  assert.equal(s.evidence.length, 0, "state isn't mutated");
+});
+
+test("phish-triage: deleting one copy is a workaround; kicking before the reset lets the attacker back", () => {
+  let r = engine.useTool(phish, engine.start(phish, "challenge"), "delone");
+  assert.ok(types(r).includes("workaround"));
+  assert.match(engine.useTool(phish, r.state, "search").events[0].output, /owen\.reed/);
+  let s = engine.useTool(phish, r.state, "kick").state;
+  assert.equal(s.devices.mail.session, "attacker", "the stolen password still works");
+  for (const t of ["purge", "block", "reset"]) s = engine.useTool(phish, s, t).state;
+  assert.ok(!s.goalMet, "a reset doesn't end open sessions");
+  assert.match(engine.useTool(phish, s, "who").events[0].output, /203\.0\.113\.77/);
+  r = engine.useTool(phish, s, "kick");
+  assert.ok(types(r).includes("goal"));
+  assert.doesNotMatch(engine.useTool(phish, r.state, "who").events[0].output, /priya/);
+  assert.equal(engine.useTool(phish, r.state, "kick").events[0].output, "no users kicked");
+  let rc = engine.answerRootCause(phish, r.state, 2);
+  assert.equal(rc.events[0].correct, false);
+  rc = engine.answerRootCause(phish, rc.state, phish.modes.challenge.rootCause.answer);
+  const ev = phish.modes.challenge.rootCause.evidence;
+  assert.equal(engine.answerEvidence(phish, rc.state, ev.map((_, i) => i)).events[0].pass, false);
+  const done = engine.answerEvidence(phish, rc.state, ev.flatMap((e, i) => (e.required ? [i] : [])));
+  assert.ok(done.state.complete);
+});
+
+test("phish-triage: guided and practice play through", () => {
+  let s = engine.start(phish, "guided");
+  while (!s.complete) s = engine.next(phish, s).state;
+  assert.equal(s.devices.mail.session, "attacker");
+  s = engine.start(phish, "practice");
+  while (!s.complete) {
+    const r = engine.next(phish, s); s = r.state;
+    const q = r.events.find(e => e.type === "question");
+    if (q) s = engine.answer(phish, s, q.answer).state;
   }
   assert.ok(s.complete);
 });
