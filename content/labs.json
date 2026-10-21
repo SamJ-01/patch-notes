@@ -2776,6 +2776,318 @@
   ]
  },
  {
+  "id": "permissions",
+  "kind": "perms",
+  "category": "Linux",
+  "track": "Linux",
+  "minutes": 15,
+  "lesson": "linux",
+  "title": "Who can read this file? Linux permissions",
+  "skill": "Read ls -l, fix over-shared files with chmod and chown, and predict exactly who can read, change or run a file",
+  "intro": "Marlow Garden Centre's file server has the whole staff's pay in a file anyone can read. Find out who can see what, fix it with chmod and chown (or by clicking), and watch every person's access change as you go.",
+  "simplification": "Simplified: one server, a few files and four people. Access is worked out the way the Linux kernel does it (one class applies: owner, else group, else others; root skips read and write checks; you need x on every folder in the path), but ACLs, setuid, setgid and sticky bits, umask and SELinux or AppArmor aren't modelled. ls -l output follows GNU coreutils. The people and the company are fictional.",
+  "host": "marlow-fs",
+  "cwd": "/srv/payroll",
+  "focus": "/srv/payroll/salaries.csv",
+  "spotlight": "dave",
+  "world": {
+   "groups": {
+    "root": 0,
+    "staff": 1000,
+    "finance": 1010,
+    "it": 1020
+   },
+   "users": {
+    "alice": {
+     "uid": 1001,
+     "groups": [
+      "finance",
+      "staff"
+     ],
+     "role": "Finance manager"
+    },
+    "bob": {
+     "uid": 1002,
+     "groups": [
+      "finance",
+      "staff"
+     ],
+     "role": "Payroll clerk"
+    },
+    "carol": {
+     "uid": 1003,
+     "groups": [
+      "it",
+      "staff"
+     ],
+     "role": "IT support"
+    },
+    "dave": {
+     "uid": 1004,
+     "groups": [
+      "staff"
+     ],
+     "role": "Saturday intern"
+    }
+   },
+   "files": {
+    "/srv": {
+     "dir": true,
+     "owner": "root",
+     "group": "root",
+     "mode": "755",
+     "size": 4096,
+     "date": "Sep  2 10:00"
+    },
+    "/srv/payroll": {
+     "dir": true,
+     "owner": "alice",
+     "group": "finance",
+     "mode": "755",
+     "size": 4096,
+     "date": "Oct 21 09:10",
+     "show": true,
+     "note": "For a folder, r lets you list what's inside, x lets you go into it (and reach the files), and w with x lets you add or delete files."
+    },
+    "/srv/payroll/salaries.csv": {
+     "owner": "alice",
+     "group": "finance",
+     "mode": "644",
+     "size": 18432,
+     "date": "Oct 21 09:14",
+     "show": true,
+     "note": "Everyone's pay. Only the finance team should see it, and only alice should change it."
+    },
+    "/srv/scripts": {
+     "dir": true,
+     "owner": "root",
+     "group": "it",
+     "mode": "755",
+     "size": 4096,
+     "date": "Oct 20 16:55"
+    },
+    "/srv/scripts/backup.sh": {
+     "owner": "carol",
+     "group": "it",
+     "mode": "644",
+     "size": 512,
+     "date": "Oct 20 17:02",
+     "show": true,
+     "note": "Carol's nightly backup script. It needs to run, and what's inside (paths and settings) is nobody else's business."
+    }
+   }
+  },
+  "tasks": [
+   {
+    "id": "look",
+    "text": "See the permissions: run ls -l in /srv/payroll.",
+    "hint": "ls -l",
+    "check": {
+     "ran": "ls -l"
+    },
+    "why": "Each line shows the type and permissions (-rw-r--r--), links, owner, group, size, date and name. The nine letters are three sets of rwx: owner, group, others."
+   },
+   {
+    "id": "overshared",
+    "text": "salaries.csv is -rw-r--r--, so dave the intern can read everyone's pay. Fix it: finance can read it, only alice can change it, nobody else gets anything.",
+    "hint": "chmod 640 salaries.csv, or switch off the others r in the grid",
+    "check": {
+     "all": [
+      [
+       "alice",
+       "write",
+       "/srv/payroll/salaries.csv",
+       true
+      ],
+      [
+       "bob",
+       "read",
+       "/srv/payroll/salaries.csv",
+       true
+      ],
+      [
+       "bob",
+       "write",
+       "/srv/payroll/salaries.csv",
+       false
+      ],
+      [
+       "carol",
+       "read",
+       "/srv/payroll/salaries.csv",
+       false
+      ],
+      [
+       "dave",
+       "read",
+       "/srv/payroll/salaries.csv",
+       false
+      ]
+     ]
+    },
+    "why": "640 is rw- r-- ---: the owner reads and writes, the finance group reads, others get nothing. Fixing over-sharing means taking access away, not adding it for anyone."
+   },
+   {
+    "id": "folder",
+    "text": "Lock the payroll folder: people outside finance can't list it or go into it, but finance still can.",
+    "hint": "chmod 750 /srv/payroll (or chmod o-rx /srv/payroll)",
+    "check": {
+     "all": [
+      [
+       "dave",
+       "list",
+       "/srv/payroll",
+       false
+      ],
+      [
+       "dave",
+       "enter",
+       "/srv/payroll",
+       false
+      ],
+      [
+       "carol",
+       "enter",
+       "/srv/payroll",
+       false
+      ],
+      [
+       "bob",
+       "list",
+       "/srv/payroll",
+       true
+      ],
+      [
+       "bob",
+       "enter",
+       "/srv/payroll",
+       true
+      ]
+     ]
+    },
+    "why": "Without x on the folder, nobody outside finance can reach any file inside it, whatever that file's own bits say. Two locks are better than one."
+   },
+   {
+    "id": "script",
+    "text": "backup.sh has no x bit, so it can't run. Make it runnable by carol only, and unreadable by everyone else.",
+    "hint": "chmod 700 /srv/scripts/backup.sh (or chmod u+x,go-r /srv/scripts/backup.sh)",
+    "check": {
+     "all": [
+      [
+       "carol",
+       "run",
+       "/srv/scripts/backup.sh",
+       true
+      ],
+      [
+       "carol",
+       "read",
+       "/srv/scripts/backup.sh",
+       true
+      ],
+      [
+       "alice",
+       "read",
+       "/srv/scripts/backup.sh",
+       false
+      ],
+      [
+       "dave",
+       "read",
+       "/srv/scripts/backup.sh",
+       false
+      ],
+      [
+       "dave",
+       "run",
+       "/srv/scripts/backup.sh",
+       false
+      ]
+     ]
+    },
+    "why": "700 is rwx --- ---. To run a script, its owner needs x (and r, because the shell reads it). Even root can only run a file that has an x bit somewhere."
+   },
+   {
+    "id": "oneclass",
+    "text": "Try a trap: set salaries.csv to 460 (r-- rw- ---). Who can change it now?",
+    "hint": "chmod 460 /srv/payroll/salaries.csv, then look at the Change column",
+    "check": {
+     "mode": [
+      "/srv/payroll/salaries.csv",
+      "460"
+     ],
+     "all": [
+      [
+       "alice",
+       "write",
+       "/srv/payroll/salaries.csv",
+       false
+      ],
+      [
+       "bob",
+       "write",
+       "/srv/payroll/salaries.csv",
+       true
+      ]
+     ]
+    },
+    "why": "alice owns the file, so only the owner bits (r--) count for her, even though her group has rw-. Linux picks one class and stops; it never adds them together. bob, in the group, can change it and alice can't."
+   },
+   {
+    "id": "handover",
+    "text": "Finally: bob takes over payroll. Set salaries.csv back to 640 and make bob its owner (group still finance).",
+    "hint": "chmod 640 /srv/payroll/salaries.csv, then chown bob /srv/payroll/salaries.csv",
+    "check": {
+     "mode": [
+      "/srv/payroll/salaries.csv",
+      "640"
+     ],
+     "owner": [
+      "/srv/payroll/salaries.csv",
+      "bob"
+     ],
+     "all": [
+      [
+       "bob",
+       "write",
+       "/srv/payroll/salaries.csv",
+       true
+      ],
+      [
+       "alice",
+       "read",
+       "/srv/payroll/salaries.csv",
+       true
+      ],
+      [
+       "alice",
+       "write",
+       "/srv/payroll/salaries.csv",
+       false
+      ],
+      [
+       "dave",
+       "read",
+       "/srv/payroll/salaries.csv",
+       false
+      ]
+     ]
+    },
+    "why": "Only root can give a file to someone else (chown). Now alice falls into the group bits: she can still read the file but not change it."
+   }
+  ],
+  "next": [
+   {
+    "label": "The chmod manual page (man7.org)",
+    "url": "https://man7.org/linux/man-pages/man1/chmod.1.html"
+   },
+   {
+    "label": "OverTheWire: Bandit (free, real SSH wargame)",
+    "url": "https://overthewire.org/wargames/bandit/"
+   }
+  ]
+ },
+ {
   "id": "hashing",
   "kind": "hashing",
   "category": "Cryptography",

@@ -24,6 +24,7 @@ const OSI_ART = [0, 1, 2, 3, 4, 5, 6].map(k => `<rect class="cosi" x="74" y="${1
 // d: devices [kind, x, y, scale], g: glyphs, l: links [x1, y1, x2, y2, air?], t: tags, p: packet paths, tone: packet colour
 const SCENE = {
   hashing: { d: [["laptop", 40, 52, 0.5]], g: [["key", 160, 50, 1.4]], l: [[60, 52, 140, 50]], t: [["a1f3…9c", 100, 26], ["sha256", 100, 80]], p: ["M40 52L160 50"] },
+  permissions: { d: [["server", 100, 46, 0.62]], t: [["-rw-r-----", 100, 16], ["alice ✓  dave ✗", 100, 84]] },
   "network-builder": { d: [["switch", 100, 30, 0.6], ["pc", 40, 72, 0.38], ["pc", 160, 72, 0.38], ["router", 100, 76, 0.4]], l: [[88, 36, 48, 62], [112, 36, 152, 62]], raw: `<line x1="86" y1="37" x2="46" y2="63" stroke="var(--seg0)" stroke-width="3"/><line x1="114" y1="37" x2="154" y2="63" stroke="var(--seg1)" stroke-width="3"/>` },
   vlans: { d: [["switch", 100, 24, 0.75], ["pc", 36, 66, 0.42], ["pc", 100, 70, 0.42], ["pc", 164, 66, 0.42]], l: [[84, 30, 46, 56], [100, 32, 100, 58], [116, 30, 154, 56]], t: [["VLAN 10", 36, 94], ["20", 100, 96], ["30", 164, 94]] },
   "telnet-ssh": { d: [["laptop", 36, 50, 0.5], ["server", 166, 50, 0.56], ["attacker", 100, 20, 0.0001]], g: [["eye", 100, 24, 0.9, "bad"]], l: [[52, 50, 150, 50]], t: [["admin / ••••", 100, 78, "bad"]], p: ["M36 50L166 50"], tone: "bad" },
@@ -203,7 +204,7 @@ function missionView(id) {
     $("mission-root").innerHTML = `<div class="empty">Couldn't load the mission code (js/missions/ui.js). If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`;
   });
 }
-const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring", "wiretap", "vlan", "hashing", "netbuilder"];  // labs with their own module in static/js/labs/<kind>.js
+const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring", "wiretap", "vlan", "hashing", "netbuilder", "perms"];  // labs with their own module in static/js/labs/<kind>.js
 function moduleLab(l) {
   main.innerHTML = `<div class="view" id="lab-root"><div class="empty">Loading lab…</div></div>`;
   import(`./js/labs/${l.kind}.js`).then(mod => {

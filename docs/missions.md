@@ -28,7 +28,7 @@ These are investigations of logs and timelines rather than packet journeys. They
 |---|---|---|
 | 7 | **The 3am logins** ✅ | SSH brute force in `auth.log`: failed vs accepted logins, source IPs, containment (session, account, key-only SSH) vs just blocking the IP. Introduced the log viewer: `scenario.log` (lines + findings) searched with `engine.searchLog` |
 | 8 | **Which email was it?** | Phishing triage: headers, SPF/DKIM/DMARC results, the link that matters (upgrades Header Inspector) |
-| 9 | **Who can read this file?** | Linux permissions and ownership (`rwx`, `chmod`, groups); the over-shared secret |
+| 9 | **Who can read this file?** ✅ (built as a lab) | Linux permissions and ownership (`rwx`, `chmod`, groups); the over-shared secret |
 | 10 | **The night the files changed** | Ransomware first response: timeline, patient zero, isolate vs shut down |
 
 After mission 7 comes **PATCH//AGENCY** (`docs/agency-pilot.md`): a whole SOC shift of alerts built from the same log search, evidence check and rules.
@@ -54,6 +54,7 @@ Any diagram of a network should come from `static/js/net/model.js` and `static/j
 | **Linux terminal basics** ✅ | `terminal.js` | `pwd`, `whoami`, `ls -a/-l`, `cd`, `cat`, `grep`, `find`, `chmod`, `mkdir`, `touch`, `rm`, pipes into `head`, `tail`, `wc`, `sort`, `uniq`, `cut`, and running scripts over a simulated file system; 11 objectives |
 | **Ports and protocols** ✅ | `ports.js` | 24 flip cards for the Network+ port list, insecure-to-secure pairs, and a 12-question drill (port, protocol, TCP/UDP, secure swap) |
 | **Subnetting trainer** ✅ | `subnet.js` | Live binary view of the network/host split, mask, network, broadcast, host range and block size; typed practice with worked answers |
+| **Who can read this file? Linux permissions** ✅ | `perms.js` | People, groups and files on a server; click rwx bits or type chmod/chown; every person's read/change/run worked out live as the kernel does (one class applies, x on every folder, root's rules), cross-checked against a real kernel, GNU chmod and ls |
 | **Hashing: fingerprints, MD5, SHA-1 and passwords** ✅ | `hashing.js` | Live MD5 (own RFC 1321 code), SHA-1 and SHA-256; the avalanche effect; checking a download against its SHA-256; why MD5 and SHA-1 are retired (collisions, Flame, SHAttered); fast vs slow hashing measured in the browser (PBKDF2, OWASP's 600,000 rounds); a fictional leaked table unsalted then salted; storing passwords properly |
 | **Network builder** ✅ | `netbuilder.js` on `net/model.js` + `net/view.js` | Packet-Tracer-style sandbox: add, drag and cable PCs, switches and routers; set IPs, VLANs, trunks and router subinterfaces with forms or IOS; every broadcast domain in its own colour, live; who can reach whom and why not; four goals; saved in the browser |
 | **VLANs: one network, kept apart** ✅ | `vlan.js` | Three simulated Cisco 2960s (IOS commands, abbreviations, `?`, real error and log messages) and six Windows PCs: `show vlan brief`, create and name VLANs, access and voice ports (`mls qos trust cos`), why VLANs don't cross untrunked links (DTP), 802.1Q trunks, native VLAN mismatch. Covers the Packet Tracer "VLAN Configuration" activity and its fix |

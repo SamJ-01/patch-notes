@@ -519,7 +519,7 @@ class ContentIntegrity(unittest.TestCase):
 
     def test_lab_answers_are_in_the_evidence(self):
         for lab in self.labs.values():
-            if lab.get("kind") in ("osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring", "wiretap", "vlan", "hashing", "netbuilder"):
+            if lab.get("kind") in ("osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring", "wiretap", "vlan", "hashing", "netbuilder", "perms"):
                 continue  # these have their own tests in tests/labs.test.mjs
             if lab.get("kind") == "cvss":
                 for sc in lab["scenarios"]:
