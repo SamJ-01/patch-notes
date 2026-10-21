@@ -55,7 +55,7 @@ const freshSwitch = () => ({ vlans: { 1: "default" }, ports: Object.fromEntries(
 // Special children: $vlan (one VLAN id), $vlans (a list), $word, $port (one or two words), $rest (anything).
 const N = (help, kids = {}, end = true) => ({ help, kids, end });
 const SHOW = (priv) => N("Show running system information", {
-  interfaces: N("Interface status and configuration", { trunk: N("Show interface trunk information"), $port: N("Interface name", { switchport: N("Show interface switchport information") }, false) }, false),
+  interfaces: N("Interface status and configuration", { trunk: N("Show interface trunk information"), $port: N("Interface name", { switchport: N("Show interface switchport information") }) }),
   ...(priv ? { "running-config": N("Current operating configuration") } : {}),
   vlan: N("VTP VLAN status", { brief: N("VTP all VLAN status in brief") }),
 }, false);
@@ -271,8 +271,8 @@ export function createNet(lab) {
     const S = sw(s), words = line.trim().split(/\s+/).filter(Boolean);
     if (!words.length) return { out: "" };
     if (words.at(-1).endsWith("?")) {
-      const last = words.at(-1).slice(0, -1), before = last ? words.slice(0, -1) : words.slice(0, -1);
-      const opts = options(S.mode, before).filter(o => !last || o.word.startsWith(last.toLowerCase()));
+      const last = words.at(-1).slice(0, -1);  // "sh?" lists words starting "sh"; "show ?" lists what follows show
+      const opts = options(S.mode, words.slice(0, -1)).filter(o => !last || o.word.startsWith(last.toLowerCase()));
       return { out: opts.length ? opts.map(o => `  ${pad(o.word, 17)}${o.help}`).join("\n") : "% Unrecognized command" };
     }
     let r = parse(S.mode, words);
@@ -317,6 +317,7 @@ export function createNet(lab) {
       case "show vlan brief": return { out: showVlanBrief(s) };
       case "show vlan": return { out: "[Simulator: the full \"show vlan\" table isn't modelled. Use show vlan brief: it shows each VLAN's name, status and ports.]" };
       case "show interfaces trunk": return { out: showTrunk(s) };
+      case "show interfaces": case "show interfaces $port": return { out: "[Simulator: interface counters aren't modelled. Try show interfaces trunk, or show interfaces fa0/11 switchport.]" };
       case "show interfaces $port switchport": return { out: showSwitchport(s, args[0]) };
       case "show running-config": return { out: showRun(s) };
       case "hostname $word": return { out: "[Simulator: the switches keep their names (S1, S2, S3) in this lab.]" };
@@ -410,7 +411,8 @@ export function createNet(lab) {
     const head = `\nPinging ${ip} with 32 bytes of data:`;
     const stats = (rx, rtt) => `\nPing statistics for ${ip}:\n    Packets: Sent = 4, Received = ${rx}, Lost = ${4 - rx} (${(4 - rx) * 25}% loss),${rtt ? "\nApproximate round trip times in milli-seconds:\n    Minimum = 0ms, Maximum = 0ms, Average = 0ms" : ""}`;
     let out, ok = false;
-    if (!sameSubnet(pc.ip, ip, pc.mask)) out = `${head}\nPING: transmit failed. General failure.\nPING: transmit failed. General failure.\nPING: transmit failed. General failure.\nPING: transmit failed. General failure.\n${stats(0)}`;
+    // A shut switch port looks like an unplugged cable to Windows, as does sending off-subnet with no gateway.
+    if (sw(pc.sw).ports[pc.port].shutdown || !sameSubnet(pc.ip, ip, pc.mask)) out = `${head}\nPING: transmit failed. General failure.\nPING: transmit failed. General failure.\nPING: transmit failed. General failure.\nPING: transmit failed. General failure.\n${stats(0)}`;
     else if (to === id || (to && reachable(id, to))) { ok = true; out = `${head}\n${`Reply from ${ip}: bytes=32 time<1ms TTL=128\n`.repeat(4)}${stats(4, true)}`; }
     else out = `${head}\n${`Reply from ${pc.ip}: Destination host unreachable.\n`.repeat(4)}${stats(4)}`;  // Windows counts these as "received"
     state.pings.push({ from: id, to: to || ip, ok, vlan: pcVlan(id) });

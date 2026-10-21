@@ -118,8 +118,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     root.querySelectorAll(".rj45-pin").forEach((p, i) => p.classList.toggle("wrong", !res.perPin[i]));
     if (res.correct) {
       markPart(standard === "T568B" ? "b" : "a");
-      const other = matchesStandard(slots);
-      say(`<b class="ok">Correct — that's a valid ${standard} end.</b> ${done.has("a") && done.has("b") ? "You've now wired both standards. A cable with the same standard on both ends is straight-through; mixing them makes a crossover." : `Now try the other standard (${standard === "T568B" ? "T568A" : "T568B"}).`}`, "ok");
+      say(`<b class="ok">Correct: that's a valid ${standard} end.</b> ${done.has("a") && done.has("b") ? "You've now wired both standards. A cable with the same standard on both ends is straight-through; mixing them makes a crossover." : `Now try the other standard (${standard === "T568B" ? "T568A" : "T568B"}).`}`, "ok");
     } else {
       const m = matchesStandard(slots);
       say(m ? `<b class="no">Not ${standard}.</b> This order is actually a valid <b>${m}</b> end. Switch the standard above, or rearrange.` : `<b class="no">Not quite.</b> The pins marked red don't match ${standard}. Use the reference table below.`, "no");

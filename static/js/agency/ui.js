@@ -26,7 +26,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     </div>
     <div class="ag-grid">
       <nav class="panel ag-queue" aria-labelledby="ag-q-h"><h2 id="ag-q-h">Alert queue</h2><ol id="ag-queue"></ol></nav>
-      <section class="panel ag-alert" id="ag-alert" aria-live="off"></section>
+      <section class="panel ag-alert" id="ag-alert"></section>
     </div>
     <section class="panel ag-inbox"><h2>Teams and replies</h2><ol class="transcript" id="ag-inbox" aria-live="polite"></ol></section>
     <section class="panel ag-hand" id="ag-hand" hidden></section>

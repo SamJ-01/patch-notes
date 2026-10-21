@@ -62,7 +62,6 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   }
   function markPart(k) { if (done.has(k)) return; done.add(k); onPart(k); drawParts(); if (done.has("telnet") && done.has("ssh")) markPart("compare"); if (["telnet", "ssh", "compare"].every(x => done.has(x))) onComplete(); }
 
-  const wait = ms => new Promise(r => setTimeout(r, reduced ? 0 : ms));
   function packet(label, tone, fromClient) {
     return new Promise(resolve => {
       if (reduced) return resolve();

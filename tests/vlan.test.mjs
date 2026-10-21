@@ -183,6 +183,9 @@ test("PCs: ipconfig and Windows errors", () => {
   assert.match(on(net, "PC1", "dir").out, /^'dir' is not recognized as an internal or external command,/);
   assert.match(on(net, "PC1", "ping 10.10.10.999").out, /could not find host/);
   assert.match(on(net, "PC1", "ping 10.10.10.200").out, /Destination host unreachable/, "nobody has that address");
+  on(net, "S2", "en", "conf t", "int fa0/11", "shutdown", "end");
+  assert.match(on(net, "PC1", "ping 10.10.10.14").out, /General failure/, "a shut port looks like an unplugged cable");
+  assert.doesNotMatch(on(net, "S2", "show interfaces fa0/11").out, /Incomplete/, "a valid IOS command, even if not modelled");
 });
 
 test("? lists what can come next; Tab completes a unique keyword", () => {

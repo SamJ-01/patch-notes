@@ -75,6 +75,45 @@ class NvdParsing(unittest.TestCase):
         self.assertEqual(parsed["published"], "2026-10-01")
 
 
+class Fetching(unittest.TestCase):
+    """get_json survives a truncated body and reads gzip, without real network or real waits."""
+    class Resp:
+        def __init__(self, body, encoding=""):
+            self.body, self.headers = body, {"Content-Encoding": encoding}
+        def read(self):
+            if isinstance(self.body, Exception):
+                raise self.body
+            return self.body
+        def __enter__(self):
+            return self
+        def __exit__(self, *a):
+            return False
+
+    def fetch(self, responses):
+        import http.client
+        from unittest import mock
+        seen = []
+        def urlopen(req, timeout):
+            seen.append(req.get_header("Accept-encoding"))
+            r = responses.pop(0)
+            return self.Resp(http.client.IncompleteRead(b"{", 10) if r == "cut" else r[0], r[1])
+        with mock.patch("urllib.request.urlopen", urlopen), mock.patch("time.sleep") as sleep, mock.patch("sys.stderr"):
+            return cve_watch.get_json("https://example.test/"), seen, sleep
+
+    def test_retries_a_cut_off_body_then_reads_gzip(self):
+        import gzip
+        data, seen, sleep = self.fetch(["cut", "cut", (gzip.compress(b'{"ok": 1}'), "gzip")])
+        self.assertEqual(data, {"ok": 1})
+        self.assertEqual(seen, ["gzip"] * 3, "asks for compression every time")
+        self.assertEqual([c.args[0] for c in sleep.call_args_list], [10, 20])
+
+    def test_plain_json_still_works_and_gives_up_eventually(self):
+        self.assertEqual(self.fetch([(b'{"a": [1]}', "")])[0], {"a": [1]})
+        import http.client
+        with self.assertRaises(http.client.IncompleteRead):
+            self.fetch(["cut"] * 5)
+
+
 class Feeds(unittest.TestCase):
     RSS = b"""<?xml version="1.0"?><rss version="2.0"><channel>
       <item><title>Big &amp; bad &lt;b&gt;bug&lt;/b&gt;</title><link>https://example.com/a</link>
@@ -379,7 +418,6 @@ class ContentIntegrity(unittest.TestCase):
                 self.assertIn(x["lesson"], self.lessons, x["id"])
 
     def test_certification_maps_are_complete_and_honest(self):
-        import re
         labs = {l["id"] for l in self.labs.values()}
         missions = {json.loads(f.read_text())["id"] for f in (ROOT / "content" / "missions").glob("*.json")}
         for f in (ROOT / "content" / "certs").glob("*.json"):

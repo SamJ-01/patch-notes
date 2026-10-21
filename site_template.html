@@ -1707,7 +1707,6 @@ VIEWS.today = () => {
   news.forEach(n => n.topics.forEach(t => counts[t] = (counts[t] || 0) + 1));
   const trend = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   const top = trend[0];
-  const lesson = DATA.lessons[dayNumber() % DATA.lessons.length];
   const featured = news.filter(n => n.topics.length);
 
   main.innerHTML = `<div class="view">
@@ -2238,7 +2237,6 @@ function pathView(id) {
 }
 
 /* CERTIFICATIONS: exam objectives mapped onto existing lessons, labs and missions */
-const CERT_KIND = { lesson: "Lesson", lab: "Lab", mission: "Mission", tool: "Tool" };
 const COVERAGE = { strong: ["Hands-on practice here", "good"], partial: ["Partly covered", "sun"], none: ["Not covered yet", "muted"] };
 function certActivity(a) {
   if (a.type === "lesson") { const l = LESSON[a.id]; return l && { label: l.title, href: "#lesson-" + a.id, done: !!P.done[a.id] }; }

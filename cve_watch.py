@@ -14,6 +14,8 @@ Run on its own for a terminal summary:  python3 cve_watch.py --days 7 --notify
 
 import argparse
 import datetime as dt
+import gzip
+import http.client
 import json
 import os
 import sqlite3
@@ -36,17 +38,24 @@ USER_AGENT = "cve-watch/1.0 (personal vulnerability tracker)"
 
 # --------------------------------------------------------------------------- HTTP
 
-def get_json(url, headers=None, retries=3):
-    """GET a URL and parse JSON, retrying on rate limits / transient errors."""
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, **(headers or {})})
+def get_json(url, headers=None, retries=5):
+    """GET a URL and parse JSON, retrying on rate limits / transient errors.
+
+    Asks for gzip: NVD pages are several MB of JSON, and a body that big is sometimes cut off mid-transfer
+    (http.client.IncompleteRead). Compressed, it is about a tenth of the size. Waits grow 10, 20, 40, 60 s.
+    """
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept-Encoding": "gzip", **(headers or {})})
     for attempt in range(1, retries + 1):
         try:
             with urllib.request.urlopen(req, timeout=60) as resp:
-                return json.load(resp)
-        except Exception as exc:  # network errors, 403/429 rate limits, 5xx
+                body = resp.read()
+                if resp.headers.get("Content-Encoding", "").lower() == "gzip":
+                    body = gzip.decompress(body)
+                return json.loads(body)
+        except (OSError, ValueError, EOFError, http.client.HTTPException) as exc:  # network, 403/429/5xx, truncated or bad JSON
             if attempt == retries:
                 raise
-            wait = 6 * attempt
+            wait = min(60, 10 * 2 ** (attempt - 1))
             print(f"  ! {exc} - retrying in {wait}s", file=sys.stderr)
             time.sleep(wait)
 
