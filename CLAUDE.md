@@ -32,5 +32,5 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 ## Status (Oct 2026)
 - Missions: DHCP, DNS, SSH brute force ("The 3am logins": the first with a log viewer, `scenario.log` + `engine.searchLog`).
 - Exam prep: Network+ N10-009 (25 objectives, 60 questions, "Am I ready?" panel), Security+ map (no questions yet).
-- Next: PATCH//AGENCY pilot design doc (simulated SOC shift reusing the log viewer; SOC playable, other departments automated),
+- Next: PATCH//AGENCY pilot (design for review: `docs/agency-pilot.md`; open decisions in its section 9),
   then switching/VLANs lab, Security+ question bank. No accounts/backend until real users need cross-device saves.
