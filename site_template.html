@@ -628,6 +628,39 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .rc { border-top: 1px dashed var(--line); padding-top: 10px; margin-top: 6px; display: grid; gap: 8px; }
 .debrief { border-color: rgba(var(--good-rgb), 0.45); }
 @media (max-width: 900px) { .mission-grid { grid-template-columns: 1fr; } .bubble { max-width: 60%; font-size: 0.7rem; } }
+/* PATCH//AGENCY: a simulated SOC shift (static/js/agency/ui.js) */
+.agency { display: grid; gap: 16px; }
+.ag-brief p { margin: 6px 0 0; }
+.ag-bar { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; position: sticky; top: 8px; z-index: 5; padding: 10px 14px; }
+.ag-clock b { font-size: 1.15rem; color: var(--sun); }
+.ag-bar .btn { margin-left: auto; }
+.ag-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr); gap: 16px; align-items: start; }
+.ag-queue ol { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; }
+.ag-qitem { width: 100%; text-align: left; display: grid; gap: 4px; cursor: pointer; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; font: inherit; }
+.ag-qitem:hover { border-color: var(--brand); }
+.ag-qitem[aria-current="true"] { border-color: var(--brand); background: var(--brand-soft); }
+.ag-qitem.closed .ag-qtitle { color: var(--muted); }
+.ag-qtitle { font-weight: 600; font-size: 0.92rem; }
+.ag-qmeta { font-size: 0.78rem; color: var(--muted); }
+.ag-qmeta .tag { padding: 2px 5px; font-size: 0.66rem; }
+.tag.sev-high, .tag.sev-critical { color: var(--bad); border-color: rgba(var(--bad-rgb), 0.6); }
+.ag-alert { display: grid; gap: 12px; min-width: 0; }
+.ag-alert h2:focus, .agency h2:focus { outline: none; }
+.ag-detect { margin: 0; font-family: var(--font-mono); font-size: 0.86rem; overflow-wrap: anywhere; }
+.ag-ask, .ag-close { border-top: 1px dashed var(--line); padding-top: 10px; display: grid; gap: 8px; }
+.ag-askform, .ag-close form { display: grid; gap: 10px; }
+.ag-askform label, .ag-close label, .ag-hand label { display: grid; gap: 4px; font-size: 0.88rem; min-width: 0; }
+.ag-askform select, .ag-close select, .ag-hand select, .ag-hand textarea { width: 100%; max-width: 100%; font: inherit; font-size: 0.88rem; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 8px; }
+.ag-hand form { display: grid; gap: 14px; }
+.ag-hset { border-top: 1px dashed var(--line); padding-top: 10px; }
+.ag-checks { margin: 8px 0; padding-left: 0; list-style: none; display: grid; gap: 4px; }
+.ag-checks b.ok, .ag-dalert b.ok { color: var(--good); } .ag-checks b.no, .ag-dalert b.no { color: var(--bad); }
+.ag-dalert { margin-top: 8px; }
+.ag-dalert p { margin: 6px 0; font-size: 0.9rem; }
+.ag-notes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ag-notes > div { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; }
+.ag-notes p { margin: 6px 0 0; font-size: 0.88rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 900px) { .ag-grid, .ag-notes { grid-template-columns: 1fr; } .ag-bar { top: 0; } }
 
 /* ---------- Illustrated cards ---------- */
 .art-card, .card-art { --cat: var(--brand); }
@@ -1423,7 +1456,7 @@ const mixOptions = (q, rand = Math.random) => { const order = shuffle(q.options.
 /* ---------- progress & XP (stored only in this browser) ---------- */
 const PKEY = "patch-notes-progress";
 const RANKS = [[0, "guest"], [100, "intern"], [300, "analyst"], [700, "hunter"], [1500, "responder"], [3000, "root"]];
-const FRESH = () => ({ xp: 0, done: {}, daily: null, streak: 0, lastDaily: null, best: {}, flags: {}, labs: {}, labSteps: {}, paths: {}, terms: {}, read: {}, badges: {}, stack: null, log: [], days: {}, missions: {}, exam: {}, mocks: {} });
+const FRESH = () => ({ xp: 0, done: {}, daily: null, streak: 0, lastDaily: null, best: {}, flags: {}, labs: {}, labSteps: {}, paths: {}, terms: {}, read: {}, badges: {}, stack: null, log: [], days: {}, missions: {}, exam: {}, mocks: {}, agency: {} });
 // Progress is untrusted input: it lives in the browser (anyone can edit it) and can be restored from a file.
 // Keep only known fields of the right type, and coerce the XP history so nothing in it can become HTML.
 function cleanProgress(src) {
@@ -1442,6 +1475,9 @@ function cleanProgress(src) {
   // Mock exam scores per cert: keep only plain numbers and a short date, the last 20 of each.
   out.mocks = Object.fromEntries(Object.entries(out.mocks).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && Array.isArray(v))
     .map(([k, v]) => [k, v.filter(x => x && typeof x === "object").slice(-20).map(x => ({ d: String(x.d ?? "").slice(0, 10), score: Math.max(0, Number(x.score) || 0), total: Math.max(0, Number(x.total) || 0) }))]));
+  // Agency shifts: when one was first completed and the best number of debrief checks passed.
+  out.agency = Object.fromEntries(Object.entries(out.agency).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && v && typeof v === "object" && !Array.isArray(v))
+    .map(([k, v]) => [k, { d: String(v.d ?? "").slice(0, 10), best: Math.min(20, Math.max(0, Math.round(Number(v.best) || 0))), total: Math.min(20, Math.max(0, Math.round(Number(v.total) || 0))) }]));
   return out;
 }
 const restoreProgress = file => cleanProgress(file && file.app === "patch-notes" ? file.progress : null);
@@ -1514,6 +1550,7 @@ function pathSteps(p) {
     if (st.type === "lesson") return { ...st, label: LESSON[st.id]?.title || st.id, href: "#lesson-" + st.id, done: !!P.done[st.id], kind: "lesson" };
     if (st.type === "lab") { const l = DATA.labs.find(x => x.id === st.id); return { ...st, label: l ? l.title : st.id, href: "#lab-" + st.id, done: !!P.labs[st.id], kind: "lab" }; }
     if (st.type === "mission") { const m = MISSION(st.id); return { ...st, label: m ? `${m.title} (${m.modes[st.mode]?.label || st.mode} mode)` : st.id, href: "#mission-" + st.id, done: !!(P.missions && P.missions[st.id] && P.missions[st.id][st.mode]), kind: "mission" }; }
+    if (st.type === "agency") { const sh = SHIFT(st.id); return { ...st, label: sh ? `PATCH//AGENCY: ${sh.title}` : st.id, href: "#agency-" + st.id, done: !!(P.agency || {})[st.id], kind: "agency" }; }
     if (st.type === "game") return { ...st, label: `Score ${st.min}+ in Phish or Legit`, href: "#play", done: (P.best.phish || 0) >= st.min, kind: "game" };
     if (st.type === "flags") return { ...st, label: `Capture ${st.min} hidden flag${st.min > 1 ? "s" : ""}`, href: "#play", done: count(P.flags) >= st.min, kind: "ctf", flags: true };
     return { ...st, label: st.type, href: "#learn", done: false, kind: st.type };
@@ -2600,6 +2637,7 @@ const SCENE = {
   osint: { d: [["cloud", 52, 46, 0.6]], g: [["search", 140, 44, 1.8]], l: [[70, 46, 120, 44, 1]], t: [["@handle", 100, 18]] },
 };
 SCENE["subnet-calc"] = SCENE.subnetting;
+SCENE.agency = SCENE.soc;
 function sceneSvg(sc) {
   const pk = (sc.p || []).map((d, i) => `<circle class="cpkt ${sc.tone || ""}" r="4" opacity="0"><animateMotion begin="indefinite" dur="1.5s" path="${d}" fill="freeze"/><animate attributeName="opacity" begin="indefinite" dur="1.5s" values="0;1;1;0" keyTimes="0;0.1;0.85;1" fill="freeze"/></circle>`).join("");
   return `<svg viewBox="-14 -9 228 106" aria-hidden="true" class="hw-live">
@@ -2635,6 +2673,7 @@ VIEWS.missions = () => {
     ...DATA.missions.map(m => ({ cat: m.category || "Networking", html: missionCard(m) })),
     ...DATA.labs.map(l => ({ cat: l.category || "Security operations", html: labCard(l) })),
     { cat: "Networking", html: toolCard() },
+    ...(DATA.agency || []).map(sh => ({ cat: "Security operations", html: shiftCard(sh) })),
   ];
   const cats = [...new Set([...CATEGORY_ORDER, ...items.map(i => i.cat)])].filter(c => items.some(i => i.cat === c));
   main.innerHTML = `<div class="view">
@@ -2675,6 +2714,37 @@ function missionCard(m) {
     <span class="lmeta"><span>${m.minutes} min</span>${all.map(k => `<span>${done.includes(k) ? "✓ " : ""}${esc(m.modes[k].label)}</span>`).join("")}</span></a>`;
 }
 const MISSION = id => DATA.missions.find(x => x.id === id);
+const SHIFT = id => (DATA.agency || []).find(x => x.id === id);
+function shiftCard(sh) {
+  const rec = (P.agency || {})[sh.id];
+  return `<a class="lcard mission-card art-card" href="#agency-${esc(sh.id)}">${cardArt("agency")}${rec ? '<span class="done">DONE</span>' : ""}
+    <span class="eyebrow">PATCH//AGENCY · Pilot</span><h3>${esc(sh.title)}</h3><p>${esc(sh.summary)}</p>
+    <span class="lmeta"><span>${sh.minutes} min</span><span>${rec ? `Best: ${rec.best} of ${rec.total} checks` : `+${sh.xp} XP`}</span></span></a>`;
+}
+// A PATCH//AGENCY shift. Leaving mid-shift restarts it, so route() asks first (agencyShift.inProgress).
+let agencyShift = null;
+function agencyView(id) {
+  const sh = SHIFT(id); if (!sh) return VIEWS.missions();
+  main.innerHTML = `<div class="view" id="agency-root"><div class="empty">Loading the shift…</div></div>`;
+  import("./js/agency/ui.js").then(ui => {
+    if (parseRoute().path !== "missions/agency/" + id) return;
+    agencyShift = ui.mount($("agency-root"), sh, {
+      done: !!(P.agency || {})[id],
+      onAgain: () => agencyView(id),
+      onComplete: rep => {
+        P.agency = P.agency || {};
+        const prev = P.agency[id], first = !prev;
+        P.agency[id] = { d: prev?.d || todayStr(), best: Math.max(prev?.best || 0, rep.passed), total: rep.checks.length };
+        if (first) award(sh.xp, `PATCH//AGENCY: ${sh.title}`); else progressChanged();
+        celebrate("Shift complete!", first ? `${sh.title} · +${sh.xp} XP` : `${rep.passed} of ${rep.checks.length} checks passed`);
+      },
+    });
+  }).catch(() => {
+    $("agency-root").innerHTML = `<div class="empty">Couldn't load the shift code (js/agency/ui.js). If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`;
+  });
+}
+const LEAVE_SHIFT = "Leave this shift? It isn't saved part-way, so you'll start again next time.";
+addEventListener("beforeunload", e => { if (agencyShift?.inProgress && main.contains($("agency-root"))) e.preventDefault(); });
 function missionView(id) {
   const m = MISSION(id); if (!m) return VIEWS.missions();
   main.innerHTML = `<div class="view" id="mission-root"><div class="empty">Loading mission…</div></div>`;
@@ -3083,6 +3153,7 @@ function searchAll(q) {
   const hit = (str) => str.toLowerCase().includes(q);
   SECTIONS.forEach(([id, label]) => { if (hit(id) || hit(label)) out.push({ k: "section", t: label, h: "#" + id, go: () => go(id) }); });
   DATA.missions.forEach(m => { if (hit(m.title) || hit(m.topic) || hit(m.summary)) out.push({ k: "mission", t: m.title, h: m.minutes + " min", go: () => go("mission-" + m.id) }); });
+  (DATA.agency || []).forEach(sh => { if (hit(sh.title) || hit("agency soc shift") || hit(sh.summary)) out.push({ k: "mission", t: "PATCH//AGENCY: " + sh.title, h: sh.minutes + " min", go: () => go("agency-" + sh.id) }); });
   DATA.labs.forEach(l => { if (hit(l.title) || hit(l.skill)) out.push({ k: "lab", t: l.title, h: l.minutes + " min", go: () => go("lab-" + l.id) }); });
   DATA.paths.forEach(p => { if (hit(p.title) || hit(p.id)) out.push({ k: "path", t: p.title, h: p.steps.length + " steps", go: () => go("path-" + p.id) }); });
   DATA.lessons.forEach(l => { if (hit(l.title) || hit(l.id) || hit(l.hook)) out.push({ k: "lesson", t: l.title, h: l.minutes + " min", go: () => go("lesson-" + l.id) }); });
@@ -3218,6 +3289,7 @@ function parseRoute() {
   if (h.startsWith("path-")) return { tab: "learn", path: "learn/paths/" + h.slice(5), draw: () => pathView(h.slice(5)) };
   if (h.startsWith("cert-")) return { tab: "learn", path: "learn/certs/" + h.slice(5), draw: () => certView(h.slice(5)) };
   if (h.startsWith("lab-")) return { tab: "missions", path: "missions/" + h.slice(4), draw: () => labView(h.slice(4)) };
+  if (h.startsWith("agency-")) return { tab: "missions", path: "missions/agency/" + h.slice(7), draw: () => agencyView(h.slice(7)) };
   if (h.startsWith("mission-")) return { tab: "missions", path: "missions/" + h.slice(8), draw: () => missionView(h.slice(8)) };
   if (h === "labs") return { tab: "missions", path: "missions", draw: VIEWS.missions };
   if (h === "subnet-calc" || h.startsWith("subnet-calc/")) return { tab: "missions", path: "tools/subnet-calc", draw: () => calcView(h) };
@@ -3226,7 +3298,12 @@ function parseRoute() {
   const tab = VIEWS[h] ? h : "today";
   return { tab, path: tab, draw: VIEWS[tab] };
 }
+let lastHash = location.hash;
 function route() {
+  if (agencyShift?.inProgress && $("agency-root") && location.hash !== lastHash) {
+    if (!confirm(LEAVE_SHIFT)) { history.replaceState(null, "", lastHash || "#today"); return; }
+  }
+  agencyShift = null; lastHash = location.hash;
   const r = parseRoute();
   document.querySelectorAll("nav.tabs a").forEach(a => a.dataset.tab === r.tab ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   closePop();

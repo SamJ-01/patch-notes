@@ -108,6 +108,9 @@ test("progress: restored or stored data is cleaned before use", () => {
   assert.equal(m.mocks["network-plus"][0].score, 0, "a non-number score becomes 0, never markup");
   assert.equal(m.mocks["network-plus"][0].d.length, 10, "dates are cut short");
   assert.equal(Object.keys(cleanProgress({ xp: 1 }).mocks).length, 0, "older saves without mocks still load");
+  const ag = cleanProgress({ xp: 1, agency: { "shift-01": { d: evil, best: 999, total: "6" }, [evil]: { best: 1 }, "shift-02": "nope", "shift-03": [1] } });
+  assert.deepEqual(JSON.parse(JSON.stringify(ag.agency)), { "shift-01": { d: evil.slice(0, 10), best: 20, total: 6 } }, "agency results are clamped numbers and a short date");
+  assert.equal(Object.keys(cleanProgress({ xp: 1 }).agency).length, 0, "older saves without agency still load");
   assert.throws(() => cleanProgress({ xp: "lots" }));
   assert.throws(() => cleanProgress([1, 2]));
   assert.throws(() => restoreProgress({ progress: { xp: 1 } }), "files must say they come from patch-notes");

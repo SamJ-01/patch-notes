@@ -8,7 +8,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   function or CSS class you need, then read that range. Views are `VIEWS.x` / `xxxView()` functions; routes in `parseRoute()`.
 - `static/js/`: ES modules loaded on demand. `missions/engine.js` (pure rules, no DOM), `missions/ui.js`, `missions/layout.js`,
   `exam.js` (cert practice + `readiness()`), `labs/*.js`, `hw.js` (device drawings), `flow.js`, `concept.js`.
-- `content/`: all content as JSON. Missions in `content/missions/*.json` (picked up automatically), certs in `content/certs/`,
+- `content/`: all content as JSON. Missions in `content/missions/*.json` and Agency shifts in `content/agency/*.json` (picked up automatically), certs in `content/certs/`,
   learning paths in `paths.json`. Missions build order and rules: `docs/missions.md`. Roadmap/audit: `docs/horizon-1-plan.md`.
 - `build.py` → `site/` (gitignored). `news.py`, `cve_watch.py`, `explain.py`: daily data pipeline (Python stdlib only).
 
@@ -32,5 +32,6 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 ## Status (Oct 2026)
 - Missions: DHCP, DNS, SSH brute force ("The 3am logins": the first with a log viewer, `scenario.log` + `engine.searchLog`).
 - Exam prep: Network+ N10-009 (25 objectives, 60 questions, "Am I ready?" panel), Security+ map (no questions yet).
-- Next: PATCH//AGENCY pilot (design for review: `docs/agency-pilot.md`; open decisions in its section 9),
-  then switching/VLANs lab, Security+ question bank. No accounts/backend until real users need cross-device saves.
+- PATCH//AGENCY pilot: one SOC shift (`content/agency/shift-01.json`, `static/js/agency/`, route `#agency-shift-01`,
+  tests `tests/agency.test.mjs`). Design and decisions: `docs/agency-pilot.md`. Logs are searched with `engine.searchLines`.
+- Next: learner feedback on the shift, then switching/VLANs lab, Security+ question bank. No accounts/backend until real users need cross-device saves.

@@ -65,6 +65,10 @@
     "mode": "challenge"
    },
    {
+    "type": "agency",
+    "id": "shift-01"
+   },
+   {
     "type": "lesson",
     "id": "phishing"
    },

@@ -31,6 +31,8 @@ These are investigations of logs and timelines rather than packet journeys. They
 | 9 | **Who can read this file?** | Linux permissions and ownership (`rwx`, `chmod`, groups); the over-shared secret |
 | 10 | **The night the files changed** | Ransomware first response: timeline, patient zero, isolate vs shut down |
 
+After mission 7 comes **PATCH//AGENCY** (`docs/agency-pilot.md`): a whole SOC shift of alerts built from the same log search, evidence check and rules.
+
 ## Rules for writing one
 
 1. Start from the root cause and its evidence, then design the wrong turns.

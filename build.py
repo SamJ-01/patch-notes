@@ -356,6 +356,7 @@ def main():
         "lessons": lessons,
         "labs": load("labs.json"),
         "missions": [json.loads(p.read_text()) for p in sorted((CONTENT / "missions").glob("*.json"))],
+        "agency": [json.loads(p.read_text()) for p in sorted((CONTENT / "agency").glob("*.json"))],
         "paths": load("paths.json"),
         "certs": load_certs(),
         "stack": load("stack.json"),

@@ -449,6 +449,9 @@ class ContentIntegrity(unittest.TestCase):
                 if step["type"] == "mission":
                     mission = json.loads((CONTENT / "missions" / f"{step['id']}.json").read_text())
                     self.assertIn(step["mode"], mission["modes"], p["id"])
+                if step["type"] == "agency":
+                    self.assertTrue((CONTENT / "agency" / f"{step['id']}.json").exists(), p["id"])
+                self.assertIn(step["type"], ("lesson", "lab", "mission", "agency", "game", "flags"), p["id"])
 
     def test_lab_answers_are_in_the_evidence(self):
         for lab in self.labs.values():

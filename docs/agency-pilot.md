@@ -1,10 +1,10 @@
 # PATCH//AGENCY: pilot design
 
-Status: draft for review (21 Oct 2026). Nothing here is built yet. Open decisions are at the end.
+Status: pilot built (21 Oct 2026). Decisions in section 9 were agreed on 21 Oct. Shift: `content/agency/shift-01.json`, route `#agency-shift-01`.
 
 ## 1. The idea in one paragraph
 
-PATCH//AGENCY is a simulated shift at a fictional managed security provider. The learner works the SOC desk: alerts arrive in a queue, they investigate each one with the log viewer they already know from "The 3am logins", decide what it is, ask other departments to act, and hand over at the end of the shift. Other departments (Service Desk, Network Operations, Identity, the client contact) are not playable in the pilot. They are automated: they answer requests from scripted rules, sometimes push back, and their actions change what the learner sees next. Missions teach one problem at a time; the Agency teaches the job: several problems at once, most of them noise, with other people involved.
+PATCH//AGENCY is a simulated shift at a fictional managed security provider, Lanternfield Security Operations, for a fictional client, Pellow & Finch Logistics. The learner works the SOC desk: alerts arrive in a queue, they investigate each one with the log viewer they already know from "The 3am logins", decide what it is, ask other departments to act, and hand over at the end of the shift. Other departments (Service Desk, Network Operations, Identity, the client contact) are not playable in the pilot. They are automated: they answer requests from scripted rules, sometimes push back, and their actions change what the learner sees next. Missions teach one problem at a time; the Agency teaches the job: several problems at once, most of them noise, with other people involved.
 
 ## 2. Why this, and why now
 
@@ -31,7 +31,7 @@ Out of scope for the pilot: playable non-SOC departments, randomised or generate
 1. **Briefing.** The shift lead (automated) introduces the client (a fictional company) and the queue. One screen, skippable.
 2. **The queue.** A list of alerts with source, time and the detection's own severity. Alerts can arrive part-way through (alert 5 appears after the learner has closed two alerts or spent 30 simulated minutes, whichever comes first).
 3. **Investigate.** Opening an alert shows its detail and the log sources it gives access to. The learner searches them with the existing log viewer. Findings are recorded per alert, but a finding in one alert's logs can also count as evidence for another (this is how alert 4 and 5 connect).
-4. **Decide.** For each alert: a verdict (true positive, benign true positive, false positive) and a severity. Where the verdict is a true positive, the evidence check from missions follows.
+4. **Decide.** Closing an alert records a verdict (malicious and needs action; malicious or suspicious but no harm done; legitimate activity), a severity, the evidence that supports it (ticked from a list, as in missions, with tempting wrong items) and any alerts it is connected to. Nothing is marked until the handover, as on a real shift; an alert can be reopened until then.
 5. **Act through departments.** Actions are requests, not buttons that fix things: "Ask Identity to disable j.patel", "Ask Network Ops to block 203.0.113.0/24 at the edge", "Ask the Service Desk to call the user". Each department replies after a set number of simulated minutes. Replies come from rules in the shift file: they can comply, ask for justification (pick the evidence you'd attach), or refuse with a reason ("We don't block a whole /24 without a client change ticket").
 6. **Handover.** At the end the learner completes a structured handover: per alert, status (closed, monitoring, escalated), one-line summary (chosen from options in the pilot, see 9.4) and what the next shift should watch. The debrief compares it with a model handover.
 
@@ -57,7 +57,7 @@ Follows the engine/exam pattern: pure rules, tested; the UI only renders events.
 
 ```
 content/agency/shift-01.json   the shift: client, alerts, log sources, departments, rules, model handover
-static/js/agency/shift.js      pure rules: start, open, search, verdict, request, tick, handover, debrief
+static/js/agency/shift.js      pure rules: start, search, ask, wait, close, reopen, handover, debrief
 static/js/agency/ui.js         queue, alert panel, department inbox, handover form (reuses log viewer UI)
 tests/agency.test.mjs          state transitions and content checks
 ```
@@ -94,7 +94,7 @@ tests/agency.test.mjs          state transitions and content checks
 }
 ```
 
-Department replies use the same "first matching rule wins" idea as mission tool outcomes (`matches(when, state)`), so there is one rule language across missions and shifts.
+As built, the engine also gained `judgeEvidence` (the evidence marking, shared by missions and shifts) and a `{ oneOf: [...] }` condition. Department replies use the same "first matching rule wins" idea as mission tool outcomes (`matches(when, state)`), so there is one rule language across missions and shifts.
 
 ### 6.3 Saved progress
 
@@ -127,15 +127,15 @@ Windows Event Log (4624/4625/4720 and friends) is the obvious next source for al
 
 ## 9. Open decisions
 
-1. **The agency's name and look.** "PATCH//AGENCY" as the section name; the in-story employer needs a fictional name. Proposal: name it in the build commit after a quick check that it isn't a real firm.
-2. **Mid-shift resume.** Pilot proposal: no. A shift is 20 to 25 minutes and state is small; leaving restarts it. Revisit if learners ask.
-3. **Where it lives.** Proposal: its own entry under Learn, after Missions, marked "Pilot". Recommended after completing "The 3am logins" but not locked behind it.
-4. **Free-text handover.** Typed summaries are better practice but can't be marked without a backend or AI. Pilot proposal: choose from written options, with an optional free-text box that is shown back in the debrief next to the model answer for self-comparison.
-5. **Department push-back tone.** Realistic friction teaches, but too much is frustrating. Proposal: at most one refusal per shift, and it always says what would change the answer.
+1. **Names. Decided:** "PATCH//AGENCY" is the section name. The employer is Lanternfield Security Operations and the client Pellow & Finch Logistics; a web search on 21 Oct found no real firms by those names ("Northbeam", also considered, is a real company and was dropped). Domains use `.example`.
+2. **Mid-shift resume. Decided:** no. Leaving restarts the shift, and the page asks first (in-page navigation and closing the tab). Only the result is saved (`P.agency`). Revisit if learners say the shift is too long.
+3. **Where it lives. Decided:** a card in Missions under Security operations, marked "Pilot", and a step in the SOC Analyst path straight after "The 3am logins". Not locked.
+4. **Handover. Decided:** per alert, a status and one of three written summaries (one right; the others leave out the key fact or overstate it), plus an optional free-text note shown in the debrief next to a model handover.
+5. **Push-back. Decided:** at most one refusal per shift (Network Ops won't block a /24 without a client ticket, and offers to block the single address). Asking for a reason (Identity, before touching accounts) is not a refusal: attaching a finding gets a yes. Both rules are enforced by content tests.
 
 ## 10. Build order
 
-Each step is one commit with tests, in the style of Horizon 1.
+Each step is one commit with tests, in the style of Horizon 1. Steps 1 to 5 are done; step 6 is next.
 
 1. Refactor `searchLog` onto `searchLines`; no behaviour change.
 2. `shift.js` rules and `tests/agency.test.mjs` against a tiny test shift (two alerts, one department).
