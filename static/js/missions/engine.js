@@ -179,3 +179,25 @@ export function hint(scenario, state) {
   s.hintsUsed += 1;
   return { state: s, events: [{ type: "hint", text, last: s.hintsUsed >= hints.length }] };
 }
+
+// Log viewer: search the scenario's log (scenario.log.lines) like grep. Every space-separated term
+// must appear in a line (case-insensitive). A focused search (non-empty, and narrower than the whole
+// log) that turns up a line containing a finding's `match` records that finding as evidence.
+// The log is one fixed source, so whatever a learner searches, the results can't contradict each other.
+export function searchLog(scenario, state, query) {
+  const log = scenario.log;
+  if (!log || state.complete) return { state, events: [] };
+  const words = String(query || "").split(/\s+/).filter(Boolean), terms = words.map(w => w.toLowerCase());
+  const lines = log.lines.filter(l => terms.every(t => l.toLowerCase().includes(t)));
+  const s = clone(state);
+  const focused = terms.length > 0 && lines.length > 0 && lines.length < log.lines.length;
+  const found = [];
+  for (const f of focused ? log.findings || [] : []) {
+    if (lines.some(l => l.toLowerCase().includes(f.match.toLowerCase())) && !s.evidence.some(e => e.finding === f.finding)) {
+      s.evidence.push({ tool: "log", finding: f.finding });
+      found.push(f.finding);
+    }
+  }
+  if (!s.toolsUsed.includes("log")) s.toolsUsed.push("log");
+  return { state: s, events: [{ type: "log", query: words.join(" "), lines, total: log.lines.length, focused, found }] };
+}

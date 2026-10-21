@@ -161,6 +161,10 @@
        "id": "log-detective"
       },
       {
+       "type": "mission",
+       "id": "ssh-brute"
+      },
+      {
        "type": "lesson",
        "id": "incident-response"
       },

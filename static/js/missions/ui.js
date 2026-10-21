@@ -45,6 +45,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
         <section class="panel" id="m-inspect"></section>
       </aside>
     </div>
+    <section class="panel m-logview" id="m-logview" hidden></section>
     <section class="panel"><h2>What happened (text version)</h2><ol class="transcript" id="m-log" aria-live="polite"></ol></section>
     <section class="panel debrief" id="m-debrief" hidden></section>
   </div>`;
@@ -288,6 +289,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
       else if (ev.type === "question") showQuestion(ev);
       else if (ev.type === "answer") showAnswer(ev);
       else if (ev.type === "tool") await showTool(ev);
+      else if (ev.type === "log") showLog(ev);
       else if (ev.type === "workaround") logLine(`<span class="warnline">Workaround applied. It looks fixed for this device, but is it really solved?</span>`);
       else if (ev.type === "goal") showRootCause(ev);
       else if (ev.type === "evidenceCheck") showEvidenceCheck(ev);
@@ -343,7 +345,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
   function challengePanel() {
     const m = scenario.modes[state.mode];
     const groups = [...new Set(m.tools.map(t => t.kind))];
-    $("m-task").innerHTML = `<div class="eyebrow">Your tools</div>
+    $("m-task").innerHTML = `<div class="eyebrow">Your tools</div>${scenario.log ? `<div class="tool-group"><h3 class="eyebrow">Logs</h3><div class="row"><button class="chip" type="button" id="m-tolog">Search ${esc(scenario.log.name)} ↓</button></div></div>` : ""}
       ${groups.map(g => `<div class="tool-group"><h3 class="eyebrow">${esc(KIND_LABEL[g] || g)}</h3><div class="row">${m.tools.filter(t => t.kind === g).map(t => `<button class="chip" data-tool="${t.id}">${esc(t.label)}</button>`).join("")}</div></div>`).join("")}
       <div class="console-head" id="m-console-label"><span class="sim-tag">Simulated output</span><span>Scripted results that mirror real tools. Nothing runs on your computer.</span></div>
       <pre class="evidence console" id="m-console" tabindex="0" aria-live="polite" aria-labelledby="m-console-label">Waiting for your first command…</pre>
@@ -355,12 +357,44 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
       try { await run(engine.useTool(scenario, state, b.dataset.tool)); } finally { busy = false; }
     }));
     $("m-hint").addEventListener("click", () => run(engine.hint(scenario, state)));
+    $("m-tolog")?.addEventListener("click", () => { $("m-logview").scrollIntoView({ block: "start", behavior: reducedMotion ? "auto" : "smooth" }); $("m-logq").focus({ preventScroll: true }); });
   }
   async function showTool(ev) {
     $("m-console").textContent = `$ ${ev.tool.label}\n${ev.output}`;
     logLine(`You: <strong>${esc(ev.tool.label)}</strong>${ev.finding ? ` → ${esc(ev.finding)}` : ""}`);
     renderFindings();
     for (const p of ev.played) { logLine(describe(p.msg, ev.noReply), p.id); await animateMessage(p.id, p.msg, { noReply: ev.noReply }); updateDevices(); }
+  }
+  // ---------- log viewer (challenge modes of scenarios with a log): search it like grep
+  const markTerms = (line, terms) => {
+    let html = esc(line);
+    for (const t of terms) html = html.replace(new RegExp(esc(t).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), m => `<mark>${m}</mark>`);
+    return html;
+  };
+  function drawLog(lines, terms = []) {
+    $("m-logout").innerHTML = lines.length ? lines.map(l => markTerms(l, terms)).join("\n") : "No lines match. Check the spelling, or try fewer words.";
+  }
+  function logViewer() {
+    const v = $("m-logview"), on = isToolMode(scenario.modes[state.mode]) && !!scenario.log;
+    v.hidden = !on; if (!on) return;
+    const log = scenario.log;
+    v.innerHTML = `<div class="panel-title"><h2>Log viewer: <span class="mono">${esc(log.name)}</span></h2><span class="sim-tag">Simulated log</span></div>
+      <p class="muted" style="margin:0">${esc(log.intro)}</p>
+      <form class="row log-search" id="m-logform" role="search"><label class="sr-only" for="m-logq">Search the log</label>
+        <input type="search" id="m-logq" placeholder="Search like grep: a word, a user or an IP" autocomplete="off" spellcheck="false">
+        <button class="btn brand" type="submit">Search</button><button class="btn ghost" type="button" id="m-logall">Show all</button></form>
+      <p class="muted log-count" id="m-logcount" aria-live="polite">Showing all ${log.lines.length} lines.</p>
+      <pre class="evidence console log-out" id="m-logout" tabindex="0" aria-labelledby="m-logcount"></pre>`;
+    drawLog(log.lines);
+    $("m-logform").addEventListener("submit", e => { e.preventDefault(); run(engine.searchLog(scenario, state, $("m-logq").value)); });
+    $("m-logall").addEventListener("click", () => { $("m-logq").value = ""; run(engine.searchLog(scenario, state, "")); });
+  }
+  function showLog(ev) {
+    const terms = ev.query ? ev.query.split(" ") : [];
+    drawLog(ev.lines, terms);
+    $("m-logcount").textContent = ev.query ? `${ev.lines.length} of ${ev.total} lines contain “${ev.query}”.` : `Showing all ${ev.total} lines. Search to narrow it down.`;
+    if (ev.query) logLine(`You searched the log for <strong>${esc(ev.query)}</strong>: ${ev.lines.length} line${ev.lines.length === 1 ? "" : "s"}${ev.found.length ? ` → ${ev.found.map(esc).join(" ")}` : ""}`);
+    renderFindings();
   }
   function renderFindings() {
     const box = root.querySelector("#m-findings");
@@ -439,6 +473,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     svg.querySelectorAll(".m-pkt").forEach(p => p.remove()); clearBubbles();
     drawTopology();
     isToolMode(m) ? challengePanel() : taskIdle();
+    logViewer();
     if (m.opening) { bubble(m.opening.device, m.opening.say, "say"); logLine(esc(engine.fill(m.opening.log, state.devices))); }
     updateControls();
   }

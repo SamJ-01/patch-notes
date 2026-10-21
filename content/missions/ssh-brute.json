@@ -1,0 +1,736 @@
+{
+ "id": "ssh-brute",
+ "title": "The 3am logins",
+ "topic": "Security operations · SSH & logs",
+ "minutes": 15,
+ "lesson": "soc",
+ "category": "Security operations",
+ "summary": "Overnight SSH alerts on a Linux server: search auth.log, find the one login that worked, contain the attacker and prove how they got in.",
+ "simplification": "Simplified simulation: a real brute-force run is often thousands of guesses from many addresses, so this log is cut down to stay readable. Log lines follow Ubuntu 22.04's OpenSSH and sudo formats; the IP addresses are reserved documentation ranges.",
+ "devices": {
+  "attacker": {
+   "label": "Unknown host",
+   "kind": "attacker",
+   "ip": "203.0.113.45",
+   "state": "ok",
+   "status": "Scanning for SSH"
+  },
+  "fw": {
+   "label": "Firewall",
+   "kind": "firewall",
+   "ip": "192.0.2.10",
+   "status": "Forwarding TCP 22 to web01",
+   "blocked": false
+  },
+  "server": {
+   "label": "web01 (Ubuntu)",
+   "kind": "server",
+   "ip": "10.0.1.20",
+   "state": "ok",
+   "status": "Online",
+   "passwordAuth": "yes",
+   "deployLocked": false,
+   "session": "none"
+  },
+  "analyst": {
+   "label": "You (SOC)",
+   "kind": "pc",
+   "ip": "10.0.5.14",
+   "state": "ok",
+   "status": "On shift"
+  }
+ },
+ "links": [
+  [
+   "attacker",
+   "fw"
+  ],
+  [
+   "fw",
+   "server"
+  ],
+  [
+   "analyst",
+   "server"
+  ]
+ ],
+ "appearance": {
+  "server": [
+   {
+    "when": {
+     "server.session": "ended",
+     "server.deployLocked": true,
+     "server.passwordAuth": "no"
+    },
+    "state": "ok"
+   },
+   {
+    "when": {
+     "server.state": "compromised"
+    },
+    "state": "bad"
+   }
+  ],
+  "attacker": [
+   {
+    "when": {
+     "fw.blocked": true
+    },
+    "state": "warn"
+   }
+  ],
+  "fw": [
+   {
+    "when": {
+     "fw.blocked": true
+    },
+    "state": "ok"
+   }
+  ]
+ },
+ "messages": {
+  "guess_root": {
+   "name": "SSH login attempt: root",
+   "short": "SSH login",
+   "from": "attacker",
+   "path": [
+    "attacker",
+    "fw",
+    "server"
+   ],
+   "say": "Log in as root, password: 123456",
+   "explain": "An automated tool tries a username and a password from a list. SSH is allowed through the firewall to web01 (port forward on TCP 22), so the attempt reaches the server.",
+   "fields": [
+    {
+     "name": "Username",
+     "value": "root",
+     "explain": "The account being tried. Attack tools work through common names like root, admin and test.",
+     "level": 1
+    },
+    {
+     "name": "Source IP",
+     "value": "203.0.113.45",
+     "explain": "Where the attempt comes from. A documentation address, standing in for a real attacker.",
+     "level": 1
+    },
+    {
+     "name": "Destination",
+     "value": "10.0.1.20, TCP port 22",
+     "explain": "web01's SSH service, reached through the firewall's port forward.",
+     "level": 2
+    },
+    {
+     "name": "Auth method",
+     "value": "password",
+     "explain": "The server allows password logins, so guessing is possible at all. With key-only logins this attempt would fail before any password was checked.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "server.status": "Checking root…"
+   }
+  },
+  "deny_root": {
+   "name": "Login refused",
+   "short": "Denied",
+   "from": "server",
+   "path": [
+    "server",
+    "fw",
+    "attacker"
+   ],
+   "say": "Permission denied, please try again.",
+   "explain": "Wrong password. sshd writes a 'Failed password' line to /var/log/auth.log for every refused guess.",
+   "fields": [
+    {
+     "name": "Result",
+     "value": "Failed password",
+     "explain": "The exact words sshd logs. Searching for them is how analysts spot guessing.",
+     "level": 1
+    },
+    {
+     "name": "Logged to",
+     "value": "/var/log/auth.log",
+     "explain": "Ubuntu's log for logins, sudo and other authentication events.",
+     "level": 1
+    },
+    {
+     "name": "Log line",
+     "value": "Failed password for root from 203.0.113.45 port 51122 ssh2",
+     "explain": "What the line looks like: account, source IP, source port, protocol.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "server.status": "Refused root"
+   }
+  },
+  "guess_admin": {
+   "name": "SSH login attempt: admin",
+   "short": "SSH login",
+   "from": "attacker",
+   "path": [
+    "attacker",
+    "fw",
+    "server"
+   ],
+   "say": "Log in as admin, password: admin",
+   "explain": "An automated tool tries a username and a password from a list. SSH is allowed through the firewall to web01 (port forward on TCP 22), so the attempt reaches the server.",
+   "fields": [
+    {
+     "name": "Username",
+     "value": "admin",
+     "explain": "The account being tried. Attack tools work through common names like root, admin and test.",
+     "level": 1
+    },
+    {
+     "name": "Source IP",
+     "value": "203.0.113.45",
+     "explain": "Where the attempt comes from. A documentation address, standing in for a real attacker.",
+     "level": 1
+    },
+    {
+     "name": "Destination",
+     "value": "10.0.1.20, TCP port 22",
+     "explain": "web01's SSH service, reached through the firewall's port forward.",
+     "level": 2
+    },
+    {
+     "name": "Auth method",
+     "value": "password",
+     "explain": "The server allows password logins, so guessing is possible at all. With key-only logins this attempt would fail before any password was checked.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "server.status": "Checking admin…"
+   }
+  },
+  "deny_admin": {
+   "name": "Unknown user refused",
+   "short": "Denied",
+   "from": "server",
+   "path": [
+    "server",
+    "fw",
+    "attacker"
+   ],
+   "say": "Permission denied, please try again.",
+   "explain": "There's no account called admin. The reply looks the same to the attacker, but the log records 'Invalid user', a clear sign of someone guessing usernames.",
+   "fields": [
+    {
+     "name": "Result",
+     "value": "Invalid user",
+     "explain": "The account doesn't exist. Lots of these from one address means username guessing.",
+     "level": 1
+    },
+    {
+     "name": "Log lines",
+     "value": "Invalid user admin from 203.0.113.45 port 51130",
+     "explain": "sshd logs the unknown name, then a 'Failed password for invalid user' line for the guess.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "server.status": "Refused admin"
+   }
+  },
+  "guess_deploy": {
+   "name": "SSH login attempt: deploy",
+   "short": "SSH login",
+   "from": "attacker",
+   "path": [
+    "attacker",
+    "fw",
+    "server"
+   ],
+   "say": "Log in as deploy, password: deploy2024",
+   "explain": "An automated tool tries a username and a password from a list. SSH is allowed through the firewall to web01 (port forward on TCP 22), so the attempt reaches the server.",
+   "fields": [
+    {
+     "name": "Username",
+     "value": "deploy",
+     "explain": "The account being tried. Attack tools work through common names like root, admin and test.",
+     "level": 1
+    },
+    {
+     "name": "Source IP",
+     "value": "203.0.113.45",
+     "explain": "Where the attempt comes from. A documentation address, standing in for a real attacker.",
+     "level": 1
+    },
+    {
+     "name": "Destination",
+     "value": "10.0.1.20, TCP port 22",
+     "explain": "web01's SSH service, reached through the firewall's port forward.",
+     "level": 2
+    },
+    {
+     "name": "Auth method",
+     "value": "password",
+     "explain": "The server allows password logins, so guessing is possible at all. With key-only logins this attempt would fail before any password was checked.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "server.status": "Checking deploy…"
+   }
+  },
+  "accept_deploy": {
+   "name": "Login accepted",
+   "short": "Accepted",
+   "from": "server",
+   "path": [
+    "server",
+    "fw",
+    "attacker"
+   ],
+   "say": "Welcome to Ubuntu 22.04 LTS",
+   "explain": "deploy is a real account with a guessable password, so this guess works. The attacker now has a shell on web01, and auth.log has the line that matters most: 'Accepted password'.",
+   "fields": [
+    {
+     "name": "Result",
+     "value": "Accepted password",
+     "explain": "A successful login. After a run of failures from the same address, this is the alarm bell.",
+     "level": 1
+    },
+    {
+     "name": "Account",
+     "value": "deploy (uid 1001)",
+     "explain": "A real account used for deployments, with a weak password and sudo rights.",
+     "level": 1
+    },
+    {
+     "name": "Log line",
+     "value": "Accepted password for deploy from 203.0.113.45 port 52018 ssh2",
+     "explain": "Compare with sam's normal login: 'Accepted publickey' from a known address.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "server.state": "compromised",
+    "server.status": "deploy logged in from 203.0.113.45"
+   },
+   "reactions": {
+    "server": {
+     "text": "Password matches. Session opened.",
+     "tone": ""
+    }
+   }
+  },
+  "cmd_sudo": {
+   "name": "Command as root",
+   "short": "sudo",
+   "from": "attacker",
+   "path": [
+    "attacker",
+    "fw",
+    "server"
+   ],
+   "say": "sudo crontab -l",
+   "explain": "Inside the encrypted SSH session the attacker uses deploy's sudo rights to list root's scheduled tasks, a common first step before adding one to keep access. sudo logs every command to auth.log.",
+   "fields": [
+    {
+     "name": "Command",
+     "value": "crontab -l (as root)",
+     "explain": "Lists root's scheduled tasks. Attackers check these, then often add their own to get back in later.",
+     "level": 1
+    },
+    {
+     "name": "Log line",
+     "value": "deploy : TTY=pts/0 ; PWD=/home/deploy ; USER=root ; COMMAND=/usr/bin/crontab -l",
+     "explain": "sudo records who ran what, as whom, from where.",
+     "level": 2
+    },
+    {
+     "name": "Visibility",
+     "value": "Encrypted",
+     "explain": "Network monitoring sees only SSH traffic. The command shows up on the server, in auth.log.",
+     "level": 2
+    }
+   ],
+   "effects": {
+    "server.status": "Attacker running commands as root"
+   }
+  }
+ },
+ "modes": {
+  "guided": {
+   "label": "Guided",
+   "xp": 20,
+   "intro": "Watch an automated SSH attack happen, guess by guess, and see the log line each step leaves behind.",
+   "sequence": [
+    "guess_root",
+    "deny_root",
+    "guess_admin",
+    "deny_admin",
+    "guess_deploy",
+    "accept_deploy",
+    "cmd_sudo"
+   ],
+   "debrief": "You've seen a brute-force login end to end, and the log lines it leaves: Invalid user, Failed password, then Accepted password. Next, predict each step in Practice mode."
+  },
+  "practice": {
+   "label": "Practice",
+   "xp": 30,
+   "intro": "Same attack, but predict what happens before each step.",
+   "sequence": [
+    "guess_root",
+    "deny_root",
+    "guess_admin",
+    "deny_admin",
+    "guess_deploy",
+    "accept_deploy",
+    "cmd_sudo"
+   ],
+   "checkpoints": {
+    "guess_admin": {
+     "q": "Three passwords for root have failed. What will an automated attack tool most likely do next?",
+     "options": [
+      "Give up and move to another server",
+      "Try a different common username, like admin",
+      "Ask the server for root's password",
+      "Switch to attacking the firewall"
+     ],
+     "answer": 1,
+     "why": "Tools work through lists of common usernames and passwords. A refusal costs them nothing, so they just keep going."
+    },
+    "accept_deploy": {
+     "q": "deploy is a real account and the password matches. What does sshd write to auth.log?",
+     "options": [
+      "Failed password for deploy from 203.0.113.45",
+      "Accepted password for deploy from 203.0.113.45",
+      "Nothing: successful logins aren't logged",
+      "Invalid user deploy from 203.0.113.45"
+     ],
+     "answer": 1,
+     "why": "sshd logs successes too. 'Accepted password' after a run of failures from the same address is the line every analyst looks for."
+    },
+    "cmd_sudo": {
+     "q": "The attacker runs sudo crontab -l inside the SSH session. Where will that show up?",
+     "options": [
+      "Nowhere: the session is encrypted",
+      "In auth.log, because sudo logs every command it runs",
+      "Only in the firewall's logs",
+      "In the attacker's own logs"
+     ],
+     "answer": 1,
+     "why": "SSH encrypts the session on the wire, so network tools see only that a session exists. sudo writes who ran what, as whom, to auth.log on the server."
+    }
+   },
+   "debrief": "You can predict each step of an SSH brute force and the evidence it leaves. Now investigate a real one in Challenge mode."
+  },
+  "challenge": {
+   "label": "Challenge",
+   "xp": 50,
+   "intro": "It's 08:05. Overnight alerts flagged unusual SSH activity on web01. Search auth.log, work out what happened, contain it, then prove the cause.",
+   "start": {
+    "server.session": "active",
+    "server.state": "compromised",
+    "server.status": "Alert: unusual SSH activity overnight",
+    "attacker.status": "Connected to web01"
+   },
+   "opening": {
+    "device": "analyst",
+    "say": "SIEM alert on web01: lots of SSH failures overnight. Let's see what's in auth.log.",
+    "log": "Start: an alert says web01 saw many failed SSH logins overnight. Were they just noise, or did one get in?"
+   },
+   "hints": [
+    "Start with the log viewer. Search for \"Failed password\" to see the guessing, and note where it came from.",
+    "Failures alone are noise on any internet-facing server. What matters is whether one worked: search for \"Accepted\".",
+    "deploy logged in with a password from the same address. Is that session still open? Run who.",
+    "Contain it: end the session, lock deploy so the password can't be reused, and switch SSH to keys only so guessing can't work again. Blocking the IP helps, but on its own it isn't enough."
+   ],
+   "tools": [
+    {
+     "id": "who",
+     "label": "who",
+     "kind": "Investigate",
+     "outcomes": [
+      {
+       "when": {
+        "server.session": "ended"
+       },
+       "output": "analyst  pts/1        2026-10-21 08:02 (10.0.5.14)",
+       "finding": "No deploy session left: only your own analyst login is on web01."
+      },
+      {
+       "when": {},
+       "output": "deploy   pts/0        2026-10-21 03:12 (203.0.113.45)\nanalyst  pts/1        2026-10-21 08:02 (10.0.5.14)",
+       "finding": "deploy is still logged in from 203.0.113.45 (pts/0): the attacker hasn't left."
+      }
+     ]
+    },
+    {
+     "id": "sshdcfg",
+     "label": "grep PasswordAuthentication /etc/ssh/sshd_config",
+     "kind": "Investigate",
+     "outcomes": [
+      {
+       "when": {
+        "server.passwordAuth": "no"
+       },
+       "output": "PasswordAuthentication no",
+       "finding": "SSH now accepts keys only, so password guessing can't work."
+      },
+      {
+       "when": {},
+       "output": "PasswordAuthentication yes",
+       "finding": "SSH accepts passwords from anywhere the firewall lets in, so guessing can work."
+      }
+     ]
+    },
+    {
+     "id": "block",
+     "label": "Block 203.0.113.45 at the firewall",
+     "kind": "Fix",
+     "outcomes": [
+      {
+       "when": {
+        "fw.blocked": true
+       },
+       "output": "Rule already in place: deny 203.0.113.45 → any."
+      },
+      {
+       "when": {},
+       "output": "Rule added: deny 203.0.113.45 → any (new connections).\nNote: a connection that's already open can carry on until it's closed.",
+       "set": {
+        "fw.blocked": true,
+        "fw.status": "Blocking 203.0.113.45"
+       }
+      }
+     ]
+    },
+    {
+     "id": "lock",
+     "label": "sudo usermod -L -e 1 deploy",
+     "kind": "Fix",
+     "outcomes": [
+      {
+       "when": {
+        "server.deployLocked": true
+       },
+       "output": "deploy is already locked and expired."
+      },
+      {
+       "when": {},
+       "output": "(no output)\ndeploy's password is locked and the account has expired, so it can't log in again, with a password or a key.",
+       "set": {
+        "server.deployLocked": true
+       }
+      }
+     ]
+    },
+    {
+     "id": "kill",
+     "label": "sudo pkill -KILL -u deploy",
+     "kind": "Fix",
+     "outcomes": [
+      {
+       "when": {
+        "server.session": "ended"
+       },
+       "output": "(no output: deploy has no processes left)"
+      },
+      {
+       "when": {},
+       "output": "(no output)\nEvery process owned by deploy was killed, including the attacker's shell on pts/0.",
+       "set": {
+        "server.session": "ended"
+       }
+      }
+     ]
+    },
+    {
+     "id": "keysonly",
+     "label": "Set PasswordAuthentication no, then reload sshd",
+     "kind": "Fix",
+     "outcomes": [
+      {
+       "when": {
+        "server.passwordAuth": "no"
+       },
+       "output": "Already set. sshd is accepting keys only."
+      },
+      {
+       "when": {},
+       "output": "$ sudo sshd -t && sudo systemctl reload ssh\n(config test passed, sshd reloaded)\nSSH now accepts key logins only. Your own session is unaffected.",
+       "set": {
+        "server.passwordAuth": "no"
+       }
+      }
+     ]
+    }
+   ],
+   "goal": {
+    "server.session": "ended",
+    "server.deployLocked": true,
+    "server.passwordAuth": "no"
+   },
+   "workaround": {
+    "fw.blocked": true,
+    "server.deployLocked": false
+   },
+   "rootCause": {
+    "q": "web01 is contained. What let the attacker in?",
+    "options": [
+     "The firewall was switched off overnight",
+     "SSH accepted passwords from the internet, and the deploy account had a guessable password",
+     "root's password was too weak",
+     "A software vulnerability in OpenSSH"
+    ],
+    "answer": 1,
+    "why": "The log shows plain guessing: failures for root, admin, test and oracle, then 'Accepted password for deploy' from the same address. Nothing was exploited and the firewall worked as configured: it forwarded SSH, and SSH took a weak password. Key-only logins (or no SSH from the internet) would have stopped it.",
+    "evidenceQ": "Which findings support that diagnosis? Tick the evidence, leave out what isn't.",
+    "evidence": [
+     {
+      "text": "auth.log: 'Accepted password for deploy from 203.0.113.45'",
+      "tool": "log",
+      "supports": true,
+      "required": true,
+      "why": "The successful guess itself, and proof it was a password, not a key or an exploit."
+     },
+     {
+      "text": "auth.log: 11 'Failed password' lines from 203.0.113.45 in the minutes before",
+      "tool": "log",
+      "supports": true,
+      "required": true,
+      "why": "Shows this was guessing: one address working through usernames until one worked."
+     },
+     {
+      "text": "sshd_config had PasswordAuthentication yes",
+      "tool": "sshdcfg",
+      "supports": true,
+      "required": true,
+      "why": "This is why guessing could work at all. With keys only, every guess fails before the password is even checked."
+     },
+     {
+      "text": "who showed deploy still logged in from 203.0.113.45",
+      "tool": "who",
+      "supports": true,
+      "required": false,
+      "why": "Confirms the attacker was still in, which shaped the response. It shows the impact rather than the cause, so it's optional here."
+     },
+     {
+      "text": "sam logged in with a key from 198.51.100.23 the evening before",
+      "tool": "log",
+      "supports": false,
+      "why": "Normal activity: a known admin, a key, a known address. Telling routine logins apart from the attack is part of the job, but it isn't evidence of the cause."
+     },
+     {
+      "text": "deploy ran sudo crontab -l at 03:14",
+      "tool": "log",
+      "supports": false,
+      "why": "What the attacker did after getting in. Vital for the investigation (check for added cron jobs and SSH keys), but it doesn't explain how they got in."
+     }
+    ]
+   },
+   "debrief": "You read auth.log the way a SOC analyst does: the failures were noise until one login worked. You ended the session, locked the account and stopped password logins, so the fix holds even if the attacker comes back from another address. Real next steps: preserve the logs, check deploy's ~/.ssh/authorized_keys and every crontab for anything added, change any secrets deploy could read, and follow your incident process."
+  }
+ },
+ "log": {
+  "name": "/var/log/auth.log",
+  "intro": "web01's authentication log, from 17:40 yesterday to 08:00 this morning (31 lines). Search it like grep: every word you type must appear in a line.",
+  "lines": [
+   "Oct 20 17:40:02 web01 sshd[1876]: Accepted publickey for sam from 198.51.100.23 port 60212 ssh2: ED25519 SHA256:Xk2p9fQm7Lr0bW4sT1yVn8cJ3hG6aZ5dE2uK9oP1qRs",
+   "Oct 20 17:40:02 web01 sshd[1876]: pam_unix(sshd:session): session opened for user sam(uid=1000) by (uid=0)",
+   "Oct 20 18:02:45 web01 sshd[1876]: pam_unix(sshd:session): session closed for user sam",
+   "Oct 21 02:17:01 web01 CRON[2188]: pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)",
+   "Oct 21 02:17:01 web01 CRON[2188]: pam_unix(cron:session): session closed for user root",
+   "Oct 21 03:04:09 web01 sshd[2205]: Failed password for root from 203.0.113.45 port 51122 ssh2",
+   "Oct 21 03:04:12 web01 sshd[2205]: Failed password for root from 203.0.113.45 port 51122 ssh2",
+   "Oct 21 03:04:15 web01 sshd[2205]: Failed password for root from 203.0.113.45 port 51122 ssh2",
+   "Oct 21 03:04:15 web01 sshd[2205]: Connection closed by authenticating user root 203.0.113.45 port 51122 [preauth]",
+   "Oct 21 03:05:40 web01 sshd[2231]: Invalid user admin from 203.0.113.45 port 51130",
+   "Oct 21 03:05:40 web01 sshd[2231]: Failed password for invalid user admin from 203.0.113.45 port 51130 ssh2",
+   "Oct 21 03:05:43 web01 sshd[2231]: Failed password for invalid user admin from 203.0.113.45 port 51130 ssh2",
+   "Oct 21 03:05:43 web01 sshd[2231]: Connection closed by invalid user admin 203.0.113.45 port 51130 [preauth]",
+   "Oct 21 03:07:02 web01 sshd[2257]: Invalid user test from 203.0.113.45 port 51188",
+   "Oct 21 03:07:02 web01 sshd[2257]: Failed password for invalid user test from 203.0.113.45 port 51188 ssh2",
+   "Oct 21 03:07:05 web01 sshd[2257]: Failed password for invalid user test from 203.0.113.45 port 51188 ssh2",
+   "Oct 21 03:07:05 web01 sshd[2257]: Connection closed by invalid user test 203.0.113.45 port 51188 [preauth]",
+   "Oct 21 03:08:31 web01 sshd[2290]: Invalid user oracle from 203.0.113.45 port 51240",
+   "Oct 21 03:08:31 web01 sshd[2290]: Failed password for invalid user oracle from 203.0.113.45 port 51240 ssh2",
+   "Oct 21 03:08:34 web01 sshd[2290]: Failed password for invalid user oracle from 203.0.113.45 port 51240 ssh2",
+   "Oct 21 03:08:34 web01 sshd[2290]: Connection closed by invalid user oracle 203.0.113.45 port 51240 [preauth]",
+   "Oct 21 03:10:18 web01 sshd[2334]: Failed password for deploy from 203.0.113.45 port 51302 ssh2",
+   "Oct 21 03:10:21 web01 sshd[2334]: Failed password for deploy from 203.0.113.45 port 51302 ssh2",
+   "Oct 21 03:10:21 web01 sshd[2334]: Connection closed by authenticating user deploy 203.0.113.45 port 51302 [preauth]",
+   "Oct 21 03:12:47 web01 sshd[2390]: Accepted password for deploy from 203.0.113.45 port 52018 ssh2",
+   "Oct 21 03:12:47 web01 sshd[2390]: pam_unix(sshd:session): session opened for user deploy(uid=1001) by (uid=0)",
+   "Oct 21 03:14:02 web01 sudo:   deploy : TTY=pts/0 ; PWD=/home/deploy ; USER=root ; COMMAND=/usr/bin/crontab -l",
+   "Oct 21 03:14:02 web01 sudo: pam_unix(sudo:session): session opened for user root(uid=0) by deploy(uid=1001)",
+   "Oct 21 03:14:02 web01 sudo: pam_unix(sudo:session): session closed for user root",
+   "Oct 21 03:17:01 web01 CRON[2412]: pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)",
+   "Oct 21 03:17:01 web01 CRON[2412]: pam_unix(cron:session): session closed for user root"
+  ],
+  "findings": [
+   {
+    "match": "Failed password",
+    "finding": "11 failed passwords from 203.0.113.45 between 03:04 and 03:10, for root, admin, test, oracle and deploy."
+   },
+   {
+    "match": "Invalid user",
+    "finding": "203.0.113.45 tried usernames that don't exist (admin, test, oracle): someone guessing, not a user who forgot a password."
+   },
+   {
+    "match": "Accepted password",
+    "finding": "At 03:12:47 deploy logged in with a password from 203.0.113.45, the same address that was guessing."
+   },
+   {
+    "match": "Accepted publickey",
+    "finding": "sam logged in with an SSH key from 198.51.100.23 at 17:40 yesterday: a normal admin login."
+   },
+   {
+    "match": "COMMAND=",
+    "finding": "At 03:14 deploy used sudo to run crontab -l as root: the attacker checking scheduled tasks."
+   }
+  ]
+ },
+ "wide": {
+  "w": 760,
+  "h": 520,
+  "dw": 184,
+  "pos": {
+   "attacker": [
+    110,
+    200
+   ],
+   "fw": [
+    370,
+    200
+   ],
+   "server": [
+    630,
+    200
+   ],
+   "analyst": [
+    630,
+    420
+   ]
+  }
+ },
+ "narrow": {
+  "w": 380,
+  "h": 980,
+  "dw": 176,
+  "pos": {
+   "attacker": [
+    190,
+    110
+   ],
+   "fw": [
+    190,
+    380
+   ],
+   "server": [
+    190,
+    650
+   ],
+   "analyst": [
+    190,
+    900
+   ]
+  }
+ }
+}

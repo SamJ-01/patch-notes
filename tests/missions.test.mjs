@@ -246,7 +246,7 @@ test("every mission scenario is structurally consistent and playable", () => {
         for (const e of rc.evidence) {
           assert.ok(e.text && e.why, where(`${k}: every evidence item has text and why`));
           assert.ok(!e.required || e.supports, where(`${k}: only supporting evidence can be required`));
-          if (e.tool) assert.ok(tools.has(e.tool), where(`${k}: evidence tool ${e.tool} is a real tool`));
+          if (e.tool) assert.ok(tools.has(e.tool) || (e.tool === "log" && m.log), where(`${k}: evidence tool ${e.tool} is a real tool`));
         }
         assert.ok(typeof rc.answer === "number" && rc.options[rc.answer], where(`${k}: rootCause answer indexes a real option`));
       }
@@ -302,4 +302,76 @@ test("a request with no reply undoes whatever its messages changed", () => {
   for (const path of Object.keys(dhcp.messages.discover.effects)) {
     assert.equal(engine.get(r.state.devices, path), engine.get(s.devices, path), path);
   }
+});
+
+// ---------- "The 3am logins": the log viewer and an SSH brute-force investigation
+const ssh = JSON.parse(readFileSync(new URL("../content/missions/ssh-brute.json", import.meta.url), "utf8"));
+const types = r => r.events.map(e => e.type);
+
+test("log search works like grep: every term must appear, any case", () => {
+  let s = engine.start(ssh, "challenge");
+  const all = engine.searchLog(ssh, s, "");
+  assert.equal(all.events[0].lines.length, ssh.log.lines.length);
+  assert.equal(all.state.evidence.length, 0, "showing everything isn't a finding");
+  const failed = engine.searchLog(ssh, s, "failed PASSWORD");
+  assert.equal(failed.events[0].lines.length, 11);
+  assert.ok(failed.events[0].lines.every(l => l.includes("Failed password")));
+  assert.equal(engine.searchLog(ssh, s, "deploy accepted").events[0].lines.length, 1, "terms combine");
+  assert.equal(engine.searchLog(ssh, s, "nothing-like-this").events[0].lines.length, 0);
+  assert.ok(failed.state.toolsUsed.includes("log"));
+});
+
+test("ssh-brute: the log agrees with every finding and evidence item", () => {
+  const lines = ssh.log.lines, A = ssh.devices.attacker.ip;
+  const fails = lines.filter(l => l.includes("Failed password") && l.includes(A));
+  assert.equal(fails.length, lines.filter(l => l.includes("Failed password")).length, "every failure came from the attacker");
+  for (const f of ssh.log.findings) {
+    assert.ok(lines.some(l => l.includes(f.match)), `${f.match} is in the log`);
+    const r = engine.searchLog(ssh, engine.start(ssh, "challenge"), f.match);
+    assert.ok(r.state.evidence.some(e => e.finding === f.finding), `searching "${f.match}" records its finding`);
+  }
+  assert.match(ssh.log.findings[0].finding, new RegExp(`^${fails.length} failed`));
+  assert.ok(ssh.modes.challenge.rootCause.evidence[1].text.includes(`${fails.length} 'Failed password'`));
+  const accepted = lines.filter(l => l.includes("Accepted password"));
+  assert.equal(accepted.length, 1);
+  assert.ok(accepted[0].includes("deploy") && accepted[0].includes(A));
+  const users = [...new Set(fails.map(l => l.match(/for (?:invalid user )?(\S+) from/)[1]))];
+  assert.deepEqual(users, ["root", "admin", "test", "oracle", "deploy"]);
+  assert.match(ssh.log.intro, new RegExp(`\\(${lines.length} lines\\)`));
+});
+
+test("ssh-brute: blocking the IP alone is a workaround, full containment meets the goal", () => {
+  let r = engine.useTool(ssh, engine.start(ssh, "challenge"), "block");
+  assert.ok(types(r).includes("workaround"));
+  assert.ok(!r.state.goalMet);
+  let s = engine.searchLog(ssh, r.state, "Accepted").state;
+  for (const t of ["who", "sshdcfg", "kill", "lock"]) s = engine.useTool(ssh, s, t).state;
+  assert.ok(!s.goalMet, "still accepting passwords");
+  r = engine.useTool(ssh, s, "keysonly");
+  assert.ok(types(r).includes("goal"));
+  assert.equal(engine.useTool(ssh, r.state, "who").events[0].output.includes("deploy"), false, "the session is gone");
+  // Root cause, then the reasoning check: required items in, non-evidence out.
+  let rc = engine.answerRootCause(ssh, r.state, 2);
+  assert.equal(rc.events[0].correct, false);
+  rc = engine.answerRootCause(ssh, rc.state, ssh.modes.challenge.rootCause.answer);
+  assert.ok(types(rc).includes("evidenceCheck"));
+  const ev = ssh.modes.challenge.rootCause.evidence;
+  const wrong = engine.answerEvidence(ssh, rc.state, ev.map((_, i) => i));
+  assert.equal(wrong.events[0].pass, false, "ticking everything includes non-evidence");
+  const right = engine.answerEvidence(ssh, rc.state, ev.map((e, i) => (e.required ? i : -1)).filter(i => i >= 0));
+  assert.equal(right.events[0].pass, true);
+  assert.ok(right.state.complete);
+});
+
+test("ssh-brute: guided and practice play through", () => {
+  let s = engine.start(ssh, "guided");
+  while (!s.complete) s = engine.next(ssh, s).state;
+  assert.equal(s.devices.server.state, "compromised");
+  s = engine.start(ssh, "practice");
+  while (!s.complete) {
+    const r = engine.next(ssh, s); s = r.state;
+    const q = r.events.find(e => e.type === "question");
+    if (q) s = engine.answer(ssh, s, q.answer).state;
+  }
+  assert.ok(s.complete);
 });

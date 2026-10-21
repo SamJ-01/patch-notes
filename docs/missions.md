@@ -20,13 +20,13 @@ Missions are Patch Notes' main draw. Each one is a scenario file in `content/mis
 | 5 | **Getting out to the internet** | Routing tables and NAT: private vs public addresses | Missing default route on the router | Router tables shown in the inspector |
 | 6 | **Is this site really my bank?** | DNS + TLS: certificates, names, trust warnings | A lookalike domain and a certificate mismatch | Certificate inspector panel |
 
-## Security track (needs a new tool type: an evidence viewer)
+## Security track (uses the log viewer, built for mission 7)
 
 These are investigations of logs and timelines rather than packet journeys. They need one new reusable piece: a log or timeline viewer the learner can filter, with findings that feed the existing evidence check.
 
 | # | Mission | What it teaches |
 |---|---|---|
-| 7 | **The 3am logins** | SSH brute force in `auth.log`: failed vs accepted logins, source IPs, what to block (upgrades the existing Log Detective lab) |
+| 7 | **The 3am logins** ✅ | SSH brute force in `auth.log`: failed vs accepted logins, source IPs, containment (session, account, key-only SSH) vs just blocking the IP. Introduced the log viewer: `scenario.log` (lines + findings) searched with `engine.searchLog` |
 | 8 | **Which email was it?** | Phishing triage: headers, SPF/DKIM/DMARC results, the link that matters (upgrades Header Inspector) |
 | 9 | **Who can read this file?** | Linux permissions and ownership (`rwx`, `chmod`, groups); the over-shared secret |
 | 10 | **The night the files changed** | Ransomware first response: timeline, patient zero, isolate vs shut down |

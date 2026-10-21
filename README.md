@@ -15,6 +15,7 @@ Everything runs in the browser. Nothing is installed and no real network traffic
 | | What you do | Topic |
 |---|---|---|
 | **DHCP mission** | Watch a PC get its IP address packet by packet (Discover, Offer, Request, Acknowledge), inspect every message, then fix a broken network. Guided, Practice and Challenge modes | IP addressing, DHCP |
+| **The 3am logins** (mission) | Overnight SSH alerts on a Linux server: search `auth.log` like grep, find the one login that worked, contain the attacker (end the session, lock the account, switch to key-only SSH) and prove how they got in | Security operations, log analysis |
 | **The OSI model, layer by layer** | Follow one web request down all 7 layers and back up as headers are added and removed, then sort real things into the right layer | OSI model |
 | **Network topologies: break them** | Eight topologies (star, bus, ring, mesh, spine-and-leaf…). Click a cable or device to break it and see who's cut off; reveal the single points of failure | Topologies |
 | **Ports and protocols** | 24 flip cards for the exam port list, insecure-to-secure swaps, then a quick-fire drill | Ports and protocols |
