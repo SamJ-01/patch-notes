@@ -74,7 +74,7 @@ VIEWS.today = () => {
         <span class="hero-stat"><b>Network+ · Security+</b> exam prep</span>
         <span class="hero-stat"><b>Daily</b> news, explained</span>
       </div>
-      <div class="row hero-cta"><a class="btn brand" href="#learn">Start learning →</a><a class="btn ghost" href="#play">Spot a phishing email</a></div>
+      <div class="row hero-cta"><a class="btn brand" href="#learn">Choose a learning path →</a><a class="btn ghost" href="#play">Spot a phishing email</a></div>
     </div>${heroNet()}</div>
     <div class="split">
       <div class="stack" style="gap:18px">

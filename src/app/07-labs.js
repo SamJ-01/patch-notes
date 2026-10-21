@@ -86,6 +86,7 @@ const HEAD_SCENE = {
   news: { d: [["ap", 100, 50, 1]], t: [["breaking", 100, 80, "bad"], ["CVE", 38, 30], ["KEV", 162, 30, "bad"]] },
   cves: { raw: RADAR_ART },
 };
+SCENE.play = HEAD_SCENE.play;  // the games card on the practise page
 const headArt = k => `<span class="head-art card-art" aria-hidden="true">${sceneSvg(HEAD_SCENE[k])}</span>`;
 const cardArt = id => `<span class="card-art">${sceneSvg(SCENE[id] || SCENE.networking)}</span>`;
 // Hovering a card sends its packets across the scene.
@@ -96,20 +97,25 @@ document.addEventListener("mouseover", e => {
   anims.forEach((a, i) => { try { setTimeout(() => a.beginElement(), Math.floor(i / 2) * 220); } catch (err) {} });
   setTimeout(() => delete card.dataset.playing, 2200);
 });
-const CATEGORY_ORDER = ["Networking", "Linux", "Cryptography", "Security operations", "Ethical hacking"];
+const CATEGORY_ORDER = ["Networking", "Linux", "Cryptography", "Security operations", "Ethical hacking", "Games"];
 VIEWS.missions = () => {
   const items = [
     ...DATA.missions.map(m => ({ cat: m.category || "Networking", html: missionCard(m) })),
     ...DATA.labs.map(l => ({ cat: l.category || "Security operations", html: labCard(l) })),
     { cat: "Networking", html: toolCard() },
+    { cat: "Games", html: gamesCard() },
     ...(DATA.agency || []).map(sh => ({ cat: "Security operations", html: shiftCard(sh) })),
   ];
   const cats = [...new Set([...CATEGORY_ORDER, ...items.map(i => i.cat)])].filter(c => items.some(i => i.cat === c));
   main.innerHTML = `<div class="view">
-    <div class="view-head with-art">${headArt("missions")}<h1>Learn it. Break it. Understand it.</h1></div>
+    <div class="view-head with-art">${headArt("missions")}<h1>Learn it. Break it. Understand it.</h1><p>Missions, labs, the Agency shift and games: everything hands-on, in one place.</p></div>
     ${cats.map(c => `<section class="stack"><h2 class="cat-h">${esc(c)}</h2><div class="lessons">${items.filter(i => i.cat === c).map(i => i.html).join("")}</div></section>`).join("")}
   </div>`;
 };
+function gamesCard() {
+  return `<a class="lcard art-card" href="#play">${cardArt("play")}
+    <span class="eyebrow">Games</span><h3>Phish or Legit, quizzes and a flag hunt</h3><p>Quick rounds to sharpen your instincts: spot the scam, test what you know, find hidden flags</p><span class="lmeta"><span>A few minutes</span><span>XP for every round</span></span></a>`;
+}
 function toolCard() {
   return `<a class="lcard art-card" href="#subnet-calc">${cardArt("subnet-calc")}
     <span class="eyebrow">Tool</span><h3>Subnet calculator</h3><p>Type any address and watch the network change: class, CIDR, mask, hosts, ranges and a live diagram</p><span class="lmeta"><span>Use any time</span><span>Shareable links</span></span></a>`;

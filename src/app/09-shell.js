@@ -184,12 +184,14 @@ document.addEventListener("keydown", e => {
   if (typing || !cmdk.hidden || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === "/") { e.preventDefault(); openCmd(); }
   else if (e.key === "?") { e.preventDefault(); openCmd("help", true); }
-  else if (/^[1-8]$/.test(e.key)) { const tabs = ["today", "missions", "learn", "play", "careers", "progress", "news", "cves"]; location.hash = tabs[Number(e.key) - 1]; }
+  else if (/^[1-6]$/.test(e.key)) { const tabs = ["today", "learn", "missions", "progress", "news", "cves"]; location.hash = tabs[Number(e.key) - 1]; }
 });
 
 /* ---------- router ---------- */
 // Which tab each route lives under, and what draws it.
 const CVE_VIEWS = ["cves", "today/stack"];
+// Sections without their own nav tab, and the tab that's highlighted for them.
+const NAV_PARENT = { play: "missions", careers: "progress" };
 function parseRoute() {
   const h = (location.hash || "#today").slice(1);
   if (h.startsWith("lesson-")) return { tab: "learn", path: "learn/" + h.slice(7), draw: () => lessonView(h.slice(7)) };
@@ -202,8 +204,8 @@ function parseRoute() {
   if (h === "subnet-calc" || h.startsWith("subnet-calc/")) return { tab: "missions", path: "tools/subnet-calc", draw: () => calcView(h) };
   if (h === "glossary") return { tab: "learn", path: "learn/glossary", draw: VIEWS.glossary };
   if (h === "stack") return { tab: "today", path: "today/stack", draw: VIEWS.stack };
-  const tab = VIEWS[h] ? h : "today";
-  return { tab, path: tab, draw: VIEWS[tab] };
+  const view = VIEWS[h] ? h : "today";
+  return { tab: NAV_PARENT[view] || view, path: view, draw: VIEWS[view] };
 }
 let lastHash = location.hash;
 function route() {

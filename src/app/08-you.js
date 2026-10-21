@@ -6,6 +6,7 @@ VIEWS.progress = () => {
   main.innerHTML = `<div class="view">
     <div class="view-head with-art">${headArt("progress")}<h1>uid=${esc(r.name)}</h1>
       <p>${r.next ? `${(r.next - P.xp).toLocaleString()} XP to <strong>${esc(r.nextName)}</strong>.` : "Top access level reached. You are root."} Progress is saved in this browser only, so download a copy to keep it safe or move it to another device.</p>
+      <p>Where this leads: <a href="#careers">entry-level career paths</a>, what each job involves, and a learning path for each.</p>
       <p class="hint">Levels and badges track practice here, not qualifications. They live in your browser, which anyone can edit, so they aren't proof of anything to an employer.</p></div>
     <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(prog * 100)}%;background:var(--sun)"></i></span><span class="mono">${RANKS.map(x => x[1]).join(" → ")}</span></div>
     <div class="stat-row">${stats.map(([k, v]) => `<div class="stat"><span class="eyebrow">${k}</span><b>${v}</b></div>`).join("")}</div>
