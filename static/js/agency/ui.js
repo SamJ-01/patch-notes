@@ -15,6 +15,7 @@ const reqNo = (state, ref) => { const i = state.requests.map(r => r.ref).lastInd
 export function mount(root, shift, { done = false, onComplete = () => {}, onAgain = null, feedback = "" } = {}) {
   let state, selected = null, source = null;
   const all = A.findings(shift);
+  const reduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   const clockAt = m => { const [h, mi] = shift.startsAt.split(":").map(Number), t = h * 60 + mi + m; return `${String(Math.floor(t / 60) % 24).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`; };
 
   const leadName = shift.lead.split(",")[0], leadRole = (shift.lead.split(",")[1] || "").trim();
@@ -40,6 +41,9 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
           <ol class="dk-msgs ag-chat" id="ag-chat" aria-live="polite" aria-label="Messages from ${esc(leadName)}"></ol>
           <div class="ag-dossier" id="ag-dossier" hidden>${DESK.scene(shift.clientImage)}<div class="eyebrow">Client file</div><h2>${esc(shift.client)}</h2>
             <dl class="fields"><div><dt>Alerts waiting</dt><dd>${waiting}, with more likely</dd></div><div><dt>Logs you can search</dt><dd>${Object.keys(shift.sources).length}</dd></div><div><dt>Shift length</dt><dd>about ${shift.minutes} min</dd></div>${done ? `<div><dt>Your record</dt><dd>✓ worked before</dd></div>` : ""}</dl>
+            <fieldset class="ag-level"><legend>How do you want to work?</legend>
+              <label class="ag-lv"><input type="radio" name="ag-level" value="guided"${done ? "" : " checked"}><span><b>Guided</b> ${esc(leadName)} gives hints, suggests searches and checks each alert as you close it.</span></label>
+              <label class="ag-lv"><input type="radio" name="ag-level" value="standard"${done ? " checked" : ""}><span><b>On your own</b> No hints. Everything is marked at the handover, as on a real shift.</span></label></fieldset>
             <button class="btn brand" type="button" id="ag-desk-go">Take the desk</button></div>
         </div>
       </div>
@@ -79,6 +83,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
       }
       else if (ev.type === "wait") inbox({ sys: true, from: "Shift clock", html: `You waited ${ev.minutes} minutes.` });
       else if (ev.type === "closed") notes.push(`Closed: ${ev.title}.`);
+      else if (ev.type === "hint") notes.push(`Hint ${ev.n} of ${ev.of}: ${ev.text}`);
       else if (ev.type === "complete") return finish(ev.report);
     }
     renderAll(r.events.some(e => ["arrive", "closed", "reopened"].includes(e.type)));
@@ -109,6 +114,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     }).join("");
     $("ag-queue").querySelectorAll("[data-alert]").forEach(b => b.addEventListener("click", () => select(b.dataset.alert, true)));
     if (selected) {
+      renderGuide();
       const pill = $("ag-tk-st"), now = DESK.pill(selected in state.closed ? "closed" : "open", "ag-tk-st");
       if (pill && pill.outerHTML !== now) pill.outerHTML = now;
       renderFound(); renderAsk(); if (structural) renderClose();
@@ -128,6 +134,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         fields: [["Client", shift.client], ["Raised", a.time ? `${a.time}, by the night shift's SIEM` : "This shift"], ["Assigned to", "You"], ["Logs", plural(a.sources.length, "source")]],
         bodyLabel: "What the detection rule saw", body: `<p>${gl(a.detection, 2)}</p>`,
       }, { headingId: "ag-a-h", statusId: "ag-tk-st" })}
+      <div id="ag-guide"></div>
       <h3 class="eyebrow ag-work">Investigate</h3>
       <div class="row" role="group" aria-label="Log sources for this alert">${a.sources.map(s => `<button type="button" class="chip" data-src="${s}" aria-pressed="${s === source}">${esc(shift.sources[s].name)}</button>`).join("")}</div>
       <div class="m-logview" id="ag-log"></div>
@@ -139,11 +146,33 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
       $("ag-alert").querySelectorAll("[data-src]").forEach(x => x.setAttribute("aria-pressed", x.dataset.src === source));
       renderLog(); $("ag-q").focus({ preventScroll: true });
     }));
-    renderLog(); renderFound(); renderAsk(); renderClose();
+    renderGuide(); renderLog(); renderFound(); renderAsk(); renderClose();
     renderAll(false);
     if (focus) $("ag-a-h").focus({ preventScroll: false });
   }
   const markTerms = markText;
+  // ---------- guided: the lead's hints, one at a time, and searches worth trying
+  const guided = () => state?.level === "guided";
+  const lastHint = id => { const n = A.alertById(shift, id)?.guide?.hints?.length || 0; return n > 0 && A.hintsUsed(state, id) >= n; };
+  function renderGuide() {
+    const box = $("ag-guide"), a = A.alertById(shift, selected), g = a.guide || {};
+    if (!box) return;
+    if (!guided() || !g.hints?.length) { box.innerHTML = ""; return; }
+    const used = A.hintsUsed(state, selected), hints = g.hints.slice(0, used);
+    box.innerHTML = `<section class="ag-guide" aria-labelledby="ag-g-h"><h3 class="eyebrow" id="ag-g-h" tabindex="-1">Guided: ${esc(leadName)}'s tips</h3>
+      ${hints.length ? `<ol class="dk-msgs">${hints.map((h, i) => DESK.message({ from: leadName, role: `hint ${i + 1} of ${g.hints.length}`, photo: shift.leadPhoto, html: `<p>${gl(h, 2)}</p>` })).join("")}</ol>` : ""}
+      <div class="row">${used < g.hints.length ? `<button class="btn" type="button" id="ag-hint">${used ? "Another hint" : "Give me a hint"} (${used + 1} of ${g.hints.length})</button>` : `<span class="muted">That's every hint for this alert.</span>`}</div>
+      ${g.searches?.length ? `<p class="ag-tries"><span class="muted">Searches worth trying:</span> ${g.searches.map(([src, q], i) => `<button type="button" class="chip mono" data-try="${i}">${esc(q)} <span class="muted">in ${esc(shift.sources[src].name)}</span></button>`).join(" ")}</p>` : ""}</section>`;
+    $("ag-hint")?.addEventListener("click", () => { run(A.hint(shift, state, selected)); ($("ag-hint") || $("ag-g-h")).focus({ preventScroll: true }); });
+    box.querySelectorAll("[data-try]").forEach(b => b.addEventListener("click", () => {
+      const [src, q] = g.searches[Number(b.dataset.try)];
+      source = src;
+      $("ag-alert").querySelectorAll("[data-src]").forEach(x => x.setAttribute("aria-pressed", x.dataset.src === source));
+      renderLog(); $("ag-q").value = q;
+      run(A.search(shift, state, source, q));
+      $("ag-lout").scrollIntoView?.({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
+    }));
+  }
   function renderLog() {
     const src = shift.sources[source];
     $("ag-log").innerHTML = `<div class="panel-title"><h3 class="mono">${esc(src.name)}</h3><span class="sim-tag">Simulated log</span></div>
@@ -166,6 +195,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     $("ag-found").innerHTML = state.found.length ? `<h3 class="eyebrow">Findings so far (all alerts)</h3><ul class="findings">${state.found.map(f => `<li>${esc(all[f])}</li>`).join("")}</ul>`
       : `<p class="muted">No findings yet. A focused search that turns up something important records it here.</p>`;
   }
+  const suggested = ref => (A.alertById(shift, selected).answer.contain || []).includes(ref);
   function renderAsk() {
     const reqs = A.requestsFor(shift, state, selected);
     const can = reqs.filter(r => r.canSend);
@@ -175,7 +205,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     $("ag-ask").innerHTML = `<h3 class="eyebrow">Ask another team</h3>
       ${reqs.some(r => r.status) ? `<ul class="dk-list">${reqs.filter(r => r.status).map(r => `<li>${DESK.ticket({ kind: "Request", ref: reqNo(state, r.ref), title: r.label, status: r.status, fields: [["Team", contact(r.ref).role], ["Contact", contact(r.ref).from]], steps: steps(r.status) }, { level: 4, compact: true })}</li>`).join("")}</ul>` : ""}
       ${can.length ? `<form class="ag-askform" id="ag-askform">
-        <label>Request <select id="ag-req">${can.map(r => `<option value="${esc(r.ref)}">${esc(r.dept)}: ${esc(r.label)}</option>`).join("")}</select></label>
+        <label>Request <select id="ag-req">${can.map(r => `<option value="${esc(r.ref)}">${esc(r.dept)}: ${esc(r.label)}${guided() && lastHint(selected) && suggested(r.ref) ? ` (${esc(leadName)} suggests)` : ""}</option>`).join("")}</select></label>
         <label>Attach a finding as the reason (optional) <select id="ag-att"><option value="">Nothing attached</option>${state.found.map(f => `<option value="${esc(f)}">${esc(all[f])}</option>`).join("")}</select></label>
         <div class="row"><button class="btn" type="submit">Send request</button><span class="muted">Takes ${plural(shift.costs.request, "minute")}; replies come later.</span></div></form>` : `<p class="muted">Nothing else to ask from this alert.</p>`}`;
     $("ag-askform")?.addEventListener("submit", e => { e.preventDefault(); run(A.ask(shift, state, $("ag-req").value, $("ag-att").value)); });
@@ -184,9 +214,10 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     const a = A.alertById(shift, selected), c = state.closed[selected];
     const box = $("ag-close");
     if (c) {
-      box.innerHTML = `<div class="dk-resolve"><span class="dk-resolve-stamp">Resolved</span><dl class="dk-fields"><div><dt>Verdict</dt><dd>${esc(A.VERDICTS[c.verdict])}</dd></div><div><dt>Your severity</dt><dd>${esc(c.severity)}</dd></div><div><dt>Evidence</dt><dd>${plural(c.evidence.length, "item")} ticked</dd></div>${c.related.length ? `<div><dt>Linked to</dt><dd>${c.related.map(id => esc(tref(A.alertById(shift, id)))).join(", ")}</dd></div>` : ""}</dl></div>
-        <div class="row"><button class="btn ghost" type="button" id="ag-reopen">Reopen</button></div>`;
+      box.innerHTML = `${guided() ? feedbackHtml(A.feedback(shift, state, selected)) : ""}<div class="dk-resolve"><span class="dk-resolve-stamp">Resolved</span><dl class="dk-fields"><div><dt>Verdict</dt><dd>${esc(A.VERDICTS[c.verdict])}</dd></div><div><dt>Your severity</dt><dd>${esc(c.severity)}</dd></div><div><dt>Evidence</dt><dd>${plural(c.evidence.length, "item")} ticked</dd></div>${c.related.length ? `<div><dt>Linked to</dt><dd>${c.related.map(id => esc(tref(A.alertById(shift, id)))).join(", ")}</dd></div>` : ""}</dl></div>
+        <div class="row"><button class="btn ghost" type="button" id="ag-reopen">Reopen${guided() ? " and change it" : ""}</button>${guided() && nextOpen() ? `<button class="btn brand" type="button" id="ag-next">Next alert</button>` : ""}</div>`;
       $("ag-reopen").addEventListener("click", () => run(A.reopen(shift, state, selected)));
+      $("ag-next")?.addEventListener("click", () => select(nextOpen(), true));
       return;
     }
     const keep = [...box.querySelectorAll("input:checked")].map(i => i.name + "=" + i.value), sev = box.querySelector("select")?.value;
@@ -200,20 +231,42 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
           ${a.evidence.map((e, i) => `<div class="ev-item"><label><input type="checkbox" name="evidence" value="${i}"><span>${esc(e.text)}</span></label></div>`).join("")}</fieldset>
         ${others.length ? `<fieldset class="ev-set"><legend class="q">Is it connected to another alert? (optional)</legend>
           ${others.map(id => `<div class="ev-item"><label><input type="checkbox" name="related" value="${id}"><span>${esc(A.alertById(shift, id).title)}</span></label></div>`).join("")}</fieldset>` : ""}
-        <p class="muted">Nothing is marked until the handover, just as on a real shift. Closing takes ${plural(shift.costs.close, "minute")}.</p>
-        <div class="row"><button class="btn brand" type="submit">Close alert</button></div><div id="ag-cfb" aria-live="polite"></div></form>`;
+        <p class="muted">${guided() ? `Guided: ${esc(leadName)} checks it as soon as you close it.` : "Nothing is marked until the handover, just as on a real shift."} Closing takes ${plural(shift.costs.close, "minute")}.</p>
+        <div class="row"><button class="btn brand" type="submit">Close alert</button>${guided() ? `<button class="btn ghost" type="button" id="ag-fill">Show me the answer</button>` : ""}</div><div id="ag-cfb" aria-live="polite"></div></form>`;
     for (const k of keep) { const [n, v] = k.split("="); const i = box.querySelector(`input[name="${n}"][value="${v}"]`); if (i) i.checked = true; }
     if (sev) box.querySelector("select").value = sev;
+    // Guided: fill the form with the model answer, so the learner can read why before closing.
+    $("ag-fill")?.addEventListener("click", () => {
+      const m = A.modelClose(shift, selected);
+      box.querySelectorAll("input").forEach(i => { i.checked = (i.name === "verdict" && i.value === m.verdict) || (i.name === "evidence" && m.evidence.includes(Number(i.value))) || (i.name === "related" && m.related.includes(i.value)); });
+      box.querySelector("select").value = m.severity;
+      $("ag-cfb").innerHTML = `<div class="feedback">Filled in with ${esc(leadName)}'s answer. ${gl(a.answer.why, 2)}</div>`;
+    });
     $("ag-closeform").addEventListener("submit", e => {
       e.preventDefault();
       const f = new FormData(e.target);
       if (!f.get("verdict")) { $("ag-cfb").innerHTML = `<div class="feedback">Choose what the alert is first.</div>`; return; }
       const r = A.close(shift, state, selected, { verdict: f.get("verdict"), severity: f.get("severity"), evidence: f.getAll("evidence").map(Number), related: f.getAll("related") });
       run(r);
-      const next = state.arrived.find(id => !(id in state.closed));
-      if (next) select(next, true);
+      // Guided stays on the alert so the feedback can be read; on your own, move to the next one.
+      if (guided()) $("ag-fb-h")?.focus({ preventScroll: false });
+      else if (nextOpen()) select(nextOpen(), true);
       else if (A.canHandOver(shift, state)) $("ag-hand-h").focus();
     });
+  }
+
+  const nextOpen = () => state.arrived.find(id => !(id in state.closed));
+  const okMark = b => `<b class="${b ? "ok" : "no"}">${b ? "✓" : "✗"}</b>`;
+  // Guided feedback on one closed alert: right or wrong, each evidence item and why, what to ask for.
+  function feedbackHtml(fb) {
+    if (!fb) return "";
+    return `<section class="ag-fb${fb.verdict.ok && fb.evidence.pass ? " right" : " wrong"}" aria-labelledby="ag-fb-h"><h3 tabindex="-1" id="ag-fb-h">${fb.verdict.ok && fb.evidence.pass ? `${esc(leadName)}: spot on.` : `${esc(leadName)}: not quite.`}</h3>
+      <p>${okMark(fb.verdict.ok)} ${esc(A.VERDICTS[fb.verdict.chosen])}${fb.verdict.ok ? "" : `. It's: <b>${esc(A.VERDICTS[fb.verdict.answer])}</b>`}.</p>
+      <p>${okMark(fb.severity.ok)} Severity ${esc(fb.severity.chosen)}${fb.severity.ok ? "" : ` (fits: ${esc(fb.severity.accepted.join(" or "))})`}.</p>
+      ${fb.evidence.items.filter(r => !r.ok || r.selected).map(r => `<p class="ev-why">${okMark(r.ok)} ${esc(A.alertById(shift, selected).evidence[r.index].text)}. ${esc(r.why)}</p>`).join("")}
+      ${fb.links.ok ? "" : `<p>${okMark(false)} ${fb.links.want.length ? `It's connected to ${fb.links.want.map(id => esc(tref(A.alertById(shift, id)))).join(", ")}.` : "It isn't connected to the alerts you linked."}</p>`}
+      ${fb.contain.length ? `<p class="muted">To contain it, ask for: ${fb.contain.map(c => esc(c.label)).join("; ")}.</p>` : ""}
+      <p class="muted">${gl(fb.why, 2)}</p></section>`;
   }
 
   // ---------- handover and debrief
@@ -227,7 +280,14 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
           <label>Status <select name="status-${a.id}">${Object.entries(A.STATUSES).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("")}</select></label>
           ${a.answer.summaries.map((s, i) => `<div class="ev-item"><label><input type="radio" name="summary-${a.id}" value="${i}" required><span>${esc(s)}</span></label></div>`).join("")}</fieldset>`).join("")}
         <label class="ag-note">Anything else for the next shift? (optional, shown next to a model handover in the debrief)<textarea name="note" rows="4" maxlength="2000"></textarea></label>
-        <div class="row"><button class="btn brand" type="submit">Hand over and clock out</button></div></form>`;
+        <div class="row"><button class="btn brand" type="submit">Hand over and clock out</button>${guided() ? `<button class="btn ghost" type="button" id="ag-hfill">Fill in from ${esc(leadName)}'s notes</button>` : ""}</div></form>`;
+    $("ag-hfill")?.addEventListener("click", () => {
+      const m = A.modelHandover(shift);
+      for (const a of shift.alerts) {
+        hand.querySelector(`[name="status-${a.id}"]`).value = m.status[a.id];
+        const r = hand.querySelector(`[name="summary-${a.id}"][value="${m.summary[a.id]}"]`); if (r) r.checked = true;
+      }
+    });
     $("ag-handform").addEventListener("submit", e => {
       e.preventDefault();
       const f = new FormData(e.target);
@@ -248,10 +308,11 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     d.hidden = false;
     d.innerHTML = `<div class="ag-out"><span class="ag-stamp out">OUT ${esc(clockAt(rep.clock))} · ${esc(day)}</span><span class="eyebrow">Shift report · ${esc(shift.client)}</span></div>
       <h2 tabindex="-1" id="ag-d-h">Clocked out: ${rep.passed} of ${rep.checks.length} checks passed</h2>
+      ${rep.level === "guided" ? `<p class="muted">A guided shift${rep.hints ? `, with ${plural(rep.hints, "hint")}` : ""}. When you're ready, try it on your own: nothing is checked until the handover.</p>` : ""}
       <ul class="ag-checks">${rep.checks.map(c => `<li>${ok(c.ok)} <b>${esc(c.label)}:</b> ${esc(c.text)}</li>`).join("")}</ul>
       <p class="muted">Shift time ${clockAt(0)} to ${clockAt(rep.clock)} (${rep.clock} min: ${esc(mins) || "no actions"}). Time is shown, never scored.</p>
       ${rep.costs.length ? `<h3 class="eyebrow">Went too far</h3><ul class="findings">${rep.costs.map(c => `<li><b>${esc(c.label)}.</b> ${esc(c.cost)}</li>`).join("")}</ul>` : ""}
-      ${rep.links.missed.length || rep.links.wrong.length ? `<p class="feedback">${rep.links.missed.length ? "Two alerts were one incident: the VPN session from the spray is the one that made the change. Linking alerts is how a SOC sees the whole attack. " : ""}${rep.links.wrong.length ? "Some alerts you linked aren't connected." : ""}</p>` : ""}
+      ${rep.links.missed.length || rep.links.wrong.length ? `<p class="feedback">${rep.links.missed.length ? `${esc(rep.linkNote || "Some alerts were one incident. Linking alerts is how a SOC sees the whole attack.")} ` : ""}${rep.links.wrong.length ? "Some alerts you linked aren't connected." : ""}</p>` : ""}
       ${rep.alerts.map(a => `<details class="tbl ag-dalert"${a.verdict.ok && a.evidence.pass && a.containOk ? "" : " open"}><summary>${ok(a.verdict.ok && a.evidence.pass && a.containOk && a.status.ok && a.summary.ok)} ${esc(a.title)}</summary>
         <p>${ok(a.verdict.ok)} Verdict: ${esc(A.VERDICTS[a.verdict.chosen] || "none")}${a.verdict.ok ? "" : `. Answer: ${esc(A.VERDICTS[a.verdict.answer])}`}.</p>
         <p>${ok(a.severity.ok)} Severity: ${esc(a.severity.chosen)} (fits: ${esc(a.severity.accepted.join(" or "))}).</p>
@@ -263,7 +324,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
       ${rep.pending.length ? `<p class="muted">Still on their way at handover: ${rep.pending.map(esc).join("; ")}.</p>` : ""}
       <h3 class="eyebrow">Handover notes</h3>
       <div class="ag-notes"><div><b>Yours</b><p>${rep.note ? esc(rep.note) : '<span class="muted">(none)</span>'}</p></div><div><b>A model handover</b><p>${esc(rep.modelNote)}</p></div></div>
-      <div class="row"><button class="btn brand" type="button" id="ag-again">Work the shift again</button><a class="btn ghost" href="#mission-ssh-brute">Mission: The 3am logins</a></div>
+      <div class="row"><button class="btn brand" type="button" id="ag-again">Work the shift again</button>${shift.next ? `<a class="btn ghost" href="${esc(shift.next.href)}">${esc(shift.next.label)}</a>` : ""}</div>
       ${feedback ? `<p class="muted">This is a pilot. <a href="${esc(feedback)}" target="_blank" rel="noopener">Tell us how the shift went ↗</a> (a public GitHub form; needs a free account).</p>` : ""}`;
     $("ag-again").addEventListener("click", () => (onAgain ? onAgain() : mount(root, shift, { done: true, onComplete })));
     $("ag-d-h").focus();
@@ -271,13 +332,17 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
   }
 
   $("ag-wait").addEventListener("click", () => run(A.wait(shift, state)));
-  const r0 = A.start(shift);
-  state = r0.state;
-  inbox({ sys: true, html: `<b>${plural(r0.events.length, "alert")} in the queue</b> from the night shift.` });
-  select(state.arrived[0], false);
+  // The shift starts when you take the desk, at the level chosen on the client file.
+  function begin(level) {
+    const r0 = A.start(shift, { level });
+    state = r0.state;
+    $("ag-inbox").innerHTML = "";
+    inbox({ sys: true, html: `<b>${plural(r0.events.length, "alert")} in the queue</b> from ${esc(shift.handedOverBy || "the night shift")}.` });
+    if (level === "guided") inbox({ from: leadName, role: leadRole || "Shift lead", photo: shift.leadPhoto, html: `<p>Guided shift: open an alert and press <b>Give me a hint</b> whenever you're stuck. I'll check each one as you close it.</p>` });
+    select(state.arrived[0], false);
+  }
 
   // ---------- clocking in: tap the badge, the clock stamps the time, the lead briefs you, then the desk.
-  const reduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   const pause = ms => new Promise(res => setTimeout(res, reduced ? 0 : ms));
   $("ag-tap").addEventListener("click", async () => {
     const tap = $("ag-tap");
@@ -301,10 +366,11 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     $("ag-desk-go").focus();
   });
   $("ag-desk-go").addEventListener("click", () => {
+    begin(root.querySelector('[name="ag-level"]:checked')?.value || "standard");
     $("ag-in").hidden = true; $("ag-desk").hidden = false;
     root.scrollIntoView?.({ block: "start" });
     root.querySelector(`[data-alert="${state.arrived[0]}"]`)?.focus();
   });
   // The page uses inProgress to warn before leaving mid-shift (the shift is short; there is no mid-shift save).
-  return { get state() { return state; }, get inProgress() { return !state.complete && state.clock > 0; } };
+  return { get state() { return state; }, get inProgress() { return !!state && !state.complete && state.clock > 0; } };
 }

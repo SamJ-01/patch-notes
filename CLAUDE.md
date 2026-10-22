@@ -47,6 +47,10 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   (`content/agency/shift-01.json`, `static/js/agency/`, route `#agency-shift-01`, tests `tests/agency.test.mjs`) opens with
   clocking in (badge tap, the lead's briefing as chat, the client file), then the desk (queue, alert, messages), then clock out.
   Design and decisions: `docs/agency-pilot.md`. Logs are searched with `engine.searchLines`.
+  Two levels, chosen on the client file (Guided is the default for a first go): Guided adds the lead's hints per alert
+  (`guide.hints`, free, counted), suggested searches (`guide.searches` [[source, query]], tested to find lines in the
+  alert's own logs), "Show me the answer" (`A.modelClose`), feedback as each alert closes (`A.feedback`) and a handover
+  fill-in. Progress saves `own` (done on your own at least once). Per shift: `handover.links` (missed-link line), `next` link.
 - Emails anywhere on the site use `static/js/mail.js` (`MAIL.card`/`MAIL.wire`; inlined into the page like hw.js): a mail
   app look, links that reveal where they go, Details/Original views from raw headers, clues pinned with `{ at, text }`.
 - Tickets and staff messages anywhere on the site use `static/js/desk.js` (`DESK.ticket`/`DESK.message`/`DESK.channel`; inlined

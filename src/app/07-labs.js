@@ -264,7 +264,7 @@ VIEWS.agency = () => {
       <ol class="dk-msgs">${DESK.message({ from: next.lead.split(",")[0], role: (next.lead.split(",")[1] || "Shift lead").trim(), at: next.startsAt, photo: next.leadPhoto, html: `<p>${gloss((next.briefing.match(/[^.!?]+[.!?]+/g) || [next.briefing]).slice(0, 2).join(" ").trim(), 2)}</p>` })}</ol></section>
     <section class="panel"><h2>The rota</h2>
       <ol class="ag-rota">${shifts.map(sh => `<li><span class="mono ag-rota-when">${esc(day(sh.date))} · ${esc(sh.startsAt)}</span><b>${esc(sh.client)}</b><span class="muted">${esc(sh.title.split(":")[0])}, ${sh.minutes} min</span>
-        <span class="ag-rota-st">${rec(sh.id) ? `✓ ${rec(sh.id).best} of ${rec(sh.id).total} checks` : "Open"}</span><a class="btn ghost" href="#agency-${esc(sh.id)}">${rec(sh.id) ? "Work it again" : "Clock in"}</a></li>`).join("")}
+        <span class="ag-rota-st">${rec(sh.id) ? `✓ ${rec(sh.id).best} of ${rec(sh.id).total} checks${rec(sh.id).own ? "" : " (guided)"}` : "Open"}</span><a class="btn ghost" href="#agency-${esc(sh.id)}">${rec(sh.id) ? "Work it again" : "Clock in"}</a></li>`).join("")}
         <li class="ag-rota-soon"><span class="mono ag-rota-when">COMING</span><b>More shifts are being written</b><span class="muted">Each one a new client and new alerts</span></li></ol></section>
     <section class="panel"><h2>How a shift works</h2>
       <ol class="ag-steps">
@@ -289,7 +289,7 @@ function agencyView(id) {
       onComplete: rep => {
         P.agency = P.agency || {};
         const prev = P.agency[id], first = !prev;
-        P.agency[id] = { d: prev?.d || todayStr(), best: Math.max(prev?.best || 0, rep.passed), total: rep.checks.length };
+        P.agency[id] = { d: prev?.d || todayStr(), best: Math.max(prev?.best || 0, rep.passed), total: rep.checks.length, own: !!prev?.own || rep.level !== "guided" };
         if (first) award(sh.xp, `PATCH//AGENCY: ${sh.title}`); else progressChanged();
         celebrate("Shift complete!", first ? `${sh.title} · +${sh.xp} XP` : `${rep.passed} of ${rep.checks.length} checks passed`);
       },

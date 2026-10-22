@@ -35,8 +35,12 @@ export function findings(shift) {
   return out;
 }
 
-export function start(shift) {
-  const state = { clock: 0, arrived: [], closed: {}, found: [], requests: [], facts: {}, spent: {}, handover: null, complete: false };
+// Levels: "guided" adds the lead's hints, suggested searches, feedback as each alert closes and a fill-in for
+// the answers; "standard" is on your own, marked at the handover. The rules are the same for both.
+export const LEVELS = { guided: "Guided", standard: "On your own" };
+export function start(shift, { level = "standard" } = {}) {
+  const state = { clock: 0, arrived: [], closed: {}, found: [], requests: [], facts: {}, spent: {}, handover: null, complete: false,
+    level: level in LEVELS ? level : "standard", hints: {} };
   const events = [];
   settle(shift, state, events);
   return { state, events };
@@ -148,6 +152,46 @@ export function reopen(shift, state, alertId) {
   return { state: s, events: [{ type: "reopened", id: alertId }] };
 }
 
+// Guided only: the lead's next hint for an alert. Hints are free (the clock doesn't move) but counted.
+export function hint(shift, state, alertId) {
+  const a = alertById(shift, alertId), hints = a?.guide?.hints || [];
+  const used = state.hints?.[alertId] || 0;
+  if (!open(state) || state.level !== "guided" || !state.arrived.includes(alertId) || used >= hints.length) return { state, events: [] };
+  const s = clone(state);
+  s.hints = { ...s.hints, [alertId]: used + 1 };
+  return { state: s, events: [{ type: "hint", id: alertId, n: used + 1, of: hints.length, text: hints[used] }] };
+}
+export const hintsUsed = (state, alertId) => state.hints?.[alertId] || 0;
+
+// The model answer for one alert, as the close form takes it (for "Show me the answer" in guided).
+export function modelClose(shift, alertId) {
+  const a = alertById(shift, alertId);
+  if (!a) return null;
+  return { verdict: a.answer.verdict, severity: a.answer.severity[0], evidence: a.evidence.flatMap((e, i) => (e.supports ? [i] : [])), related: [...(a.answer.related || [])] };
+}
+
+// Feedback on one closed alert, straight away (guided): verdict, severity and each evidence item, with why.
+export function feedback(shift, state, alertId) {
+  const a = alertById(shift, alertId), c = state.closed[alertId];
+  if (!a || !c) return null;
+  const ans = a.answer;
+  const rel = new Set(c.related), want = new Set(ans.related || []);
+  return {
+    verdict: { chosen: c.verdict, answer: ans.verdict, ok: c.verdict === ans.verdict },
+    severity: { chosen: c.severity, accepted: ans.severity, ok: ans.severity.includes(c.severity) },
+    evidence: judgeEvidence(a.evidence, c.evidence),
+    links: { ok: [...want].every(x => rel.has(x)) && [...rel].every(x => want.has(x)), want: [...want] },
+    contain: (ans.contain || []).map(ref => ({ ref, label: request(shift, ref).label })),
+    why: ans.why,
+  };
+}
+
+// The model handover (for the guided fill-in).
+export const modelHandover = shift => ({
+  status: Object.fromEntries(shift.alerts.map(a => [a.id, a.answer.status])),
+  summary: Object.fromEntries(shift.alerts.map(a => [a.id, a.answer.summary])),
+});
+
 export const canHandOver = (shift, state) => open(state) && shift.alerts.every(a => state.arrived.includes(a.id) && a.id in state.closed);
 
 // End the shift: for each alert a status and the summary chosen from the written options, plus an
@@ -204,5 +248,7 @@ export function debrief(shift, state) {
     { label: "Handover", ok: alerts.every(a => a.status.ok && a.summary.ok), text: `${alerts.filter(a => a.status.ok && a.summary.ok).length} of ${alerts.length} alerts handed over correctly` },
   ];
   const pending = state.requests.filter(r => r.status === "pending").map(r => label(r.ref));
-  return { alerts, links, costs, pending, checks, passed: checks.filter(c => c.ok).length, clock: state.clock, spent: state.spent, note: state.handover?.note || "", modelNote: shift.handover?.model || "" };
+  const hintCount = Object.values(state.hints || {}).reduce((n, x) => n + x, 0);
+  return { alerts, links, costs, pending, checks, passed: checks.filter(c => c.ok).length, clock: state.clock, spent: state.spent, note: state.handover?.note || "", modelNote: shift.handover?.model || "",
+    level: state.level || "standard", hints: hintCount, linkNote: shift.handover?.links || "" };
 }

@@ -1794,3 +1794,19 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .dk-scene { display: block; width: 100%; max-width: 100%; min-width: 0; height: auto; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--surface-2); }
 /* Views that load a module first hold the space they'll fill, so the footer doesn't jump up and back down. */
 #mission-root > .empty:only-child, #lab-root > .empty:only-child, #agency-root > .empty:only-child, #hc-root > .empty:only-child, #lg-root > .empty:only-child { min-height: 70vh; }
+/* Agency levels: the choice on the client file, the lead's tips and feedback as each alert closes */
+.ag-level { display: grid; gap: 8px; margin: 4px 0; padding: 0; border: 0; min-width: 0; }
+.ag-level legend { font-weight: 600; margin-bottom: 6px; }
+.ag-lv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); cursor: pointer; font-size: 0.9rem; }
+.ag-lv:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); }
+.ag-lv input { margin-top: 3px; }
+.ag-lv b { display: block; }
+.ag-guide { display: grid; gap: 8px; padding: 12px; border: 1px dashed rgba(var(--sun-rgb), 0.7); border-radius: var(--radius-sm); background: rgba(var(--sun-rgb), 0.06); }
+.ag-guide h3 { margin: 0; }
+.ag-tries { margin: 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ag-tries .chip { font-size: 0.78rem; overflow-wrap: anywhere; text-align: left; }
+.ag-fb { display: grid; gap: 6px; padding: 12px; border-radius: var(--radius-sm); border-left: 4px solid var(--good); background: var(--surface-2); margin-bottom: 10px; }
+.ag-fb.wrong { border-left-color: var(--sun); }
+.ag-fb h3 { margin: 0; font-size: 1rem; }
+.ag-fb p { margin: 0; font-size: 0.9rem; }
+.ag-fb b.ok { color: var(--good); } .ag-fb b.no { color: var(--bad); }

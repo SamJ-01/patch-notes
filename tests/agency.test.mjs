@@ -173,6 +173,41 @@ test("debrief: over-reaction, a wrong verdict, a missed link and missing contain
   assert.equal(check("Handover"), false, "an empty handover matches nothing");
 });
 
+test("guided: hints come one at a time, cost no time, and only on the guided level", () => {
+  const g = A.start(shift, { level: "guided" }).state;
+  assert.equal(g.level, "guided");
+  assert.deepEqual(A.hint(shift, A.start(shift).state, "a1").events, [], "no hints on your own");
+  let s = g;
+  const texts = [];
+  for (;;) { const r = A.hint(shift, s, "a1"); if (!r.events.length) break; s = r.state; texts.push(r.events[0].text); }
+  assert.deepEqual(texts, shift.alerts[0].guide.hints);
+  assert.equal(s.clock, 0, "hints are free");
+  assert.equal(A.hintsUsed(s, "a1"), texts.length);
+  assert.deepEqual(A.hint(shift, g, "a5").events, [], "not for an alert that hasn't arrived");
+  assert.equal(A.start(shift, { level: "nonsense" }).state.level, "standard");
+});
+
+test("guided: feedback on a closed alert, and the filled-in answers pass", () => {
+  let s = A.start(shift, { level: "guided" }).state;
+  s = A.close(shift, s, "a2", { verdict: "act", severity: "high", evidence: [4] }).state;
+  const fb = A.feedback(shift, s, "a2");
+  assert.equal(fb.verdict.ok, false); assert.equal(fb.verdict.answer, "legit");
+  assert.equal(fb.evidence.pass, false);
+  assert.ok(fb.why);
+  assert.equal(A.feedback(shift, s, "a1"), null, "not closed yet");
+  for (const a of shift.alerts) {
+    let t = A.start(shift, { level: "guided" }).state;
+    t = { ...t, arrived: shift.alerts.map(x => x.id) };
+    t = A.close(shift, t, a.id, A.modelClose(shift, a.id)).state;
+    const f = A.feedback(shift, t, a.id);
+    assert.ok(f.verdict.ok && f.severity.ok && f.evidence.pass && f.links.ok, `${a.id}: the model answer passes its own check`);
+  }
+  const { s: done } = play(perfect);
+  const rep = A.handover(shift, { ...done, level: "guided", hints: { a1: 2, a4: 1 } }, A.modelHandover(shift)).events[0].report;
+  assert.equal(rep.checks.find(c => c.label === "Handover").ok, true, "the handover fill-in is the model");
+  assert.equal(rep.level, "guided"); assert.equal(rep.hints, 3);
+});
+
 test("matches() supports oneOf", () => {
   assert.ok(matches({ x: { oneOf: ["a", "b"] } }, { x: "b" }));
   assert.ok(!matches({ x: { oneOf: ["a"] } }, { x: "c" }));
@@ -221,6 +256,17 @@ for (const sh of shifts) {
       if (ans.verdict === "act") assert.ok(ans.contain.length, `${a.id}: an incident needs containment`);
     }
     assert.ok(Object.keys(all).length >= sh.alerts.length);
+    // Guided: every alert has hints, and every suggested search is in the alert's own logs and finds something.
+    for (const a of sh.alerts) {
+      assert.ok(a.guide?.hints?.length >= 2, `${a.id}: needs at least two hints`);
+      for (const h of a.guide.hints) assert.ok(h.split(/\s+/).length <= 45, `${a.id}: keep hints short: ${h}`);
+      for (const [src, q] of a.guide.searches || []) {
+        assert.ok(a.sources.includes(src), `${a.id}: suggested search in ${src}, which the alert doesn't open`);
+        const lines = sh.sources[src].lines || [];
+        if (lines.length) assert.ok(lines.some(l => q.toLowerCase().split(/\s+/).every(w => l.toLowerCase().includes(w))), `${a.id}: "${q}" finds nothing in ${src}`);
+      }
+    }
+    assert.ok(sh.handover?.links, "a debrief line for missed links");
   });
 
   test(`${sh.id}: log lines follow their stated formats; public addresses are documentation ranges`, () => {
