@@ -90,6 +90,9 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - Wireless: lesson `wireless` (bands, channels, 802.11 generations, WEP to WPA3 and 802.1X; KRACK) and lab `wifi-survey`
   (Windows 10 `netsh wlan show networks mode=bssid` output: open guest network, WEP camera, an evil twin of the staff SSID,
   an overlapping channel). Network+ 2.3 is now partly covered.
+- Slow network lab (`#lab-slow-network`, evidence lab): Windows 10 ping/tracert and Cisco IOS 15 `show interfaces` for a
+  congested upload (txload, output drops), a jittery Wi-Fi laptop and a change log; walks the troubleshooting method
+  (Network+ 5.1, 5.4, 5.5, 3.1, 3.2). Windows ping summaries in any lab must agree with their reply lines (tested).
 - Hashing lab (`#lab-hashing`, `static/js/labs/hashing.js`, tests `tests/hashing.test.mjs`): MD5/SHA-1/SHA-256, salts, slow hashes.
 - Device drawings (`static/js/hw.js`, `HW`): a 3/4 view (`hwBox` adds a lit top and shaded side, which also carry
   `hw-body` so state colours reach them; `--hw-face-top/side` per theme). Keep detail readable at ~50 px.

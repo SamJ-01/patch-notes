@@ -648,6 +648,23 @@ class ContentIntegrity(unittest.TestCase):
                 else:
                     self.assertTrue(0 <= step["answer"] < len(step["options"]), step["q"])
 
+    def test_windows_ping_summaries_match_their_replies(self):
+        # Windows ping prints whole milliseconds: time<1ms counts as 0, the average is rounded down.
+        found = 0
+        for lab in self.labs.values():
+            text = lab.get("artifact", {}).get("text", "")
+            for block in re.findall(r"Pinging (\S+) with 32 bytes of data:\n(.*?)\n\nPing statistics for \1:\n(.*?Average = \d+ms)", text, re.S):
+                dest, replies, stats = block
+                lines = replies.split("\n")
+                times = [0 if "time<1ms" in l else int(re.search(r"time=(\d+)ms", l).group(1)) for l in lines if l.startswith("Reply from")]
+                lost = sum(l == "Request timed out." for l in lines)
+                self.assertEqual(len(times) + lost, len(lines), dest)
+                sent = len(lines)
+                self.assertIn(f"Sent = {sent}, Received = {len(times)}, Lost = {lost} ({lost * 100 // sent}% loss)", stats, lab["id"])
+                self.assertIn(f"Minimum = {min(times)}ms, Maximum = {max(times)}ms, Average = {sum(times) // len(times)}ms", stats, lab["id"])
+                found += 1
+        self.assertGreaterEqual(found, 4)
+
     def test_stack_items_have_matchers(self):
         stack = content("stack.json")
         self.assertEqual(len({s["id"] for s in stack}), len(stack))

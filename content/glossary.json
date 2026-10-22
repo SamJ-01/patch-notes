@@ -4281,5 +4281,103 @@
   "see": [
    "evil-twin"
   ]
+ },
+ {
+  "id": "latency",
+  "term": "Latency",
+  "kind": "Concept",
+  "aliases": [
+   "latency"
+  ],
+  "short": "How long data takes to get somewhere and back, usually in milliseconds (ms). ping measures it.",
+  "lesson": "networking",
+  "see": [
+   "jitter",
+   "packet-loss"
+  ]
+ },
+ {
+  "id": "jitter",
+  "term": "Jitter",
+  "kind": "Concept",
+  "aliases": [
+   "jitter"
+  ],
+  "short": "How much latency varies from one packet to the next. Voice and video calls break up when it's high.",
+  "lesson": "networking",
+  "see": [
+   "latency",
+   "qos"
+  ]
+ },
+ {
+  "id": "packet-loss",
+  "term": "Packet loss",
+  "kind": "Concept",
+  "aliases": [
+   "packet loss"
+  ],
+  "short": "Packets that never arrive. In ping it shows as Request timed out. Even a little hurts calls.",
+  "lesson": "networking",
+  "see": [
+   "latency",
+   "congestion"
+  ]
+ },
+ {
+  "id": "congestion",
+  "term": "Congestion",
+  "kind": "Concept",
+  "aliases": [
+   "congestion",
+   "congested"
+  ],
+  "short": "A link carrying nearly as much as it can. Packets queue up (adding delay) and get dropped when the queue is full.",
+  "lesson": "networking",
+  "see": [
+   "packet-loss",
+   "qos"
+  ]
+ },
+ {
+  "id": "qos",
+  "term": "QoS",
+  "kind": "Technology",
+  "aliases": [
+   "QoS",
+   "quality of service"
+  ],
+  "short": "Quality of service: rules that let important traffic, like voice calls, go first when a link is busy.",
+  "lesson": "networking",
+  "see": [
+   "congestion",
+   "jitter"
+  ]
+ },
+ {
+  "id": "baseline",
+  "term": "Baseline",
+  "kind": "Concept",
+  "aliases": [
+   "baseline",
+   "baselines"
+  ],
+  "short": "A record of what normal looks like (speeds, traffic, response times), so you can tell when something isn't.",
+  "lesson": "networking"
+ },
+ {
+  "id": "change-management",
+  "term": "Change management",
+  "kind": "Concept",
+  "aliases": [
+   "change management",
+   "change record",
+   "change records",
+   "change log"
+  ],
+  "short": "Planning, approving and recording changes to systems, so when something breaks you can see what changed and when.",
+  "see": [
+   "baseline"
+  ]
  }
 ]

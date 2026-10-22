@@ -1702,6 +1702,178 @@
   "card": "ping, traceroute, nslookup: find the fault"
  },
  {
+  "id": "slow-network",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 15,
+  "lesson": "networking",
+  "title": "Why is the network slow?",
+  "skill": "Troubleshoot a slow network step by step: latency, jitter, packet loss and congestion",
+  "card": "Pings, a tracert and a full uplink",
+  "intro": "Kestrel Dental (fictional) says phone calls break up and the booking system crawls every afternoon. Here's what IT collected. Work through it like a network technician.",
+  "artifact": {
+   "kind": "log",
+   "name": "Evidence (Windows 10 ping and tracert, Cisco IOS 15)",
+   "placeholder": "e.g. Lost",
+   "text": "=== 10:05  Reception PC (wired). Baseline: booking system, a quiet morning ===\nC:\\Users\\reception>ping -n 10 203.0.113.40\n\nPinging 203.0.113.40 with 32 bytes of data:\nReply from 203.0.113.40: bytes=32 time=19ms TTL=61\nReply from 203.0.113.40: bytes=32 time=18ms TTL=61\nReply from 203.0.113.40: bytes=32 time=20ms TTL=61\nReply from 203.0.113.40: bytes=32 time=19ms TTL=61\nReply from 203.0.113.40: bytes=32 time=18ms TTL=61\nReply from 203.0.113.40: bytes=32 time=19ms TTL=61\nReply from 203.0.113.40: bytes=32 time=21ms TTL=61\nReply from 203.0.113.40: bytes=32 time=18ms TTL=61\nReply from 203.0.113.40: bytes=32 time=19ms TTL=61\nReply from 203.0.113.40: bytes=32 time=19ms TTL=61\n\nPing statistics for 203.0.113.40:\n    Packets: Sent = 10, Received = 10, Lost = 0 (0% loss),\nApproximate round trip times in milli-seconds:\n    Minimum = 18ms, Maximum = 21ms, Average = 19ms\n\n=== 10:07  Surgery 2 laptop (Wi-Fi). \"Slow all day\" ===\nC:\\Users\\surgery2>ping -n 10 10.40.0.1\n\nPinging 10.40.0.1 with 32 bytes of data:\nReply from 10.40.0.1: bytes=32 time=3ms TTL=255\nReply from 10.40.0.1: bytes=32 time=48ms TTL=255\nReply from 10.40.0.1: bytes=32 time=2ms TTL=255\nReply from 10.40.0.1: bytes=32 time=96ms TTL=255\nRequest timed out.\nReply from 10.40.0.1: bytes=32 time=5ms TTL=255\nReply from 10.40.0.1: bytes=32 time=71ms TTL=255\nReply from 10.40.0.1: bytes=32 time=4ms TTL=255\nRequest timed out.\nReply from 10.40.0.1: bytes=32 time=67ms TTL=255\n\nPing statistics for 10.40.0.1:\n    Packets: Sent = 10, Received = 8, Lost = 2 (20% loss),\nApproximate round trip times in milli-seconds:\n    Minimum = 2ms, Maximum = 96ms, Average = 37ms\n\n=== 15:12  Reception PC (wired). Calls choppy, bookings slow ===\nC:\\Users\\reception>ping -n 10 10.40.0.1\n\nPinging 10.40.0.1 with 32 bytes of data:\nReply from 10.40.0.1: bytes=32 time<1ms TTL=255\nReply from 10.40.0.1: bytes=32 time<1ms TTL=255\nReply from 10.40.0.1: bytes=32 time<1ms TTL=255\nReply from 10.40.0.1: bytes=32 time<1ms TTL=255\nReply from 10.40.0.1: bytes=32 time<1ms TTL=255\nReply from 10.40.0.1: bytes=32 time<1ms TTL=255\nReply from 10.40.0.1: bytes=32 time<1ms TTL=255\nReply from 10.40.0.1: bytes=32 time<1ms TTL=255\nReply from 10.40.0.1: bytes=32 time<1ms TTL=255\nReply from 10.40.0.1: bytes=32 time<1ms TTL=255\n\nPing statistics for 10.40.0.1:\n    Packets: Sent = 10, Received = 10, Lost = 0 (0% loss),\nApproximate round trip times in milli-seconds:\n    Minimum = 0ms, Maximum = 0ms, Average = 0ms\n\nC:\\Users\\reception>ping -n 20 203.0.113.40\n\nPinging 203.0.113.40 with 32 bytes of data:\nReply from 203.0.113.40: bytes=32 time=24ms TTL=61\nReply from 203.0.113.40: bytes=32 time=31ms TTL=61\nReply from 203.0.113.40: bytes=32 time=187ms TTL=61\nReply from 203.0.113.40: bytes=32 time=26ms TTL=61\nRequest timed out.\nReply from 203.0.113.40: bytes=32 time=244ms TTL=61\nReply from 203.0.113.40: bytes=32 time=29ms TTL=61\nReply from 203.0.113.40: bytes=32 time=352ms TTL=61\nReply from 203.0.113.40: bytes=32 time=38ms TTL=61\nRequest timed out.\nReply from 203.0.113.40: bytes=32 time=27ms TTL=61\nReply from 203.0.113.40: bytes=32 time=198ms TTL=61\nReply from 203.0.113.40: bytes=32 time=41ms TTL=61\nReply from 203.0.113.40: bytes=32 time=305ms TTL=61\nRequest timed out.\nReply from 203.0.113.40: bytes=32 time=25ms TTL=61\nReply from 203.0.113.40: bytes=32 time=276ms TTL=61\nReply from 203.0.113.40: bytes=32 time=33ms TTL=61\nReply from 203.0.113.40: bytes=32 time=219ms TTL=61\nReply from 203.0.113.40: bytes=32 time=36ms TTL=61\n\nPing statistics for 203.0.113.40:\n    Packets: Sent = 20, Received = 17, Lost = 3 (15% loss),\nApproximate round trip times in milli-seconds:\n    Minimum = 24ms, Maximum = 352ms, Average = 123ms\n\n=== 15:14  Reception PC (wired) ===\nC:\\Users\\reception>tracert -d 203.0.113.40\n\nTracing route to 203.0.113.40 over a maximum of 30 hops\n\n  1    <1 ms    <1 ms    <1 ms  10.40.0.1\n  2   212 ms   198 ms   241 ms  198.51.100.1\n  3   226 ms     *      205 ms  198.51.100.65\n  4   219 ms   233 ms   201 ms  203.0.113.40\n\nTrace complete.\n\n=== 15:16  Office router (Cisco 2911, IOS 15), the internet link ===\nR1#show interfaces gigabitEthernet 0/1\nGigabitEthernet0/1 is up, line protocol is up \n  Hardware is CN Gigabit Ethernet, address is 0201.4a6c.0b02 (bia 0201.4a6c.0b02)\n  Description: WAN to ISP (20 Mbps upload)\n  Internet address is 198.51.100.2/30\n  MTU 1500 bytes, BW 20000 Kbit/sec, DLY 10 usec, \n     reliability 255/255, txload 251/255, rxload 41/255\n  Encapsulation ARPA, loopback not set\n  Keepalive set (10 sec)\n  Full Duplex, 1Gbps, media type is RJ45\n  output flow-control is unsupported, input flow-control is unsupported\n  ARP type: ARPA, ARP Timeout 04:00:00\n  Last input 00:00:00, output 00:00:00, output hang never\n  Last clearing of \"show interface\" counters 01:16:04\n  Input queue: 0/75/0/0 (size/max/drops/flushes); Total output drops: 18342\n  Queueing strategy: fifo\n  Output queue: 40/40 (size/max)\n  5 minute input rate 3254000 bits/sec, 911 packets/sec\n  5 minute output rate 19688000 bits/sec, 1763 packets/sec\n\n=== IT change log ===\nCHG-0412  14 Oct  Cloud backup of the file server moved from 01:00 to 14:00, so it\n                  finishes before the server shuts down at 18:00. Approved: practice manager.\nCHG-0409  09 Oct  New PC for reception (wired, desk 1).\nCHG-0405  02 Oct  Wi-Fi password changed after a member of staff left."
+  },
+  "primer": {
+   "title": "Before you start: reading ping and tracert",
+   "keys": [
+    {
+     "icon": "clock",
+     "label": "Latency",
+     "text": "How long a reply takes, in milliseconds (ms)."
+    },
+    {
+     "icon": "gauge",
+     "label": "Jitter",
+     "text": "How much that time jumps about. Voice calls hate it."
+    },
+    {
+     "icon": "alert",
+     "label": "Packet loss",
+     "text": "Packets that never come back: Request timed out."
+    }
+   ],
+   "results": [
+    [
+     "time<1ms to the gateway",
+     "the local network is fine",
+     "ok"
+    ],
+    [
+     "Request timed out.",
+     "no reply: a lost packet",
+     "bad"
+    ],
+    [
+     "times that jump about",
+     "queues filling up: congestion",
+     "warn"
+    ]
+   ]
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "Staff say calls break up and bookings are slow every afternoon. Using the troubleshooting method, what comes first?",
+    "options": [
+     "Restart the router and see if it helps",
+     "Identify the problem: gather information, ask what has changed and reproduce it",
+     "Replace the network switch",
+     "Escalate straight to the internet provider"
+    ],
+    "answer": 1,
+    "explain": "The method: identify the problem, establish a theory, test it, plan and carry out the fix, verify it works, then document what you found. Guessing first (a restart) can hide the evidence."
+   },
+   {
+    "type": "choice",
+    "q": "At 15:12 the reception PC pings its gateway (10.40.0.1): every reply under 1 ms, no loss. What does that tell you?",
+    "options": [
+     "The whole network is fine, so the booking system must be broken",
+     "The cable and switch between the PC and the office router are fine: look further out",
+     "The PC needs a new network card",
+     "Nothing: the gateway never answers pings"
+    ],
+    "answer": 1,
+    "explain": "Split the path in half. A fast, clean reply from the gateway rules out the PC, its cable and the switch, so the problem is between the office router and the booking system.",
+    "where": "Reply from 10.40.0.1: bytes=32 time<1ms TTL=255"
+   },
+   {
+    "type": "text",
+    "q": "At 15:12, what percentage of pings to the booking system were lost?",
+    "answers": [
+     "15",
+     "15%"
+    ],
+    "hint": "Look at the Ping statistics after the 15:12 pings to 203.0.113.40.",
+    "explain": "3 of 20 never came back. Even 1 or 2% loss is noticeable on a voice call; 15% is severe. In the morning baseline it was 0%.",
+    "where": "Lost = 3 (15% loss)"
+   },
+   {
+    "type": "choice",
+    "q": "The 15:12 replies swing from 24 ms to 352 ms. The morning baseline stayed at 18 to 21 ms. What's that swing called?",
+    "options": [
+     "Throughput",
+     "Jitter",
+     "Bandwidth",
+     "Duplex mismatch"
+    ],
+    "answer": 1,
+    "explain": "Jitter is variation in latency. Voice and video need packets to arrive evenly, so jitter makes calls choppy even when most packets arrive. A baseline (what normal looks like) is what lets you spot it.",
+    "where": "Maximum = 352ms"
+   },
+   {
+    "type": "text",
+    "q": "In the tracert, at which hop does the delay first jump?",
+    "answers": [
+     "2",
+     "hop 2"
+    ],
+    "hint": "Compare the times on each numbered line.",
+    "explain": "Hop 1 (the office router) answers in under 1 ms; hop 2 (the internet provider's router) takes over 200 ms. So the delay is on the link between them: the office's own internet connection. Every hop after just inherits it.",
+    "where": "  2   212 ms"
+   },
+   {
+    "type": "choice",
+    "q": "On the router's internet link, txload is 251/255, the output queue is 40/40 and there are 18,342 output drops. What does that mean?",
+    "options": [
+     "The cable is faulty",
+     "The upload is almost full: packets queue up, wait (latency, jitter) and get dropped when the queue is full (loss)",
+     "The router is out of memory",
+     "The internet provider is blocking the office"
+    ],
+    "answer": 1,
+    "explain": "txload is how busy sending is, out of 255: 251 is about 98% of the 20 Mbps upload. That's congestion. A full queue explains all three symptoms at once. (The real output has more counters; it's shortened here.)",
+    "where": "txload 251/255"
+   },
+   {
+    "type": "text",
+    "q": "What changed recently that could fill the upload every afternoon? (What now runs at 14:00?)",
+    "answers": [
+     "backup",
+     "cloud backup",
+     "the backup"
+    ],
+    "hint": "Read the IT change log.",
+    "explain": "Change CHG-0412 moved the cloud backup into working hours. Asking \"what changed?\" is part of identifying the problem, and it's why change records matter: they turn a mystery into a timeline.",
+    "where": "CHG-0412"
+   },
+   {
+    "type": "choice",
+    "q": "What's the best fix?",
+    "options": [
+     "Buy faster PCs for reception",
+     "Move the backup back out of hours (or cap its speed), and use QoS so voice traffic goes first",
+     "Restart the router every afternoon",
+     "Move the phones onto Wi-Fi"
+    ],
+    "answer": 1,
+    "explain": "Remove the cause, and use QoS (quality of service) so calls always jump the queue. Then verify: ping again at 15:00 and compare with the baseline. Finally document it, and raise a change to move the backup."
+   },
+   {
+    "type": "choice",
+    "q": "The surgery 2 laptop is slow all day, even at 10:07 when the internet link is quiet. Its pings to the gateway swing from 2 to 96 ms with 20% loss. What does that point to?",
+    "options": [
+     "The same busy internet link",
+     "A problem on its own Wi-Fi connection, such as interference or a weak signal",
+     "The booking system being slow",
+     "Nothing: those times are normal for Wi-Fi"
+    ],
+    "answer": 1,
+    "explain": "The gateway is one hop away, so this never touches the internet link. A good Wi-Fi link to the gateway should be a few milliseconds, steady, with no loss. Next: check its signal and channel (overlapping channels, microwaves and thick walls all cause this).",
+    "where": "Reply from 10.40.0.1: bytes=32 time=96ms TTL=255"
+   }
+  ],
+  "next": [
+   {
+    "label": "Microsoft: the tracert command",
+    "url": "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/tracert"
+   }
+  ]
+ },
+ {
   "id": "tcp-handshake",
   "kind": "handshake",
   "category": "Networking",

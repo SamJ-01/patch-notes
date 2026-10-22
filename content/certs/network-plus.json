@@ -234,15 +234,24 @@
     {
      "id": "3.1",
      "title": "Organisational processes and procedures",
-     "coverage": "none",
-     "activities": [],
-     "gap": "Documentation, change management and life-cycle management aren't covered yet."
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "slow-network"
+      }
+     ],
+     "gap": "Change records appear in the slow network lab (what changed is the clue); documentation and life-cycle management aren't covered yet."
     },
     {
      "id": "3.2",
      "title": "Network monitoring technologies",
      "coverage": "partial",
      "activities": [
+      {
+       "type": "lab",
+       "id": "slow-network"
+      },
       {
        "type": "lesson",
        "id": "soc"
@@ -256,7 +265,7 @@
        "id": "linux"
       }
      ],
-     "gap": "SNMP, flow data and baselines aren't covered yet."
+     "gap": "Baselines and interface counters appear in the slow network lab; SNMP and flow data aren't covered yet."
     },
     {
      "id": "3.3",
@@ -422,6 +431,10 @@
      "coverage": "partial",
      "activities": [
       {
+       "type": "lab",
+       "id": "slow-network"
+      },
+      {
        "type": "mission",
        "id": "dhcp"
       },
@@ -430,7 +443,7 @@
        "id": "dns"
       }
      ],
-     "gap": "The DHCP challenge practises it; the full step-by-step method isn't taught on its own yet."
+     "gap": "The slow network lab walks the method step by step (identify, theory, test, fix, verify, document); the DHCP challenge practises it too. There's no lesson on it yet."
     },
     {
      "id": "5.2",
@@ -483,15 +496,24 @@
     {
      "id": "5.4",
      "title": "Performance issues",
-     "coverage": "none",
-     "activities": [],
-     "gap": "Congestion, latency, jitter, packet loss and wireless interference aren't covered yet."
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "slow-network"
+      }
+     ],
+     "gap": "Latency, jitter, packet loss and congestion are hands-on (slow network lab), with Wi-Fi interference spotted from pings; bottlenecks beyond the internet link and wireless roaming aren't covered yet."
     },
     {
      "id": "5.5",
      "title": "Tools and protocols for troubleshooting",
      "coverage": "partial",
      "activities": [
+      {
+       "type": "lab",
+       "id": "slow-network"
+      },
       {
        "type": "lab",
        "id": "nmap-read"
@@ -509,7 +531,7 @@
        "id": "network-builder"
       }
      ],
-     "gap": "ping, traceroute and nslookup are practised in Network detective; tcpdump, Wireshark and nmap aren't yet."
+     "gap": "ping, traceroute and nslookup are practised in Network detective, ping statistics, tracert and show interfaces in the slow network lab, and nmap output in Read the scan; tcpdump and Wireshark aren't covered yet."
     }
    ]
   }
