@@ -1869,3 +1869,11 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .rj45, .rj45-body { max-width: 100%; min-width: 0; }
 @media (max-width: 420px) { .osi-ref { grid-template-columns: minmax(0, 1fr); } }
 .osi-tcpip > div { flex-wrap: wrap; } .osi-tcpip span:not(.eyebrow) { min-width: 0; overflow-wrap: anywhere; }
+/* Page header illustrations: a 2:1 picture beside the title on wide screens, a slim strip above it on phones. */
+.head-art.photo { width: 300px; height: 150px; overflow: hidden; background: var(--surface-2); }
+.head-art.photo .card-img { width: 100%; height: 100%; object-fit: cover; }
+.view-head.with-art:has(.head-art.photo) { padding-right: 330px; min-height: 150px; }
+@media (max-width: 900px) {
+  .view-head.with-art:has(.head-art.photo) { padding-right: 0; min-height: 0; }
+  .head-art.photo { display: block; position: static; transform: none; width: 100%; height: auto; aspect-ratio: 3 / 1; order: -1; }
+}
