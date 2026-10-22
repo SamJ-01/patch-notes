@@ -105,9 +105,12 @@ const headArt = k => `<span class="head-art card-art" aria-hidden="true">${scene
 // otherwise the drawn scene. Photos fade in once loaded, in space that's already reserved.
 const CARD_PHOTOS = new Set(["dhcp", "dns", "phish-triage", "ssh-brute", "hashing", "permissions",
   "osi-model", "topologies", "ports-protocols", "subnetting", "tcp-handshake", "cable-wiring",
-  "finding-the-server", "one-request", "vlans", "network-builder", "telnet-ssh", "linux-terminal"]);
+  "finding-the-server", "one-request", "vlans", "network-builder", "telnet-ssh", "linux-terminal",
+  "net-detective", "log-detective", "header-inspector", "cvss-builder", "recon-basics", "play"]);
+// Tools reuse the picture of the lab they belong with.
+const PHOTO_ALIAS = { "subnet-calc": "subnetting" };
 const cardPhoto = (src, w = 506, h = 253) => `<span class="card-art photo"><img class="card-img" src="${esc(src)}" alt="" width="${w}" height="${h}" loading="lazy" decoding="async"></span>`;
-const cardArt = id => (CARD_PHOTOS.has(id) ? cardPhoto(`img/cards/${id}.webp`) : `<span class="card-art">${sceneSvg(SCENE[id] || SCENE.networking)}</span>`);
+const cardArt = id => { const p = PHOTO_ALIAS[id] || id; return CARD_PHOTOS.has(p) ? cardPhoto(`img/cards/${p}.webp`) : `<span class="card-art">${sceneSvg(SCENE[id] || SCENE.networking)}</span>`; };
 // Hovering a card sends its packets across the scene.
 document.addEventListener("mouseover", e => {
   const card = e.target.closest?.(".art-card"); if (!card || card.dataset.playing || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
