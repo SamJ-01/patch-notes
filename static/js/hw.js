@@ -13,8 +13,11 @@ export const HW = {
     <path class="hw-line" d="M-11 9v5"/><path class="hw-body" d="M-20 14h18l2.5 3h-23z"/>
     ${hwBox(14, -19, 12, 36, 5)}<rect class="hw-body" x="14" y="-19" width="12" height="36" rx="1.5"/>
     <circle class="hw-led" cx="20" cy="-14" r="1.4"/><path class="hw-line" d="M16.5-8h7M16.5-4.5h7"/>`,
-  laptop: `${hwBox(-23, -21, 44, 29, 3)}<rect class="hw-body" x="-23" y="-21" width="44" height="29" rx="2"/><rect class="hw-screen" x="-20" y="-18" width="38" height="23" rx="1.2"/>
-    <path class="hw-body" d="M-23 8h44l7 7h-58z"/><path class="hw-body hw-side" d="M-30 15h58v3h-58z"/><path class="hw-line" d="M-6 11.5h12"/>`,
+  // The lid stands at the back of the base; the base is a slab seen from above, going back the same way as every
+  // other device's depth, with its front edge and right side showing.
+  laptop: `<path class="hw-body hw-top" d="M-27 15h47l8-9h-47z"/><path class="hw-body hw-side" d="M20 15l8-9v3l-8 9z"/><path class="hw-body hw-side" d="M-27 15h47v3h-47z"/>
+    <path class="hw-port" d="M-20 13h31l5.5-6h-31z"/>
+    ${hwBox(-18, -21, 44, 27, 2)}<rect class="hw-body" x="-18" y="-21" width="44" height="27" rx="2"/><rect class="hw-screen" x="-15" y="-18" width="38" height="21" rx="1.2"/>`,
   phone: `${hwBox(-12, -21, 22, 42, 3)}<rect class="hw-body" x="-12" y="-21" width="22" height="42" rx="4"/><rect class="hw-screen" x="-9" y="-16" width="16" height="30" rx="1.2"/>
     <path class="hw-line" d="M-4 17.5h6"/>`,
   server: `${hwBox(-19, -17, 31, 40)}<rect class="hw-body" x="-19" y="-17" width="31" height="40" rx="2"/>
@@ -40,12 +43,12 @@ export const HW = {
     <path class="hw-body hw-side" d="M-20 6v6a20 5 0 0 0 40 0v-6"/><ellipse class="hw-body hw-top" cx="0" cy="6" rx="20" ry="5"/><circle class="hw-led" cx="0" cy="6" r="1.7"/>`,
   cloud: `<path class="hw-body hw-cloud" d="M-17 16a12 12 0 0 1-2-23.8a15 15 0 0 1 28.5-5.2a11.5 11.5 0 0 1 11 29z"/>
     <path class="hw-line hw-globe" d="M-6 6a7 7 0 1 0 14 0a7 7 0 1 0-14 0M-6 6h14M1-1c-3 4-3 10 0 14c3-4 3-10 0-14"/>`,
-  // The attacker: a hooded figure behind a laptop, face in shadow. We see the back of the lid (logo, no keyboard),
-  // tilted away from us, so the laptop faces them.
+  // The attacker: a hooded figure behind a laptop, face in shadow. We see the back of the lid (logo, no keyboard)
+  // with its thickness, so the laptop faces them.
   attacker: `<path class="hw-body hw-threat" d="M-27 19c0-10 7-15 15-17h24c8 2 15 7 15 17z"/>
     <path class="hw-body hw-threat" d="M0-24c-10 0-16 8-16 18 0 5 2 9 4 11h24c2-2 4-6 4-11 0-10-6-18-16-18z"/>
     <path class="hw-face" d="M0-16c-6 0-9 5-9 10 0 4 3 7 9 7s9-3 9-7c0-5-3-10-9-10z"/><path class="hw-glint" d="M-5-5h3.5M1.5-5h3.5"/>
-    <path class="hw-body" d="M-15 1h30l2 16h-34z"/><path class="hw-line" d="M-16 19.5h32"/><circle class="hw-led" cx="0" cy="9" r="1.8"/>`,
+    ${hwBox(-16, 1, 30, 16, 3)}<rect class="hw-body" x="-16" y="1" width="30" height="16" rx="1.5"/><path class="hw-body hw-side" d="M-16 17h30v2.5h-30z"/><circle class="hw-led" cx="-1" cy="9" r="1.8"/>`,
 };
 
 export const HW_INFO = {
