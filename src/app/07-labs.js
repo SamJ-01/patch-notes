@@ -109,7 +109,8 @@ const CARD_PHOTOS = new Set(["dhcp", "dns", "phish-triage", "ssh-brute", "hashin
   "net-detective", "log-detective", "header-inspector", "cvss-builder", "recon-basics", "play",
   // Lessons (the Learn page)
   "cia-triad", "frameworks", "phishing", "ransomware", "malware", "zero-day",
-  "vuln-management", "supply-chain", "data-breach", "nation-state", "ddos", "ai-security"]);
+  "vuln-management", "supply-chain", "data-breach", "nation-state", "ddos", "ai-security",
+  "cloud", "identity", "iot-ot", "web-sqli", "web-xss", "web-access"]);
 // Tools reuse the picture of the lab they belong with.
 const PHOTO_ALIAS = { "subnet-calc": "subnetting" };
 const cardPhoto = (src, w = 506, h = 253) => `<span class="card-art photo"><img class="card-img" src="${esc(src)}" alt="" width="${w}" height="${h}" loading="lazy" decoding="async"></span>`;
