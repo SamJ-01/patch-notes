@@ -87,10 +87,12 @@ test("the study plan mixes hands-on steps in, even with many wrong answers", () 
   assert.ok(r.plan.some(p => p.kind === "activity"));
 });
 
-test("Security+: every domain has questions, and a mock follows the domain weights", () => {
-  const sp = read("../content/certs/security-plus.json"), bank = read("../content/certs/security-plus-questions.json").questions;
-  for (const d of sp.domains) assert.ok(bank.filter(q => q.objective === d.id).length >= Math.ceil((d.weight / 100) * ex.MOCK_SIZE), `domain ${d.id} can fill its share of a mock`);
-  const mock = ex.buildMock(bank, sp.domains, ex.MOCK_SIZE, seeded(7));
-  assert.equal(mock.length, ex.MOCK_SIZE);
-  assert.equal(new Set(mock.map(q => q.id)).size, ex.MOCK_SIZE, "no repeats");
+test("every cert: each domain can fill its share of a mock, and a mock follows the domain weights", () => {
+  for (const id of ["security-plus", "pentest-plus"]) {
+    const c = read(`../content/certs/${id}.json`), bank = read(`../content/certs/${id}-questions.json`).questions;
+    for (const d of c.domains) assert.ok(bank.filter(q => q.objective === d.id).length >= Math.ceil((d.weight / 100) * ex.MOCK_SIZE), `${id} domain ${d.id} can fill its share of a mock`);
+    const mock = ex.buildMock(bank, c.domains, ex.MOCK_SIZE, seeded(7));
+    assert.equal(mock.length, ex.MOCK_SIZE);
+    assert.equal(new Set(mock.map(q => q.id)).size, ex.MOCK_SIZE, "no repeats");
+  }
 });

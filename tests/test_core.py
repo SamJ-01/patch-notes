@@ -547,6 +547,10 @@ class ContentIntegrity(unittest.TestCase):
                         known = {"lesson": self.lessons, "lab": labs, "mission": missions, "tool": {"subnet-calc"}}[a["type"]]
                         self.assertIn(a["id"], known, f"{o['id']}: unknown {a['type']} {a['id']}")
 
+    def test_certs_load_in_study_order(self):
+        """Network+, then Security+, then PenTest+: the exams tab and lessons' "Prove it" reach the gentler exam first."""
+        self.assertEqual([c["id"] for c in build.load_certs()][:3], ["network-plus", "security-plus", "pentest-plus"])
+
     def test_practice_questions_are_complete(self):
         banks = sorted((ROOT / "content" / "certs").glob("*-questions.json"))
         self.assertGreaterEqual(len(banks), 2)

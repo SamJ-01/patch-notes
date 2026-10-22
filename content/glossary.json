@@ -3928,5 +3928,198 @@
   "auto": false,
   "short": "A router's list of networks it knows and which interface or next hop leads to each. Directly connected networks appear on their own.",
   "lesson": "networking"
+ },
+ {
+  "id": "rules-of-engagement",
+  "term": "Rules of engagement",
+  "kind": "Concept",
+  "aliases": [
+   "rules of engagement",
+   "RoE"
+  ],
+  "auto": false,
+  "short": "The agreed terms of a penetration test: what may be tested, when, how, and who to call if something breaks."
+ },
+ {
+  "id": "osint",
+  "term": "OSINT (open-source intelligence)",
+  "kind": "Concept",
+  "aliases": [
+   "OSINT",
+   "open-source intelligence"
+  ],
+  "auto": false,
+  "short": "Information gathered from public sources (websites, social media, public records) without touching the target's systems.",
+  "lesson": "osint"
+ },
+ {
+  "id": "nmap",
+  "term": "Nmap",
+  "kind": "Product",
+  "aliases": [
+   "nmap"
+  ],
+  "auto": false,
+  "short": "A free network scanner that finds which hosts are up, which ports are open and what's running on them.",
+  "lesson": "networking"
+ },
+ {
+  "id": "burp-suite",
+  "term": "Burp Suite",
+  "kind": "Product",
+  "aliases": [
+   "Burp Suite",
+   "OWASP ZAP"
+  ],
+  "auto": false,
+  "short": "An intercepting proxy for web testing: it sits between your browser and a site so you can inspect and change requests."
+ },
+ {
+  "id": "pass-the-hash",
+  "term": "Pass-the-hash",
+  "kind": "Attack",
+  "aliases": [
+   "pass-the-hash",
+   "pass the hash",
+   "NTLM hash",
+   "NTLM"
+  ],
+  "auto": false,
+  "short": "Logging in to Windows systems with a stolen password hash instead of the password, because NTLM accepts the hash as proof.",
+  "lesson": "identity"
+ },
+ {
+  "id": "idor",
+  "term": "IDOR (insecure direct object reference)",
+  "kind": "Attack",
+  "aliases": [
+   "IDOR",
+   "insecure direct object reference"
+  ],
+  "auto": false,
+  "short": "Changing an ID in a request (invoice 1001 to 1002) to reach someone else's data, because the server doesn't check ownership.",
+  "lesson": "web-access"
+ },
+ {
+  "id": "csrf",
+  "term": "CSRF (cross-site request forgery)",
+  "kind": "Attack",
+  "aliases": [
+   "CSRF",
+   "cross-site request forgery"
+  ],
+  "auto": false,
+  "short": "Tricking a logged-in user's browser into sending a request they didn't mean to, such as changing their email address.",
+  "lesson": "web-xss"
+ },
+ {
+  "id": "evil-twin",
+  "term": "Evil twin",
+  "kind": "Attack",
+  "aliases": [
+   "evil twin",
+   "evil twins",
+   "rogue access point",
+   "rogue access points"
+  ],
+  "auto": false,
+  "short": "A fake Wi-Fi access point with the same name as a real one, so devices connect to the attacker instead."
+ },
+ {
+  "id": "pivoting",
+  "term": "Pivoting",
+  "kind": "Attack",
+  "aliases": [
+   "pivoting"
+  ],
+  "auto": false,
+  "short": "Using a compromised machine as a stepping stone to reach networks the attacker can't reach directly."
+ },
+ {
+  "id": "false-positive",
+  "term": "False positive",
+  "kind": "Concept",
+  "aliases": [
+   "false positive",
+   "false positives"
+  ],
+  "auto": false,
+  "short": "A finding or alert that looks like a problem but isn't. Validating results before reporting them weeds these out.",
+  "lesson": "vuln-management"
+ },
+ {
+  "id": "sast-dast",
+  "term": "SAST and DAST",
+  "kind": "Concept",
+  "aliases": [
+   "SAST",
+   "DAST",
+   "static application security testing",
+   "dynamic application security testing"
+  ],
+  "auto": false,
+  "short": "SAST reads an app's source code without running it; DAST tests the running app from outside with crafted requests."
+ },
+ {
+  "id": "zone-transfer",
+  "term": "DNS zone transfer",
+  "kind": "Concept",
+  "aliases": [
+   "zone transfer",
+   "zone transfers",
+   "AXFR"
+  ],
+  "auto": false,
+  "short": "Copying every record in a DNS zone to another server. Left open to anyone, it hands attackers a list of internal hostnames.",
+  "lesson": "networking"
+ },
+ {
+  "id": "tailgating",
+  "term": "Tailgating",
+  "kind": "Attack",
+  "aliases": [
+   "tailgating",
+   "piggybacking",
+   "shoulder surfing"
+  ],
+  "auto": false,
+  "short": "Following someone through a secure door without using your own pass. Shoulder surfing is watching someone type their PIN or password.",
+  "lesson": "phishing"
+ },
+ {
+  "id": "fuzzing",
+  "term": "Fuzzing",
+  "kind": "Concept",
+  "aliases": [
+   "fuzzing",
+   "fuzzer",
+   "fuzzers"
+  ],
+  "auto": false,
+  "short": "Sending huge amounts of unexpected or malformed input to a program to find inputs that crash it or behave oddly."
+ },
+ {
+  "id": "vlan-hopping",
+  "term": "VLAN hopping",
+  "kind": "Attack",
+  "aliases": [
+   "VLAN hopping",
+   "double tagging",
+   "switch spoofing"
+  ],
+  "auto": false,
+  "short": "Getting traffic into a VLAN you shouldn't reach, by double-tagging frames or tricking a switch port into trunking.",
+  "lesson": "networking"
+ },
+ {
+  "id": "mac-flooding",
+  "term": "MAC flooding",
+  "kind": "Attack",
+  "aliases": [
+   "MAC flooding"
+  ],
+  "auto": false,
+  "short": "Filling a switch's MAC address table with fake entries so it floods traffic out of every port, where an attacker can capture it.",
+  "lesson": "networking"
  }
 ]

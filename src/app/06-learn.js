@@ -77,7 +77,8 @@ VIEWS.exams = () => {
 };
 function certCard(c) {
   const objs = certObjectives(c), practised = objs.filter(o => { const p = objectiveProgress(o); return p.total && p.done === p.total; }).length;
-  return `<a class="lcard" href="#cert-${esc(c.id)}"><span class="eyebrow">${esc(c.exam)} · ${objs.length} objectives</span><h3>${esc(c.name)}</h3>
+  const unit = objs.length === c.domains.length ? "domains" : "objectives";  // Security+ and PenTest+ are mapped by domain
+  return `<a class="lcard" href="#cert-${esc(c.id)}"><span class="eyebrow">${esc(c.exam)} · ${objs.length} ${unit}</span><h3>${esc(c.name)}</h3>
     <p>${c.questions.length} practice questions, timed mock exams and where to study the rest</p>
     <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(practised / objs.length * 100)}%"></i></span><span>${practised} of ${objs.length} practised</span></div></a>`;
 }

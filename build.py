@@ -102,7 +102,9 @@ def load_certs():
         qfile = f.with_name(f"{f.stem}-questions.json")
         cert["questions"] = json.loads(qfile.read_text())["questions"] if qfile.exists() else []
         certs.append(cert)
-    return certs
+    # The usual study order, so the exams tab and each lesson's "Prove it" reach the gentler exam first.
+    order = {"network-plus": 0, "security-plus": 1, "pentest-plus": 2}
+    return sorted(certs, key=lambda c: (order.get(c["id"], len(order)), c["id"]))
 
 
 def embed_json(data):
