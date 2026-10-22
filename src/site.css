@@ -519,7 +519,6 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .hw-line { fill: none; stroke: var(--hw-stroke); stroke-width: 1.6; stroke-linecap: round; }
 .hw-port { fill: var(--hw-port); stroke: var(--dg-box); stroke-width: 0.8; }
 .hw-led { fill: var(--good); opacity: 0.85; }
-.hw-tip { fill: var(--hw-stroke); }
 .m-dev.talk .hw-led { fill: var(--brand); opacity: 1; }
 .m-dev.talk .hw-screen, .m-dev.talk .hw-body { stroke: rgba(var(--brand-rgb), 0.7); }
 .m-dev.bad .hw-screen { fill: var(--exploited-tint); stroke: var(--exploited); }

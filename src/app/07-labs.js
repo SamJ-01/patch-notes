@@ -66,7 +66,7 @@ const SCENE = {
   identity: { d: [["phone", 54, 46, 0.6], ["laptop", 152, 48, 0.55]], g: [["key", 100, 44, 1.1, "good"]], t: [["MFA", 100, 20]], l: [[68, 46, 88, 46], [114, 46, 134, 48]], p: ["M54 46L152 48"], tone: "good" },
   "iot-ot": { d: [["ap", 100, 26, 0.6]], g: [["chip", 40, 64, 0.8], ["chip", 100, 70, 0.8], ["chip", 160, 64, 0.8]], l: [[90, 34, 48, 58, 1], [100, 36, 100, 60, 1], [110, 34, 152, 58, 1]], p: ["M100 26L40 64", "M100 26L160 64"] },
   "web-sqli": { d: [["laptop", 30, 48, 0.48], ["server", 100, 46, 0.55], ["db", 170, 46, 0.55]], l: [[46, 48, 88, 46], [112, 46, 156, 46]], t: [["' OR 1=1", 66, 20, "bad"]], p: ["M30 48L100 46L170 46"], tone: "bad" },
-  "web-xss": { d: [["attacker", 32, 46, 0.52], ["server", 100, 46, 0.55], ["laptop", 168, 48, 0.48]], l: [[46, 46, 88, 46], [112, 46, 150, 48]], t: [["<script>", 100, 18, "bad"]], p: ["M32 46L100 46L168 48"], tone: "bad" },
+  "web-xss": { d: [["attacker", 32, 46, 0.52], ["server", 100, 46, 0.55], ["laptop", 168, 48, 0.48]], l: [[46, 46, 88, 46], [112, 46, 150, 48]], t: [["\x3cscript>", 100, 18, "bad"]], p: ["M32 46L100 46L168 48"], tone: "bad" },
   "web-access": { d: [["laptop", 38, 48, 0.55], ["server", 164, 46, 0.6]], g: [["lock", 100, 44, 1.2]], l: [[56, 48, 90, 46], [110, 46, 150, 46]], t: [["/admin", 100, 18, "bad"]], p: ["M38 48L164 46"], tone: "bad" },
   networking: { d: [["pc", 28, 48, 0.45], ["switch", 78, 50, 0.45], ["router", 128, 48, 0.48], ["cloud", 176, 46, 0.45]], l: [[42, 48, 64, 50], [92, 50, 114, 50], [142, 50, 164, 47]], p: ["M28 48L78 50L128 50L176 46"] },
   encryption: { d: [["laptop", 38, 48, 0.55], ["server", 164, 46, 0.6]], g: [["lock", 100, 44, 1.1, "good"]], l: [[56, 48, 90, 46], [110, 46, 150, 46]], t: [["TLS", 100, 20]], p: ["M38 48L164 46"], tone: "good" },
@@ -103,9 +103,11 @@ const HEAD_SCENE = {
 };
 SCENE.play = HEAD_SCENE.play;  // the games card on the practise page
 // Page headers: an illustration where one exists (img/heads/<page>.webp, 2:1), otherwise the drawn scene.
+// loading="lazy" matters: Chrome's look-ahead preloader can read this template inside the page's script and fetch
+// the unfilled "img/heads/${k}.webp", but it skips lazy images. (It still loads at once: headers are at the top.)
 const HEAD_PHOTOS = new Set(["learn", "missions", "news", "cves", "progress", "careers"]);
 const headArt = k => (HEAD_PHOTOS.has(k)
-  ? `<span class="head-art photo" aria-hidden="true"><img class="card-img" src="img/heads/${k}.webp" alt="" width="494" height="247" decoding="async"></span>`
+  ? `<span class="head-art photo" aria-hidden="true"><img class="card-img" src="img/heads/${k}.webp" alt="" width="494" height="247" loading="lazy" decoding="async"></span>`
   : `<span class="head-art card-art" aria-hidden="true">${sceneSvg(HEAD_SCENE[k])}</span>`);
 // Card pictures: an illustration where one exists (img/cards/<id>.webp, 2:1, one style, made in batches of six),
 // otherwise the drawn scene. Photos fade in once loaded, in space that's already reserved.
