@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import * as A from "../static/js/agency/shift.js";
 import { matches } from "../static/js/missions/engine.js";
+import { MAIL } from "../static/js/mail.js";
 
 const dir = new URL("../content/agency/", import.meta.url);
 const shifts = readdirSync(dir).filter(f => f.endsWith(".json")).map(f => JSON.parse(readFileSync(new URL(f, dir), "utf8")));
@@ -218,15 +219,18 @@ const DOC_IP = /^(192\.0\.2|198\.51\.100|203\.0\.113)\.\d{1,3}$/;
 const FORMATS = {
   syslog: /^[A-Z][a-z]{2} [ \d]\d \d\d:\d\d:\d\d \S+ [\w-]+(\[\d+\])?: +\S/,  // sudo pads the user name
   nginx: /^\S+ - \S+ \[\d\d\/[A-Z][a-z]{2}\/\d{4}:\d\d:\d\d:\d\d [+-]\d{4}\] "[A-Z]+ \S+ HTTP\/1\.[01]" \d{3} \d+ "[^"]*" "[^"]*"$/,
-  siem: /^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d app=\w+ result=(success|failure) user=\S+@pellowfinch\.example src=\S+ country=[A-Z]{2} mfa=\S+/,
+  siem: /^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d app=\w+ result=(success|failure) user=\S+@[\w-]+\.example src=\S+ country=[A-Z]{2} mfa=\S+/,
+  // Mailbox audit: Microsoft 365 operation names in a generic SIEM line.
+  audit: /^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d app=mail op=(New-InboxRule|Set-InboxRule|MailItemsAccessed|SearchQueryInitiatedExchange|Send) user=\S+@[\w-]+\.example src=\S+ \S/,
+  trace: /^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d app=mailtrace dir=(in|out) from=\S+@[\w.-]+\.example to=\S+ subject="[^"]*" status=\w+/,
 };
-const formatOf = id => (id.endsWith("-auth") ? "syslog" : id.endsWith("-nginx") ? "nginx" : id === "signin" ? "siem" : null);
+const formatOf = id => (id.endsWith("-auth") ? "syslog" : id.endsWith("-nginx") ? "nginx" : id === "signin" ? "siem" : id === "mail-audit" ? "audit" : id === "mailtrace" ? "trace" : null);
 
 for (const sh of shifts) {
   test(`${sh.id}: content is consistent`, () => {
     const ids = new Set(sh.alerts.map(a => a.id));
     const all = A.findings(sh);
-    const fids = [...Object.values(sh.sources).flatMap(s => (s.findings || []).map(f => f.id)),
+    const fids = [...Object.values(sh.sources).flatMap(s => [...(s.findings || []), ...(s.emails || []).flatMap(e => e.findings || [])].map(f => f.id)),
       ...Object.values(sh.departments).flatMap(d => d.requests.flatMap(r => r.replies.filter(x => x.finding).map(x => x.finding.id)))];
     assert.equal(new Set(fids).size, fids.length, "finding ids are unique");
     for (const [id, src] of Object.entries(sh.sources)) for (const f of src.findings || [])
@@ -272,17 +276,19 @@ for (const sh of shifts) {
   test(`${sh.id}: log lines follow their stated formats; public addresses are documentation ranges`, () => {
     for (const [id, src] of Object.entries(sh.sources)) {
       const fmt = formatOf(id);
-      for (const l of src.lines) {
+      for (const l of src.lines || []) {
         if (fmt) assert.match(l, FORMATS[fmt], `${id}: ${l}`);
         for (const ip of l.match(/(?<![\w/.])\d{1,3}(?:\.\d{1,3}){3}\b/g) || []) assert.ok(DOC_IP.test(ip) || ip.startsWith("10.8.0."), `${id}: ${ip} is not a documentation or VPN-pool address`);
       }
     }
     const text = JSON.stringify(sh);
     assert.ok(!text.includes("\u2014"), "no em dashes");
-    for (const host of text.match(/[\w.-]+\.(com|net|org|co\.uk)\b/g) || []) assert.fail(`real-looking domain: ${host}`);
+    // Real domains only where real email headers name Microsoft's own mail servers.
+    for (const host of text.match(/[\w.-]+\.(com|net|org|co\.uk)\b/g) || []) if (!/(^|\.)outlook\.com$/.test(host)) assert.fail(`real-looking domain: ${host}`);
   });
 
   test(`${sh.id}: the story agrees with itself`, () => {
+    if (sh.id !== "shift-01") return;
     // The VPN address that made the files01 change belongs to the spraying session.
     const signin = sh.sources.signin?.lines || [], files = sh.sources["files01-auth"]?.lines || [];
     if (!signin.length) return;
@@ -296,3 +302,74 @@ for (const sh of shifts) {
     for (const cmd of ["useradd", "usermod", "passwd"]) assert.ok(files.some(l => l.includes(`COMMAND=/usr/`) && l.includes(cmd)), cmd);
   });
 }
+
+// Shift 2: the emails, logs and alerts tell one story.
+const s2 = shifts.find(s => s.id === "shift-02");
+test("shift-02: the emails, logs and detections agree", () => {
+  const mail = Object.fromEntries(s2.sources.inbox.emails.map(e => [e.id, MAIL.parseHeaders(e.headers)]));
+  const realDomain = "corranvetsupplies.example";
+  assert.ok(s2.sources.notes.lines.some(l => l.includes(`domain ${realDomain}`)), "the notes give the real domain");
+  assert.equal(mail.invoice.from.domain, realDomain);
+  assert.equal(mail.fake.from.domain, "corran-vetsupplies.example");
+  assert.notEqual(mail.fake.from.domain, realDomain);
+  for (const k of ["spf", "dkim", "dmarc"]) assert.equal(mail.fake.auth[k].result, "pass", `the lookalike passes ${k}: the lesson is that passing isn't trust`);
+  assert.equal(mail.fake.replyTo.domain, "corran-vetsupplies.example");
+  // UK time in late October is BST (UTC+1): the inbox times are local, the headers UTC.
+  const local = d => { const m = d.match(/(\d\d):(\d\d):\d\d \+0000/); return `${String(Number(m[1]) + 1).padStart(2, "0")}:${m[2]}`; };
+  assert.equal(local(mail.fake.date), s2.sources.inbox.emails.find(e => e.id === "fake").time);
+  assert.equal(local(mail.rhian.date), s2.sources.inbox.emails.find(e => e.id === "rhian").time);
+  // The 'Rhian' email was sent by the attacker's session, at the same minute.
+  const att = "203.0.113.58";
+  const send = s2.sources["mail-audit"].lines.find(l => l.includes("op=Send") && l.includes(`src=${att}`));
+  assert.ok(send.includes(`${s2.sources.inbox.emails.find(e => e.id === "rhian").time}:`) && send.includes('subject="Corran payment"'));
+  // The MFA story: n denied then one approved, matching the detection text.
+  const denied = s2.sources.signin.lines.filter(l => l.includes(`src=${att}`) && l.includes("mfa=denied"));
+  assert.match(s2.alerts.find(a => a.id === "a2").detection, new RegExp(`${denied.length} MFA push prompts denied, then 1 approved`));
+  // The rule was made after the takeover and before the fake email; the fake email arrives during the shift.
+  const t = l => l.slice(11, 16);
+  const ok = s2.sources.signin.lines.find(l => l.includes(`src=${att}`) && l.includes("result=success"));
+  const rule = s2.sources["mail-audit"].lines.find(l => l.includes('rule=".."'));
+  assert.ok(t(ok) < t(rule) && t(rule) < s2.startsAt && s2.startsAt < s2.sources.inbox.emails.find(e => e.id === "fake").time);
+  // Logs visible from the start of the shift mustn't contain anything later than the shift start.
+  const startSources = new Set(s2.alerts.filter(a => a.arrives.at === 0).flatMap(a => a.sources));
+  for (const id of startSources) for (const l of s2.sources[id].lines || []) if (l.startsWith("2026-10-22")) assert.ok(t(l) <= s2.startsAt, `${id}: ${l}`);
+  // The fourth Thursday of October 2026 is the 22nd, the newsletter day.
+  const thursdays = [...Array(31).keys()].map(d => new Date(Date.UTC(2026, 9, d + 1))).filter(d => d.getUTCDay() === 4);
+  assert.equal(thursdays[3].getUTCDate(), 22);
+});
+
+// Every shift can be finished with every check passed, using only its own content.
+for (const sh of shifts) test(`${sh.id}: a perfect shift passes every check`, () => {
+  let s = A.start(sh).state;
+  const step = r => { s = r.state; return r; };
+  // Find everything: search each finding's match in its source, open every email.
+  for (const [id, src] of Object.entries(sh.sources)) {
+    if (src.kind === "email") continue;
+    for (const f of src.findings || []) if (A.sourcesOpen(sh, s).includes(id)) step(A.search(sh, s, id, f.match));
+  }
+  // Close the first-wave alerts right, so late alerts arrive, then repeat until all are in.
+  for (let guard = 0; guard < 5 && sh.alerts.some(a => !s.arrived.includes(a.id) || !(a.id in s.closed)); guard++) {
+    for (const [id, src] of Object.entries(sh.sources)) if (src.kind === "email" && A.sourcesOpen(sh, s).includes(id)) for (const e of src.emails) step(A.openEmail(sh, s, id, e.id));
+    for (const a of sh.alerts.filter(x => s.arrived.includes(x.id) && !(x.id in s.closed))) {
+      for (const ref of a.answer.contain) step(A.ask(sh, s, ref, s.found[0]));
+      step(A.close(sh, s, a.id, A.modelClose(sh, a.id)));
+    }
+    step(A.wait(sh, s));
+  }
+  const rep = A.handover(sh, s, A.modelHandover(sh)).events[0].report;
+  for (const c of rep.checks) assert.ok(c.ok, `${c.label}: ${c.text}`);
+});
+
+test("emails: opening one costs time once, records its findings, and only once its mailbox is open", () => {
+  const s0 = A.start(s2).state;
+  assert.deepEqual(A.openEmail(s2, s0, "inbox", "fake").events, [], "the mailbox opens with the late alert");
+  let s = { ...s0, arrived: [...s0.arrived, "a3"] };
+  let r = A.openEmail(s2, s, "inbox", "fake");
+  assert.equal(r.state.clock, s2.costs.search);
+  assert.ok(r.state.found.includes("fake-domain"));
+  r = A.openEmail(s2, r.state, "inbox", "fake");
+  assert.equal(r.state.clock, s2.costs.search, "re-reading is free");
+  assert.deepEqual(r.events[0].found, []);
+  assert.deepEqual(A.search(s2, r.state, "inbox", "bank").events, [], "a mailbox is opened, not grepped");
+  assert.deepEqual(A.openEmail(s2, r.state, "inbox", "nope").events, []);
+});

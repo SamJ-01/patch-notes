@@ -43,8 +43,11 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   phishing triage ("Which email was it?", `phish-triage.json`: the email inspector, `scenario.emails` with raw headers parsed by
   `engine.parseHeaders`; findings come from `engine.inspectEmail`). Keep its headers, log lines and findings in step: tests check they agree.
 - Exam prep: Network+ N10-009 (25 objectives, 60 questions, "Am I ready?" panel), Security+ map (5 domains, 42 questions, mock exams).
-- PATCH//AGENCY pilot: its own nav tab and hub (`#agency`, `VIEWS.agency` in 07-labs: badge, time clock, rota). A shift
-  (`content/agency/shift-01.json`, `static/js/agency/`, route `#agency-shift-01`, tests `tests/agency.test.mjs`) opens with
+- PATCH//AGENCY: its own nav tab and hub (`#agency`, `VIEWS.agency` in 07-labs: badge, time clock, rota). Two shifts:
+  shift-01 (Pellow & Finch: VPN spray, new sudo account) and shift-02 (Fernhollow Vets: MFA fatigue, hidden inbox rule,
+  lookalike-supplier bank change; mailbox sources `{ kind: "email", emails }` opened with `A.openEmail` and shown with MAIL).
+  A shift (`content/agency/*.json`, `static/js/agency/`, route `#agency-<id>`, tests `tests/agency.test.mjs`: every shift
+  must be finishable with every check passed from its own content, logs visible at the start mustn't postdate it) opens with
   clocking in (badge tap, the lead's briefing as chat, the client file), then the desk (queue, alert, messages), then clock out.
   Design and decisions: `docs/agency-pilot.md`. Logs are searched with `engine.searchLines`.
   Two levels, chosen on the client file (Guided is the default for a first go): Guided adds the lead's hints per alert
@@ -79,4 +82,4 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - Feedback: public GitHub issue form (`.github/ISSUE_TEMPLATE/feedback.yml`), linked from every done card, the Agency debrief
   and the footer (`DATA.site.feedback`). Read new `feedback` issues before planning.
 - Next: learner feedback on the shift and the new labs, inter-VLAN routing lab on the network model, more Security+
-  questions (PKI, control types), ransomware first-response mission. No accounts/backend until real users need cross-device saves.
+  questions (PKI, control types), more Agency shifts (one client and incident each; the people for a shift made in one image). No accounts/backend until real users need cross-device saves.

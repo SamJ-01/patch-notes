@@ -666,7 +666,11 @@
    "business email compromise"
   ],
   "short": "Scammers pose as a boss, supplier or colleague by email to get staff to pay fake invoices or change bank details. Causes bigger losses than ransomware.",
-  "lesson": "phishing"
+  "lesson": "phishing",
+  "see": [
+   "inbox-rule",
+   "typosquatting"
+  ]
  },
  {
   "id": "vishing",
@@ -3727,6 +3731,35 @@
    "spf",
    "dkim",
    "dmarc"
+  ]
+ },
+ {
+  "id": "inbox-rule",
+  "term": "Inbox rule",
+  "kind": "Concept",
+  "aliases": [
+   "inbox rule",
+   "inbox rules",
+   "mailbox rule",
+   "mailbox rules"
+  ],
+  "short": "An automatic action on incoming mail, like moving or deleting it. Attackers who take over a mailbox add rules that hide replies, so the real owner doesn't notice.",
+  "lesson": "phishing",
+  "see": [
+   "bec"
+  ]
+ },
+ {
+  "id": "number-matching",
+  "term": "Number matching",
+  "kind": "Defence",
+  "aliases": [
+   "number matching"
+  ],
+  "short": "An MFA prompt that shows a number on the sign-in screen which you type into the app. You can't approve a sign-in you didn't start, which stops MFA fatigue.",
+  "lesson": "identity",
+  "see": [
+   "mfa-fatigue"
   ]
  }
 ]

@@ -90,6 +90,10 @@
     "mode": "challenge"
    },
    {
+    "type": "agency",
+    "id": "shift-02"
+   },
+   {
     "type": "lesson",
     "id": "malware"
    },

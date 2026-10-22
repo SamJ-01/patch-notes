@@ -30,7 +30,10 @@ export function request(shift, ref) {
 // Every finding the shift can produce, from logs and from department replies, by id.
 export function findings(shift) {
   const out = {};
-  for (const src of Object.values(shift.sources)) for (const f of src.findings || []) out[f.id] = f.finding;
+  for (const src of Object.values(shift.sources)) {
+    for (const f of src.findings || []) out[f.id] = f.finding;
+    for (const e of src.emails || []) for (const f of e.findings || []) out[f.id] = f.finding;
+  }
   for (const d of Object.values(shift.departments)) for (const r of d.requests) for (const rep of r.replies) if (rep.finding) out[rep.finding.id] = rep.finding.finding;
   return out;
 }
@@ -39,7 +42,7 @@ export function findings(shift) {
 // the answers; "standard" is on your own, marked at the handover. The rules are the same for both.
 export const LEVELS = { guided: "Guided", standard: "On your own" };
 export function start(shift, { level = "standard" } = {}) {
-  const state = { clock: 0, arrived: [], closed: {}, found: [], requests: [], facts: {}, spent: {}, handover: null, complete: false,
+  const state = { clock: 0, arrived: [], closed: {}, found: [], requests: [], facts: {}, spent: {}, handover: null, complete: false, opened: [],
     level: level in LEVELS ? level : "standard", hints: {} };
   const events = [];
   settle(shift, state, events);
@@ -79,13 +82,29 @@ const open = (state) => !state.complete;
 // Search one log source. Showing the whole log is free; each search costs time.
 export function search(shift, state, sourceId, query) {
   const src = shift.sources[sourceId];
-  if (!open(state) || !src || !sourcesOpen(shift, state).includes(sourceId)) return { state, events: [] };
+  if (!open(state) || !src || src.kind === "email" || !sourcesOpen(shift, state).includes(sourceId)) return { state, events: [] };
   const s = clone(state);
   const r = searchLines(src, query);
   if (r.query) spend(shift, s, "search");
   const found = r.findings.filter(f => !s.found.includes(f.id));
   for (const f of found) s.found.push(f.id);
   const events = [{ type: "search", source: sourceId, query: r.query, lines: r.lines, total: r.total, focused: r.focused, found: found.map(f => f.finding) }];
+  settle(shift, s, events);
+  return { state: s, events };
+}
+
+// Open one email in a mailbox source ({ kind: "email", emails: [...] }). Reading an email takes as long as a
+// search the first time; its findings (what a careful reader notices) are recorded then.
+export function openEmail(shift, state, sourceId, emailId) {
+  const src = shift.sources[sourceId], email = src?.emails?.find(e => e.id === emailId);
+  if (!open(state) || src?.kind !== "email" || !email || !sourcesOpen(shift, state).includes(sourceId)) return { state, events: [] };
+  const s = clone(state);
+  s.opened = s.opened || [];
+  const first = !s.opened.includes(emailId);
+  if (first) { s.opened.push(emailId); spend(shift, s, "search"); }
+  const found = (email.findings || []).filter(f => !s.found.includes(f.id));
+  for (const f of found) s.found.push(f.id);
+  const events = [{ type: "email", source: sourceId, id: emailId, found: found.map(f => f.finding) }];
   settle(shift, s, events);
   return { state: s, events };
 }

@@ -1,0 +1,920 @@
+{
+ "id": "shift-02",
+ "title": "Afternoon shift: Fernhollow Vets",
+ "agency": "Lanternfield Security Operations",
+ "client": "Fernhollow Veterinary Group",
+ "date": "Thursday 22 October",
+ "startsAt": "15:30",
+ "minutes": 25,
+ "xp": 120,
+ "summary": "A finance mailbox, a supplier's bank details and a 17:00 payment run. Work out which alerts are real, stop the money moving, and hand over.",
+ "card": "A finance mailbox, a bank change and a 17:00 deadline",
+ "briefing": "Afternoon. Fernhollow Vets this shift: four alerts from the morning shift, and more may come in. Their finance team sends payments to the bank at 17:00, so anything to do with money comes first. Check each alert properly and ask other teams to act where it's needed. The clock only moves when you do something.",
+ "lead": "Morgan, shift lead",
+ "leadPhoto": "img/agency/morgan.webp",
+ "handedOverBy": "the morning shift",
+ "next": {
+  "href": "#headers-check",
+  "label": "Check a real email's headers"
+ },
+ "clientImage": {
+  "src": "img/agency/fernhollow-clinic.webp",
+  "small": "img/agency/fernhollow-clinic-800.webp",
+  "width": 1536,
+  "height": 508,
+  "alt": "A Fernhollow Vets clinic at night: a single-storey building with a lit reception, a paw-print sign and cars in the car park"
+ },
+ "simplification": "Simplified simulation: a real shift has more alerts and far longer logs. The sign-in, mailbox audit and mail trace logs are generic SIEM exports written for this shift; the mailbox operation names (New-InboxRule, MailItemsAccessed, SearchQueryInitiatedExchange, Send) are Microsoft 365's, and the email headers follow Microsoft 365's format. Countries are invented for the story, because documentation addresses have no real location. Department replies are scripted. All people and companies are fictional; the phone number is from Ofcom's range for drama.",
+ "costs": {
+  "search": 1,
+  "request": 2,
+  "close": 3,
+  "wait": 5
+ },
+ "sources": {
+  "signin": {
+   "name": "Sign-in log (SIEM export)",
+   "about": "Fernhollow sign-ins to mail and the staff portal, as the SIEM shows them. Generic format, simplified for this shift.",
+   "lines": [
+    "2026-10-22 08:02:11 app=mail result=success user=r.hughes@fernhollowvets.example src=198.51.100.61 country=GB mfa=approved device=FHV-PC-0117",
+    "2026-10-22 08:12:40 app=mail result=success user=o.pryce@fernhollowvets.example src=198.51.100.61 country=GB mfa=approved device=FHV-LT-0412 new_device=yes",
+    "2026-10-22 08:13:05 app=portal result=success user=o.pryce@fernhollowvets.example src=198.51.100.61 country=GB mfa=approved device=FHV-LT-0412",
+    "2026-10-22 08:31:52 app=mail result=success user=a.kerr@fernhollowvets.example src=198.51.100.61 country=GB mfa=approved device=FHV-PC-0121",
+    "2026-10-22 09:47:30 app=mail result=success user=d.ferreira@fernhollowvets.example src=198.51.100.212 country=NL mfa=approved device=FHV-LT-0388",
+    "2026-10-22 10:15:02 app=mail result=success user=s.mbeki@fernhollowvets.example src=198.51.100.212 country=NL mfa=approved device=FHV-LT-0391",
+    "2026-10-22 11:40:19 app=portal result=success user=r.hughes@fernhollowvets.example src=198.51.100.61 country=GB mfa=approved device=FHV-PC-0117",
+    "2026-10-22 12:49:10 app=mail result=failure user=r.hughes@fernhollowvets.example src=203.0.113.58 country=NL mfa=denied reason=mfa_denied",
+    "2026-10-22 12:50:02 app=mail result=failure user=r.hughes@fernhollowvets.example src=203.0.113.58 country=NL mfa=denied reason=mfa_denied",
+    "2026-10-22 12:51:15 app=mail result=failure user=r.hughes@fernhollowvets.example src=203.0.113.58 country=NL mfa=denied reason=mfa_denied",
+    "2026-10-22 12:52:30 app=mail result=failure user=r.hughes@fernhollowvets.example src=203.0.113.58 country=NL mfa=denied reason=mfa_denied",
+    "2026-10-22 12:53:41 app=mail result=success user=r.hughes@fernhollowvets.example src=203.0.113.58 country=NL mfa=approved device=unknown",
+    "2026-10-22 14:05:33 app=mail result=success user=a.kerr@fernhollowvets.example src=198.51.100.61 country=GB mfa=approved device=FHV-PC-0121"
+   ],
+   "findings": [
+    {
+     "id": "mfa-denied",
+     "match": "result=failure user=r.hughes@fernhollowvets.example src=203.0.113.58",
+     "finding": "4 sign-ins as r.hughes from 203.0.113.58 (NL) were stopped at MFA (denied) between 12:49 and 12:52."
+    },
+    {
+     "id": "mfa-approved",
+     "match": "result=success user=r.hughes@fernhollowvets.example src=203.0.113.58",
+     "finding": "At 12:53 a fifth prompt was approved: 203.0.113.58 signed in as r.hughes."
+    },
+    {
+     "id": "rhughes-usual",
+     "match": "user=r.hughes@fernhollowvets.example src=198.51.100.61",
+     "finding": "r.hughes normally signs in from head office (198.51.100.61), on FHV-PC-0117."
+    },
+    {
+     "id": "opryce-new",
+     "match": "new_device=yes",
+     "finding": "o.pryce's new laptop FHV-LT-0412 signed in at 08:12 from head office (198.51.100.61), with MFA approved."
+    },
+    {
+     "id": "vets-nl",
+     "match": "src=198.51.100.212",
+     "finding": "The vets in Amsterdam sign in from 198.51.100.212, not from 203.0.113.58."
+    }
+   ]
+  },
+  "mail-audit": {
+   "name": "Mailbox audit log (SIEM export)",
+   "about": "Changes and activity in Fernhollow mailboxes. Generic format; the operation names are Microsoft 365's.",
+   "lines": [
+    "2026-10-22 08:40:12 app=mail op=New-InboxRule user=a.kerr@fernhollowvets.example src=198.51.100.61 rule=\"Statements\" if=\"from contains statements@\" then=\"move to Statements\"",
+    "2026-10-22 09:15:48 app=mail op=Send user=r.hughes@fernhollowvets.example src=198.51.100.61 to=finance-team@fernhollowvets.example subject=\"Month-end figures\"",
+    "2026-10-22 12:55:03 app=mail op=MailItemsAccessed user=r.hughes@fernhollowvets.example src=203.0.113.58 folder=Inbox items=214",
+    "2026-10-22 12:58:47 app=mail op=SearchQueryInitiatedExchange user=r.hughes@fernhollowvets.example src=203.0.113.58 query=\"Corran invoice\"",
+    "2026-10-22 13:01:10 app=mail op=MailItemsAccessed user=r.hughes@fernhollowvets.example src=203.0.113.58 folder=Inbox items=9",
+    "2026-10-22 13:06:24 app=mail op=New-InboxRule user=r.hughes@fernhollowvets.example src=203.0.113.58 rule=\"..\" if=\"from contains corranvetsupplies.example, or subject or body contains bank or payment\" then=\"move to RSS Feeds, mark as read\"",
+    "2026-10-22 15:21:40 app=mail op=Send user=r.hughes@fernhollowvets.example src=203.0.113.58 to=accounts@fernhollowvets.example subject=\"Corran payment\""
+   ],
+   "findings": [
+    {
+     "id": "rule-made",
+     "match": "rule=\"..\"",
+     "finding": "At 13:06 a rule named '..' was made in r.hughes's mailbox: mail from Corran, or mentioning bank or payment, goes to RSS Feeds, marked as read."
+    },
+    {
+     "id": "rule-source",
+     "match": "op=New-InboxRule user=r.hughes@fernhollowvets.example src=203.0.113.58",
+     "finding": "The '..' rule was made from 203.0.113.58, the address that got in after the MFA prompts."
+    },
+    {
+     "id": "mailbox-search",
+     "match": "query=\"Corran invoice\"",
+     "finding": "At 12:58 the 203.0.113.58 session searched r.hughes's mailbox for 'Corran invoice'."
+    },
+    {
+     "id": "send-rhughes",
+     "match": "op=Send user=r.hughes@fernhollowvets.example src=203.0.113.58",
+     "finding": "At 15:21 the 203.0.113.58 session sent 'Corran payment' to accounts@ from r.hughes's mailbox."
+    },
+    {
+     "id": "akerr-rule",
+     "match": "rule=\"Statements\"",
+     "finding": "a.kerr made a rule called 'Statements' at 08:40 from head office: ordinary inbox tidying."
+    }
+   ]
+  },
+  "mailtrace": {
+   "name": "Mail trace (SIEM export)",
+   "about": "Email in and out of Fernhollow, one line per message or batch. Generic format, simplified for this shift.",
+   "lines": [
+    "2026-09-24 09:00:03 app=mailtrace dir=out from=newsletter@fernhollowvets.example to=list:clients(1-1200) subject=\"Your September pet health news\" status=delivered via=mailing-service",
+    "2026-09-24 09:03:09 app=mailtrace dir=out from=newsletter@fernhollowvets.example to=list:clients(1201-2396) subject=\"Your September pet health news\" status=delivered via=mailing-service",
+    "2026-10-22 09:00:04 app=mailtrace dir=out from=newsletter@fernhollowvets.example to=list:clients(1-1200) subject=\"Your October pet health news\" status=delivered via=mailing-service",
+    "2026-10-22 09:03:12 app=mailtrace dir=out from=newsletter@fernhollowvets.example to=list:clients(1201-2418) subject=\"Your October pet health news\" status=delivered via=mailing-service",
+    "2026-10-22 11:02:37 app=mailtrace dir=in from=orders@corranvetsupplies.example to=accounts@fernhollowvets.example subject=\"Delivery note DN-5520\" status=delivered folder=Inbox",
+    "2026-10-22 14:52:09 app=mailtrace dir=in from=jo.bright@corranvetsupplies.example to=r.hughes@fernhollowvets.example subject=\"RE: INV-20931 payment date\" status=delivered folder=RSS Feeds"
+   ],
+   "findings": [
+    {
+     "id": "newsletter-now",
+     "match": "subject=\"Your October pet health news\"",
+     "finding": "2,418 emails went from newsletter@ at 09:00 in two batches, through the mailing service."
+    },
+    {
+     "id": "newsletter-last",
+     "match": "Your September pet health news",
+     "finding": "Last month's newsletter went the same way, on Thursday 24 September at 09:00."
+    },
+    {
+     "id": "corran-hidden",
+     "match": "folder=RSS Feeds",
+     "finding": "A genuine email from Corran (jo.bright@corranvetsupplies.example, 14:52) went straight into r.hughes's RSS Feeds folder."
+    }
+   ]
+  },
+  "inbox": {
+   "kind": "email",
+   "name": "Mailbox: accounts@fernhollowvets.example",
+   "about": "The shared finance mailbox Amy Kerr pays suppliers from.",
+   "org": "fernhollowvets.example",
+   "emails": [
+    {
+     "id": "fake",
+     "time": "15:34",
+     "headers": "Received: from DB8PR06MB6412.eurprd06.prod.outlook.com (2603:10a6:10:12a::9)\n by AS8PR06MB7726.eurprd06.prod.outlook.com with HTTPS; Thu, 22 Oct 2026\n 14:34:22 +0000\nAuthentication-Results: spf=pass (sender IP is 203.0.113.61)\n smtp.mailfrom=corran-vetsupplies.example; dkim=pass (signature was verified)\n header.d=corran-vetsupplies.example;dmarc=pass action=none\n header.from=corran-vetsupplies.example;compauth=pass reason=100\nReceived-SPF: Pass (protection.outlook.com: domain of corran-vetsupplies.example\n designates 203.0.113.61 as permitted sender) receiver=protection.outlook.com;\n client-ip=203.0.113.61; helo=mail.corran-vetsupplies.example;\nReceived: from mail.corran-vetsupplies.example (203.0.113.61) by\n DB5PEPF00014B8F.mail.protection.outlook.com (10.167.8.202) with Microsoft SMTP\n Server id 15.20.8093.14 via Frontend Transport; Thu, 22 Oct 2026 14:34:21 +0000\nReturn-Path: <billing@corran-vetsupplies.example>\nFrom: \"Jo Bright | Corran Veterinary Supplies\" <billing@corran-vetsupplies.example>\nReply-To: <jo.bright.accounts@corran-vetsupplies.example>\nTo: accounts@fernhollowvets.example\nSubject: RE: INV-20931 - updated bank details\nDate: Thu, 22 Oct 2026 14:34:15 +0000\nMessage-ID: <20261022143415.5521@corran-vetsupplies.example>",
+     "body": "Hi Amy,\n\nFurther to Rhian's email, please note our bank details have changed following our move to a new bank. Please make today's payment for invoice INV-20931 (£18,460.00) to the account in the attached letter, not the one on the invoice.\n\nIt's important this goes in today's payment run, as our old account closes tomorrow.\n\nKind regards,\nJo Bright\nCredit Control, Corran Veterinary Supplies",
+     "attachments": [
+      {
+       "name": "Corran_new_bank_details.pdf",
+       "size": "84 KB"
+      }
+     ],
+     "findings": [
+      {
+       "id": "fake-domain",
+       "finding": "The bank-change email is from corran-vetsupplies.example (with a hyphen). Corran's real domain is corranvetsupplies.example."
+      },
+      {
+       "id": "fake-ask",
+       "finding": "The bank-change email quotes INV-20931 and £18,460.00 and asks for payment to new details in today's run."
+      },
+      {
+       "id": "fake-passes",
+       "finding": "The lookalike email passed SPF, DKIM and DMARC, but only for its own domain: the checks prove who sent it, not that they're Corran."
+      }
+     ]
+    },
+    {
+     "id": "rhian",
+     "time": "15:21",
+     "headers": "Received: from DB9PR06MB8120.eurprd06.prod.outlook.com (2603:10a6:10:2d4::11)\n by AS8PR06MB7726.eurprd06.prod.outlook.com with HTTPS; Thu, 22 Oct 2026\n 14:21:41 +0000\nFrom: \"Rhian Hughes\" <r.hughes@fernhollowvets.example>\nTo: accounts@fernhollowvets.example\nSubject: Corran payment\nDate: Thu, 22 Oct 2026 14:21:40 +0000\nMessage-ID: <DB9PR06MB8120.4417@fernhollowvets.example>\nX-MS-Exchange-Organization-AuthAs: Internal",
+     "body": "Amy,\n\nCorran are changing banks. Jo will send the new details this afternoon. Please put INV-20931 in today's 17:00 run using the new details.\n\nI'm in meetings all afternoon, so no need to call, just go ahead.\n\nRhian",
+     "findings": [
+      {
+       "id": "rhian-email",
+       "finding": "An email from r.hughes's mailbox at 15:21 tells accounts to pay Corran's new details today, and not to call."
+      }
+     ]
+    },
+    {
+     "id": "invoice",
+     "time": "14 Oct",
+     "headers": "Received: from AM9PR06MB7310.eurprd06.prod.outlook.com (2603:10a6:20b:2c1::7)\n by AS8PR06MB7726.eurprd06.prod.outlook.com with HTTPS; Wed, 14 Oct 2026\n 09:12:48 +0000\nAuthentication-Results: spf=pass (sender IP is 198.51.100.140)\n smtp.mailfrom=corranvetsupplies.example; dkim=pass (signature was verified)\n header.d=corranvetsupplies.example;dmarc=pass action=none\n header.from=corranvetsupplies.example;compauth=pass reason=100\nReceived-SPF: Pass (protection.outlook.com: domain of corranvetsupplies.example\n designates 198.51.100.140 as permitted sender) receiver=protection.outlook.com;\n client-ip=198.51.100.140; helo=mail.corranvetsupplies.example;\nReceived: from mail.corranvetsupplies.example (198.51.100.140) by\n AM4PEPF00027A61.mail.protection.outlook.com (10.167.16.84) with Microsoft SMTP\n Server id 15.20.8093.14 via Frontend Transport; Wed, 14 Oct 2026 09:12:47 +0000\nReturn-Path: <jo.bright@corranvetsupplies.example>\nFrom: \"Jo Bright\" <jo.bright@corranvetsupplies.example>\nTo: accounts@fernhollowvets.example\nSubject: Invoice INV-20931\nDate: Wed, 14 Oct 2026 09:12:40 +0000\nMessage-ID: <20261014091240.2210@corranvetsupplies.example>",
+     "body": "Hi Amy,\n\nPlease find attached invoice INV-20931 for £18,460.00, due 31 October. Payment to our usual account, as on the invoice.\n\nThanks,\nJo Bright\nCredit Control, Corran Veterinary Supplies\n01632 960418",
+     "attachments": [
+      {
+       "name": "INV-20931.pdf",
+       "size": "112 KB"
+      }
+     ],
+     "findings": [
+      {
+       "id": "real-invoice",
+       "finding": "Corran's genuine invoice email (14 Oct) is from corranvetsupplies.example, with no hyphen, and says to pay the usual account."
+      }
+     ]
+    }
+   ]
+  },
+  "notes": {
+   "name": "Client notes: Fernhollow Vets",
+   "about": "What Lanternfield knows about this client: systems, contacts, policies and recent changes.",
+   "lines": [
+    "Client: Fernhollow Veterinary Group, six clinics and a head office, about 140 staff. Lanternfield monitors their sign-ins, email and endpoints.",
+    "Contact: Owen Pryce, IT manager, on call until 18:00. Report confirmed incidents to Owen.",
+    "Head office internet address: 198.51.100.61. Finance (r.hughes, finance manager; a.kerr, accounts) work from head office, 08:30 to 17:00.",
+    "Finance: the daily payment run goes to the bank at 17:00. Policy FIN-07: any change to a supplier's bank details must be confirmed by phone, on a number already held, before paying.",
+    "Supplier: Corran Veterinary Supplies (domain corranvetsupplies.example), main drug and consumables supplier. Credit control: Jo Bright, 01632 960418.",
+    "MFA: push approval in the authenticator app, with no number matching yet (CHG-3090 adds it in November).",
+    "CHG-3107 (19 to 23 Oct): laptop refresh for IT and the vets. New laptops are named FHV-LT-04xx.",
+    "Travel: two vets, d.ferreira and s.mbeki, are at a conference in Amsterdam from 21 to 23 Oct.",
+    "Newsletter: about 2,400 pet owners get the client newsletter on the fourth Thursday of each month at 09:00, from newsletter@, through the mailing service.",
+    "Network Ops block single addresses on request. Blocking whole countries needs a change from the client."
+   ],
+   "findings": [
+    {
+     "id": "fin07",
+     "match": "FIN-07",
+     "finding": "Fernhollow policy FIN-07: a supplier's bank-detail change must be confirmed by phone, on a number already held, before paying."
+    },
+    {
+     "id": "corran-domain",
+     "match": "domain corranvetsupplies.example",
+     "finding": "Corran Veterinary Supplies' real domain is corranvetsupplies.example; their known number is 01632 960418."
+    },
+    {
+     "id": "chg3107",
+     "match": "CHG-3107",
+     "finding": "CHG-3107: IT and the vets get new laptops (FHV-LT-04xx) from 19 to 23 Oct."
+    },
+    {
+     "id": "travel",
+     "match": "Amsterdam",
+     "finding": "Two vets, d.ferreira and s.mbeki, are at a conference in Amsterdam from 21 to 23 Oct. Finance staff aren't travelling."
+    },
+    {
+     "id": "newsletter-plan",
+     "match": "fourth Thursday",
+     "finding": "The client newsletter goes to about 2,400 pet owners on the fourth Thursday of each month at 09:00, through the mailing service."
+    },
+    {
+     "id": "push-mfa",
+     "match": "CHG-3090",
+     "finding": "Fernhollow's MFA is a simple push approval, with no number matching until November (CHG-3090)."
+    }
+   ]
+  }
+ },
+ "alerts": [
+  {
+   "id": "a1",
+   "ref": "SOC-24188",
+   "title": "Hidden inbox rule created: r.hughes",
+   "time": "13:06",
+   "severity": "high",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "Mailbox rule '..' created for r.hughes@fernhollowvets.example: it moves mail to RSS Feeds and marks it read (rule names of one or two dots are rare).",
+   "guide": {
+    "hints": [
+     "Rules that hide mail are a favourite trick after a mailbox is taken over: they stop the real person seeing replies. Open the mailbox audit log and look at the rule.",
+     "Who made the rule, and from where? Compare its address with r.hughes's usual one, then look at what else that address did: searches, mail read, mail sent.",
+     "203.0.113.58 got in after the MFA prompts, searched for 'Corran invoice', hid Corran's mail and emailed accounts. Link it to the other two. Reset r.hughes, remove the rule, tell Owen."
+    ],
+    "searches": [
+     [
+      "mail-audit",
+      "New-InboxRule"
+     ],
+     [
+      "mail-audit",
+      "203.0.113.58"
+     ],
+     [
+      "notes",
+      "FIN-07"
+     ]
+    ]
+   },
+   "sources": [
+    "mail-audit",
+    "notes"
+   ],
+   "requests": [
+    "identity:reset-rhughes",
+    "endpoint:remove-rule",
+    "servicedesk:call-rhughes",
+    "client:report-incident"
+   ],
+   "evidence": [
+    {
+     "text": "Mailbox audit: at 13:06 a rule named '..' sends mail from Corran, or about bank or payment, to RSS Feeds, marked as read",
+     "supports": true,
+     "required": true,
+     "why": "The rule itself: it hides exactly the emails that would expose a payment fraud."
+    },
+    {
+     "text": "Mailbox audit: the rule was made from 203.0.113.58, the address that got in after the MFA prompts",
+     "supports": true,
+     "required": true,
+     "why": "Ties the rule to the takeover, not to Rhian tidying her inbox."
+    },
+    {
+     "text": "Mailbox audit: the same session searched the mailbox for 'Corran invoice'",
+     "supports": true,
+     "required": false,
+     "why": "Shows what the attacker was after: an invoice worth redirecting."
+    },
+    {
+     "text": "Service Desk: r.hughes says she made no rules",
+     "supports": true,
+     "required": false,
+     "why": "Fits the logs. On its own a denial proves little; with the logs, it's strong."
+    },
+    {
+     "text": "Staff often make rules to tidy their inbox, like a.kerr's 'Statements' rule, so this is routine",
+     "supports": false,
+     "required": false,
+     "why": "a.kerr's rule was made from head office and files statements. This one was made from the attacker's address and hides Corran's mail."
+    }
+   ],
+   "answer": {
+    "verdict": "act",
+    "severity": [
+     "high",
+     "critical"
+    ],
+    "related": [
+     "a2",
+     "a3"
+    ],
+    "contain": [
+     "identity:reset-rhughes",
+     "endpoint:remove-rule",
+     "client:report-incident"
+    ],
+    "status": "escalated",
+    "summaries": [
+     "r.hughes's mailbox was taken over (MFA push approved at 12:53 from 203.0.113.58). The attacker searched for 'Corran invoice', hid Corran's mail with a '..' rule and emailed accounts to pay new bank details. Password and sessions reset, rule removed, Owen told.",
+     "r.hughes made an inbox rule. Probably tidying; no action.",
+     "Possible mailbox issue for r.hughes. Recommend she changes her password at some point."
+    ],
+    "summary": 0,
+    "why": "After a mailbox takeover, attackers hide replies so the real owner doesn't notice. Here the rule targets the supplier being impersonated. Reset the password and end every session (a password change alone can leave the attacker signed in), remove the rule, and tell the client."
+   }
+  },
+  {
+   "id": "a2",
+   "ref": "SOC-24185",
+   "title": "MFA prompts denied, then approved: r.hughes",
+   "time": "12:53",
+   "severity": "medium",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "r.hughes@fernhollowvets.example: 4 MFA push prompts denied, then 1 approved, between 12:49 and 12:53, from 203.0.113.58 (NL).",
+   "guide": {
+    "hints": [
+     "Several prompts denied, then one approved: that pattern has a name, MFA fatigue. Someone has the password and keeps trying until the person taps 'approve'. Check where the sign-ins came from.",
+     "Is 203.0.113.58 one of r.hughes's usual addresses? The notes mention vets in Amsterdam: are they the same address? Is Rhian travelling?",
+     "Rhian works at head office; the vets in Amsterdam use a different address. This is a takeover: link it to the inbox rule and the bank email. Reset r.hughes and block 203.0.113.58, not the whole country."
+    ],
+    "searches": [
+     [
+      "signin",
+      "r.hughes"
+     ],
+     [
+      "signin",
+      "203.0.113.58"
+     ],
+     [
+      "notes",
+      "Amsterdam"
+     ]
+    ]
+   },
+   "sources": [
+    "signin",
+    "notes"
+   ],
+   "requests": [
+    "identity:reset-rhughes",
+    "netops:block-58",
+    "netops:block-country",
+    "servicedesk:call-rhughes"
+   ],
+   "evidence": [
+    {
+     "text": "Sign-in log: 4 sign-ins from 203.0.113.58 were denied at MFA between 12:49 and 12:52, then one was approved at 12:53",
+     "supports": true,
+     "required": true,
+     "why": "The password was already known: only the MFA prompt stood in the way, and it was eventually approved."
+    },
+    {
+     "text": "Sign-in log: r.hughes normally signs in from head office (198.51.100.61)",
+     "supports": true,
+     "required": true,
+     "why": "203.0.113.58 isn't hers, and she was at work that day."
+    },
+    {
+     "text": "Client notes: MFA is a simple push approval with no number matching yet",
+     "supports": true,
+     "required": false,
+     "why": "Explains how it worked: a tired or distracted person can approve a prompt they didn't start."
+    },
+    {
+     "text": "Service Desk: r.hughes approved a prompt to make them stop",
+     "supports": true,
+     "required": false,
+     "why": "Confirms it from the person herself."
+    },
+    {
+     "text": "Client notes: two vets are in Amsterdam this week, so a Dutch sign-in is expected",
+     "supports": false,
+     "required": false,
+     "why": "The vets sign in from 198.51.100.212, and Rhian isn't one of them. Check whose sign-in it is before explaining it away."
+    }
+   ],
+   "answer": {
+    "verdict": "act",
+    "severity": [
+     "high",
+     "critical"
+    ],
+    "related": [
+     "a1",
+     "a3"
+    ],
+    "contain": [
+     "identity:reset-rhughes",
+     "netops:block-58"
+    ],
+    "status": "escalated",
+    "summaries": [
+     "MFA fatigue: 203.0.113.58 (NL) had r.hughes's password; 4 prompts were denied, the fifth approved at 12:53. That session hid Corran's mail and asked accounts to pay new bank details. r.hughes reset and re-registered, 203.0.113.58 blocked.",
+     "r.hughes signed in from the Netherlands: one of the vets at the Amsterdam conference. No action.",
+     "Lots of MFA prompts for r.hughes. Block all sign-ins from the Netherlands."
+    ],
+    "summary": 0,
+    "why": "Denied prompts mean the password is already known. One approval and the attacker is in. Reset the password, end sessions and re-register MFA; block the address. Number matching (CHG-3090) is the lasting fix."
+   }
+  },
+  {
+   "id": "a3",
+   "ref": "SOC-24196",
+   "title": "Lookalike supplier domain emailed accounts",
+   "severity": "high",
+   "arrives": {
+    "closed": 2,
+    "at": 25
+   },
+   "detection": "Inbound email to accounts@fernhollowvets.example from corran-vetsupplies.example, a domain first seen today that resembles a known supplier (corranvetsupplies.example).",
+   "guide": {
+    "hints": [
+     "Open the accounts mailbox and read the newest emails, then press Details on each. Who really sent them, and what are they asking for?",
+     "The 'Jo Bright' email comes from corran-vetsupplies.example, with a hyphen, and it passed every check: for its own domain. Rhian's email at 15:21 pushes the same payment. The audit log says who really sent it.",
+     "It's invoice fraud, set up from r.hughes's hijacked mailbox: link it to the other two. Ask Owen to stop the payment and ring Corran on their known number, and have the lookalike email quarantined."
+    ],
+    "searches": [
+     [
+      "mail-audit",
+      "op=Send"
+     ],
+     [
+      "notes",
+      "Corran"
+     ]
+    ]
+   },
+   "sources": [
+    "inbox",
+    "mail-audit",
+    "notes"
+   ],
+   "requests": [
+    "client:stop-payment",
+    "endpoint:quarantine-lookalike",
+    "client:report-incident",
+    "endpoint:remove-rule"
+   ],
+   "evidence": [
+    {
+     "text": "Inbox: the email is from corran-vetsupplies.example (with a hyphen); Corran's real domain is corranvetsupplies.example",
+     "supports": true,
+     "required": true,
+     "why": "The lookalike domain is the giveaway: one character's difference."
+    },
+    {
+     "text": "Inbox: it quotes INV-20931 and £18,460.00 and asks for payment to new bank details today",
+     "supports": true,
+     "required": true,
+     "why": "Real invoice details plus urgency: whoever wrote it had read the real emails."
+    },
+    {
+     "text": "Mailbox audit: 'Rhian's' email pushing the payment was sent from 203.0.113.58",
+     "supports": true,
+     "required": true,
+     "why": "The internal email that makes the request look trusted came from the attacker, not Rhian."
+    },
+    {
+     "text": "Mailbox audit: the attacker searched r.hughes's mailbox for 'Corran invoice' at 12:58",
+     "supports": true,
+     "required": false,
+     "why": "Explains how they knew the invoice number and amount."
+    },
+    {
+     "text": "The email passed SPF, DKIM and DMARC, so it's genuinely from Corran",
+     "supports": false,
+     "required": false,
+     "why": "The checks passed for corran-vetsupplies.example, the attacker's own domain. They prove who sent it, not that it's Corran."
+    }
+   ],
+   "answer": {
+    "verdict": "act",
+    "severity": [
+     "critical",
+     "high"
+    ],
+    "related": [
+     "a1",
+     "a2"
+    ],
+    "contain": [
+     "client:stop-payment",
+     "endpoint:quarantine-lookalike"
+    ],
+    "status": "escalated",
+    "summaries": [
+     "Invoice fraud: corran-vetsupplies.example asked accounts to pay INV-20931 (£18,460.00) to new bank details today, backed by a 15:21 email sent from r.hughes's hijacked mailbox. Payment stopped, Corran confirmed by phone their details haven't changed, lookalike quarantined and blocked.",
+     "Corran sent new bank details; the email passed SPF, DKIM and DMARC. No action.",
+     "Spam from a strange domain. Deleted."
+    ],
+    "summary": 0,
+    "why": "Business email compromise doesn't need malware: a convincing email and a deadline do it. The fix is a phone call on a number you already hold (FIN-07), before money moves. Stop the payment first, then clean up."
+   }
+  },
+  {
+   "id": "a4",
+   "ref": "SOC-24179",
+   "title": "Sign-in from a new device: o.pryce",
+   "time": "08:12",
+   "severity": "low",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "o.pryce@fernhollowvets.example signed in from a device not seen before (FHV-LT-0412).",
+   "guide": {
+    "hints": [
+     "A new device is worth a look, but people get new laptops all the time. Check where and how it signed in, and whether the client planned it.",
+     "It signed in from head office with MFA approved, and its name starts FHV-LT-04. The client notes mention a change this week.",
+     "CHG-3107 is the laptop refresh, and the sign-in came from head office. Legitimate: close it with no action. Blocking the IT manager's laptop would only cause trouble."
+    ],
+    "searches": [
+     [
+      "signin",
+      "o.pryce"
+     ],
+     [
+      "notes",
+      "CHG-3107"
+     ]
+    ]
+   },
+   "sources": [
+    "signin",
+    "notes"
+   ],
+   "requests": [
+    "identity:block-device",
+    "servicedesk:call-opryce"
+   ],
+   "evidence": [
+    {
+     "text": "Client notes: CHG-3107 is a laptop refresh this week, with laptops named FHV-LT-04xx",
+     "supports": true,
+     "required": true,
+     "why": "A planned change explains a new device."
+    },
+    {
+     "text": "Sign-in log: FHV-LT-0412 signed in from head office (198.51.100.61) with MFA approved",
+     "supports": true,
+     "required": true,
+     "why": "Right place, right checks: nothing about it is odd."
+    },
+    {
+     "text": "Service Desk: Owen confirms it's his new laptop",
+     "supports": true,
+     "required": false,
+     "why": "Confirmation from the person, which fits the logs."
+    },
+    {
+     "text": "A new device is how attackers get in, so block it until it's checked",
+     "supports": false,
+     "required": false,
+     "why": "New devices are everyday events. Here the change calendar and the sign-in details already answer the question."
+    }
+   ],
+   "answer": {
+    "verdict": "legit",
+    "severity": [
+     "low"
+    ],
+    "related": [],
+    "contain": [],
+    "status": "closed",
+    "summaries": [
+     "False alarm: o.pryce's new laptop FHV-LT-0412 (CHG-3107 laptop refresh), signed in from head office with MFA. No action.",
+     "o.pryce signed in from an unknown device. Device blocked as a precaution.",
+     "New device for o.pryce. Possible account takeover; reset recommended."
+    ],
+    "summary": 0,
+    "why": "New-device alerts are common and mostly harmless. Check the change calendar and the sign-in's details before acting: blocking a legitimate device costs the client time."
+   }
+  },
+  {
+   "id": "a5",
+   "ref": "SOC-24181",
+   "title": "Outbound email spike from newsletter@",
+   "time": "09:04",
+   "severity": "medium",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "newsletter@fernhollowvets.example sent 2,418 emails in 4 minutes (usual: under 50 an hour).",
+   "guide": {
+    "hints": [
+     "A burst of outbound email can mean a hijacked mailbox sending spam. But some mailboxes exist to send bulk email. Check the mail trace and the client notes.",
+     "Look at what was sent, how, and when: the same subject pattern last month? Do the notes say when the newsletter goes out?",
+     "It's the monthly newsletter, on the fourth Thursday at 09:00, through the mailing service, same as last month. Legitimate: close it, no action. Blocking it would stop the client's newsletter."
+    ],
+    "searches": [
+     [
+      "mailtrace",
+      "newsletter"
+     ],
+     [
+      "notes",
+      "newsletter"
+     ]
+    ]
+   },
+   "sources": [
+    "mailtrace",
+    "notes"
+   ],
+   "requests": [
+    "endpoint:block-newsletter"
+   ],
+   "evidence": [
+    {
+     "text": "Mail trace: 2,418 emails from newsletter@ at 09:00 in two batches, through the mailing service",
+     "supports": true,
+     "required": true,
+     "why": "Scheduled, via the usual service, with a normal newsletter subject."
+    },
+    {
+     "text": "Client notes: the newsletter goes out on the fourth Thursday of each month at 09:00",
+     "supports": true,
+     "required": true,
+     "why": "Today is the fourth Thursday of October."
+    },
+    {
+     "text": "Mail trace: last month's newsletter went the same way on 24 September",
+     "supports": true,
+     "required": false,
+     "why": "The same pattern a month ago: this is routine."
+    },
+    {
+     "text": "A burst of outbound email is what a hijacked mailbox sends",
+     "supports": false,
+     "required": false,
+     "why": "It can be, but not here: the schedule, the mailing service and last month's run all match."
+    }
+   ],
+   "answer": {
+    "verdict": "legit",
+    "severity": [
+     "low"
+    ],
+    "related": [],
+    "contain": [],
+    "status": "closed",
+    "summaries": [
+     "False alarm: the monthly client newsletter (2,418 emails at 09:00 via the mailing service, fourth Thursday, same as 24 Sept). Consider tuning the rule for newsletter@.",
+     "newsletter@ may be compromised: it sent 2,418 emails. Mailbox blocked.",
+     "Spam outbreak from newsletter@. Escalated to the client."
+    ],
+    "summary": 0,
+    "why": "Volume rules can't tell a newsletter from spam. The client notes and last month's run can. Tuning the rule saves the next analyst the same check."
+   }
+  }
+ ],
+ "departments": {
+  "identity": {
+   "name": "Identity & Access",
+   "contact": {
+    "name": "Priya Raman",
+    "photo": "img/agency/priya.webp",
+    "role": "Identity & Access"
+   },
+   "requests": [
+    {
+     "id": "reset-rhughes",
+     "label": "Reset r.hughes's password, end all her sessions and re-register her MFA",
+     "minutes": 12,
+     "replies": [
+      {
+       "when": {
+        "attached": ""
+       },
+       "minutes": 4,
+       "outcome": "asks",
+       "text": "We need a reason on the ticket before we reset a finance manager mid-afternoon. Attach a finding and send it again."
+      },
+      {
+       "outcome": "done",
+       "text": "Done. r.hughes's password is reset, every session is ended (including the one from 203.0.113.58) and her MFA is re-registered. Owen is getting her back in."
+      }
+     ],
+     "effects": {
+      "accounts.rhughes": "reset"
+     }
+    },
+    {
+     "id": "block-device",
+     "label": "Block o.pryce's new laptop (FHV-LT-0412) from signing in",
+     "minutes": 8,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done. FHV-LT-0412 is blocked. Owen's on the phone asking why his new laptop has stopped working.",
+       "cost": "Locked the IT manager out of his new laptop in the middle of the CHG-3107 refresh, which the client notes listed."
+      }
+     ]
+    }
+   ]
+  },
+  "endpoint": {
+   "name": "Endpoint & Email Security",
+   "contact": {
+    "name": "Elliot Marsh",
+    "photo": "img/agency/elliot.webp",
+    "role": "Endpoint & Email Security"
+   },
+   "requests": [
+    {
+     "id": "remove-rule",
+     "label": "Remove the hidden '..' rule from r.hughes's mailbox and restore what it moved",
+     "minutes": 10,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done. The '..' rule is gone and the mail it hid is back in r.hughes's inbox. One was a genuine email from Corran at 14:52, asking when INV-20931 will be paid. Nothing in it about new bank details.",
+       "finding": {
+        "id": "corran-real",
+        "finding": "Corran's genuine 14:52 email, hidden by the rule, asks when INV-20931 will be paid and says nothing about new bank details."
+       }
+      }
+     ]
+    },
+    {
+     "id": "quarantine-lookalike",
+     "label": "Quarantine every email from corran-vetsupplies.example and block the domain",
+     "minutes": 8,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done. Two emails from corran-vetsupplies.example quarantined (the one to accounts@ and an earlier test to r.hughes) and the domain is blocked for the whole company."
+      }
+     ],
+     "effects": {
+      "blocked.lookalike": true
+     }
+    },
+    {
+     "id": "block-newsletter",
+     "label": "Block outbound email from newsletter@",
+     "minutes": 6,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done. newsletter@ can't send. The practices will want to know why their client newsletter stopped.",
+       "cost": "Stopped the monthly client newsletter, which goes out on the fourth Thursday through the mailing service, as the notes say."
+      }
+     ]
+    }
+   ]
+  },
+  "netops": {
+   "name": "Network Operations",
+   "contact": {
+    "name": "Tomasz Nowak",
+    "photo": "img/agency/tomasz.webp",
+    "role": "Network Operations"
+   },
+   "requests": [
+    {
+     "id": "block-58",
+     "label": "Block 203.0.113.58 at the edge and in the sign-in policy",
+     "minutes": 8,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done. 203.0.113.58 is blocked at the edge and in the sign-in policy, so it can't sign in to Fernhollow mail again."
+      }
+     ],
+     "effects": {
+      "blocked.ip58": true
+     }
+    },
+    {
+     "id": "block-country",
+     "label": "Block all sign-ins from the Netherlands",
+     "minutes": 5,
+     "replies": [
+      {
+       "outcome": "refused",
+       "text": "We can't block a whole country without a change from the client, and two of their vets are at a conference in Amsterdam this week (it's in their notes). If you need the attacker gone, ask us to block 203.0.113.58 instead and we'll do it now."
+      }
+     ]
+    }
+   ]
+  },
+  "servicedesk": {
+   "name": "Service Desk",
+   "contact": {
+    "name": "Grace Adeyemi",
+    "photo": "img/agency/grace.webp",
+    "role": "Service Desk"
+   },
+   "requests": [
+    {
+     "id": "call-rhughes",
+     "label": "Call r.hughes about the MFA prompts and the inbox rule",
+     "minutes": 12,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Spoke to Rhian. Her phone kept buzzing with sign-in prompts over lunch, so she approved one to make them stop. She hasn't made any inbox rules and didn't email accounts about Corran.",
+       "finding": {
+        "id": "rhughes-confirms",
+        "finding": "Service Desk: r.hughes approved a prompt at lunch 'to make them stop', made no inbox rules and didn't email accounts about Corran."
+       }
+      }
+     ]
+    },
+    {
+     "id": "call-opryce",
+     "label": "Call o.pryce about his new-device sign-in",
+     "minutes": 10,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Owen says FHV-LT-0412 is his new laptop, set up this morning under CHG-3107. He signed in at head office.",
+       "finding": {
+        "id": "opryce-confirms",
+        "finding": "Service Desk: Owen confirms FHV-LT-0412 is his new laptop from CHG-3107, set up this morning at head office."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "client": {
+   "name": "Owen Pryce (Fernhollow IT)",
+   "contact": {
+    "name": "Owen Pryce",
+    "photo": "img/agency/owen.webp",
+    "role": "Client: Fernhollow IT"
+   },
+   "requests": [
+    {
+     "id": "stop-payment",
+     "label": "Stop the INV-20931 payment and confirm Corran's bank details by phone on their known number",
+     "minutes": 15,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Caught it: Amy had it in the 17:00 run. It's pulled. I rang Jo at Corran on the number we hold (FIN-07): their bank details haven't changed and they never sent that email. We're telling our bank and reporting it to Action Fraud."
+      }
+     ],
+     "effects": {
+      "payment": "stopped"
+     }
+    },
+    {
+     "id": "report-incident",
+     "label": "Report a confirmed mailbox takeover: r.hughes, a hidden inbox rule and a fake bank-change request",
+     "minutes": 20,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Thanks for catching this before 17:00. I'll get number matching (CHG-3090) brought forward to this week, and remind finance about FIN-07. Send me the timeline when you have it."
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "handover": {
+  "links": "Three alerts were one incident: the MFA prompts let the attacker into r.hughes's mailbox, where they hid Corran's mail and set up the fake bank change. Linking them is how a SOC sees the whole attack.",
+  "model": "Real incident: r.hughes's mailbox taken over by MFA fatigue (4 prompts denied, the fifth approved at 12:53, from 203.0.113.58). The attacker searched for 'Corran invoice', made a '..' rule hiding Corran's mail, emailed accounts at 15:21 as Rhian, and a lookalike domain (corran-vetsupplies.example) asked for INV-20931 (£18,460.00) to go to new bank details today. Payment stopped and confirmed with Corran by phone; r.hughes reset with sessions ended and MFA re-registered; rule removed; 203.0.113.58 and the lookalike domain blocked; Owen told. Noise: Owen's new laptop (CHG-3107) and the monthly newsletter. Next shift: check other finance mailboxes for rules and sign-ins from 203.0.113.0/24, and chase CHG-3090 (number matching)."
+ }
+}

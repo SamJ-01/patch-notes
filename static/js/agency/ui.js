@@ -3,6 +3,7 @@
 import * as A from "./shift.js";
 import { markText } from "../missions/engine.js";
 import { DESK } from "../desk.js";
+import { MAIL } from "../mail.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 // Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
@@ -76,6 +77,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     for (const ev of r.events) {
       if (ev.type === "arrive") { const a = A.alertById(shift, ev.id); inbox({ sys: true, ref: a ? tref(a) : "", html: `New alert: <b>${esc(ev.title)}</b>` }); notes.push(`New alert: ${ev.title}`); }
       else if (ev.type === "search") showSearch(ev);
+      else if (ev.type === "email" && ev.found.length) notes.push(`New finding${ev.found.length === 1 ? "" : "s"} recorded.`);
       else if (ev.type === "sent") inbox({ me: true, ref: reqNo(state, ev.ref), status: "pending", html: `<p>@${esc(contact(ev.ref).from)}, raised for <b>${esc(ev.dept)}</b>: ${esc(ev.label)}.</p>${ev.attached ? `<p class="dk-attach"><span aria-hidden="true">📎</span> ${esc(ev.attached)}</p>` : ""}<p class="dk-note">Reply expected by ${clockAt(ev.due)}.</p>` });
       else if (ev.type === "reply") {
         inbox({ ...contact(ev.ref), ref: reqNo(state, ev.ref), status: ev.outcome, at: ev.at, html: `<p>${gl(ev.text, 2)}</p>` });
@@ -144,7 +146,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     $("ag-alert").querySelectorAll("[data-src]").forEach(b => b.addEventListener("click", () => {
       source = b.dataset.src;
       $("ag-alert").querySelectorAll("[data-src]").forEach(x => x.setAttribute("aria-pressed", x.dataset.src === source));
-      renderLog(); $("ag-q").focus({ preventScroll: true });
+      renderLog(); ($("ag-q") || $("ag-log").querySelector("[data-mail]"))?.focus({ preventScroll: true });
     }));
     renderGuide(); renderLog(); renderFound(); renderAsk(); renderClose();
     renderAll(false);
@@ -175,6 +177,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
   }
   function renderLog() {
     const src = shift.sources[source];
+    if (src.kind === "email") return renderMailbox(src);
     $("ag-log").innerHTML = `<div class="panel-title"><h3 class="mono">${esc(src.name)}</h3><span class="sim-tag">Simulated log</span></div>
       <p class="muted" style="margin:0">${esc(src.about)} Search it like grep: every word you type must appear in a line. Each search takes ${plural(shift.costs.search, "minute")}.</p>
       <form class="row log-search" id="ag-form" role="search"><label class="sr-only" for="ag-q">Search ${esc(src.name)}</label>
@@ -184,6 +187,25 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
       <pre class="evidence console log-out" id="ag-lout" tabindex="0" aria-labelledby="ag-lcount">${src.lines.map(l => esc(l)).join("\n")}</pre>`;
     $("ag-form").addEventListener("submit", e => { e.preventDefault(); run(A.search(shift, state, source, $("ag-q").value)); });
     $("ag-all").addEventListener("click", () => { $("ag-q").value = ""; run(A.search(shift, state, source, "")); });
+  }
+  // A mailbox source: a list of emails; opening one shows it in the site's email view (Message, Details, Original).
+  function renderMailbox(src) {
+    const opened = state.opened || [];
+    $("ag-log").innerHTML = `<div class="panel-title"><h3>${esc(src.name)}</h3><span class="sim-tag">Simulated mailbox</span></div>
+      <p class="muted" style="margin:0">${esc(src.about)} Opening an email takes ${plural(shift.costs.search, "minute")} the first time. Check <b>Details</b> for who really sent it.</p>
+      <ul class="ag-mails">${src.emails.map(e => { const h = MAIL.parseHeaders(e.headers); return `<li><button type="button" class="ag-mail${opened.includes(e.id) ? " read" : ""}" data-mail="${esc(e.id)}" aria-pressed="false">
+        <b>${esc(h.from.name || h.from.address)}</b><span>${esc(h.subject)}</span><span class="muted mono">${esc(e.time || "")}</span></button></li>`; }).join("")}</ul>
+      <div id="ag-mailview"></div>`;
+    MAIL.wire($("ag-mailview"));
+    $("ag-log").querySelectorAll("[data-mail]").forEach(b => b.addEventListener("click", () => {
+      run(A.openEmail(shift, state, source, b.dataset.mail));
+      showMail(src, b.dataset.mail);
+    }));
+  }
+  function showMail(src, id) {
+    const e = src.emails.find(x => x.id === id);
+    $("ag-log").querySelectorAll("[data-mail]").forEach(b => { b.setAttribute("aria-pressed", b.dataset.mail === id); if (b.dataset.mail === id) b.classList.add("read"); });
+    $("ag-mailview").innerHTML = MAIL.card({ headers: e.headers, body: e.body, links: e.links, attachments: e.attachments, folder: e.folder }, { id: `ag-em-${id}`, org: src.org });
   }
   function showSearch(ev) {
     if (ev.source !== source || !$("ag-lout")) return;
