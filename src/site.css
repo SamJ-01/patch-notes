@@ -146,7 +146,7 @@ main { padding-inline: 16px; }
 .view-head p { color: var(--muted); max-width: 68ch; }
 .split { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 28px; align-items: start; }
 
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; min-width: 0; }  /* one column, never wider than the panel */
 .panel-title { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .link-btn { background: none; border: 0; padding: 0; color: var(--brand); font-weight: 700; cursor: pointer; font-size: 0.9rem; text-decoration: none; }
 
@@ -1852,3 +1852,20 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .news-line p { margin: 0; }
 .news-line .btn { justify-self: start; }
 @media (max-width: 800px) { .start-grid { grid-template-columns: 1fr; } }
+/* Terminals never grow past their column: a long prompt or title shortens with an ellipsis instead of pushing the
+   terminal wider than the screen (the permissions lab's "root@marlow-fs:/srv/payroll#" did on phones). */
+.term-grid > *, .term-shell { min-width: 0; }
+.term-bar > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.term-bar .tag { flex: none; }
+.term-ps { min-width: 0; max-width: 62%; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 860px) { .term-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 520px) { .term-shell { height: 320px; } }
+.term-shell { grid-template-columns: minmax(0, 1fr); }  /* its one column is the shell's width, not its widest line */
+/* Down to 320 px phones: grids whose columns started at 320 px, the OSI reference and the RJ45 plug shrink to fit. */
+.dir, .trend-grid { grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); }
+.trend-grid { grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); }
+.rj45-pins { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+.rj45-pin { min-width: 0; }
+.rj45, .rj45-body { max-width: 100%; min-width: 0; }
+@media (max-width: 420px) { .osi-ref { grid-template-columns: minmax(0, 1fr); } }
+.osi-tcpip > div { flex-wrap: wrap; } .osi-tcpip span:not(.eyebrow) { min-width: 0; overflow-wrap: anywhere; }
