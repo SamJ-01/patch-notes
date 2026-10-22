@@ -87,6 +87,11 @@ function bestMatch(items, q) {
     || items.find(x => text(x).split(/[^a-z0-9+]+/).some(w => w.startsWith(q)))
     || items.find(x => text(x).includes(q));
 }
+// Every word runCmd() answers to, so the palette knows not to treat it as a search (a section name only on its own).
+const COMMANDS = new Set(["help", "?", "man", "ls", "cd", "goto", "open", "learn", "define", "whatis", "mission", "missions", "subnet", "ipcalc", "calc",
+  "lab", "labs", "path", "paths", "progress", "badges", "news", "cve", "cves", "radar", "whoami", "id", "flags", "hint", "hints", "submit",
+  "sudo", "rm", "hack", "nmap", "clear", "cls", "exit", "quit", "q"]);
+const isCommand = q => { const [w, ...more] = q.split(/\s+/), c = w.toLowerCase(); return COMMANDS.has(c) || c.startsWith("flag{") || (!more.length && SECTIONS.some(([s]) => s === c)); };
 async function runCmd(raw) {
   const line = raw.trim(); if (!line) return;
   say(line, "echo");
@@ -153,9 +158,7 @@ async function runCmd(raw) {
 }
 function drawCmd() {
   const q = cmdIn.value.trim();
-  const firstWord = q.split(/\s+/)[0].toLowerCase();
-  const isCmd = ["help", "ls", "cd", "open", "man", "define", "whatis", "news", "cve", "whoami", "flags", "submit", "sudo", "clear", "exit", "lab", "labs", "mission", "missions", "path", "paths", "progress", "badges"].includes(firstWord);
-  cmdItems = q && !isCmd ? searchAll(q) : [];
+  cmdItems = q && !isCommand(q) ? searchAll(q) : [];
   if (cmdSel >= cmdItems.length) cmdSel = 0;
   const log = cmdLog.map(l => `<div class="cmdk-line ${l.cls}">${esc(l.text).replace(/→ open (\S+)/, '→ <b>open $1</b>')}</div>`).join("");
   const res = cmdItems.map((it, i) => `<div class="cmdk-res" role="option" data-i="${i}" aria-selected="${i === cmdSel}"><span class="k">${esc(it.k)}</span><span class="t">${esc(it.t)}</span><span class="h">${esc(it.h)}</span></div>`).join("");

@@ -252,6 +252,8 @@ export function createCli(topo) {
     const S = sw(s), C = st(s);
     const each = fn => C.ctx.forEach(p => fn(S.ports[p], p));
     const create = (v, kind) => (hasVlan(s, v) ? "" : ((S.vlans[v] = `VLAN${String(v).padStart(4, "0")}`), `% ${kind} VLAN does not exist. Creating vlan ${v}`));
+    // Ports only go in VLANs 2 to 1001 here: 1002-1005 are the reserved Token Ring/FDDI VLANs, and 1006+ need VTP transparent mode.
+    const offLimits = v => (v > 1001 ? { out: `[Simulator: VLAN ${v} is ${v <= 1005 ? "a reserved VLAN (1002-1005)" : "an extended VLAN, which needs VTP transparent mode"}, not modelled for ports here. Use a VLAN from 2 to 1001.]`, error: true } : null);
     switch (path) {
       case "enable": C.mode = "priv"; return { out: "" };
       case "disable": C.mode = "user"; return { out: "" };
@@ -310,9 +312,9 @@ export function createCli(topo) {
       case "switchport mode trunk": each(p => { p.mode = "trunk"; }); return { out: "" };
       case "switchport mode dynamic auto": each(p => { p.mode = "dynamic auto"; }); return { out: "" };
       case "switchport mode dynamic desirable": each(p => { p.mode = "dynamic desirable"; }); return { out: "" };
-      case "switchport access vlan $vlan": { const msg = create(args[0], "Access"); each(p => { p.access = args[0]; }); return { out: msg }; }
+      case "switchport access vlan $vlan": { if (offLimits(args[0])) return offLimits(args[0]); const msg = create(args[0], "Access"); each(p => { p.access = args[0]; }); return { out: msg }; }
       case "no switchport access vlan": each(p => { p.access = 1; }); return { out: "" };
-      case "switchport voice vlan $vlan": { const msg = create(args[0], "Voice"); each(p => { p.voice = args[0]; }); return { out: msg }; }
+      case "switchport voice vlan $vlan": { if (offLimits(args[0])) return offLimits(args[0]); const msg = create(args[0], "Voice"); each(p => { p.voice = args[0]; }); return { out: msg }; }
       case "no switchport voice vlan": each(p => { p.voice = null; }); return { out: "" };
       case "switchport trunk native vlan $vlan": each(p => { p.native = args[0]; }); return { out: mismatches(s) };
       case "no switchport trunk native vlan": each(p => { p.native = 1; }); return { out: mismatches(s) };
@@ -337,8 +339,10 @@ export function createCli(topo) {
         each((p, name) => {
           if (p.shutdown === down) return;
           p.shutdown = down;
-          msgs.push(`%LINK-5-CHANGED: Interface ${longName(name)}, changed state to ${down ? "administratively down" : "up"}`);
-          if (peerOf(s, name)) msgs.push(`%LINEPROTO-5-UPDOWN: Line protocol on Interface ${longName(name)}, changed state to ${down ? "down" : "up"}`);
+          // IOS logs going admin down as LINK-5-CHANGED and a link coming up as LINK-3-UPDOWN; with no cable it stays down.
+          const cabled = !!peerOf(s, name);
+          msgs.push(down ? `%LINK-5-CHANGED: Interface ${longName(name)}, changed state to administratively down` : cabled ? `%LINK-3-UPDOWN: Interface ${longName(name)}, changed state to up` : `%LINK-3-UPDOWN: Interface ${longName(name)}, changed state to down`);
+          if (cabled) msgs.push(`%LINEPROTO-5-UPDOWN: Line protocol on Interface ${longName(name)}, changed state to ${down ? "down" : "up"}`);
         });
         return { out: msgs.join("\n") };
       }

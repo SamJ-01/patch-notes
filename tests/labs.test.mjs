@@ -341,3 +341,11 @@ test("wiretap: Telnet shows clear text, SSH shows ciphertext", () => {
   assert.equal(wiretap.encrypt("abc", 1), wiretap.encrypt("abc", 1), "stable for a given seed");
   assert.notEqual(wiretap.encrypt("abc", 1), wiretap.encrypt("abc", 2), "differs by seed");
 });
+
+test("found in review: file permissions apply to the owner too, and others use the last three bits", () => {
+  const sh = term.createShell(lab("linux-terminal"));
+  sh.run("touch mine.txt"); sh.run("chmod 000 mine.txt");
+  assert.equal(sh.run("cat mine.txt").out, "cat: mine.txt: Permission denied");
+  sh.run("chmod 644 mine.txt");
+  assert.doesNotMatch(sh.run("cat mine.txt").out, /denied/);
+});

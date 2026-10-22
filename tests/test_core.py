@@ -165,6 +165,29 @@ class NvdOutage(unittest.TestCase):
                 cve_watch.collect(7)
 
 
+class KevEpssOutage(unittest.TestCase):
+    """If CISA KEV or FIRST EPSS stays down, the build keeps their saved details instead of failing."""
+
+    def test_collect_keeps_saved_kev_and_epss(self):
+        import http.client
+        from unittest import mock
+        today = dt.date.today().isoformat()
+        nvd = {"id": "CVE-2026-0002", "published": today + "T10:00:00.000", "status": "Analyzed", "description": "A flaw.",
+               "cvss": 9.8, "severity": "CRITICAL", "vector": "AV:N", "cvss_version": "3.1", "cwes": [], "products": ["acme widget"]}
+        kev = {"added": today, "due": today, "ransomware": True, "name": "Acme flaw", "action": "Patch it."}
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(cve_watch, "DB_PATH", Path(tmp) / "c.db"):
+            cve_watch.save(cve_watch.open_db(), [dict(nvd, kev=kev, epss=0.42, epss_pct=0.97, priority=1)])
+            down = mock.Mock(side_effect=http.client.IncompleteRead(b"{", 10))
+            with mock.patch.object(cve_watch, "fetch_nvd", return_value=[{"id": "CVE-2026-0002"}]), mock.patch.object(cve_watch, "parse_nvd", return_value=dict(nvd)), \
+                    mock.patch.object(cve_watch, "fetch_kev", down), mock.patch.object(cve_watch, "fetch_epss", down), mock.patch("sys.stderr"):
+                rows, meta = cve_watch.collect(7)
+        self.assertEqual(rows[0]["kev"], kev, "KEV details saved by an earlier run are kept")
+        self.assertEqual((rows[0]["epss"], rows[0]["epss_pct"]), (0.42, 0.97))
+        self.assertTrue(meta["nvd_fresh"])
+        self.assertFalse(meta["kev_fresh"])
+        self.assertFalse(meta["epss_fresh"])
+
+
 class Feeds(unittest.TestCase):
     RSS = b"""<?xml version="1.0"?><rss version="2.0"><channel>
       <item><title>Big &amp; bad &lt;b&gt;bug&lt;/b&gt;</title><link>https://example.com/a</link>

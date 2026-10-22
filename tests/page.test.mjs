@@ -117,6 +117,11 @@ test("progress: restored or stored data is cleaned before use", () => {
   const ag = cleanProgress({ xp: 1, agency: { "shift-01": { d: evil, best: 999, total: "6" }, [evil]: { best: 1 }, "shift-02": "nope", "shift-03": [1] } });
   assert.deepEqual(JSON.parse(JSON.stringify(ag.agency)), { "shift-01": { d: evil.slice(0, 10), best: 20, total: 6 } }, "agency results are clamped numbers and a short date");
   assert.equal(Object.keys(cleanProgress({ xp: 1 }).agency).length, 0, "older saves without agency still load");
+  const sh = cleanProgress({ xp: 1, stack: "abc", labSteps: { vlans: 5, hashing: [0, "a", {}] }, best: { phish: evil, quiz: "7", x: true } });
+  assert.equal(sh.stack, null, "a stack that isn't a list is dropped (the home page maps it)");
+  assert.deepEqual(JSON.parse(JSON.stringify(sh.labSteps)), { hashing: [0, "a"] }, "lab steps are lists of ids");
+  assert.deepEqual(JSON.parse(JSON.stringify(sh.best)), { quiz: 7 }, "best scores are numbers, never markup");
+  assert.deepEqual(cleanProgress({ xp: 1, stack: ["a", 2, "b"] }).stack, ["a", "b"]);
   assert.throws(() => cleanProgress({ xp: "lots" }));
   assert.throws(() => cleanProgress([1, 2]));
   assert.throws(() => restoreProgress({ progress: { xp: 1 } }), "files must say they come from patch-notes");

@@ -91,6 +91,8 @@ export function createShell(lab) {
   const node = p => state.fs[p];
   const children = dir => Object.keys(state.fs).filter(p => p !== dir && parent(p) === dir).sort();
   // You can write where you own the folder, in your home, or in /tmp (world-writable).
+  // Like Linux: the owner gets the first three permission bits, everyone else the last three (groups aren't modelled).
+  const may = (n, what) => (n.owner === user ? n.mode.slice(0, 3) : n.mode.slice(6, 9)).includes(what);
   const canWrite = dir => { const d = node(dir); return d && (d.owner === user || dir === "/tmp" || dir.startsWith(home)); };
   const short = p => (p === home ? "~" : p.startsWith(home + "/") ? "~" + p.slice(home.length) : p);
   const log = ev => state.events.push(ev);
@@ -124,7 +126,7 @@ export function createShell(lab) {
       const p = resolve(w), n = node(p);
       if (!n) return err(`${name}: ${w}: No such file or directory`);
       if (n.type === "dir") return err(`${name}: ${w}: Is a directory`);
-      if (n.mode[0] !== "r" && n.owner !== user) return err(`${name}: ${w}: Permission denied`);
+      if (!may(n, "r")) return err(`${name}: ${w}: Permission denied`);
       outs.push(n.content || "");
     }
     return { text: outs.join("\n") };
@@ -150,7 +152,7 @@ export function createShell(lab) {
       log({ cmd: "exec", path: p, ok: false });
       if (!n) return err(`bash: ${cmd}: No such file or directory`);
       if (n.type === "dir") return err(`bash: ${cmd}: Is a directory`);
-      if (n.mode[2] !== "x") return err(`bash: ${cmd}: Permission denied`);
+      if (!may(n, "x")) return err(`bash: ${cmd}: Permission denied`);
       state.events[state.events.length - 1].ok = true;
       const out = (n.content || "").split("\n").map(l => l.match(/^echo\s+["']?(.*?)["']?$/)).filter(Boolean).map(m => m[1]).join("\n");
       return { out };
@@ -193,7 +195,7 @@ export function createShell(lab) {
           const p = resolve(w), n = node(p);
           if (!n) return err(`cat: ${w}: No such file or directory`);
           if (n.type === "dir") return err(`cat: ${w}: Is a directory`);
-          if (n.mode[0] !== "r" && n.owner !== user) return err(`cat: ${w}: Permission denied`);
+          if (!may(n, "r")) return err(`cat: ${w}: Permission denied`);
           log({ cmd, path: p }); outs.push(n.content || "");
         }
         return { out: outs.join("\n") };

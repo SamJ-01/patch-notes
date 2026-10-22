@@ -22,7 +22,7 @@ const isToolMode = m => Array.isArray(m.tools);
 const STATE_WORDS = { ok: "working", bad: "problem", warn: "warning" };
 
 export function mount(root, scenario, { mode = "guided", doneModes = [], next = null, onComplete = () => {}, reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches } = {}) {
-  let state, playing = false, speed = 1, details = false, selected = null, busy = false, runId = 0;
+  let state, playing = false, speed = 1, details = false, selected = null, busy = false, runId = 0, modeId = 0;
   const modes = Object.entries(scenario.modes);
 
   root.innerHTML = `<div class="mission">
@@ -288,11 +288,14 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
   // ---------- applying engine events
   async function run(result) {
     state = result.state;
+    // Switching mode or resetting mid-animation starts afresh: the rest of these events belong to the old run.
+    const mode = modeId;
     for (const ev of result.events) {
-      if (ev.type === "message") { logLine(describe(ev.msg), ev.id); await animateMessage(ev.id, ev.msg); updateDevices(); if (!selected || playing) inspect(ev.id); }
+      if (mode !== modeId) return;
+      if (ev.type === "message") { logLine(describe(ev.msg), ev.id); await animateMessage(ev.id, ev.msg); if (mode !== modeId) return; updateDevices(); if (!selected || playing) inspect(ev.id); }
       else if (ev.type === "question") showQuestion(ev);
       else if (ev.type === "answer") showAnswer(ev);
-      else if (ev.type === "tool") await showTool(ev);
+      else if (ev.type === "tool") { await showTool(ev); if (mode !== modeId) return; }
       else if (ev.type === "log") showLog(ev);
       else if (ev.type === "email") showEmail(ev);
       else if (ev.type === "workaround") logLine(`<span class="warnline">Workaround applied. It looks fixed for this device, but is it really solved?</span>`);
@@ -485,7 +488,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     $("m-play").disabled = !!state.pending;
   }
   function setMode(k) {
-    runId++; playing = false; selected = null;
+    runId++; modeId++; playing = false; selected = null;
     state = engine.start(scenario, k);
     const m = scenario.modes[k];
     root.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === k));

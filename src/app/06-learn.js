@@ -86,6 +86,8 @@ function startPractice(c, mode, questions, title) {
     const names = Object.fromEntries(certObjectives(c).map(o => [o.id, o.title]));
     main.innerHTML = `<div class="view"><article class="article lesson"><a class="link-btn" href="#cert-${esc(c.id)}">← ${esc(c.name)} objectives</a><h1 class="sr-only">${esc(c.name)} practice: ${esc(title)}</h1><section class="panel wide ex" id="ex-root"></section></article></div>`;
     window.scrollTo(0, 0);
+    // Practice is drawn under the cert's own hash, so following the link wouldn't change it (no hashchange).
+    main.querySelector(".lesson > .link-btn").addEventListener("click", e => { e.preventDefault(); certView(c.id); window.scrollTo(0, 0); });
     ex.mount($("ex-root"), { title, mode, questions: mode === "mock" ? ex.buildMock(c.questions, c.domains) : questions,
       objectiveName: id => names[id] || id, onAnswer: recordAnswer,
       onFinish: r => { if (r.mode === "mock") { (P.mocks[c.id] || (P.mocks[c.id] = [])).push({ d: todayStr(), score: r.score, total: r.total }); P.mocks[c.id] = P.mocks[c.id].slice(-20); saveP(); award(20, "Mock exam completed"); celebrate("Mock exam done", `${r.score} of ${r.total} correct`); } },

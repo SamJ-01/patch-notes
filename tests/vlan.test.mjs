@@ -225,3 +225,17 @@ test("lab content is consistent", () => {
   for (const t of lab.tasks) assert.ok(t.text && t.hint && t.why && t.check, t.id);
   assert.ok(!JSON.stringify(lab).includes("—"), "no em dashes");
 });
+
+test("found in review: ports stay out of reserved and extended VLANs; an unplugged port doesn't come up", () => {
+  const net = createNet(lab);
+  on(net, "S1", "en", "conf t", "int fa0/20");
+  for (const v of ["1002", "1500"]) {
+    const r = on(net, "S1", `switchport access vlan ${v}`);
+    assert.equal(r.error, true, v); assert.match(r.out, /2 to 1001/);
+  }
+  assert.equal((on(net, "S1", "do sh vl br").out.match(/^1002 /gm) || []).length, 1, "VLAN 1002 listed once");
+  on(net, "S1", "int fa0/21", "shutdown");
+  assert.equal(on(net, "S1", "no shutdown").out, "%LINK-3-UPDOWN: Interface FastEthernet0/21, changed state to down");
+  on(net, "S1", "int gi0/1", "shutdown");
+  assert.match(on(net, "S1", "no shutdown").out, /^%LINK-3-UPDOWN: Interface GigabitEthernet0\/1, changed state to up\n%LINEPROTO-5-UPDOWN/);
+});

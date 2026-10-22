@@ -23,6 +23,10 @@ function cleanProgress(src) {
   // Agency shifts: when one was first completed and the best number of debrief checks passed.
   out.agency = Object.fromEntries(Object.entries(out.agency).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && v && typeof v === "object" && !Array.isArray(v))
     .map(([k, v]) => [k, { d: String(v.d ?? "").slice(0, 10), best: Math.min(20, Math.max(0, Math.round(Number(v.best) || 0))), total: Math.min(20, Math.max(0, Math.round(Number(v.total) || 0))) }]));
+  // Shapes the loop above can't check: the stack is a list of ids, lab steps are lists, best scores are numbers.
+  out.stack = Array.isArray(out.stack) ? out.stack.filter(x => typeof x === "string").slice(0, 100) : null;
+  out.labSteps = Object.fromEntries(Object.entries(out.labSteps).filter(([, v]) => Array.isArray(v)).map(([k, v]) => [k, v.filter(x => ["string", "number"].includes(typeof x)).slice(0, 100)]));
+  out.best = Object.fromEntries(Object.entries(out.best).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && Number.isFinite(Number(v)) && v !== "" && typeof v !== "boolean").map(([k, v]) => [k, Math.max(0, Math.round(Number(v)))]));
   return out;
 }
 const restoreProgress = file => cleanProgress(file && file.app === "patch-notes" ? file.progress : null);

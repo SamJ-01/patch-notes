@@ -112,7 +112,7 @@ function drawPhish() {
     if (!g.celebrated) { g.celebrated = true; celebrate("Round complete!", `${g.score}/${g.deck.length} spotted`); }
     box.innerHTML = `<section class="panel" style="text-align:center;justify-items:center"><div class="eyebrow">Round complete</div><div class="score-big">${g.score}/${g.deck.length}</div>
       <p>${g.score === g.deck.length ? "Perfect. Nothing gets past you." : g.score >= 7 ? "Sharp eyes. A couple slipped through." : "Phishers are good at this. Review the clues and try again."}</p>
-      <p class="muted">Your best: ${best}/${g.deck.length}</p><div class="row" style="justify-content:center">${g.wrong.length ? `<button class="btn brand" id="retryp">↺ Retry the ${g.wrong.length} you got wrong</button>` : ""}<button class="btn ${g.wrong.length ? "ghost" : "brand"}" id="again">Play again</button><a class="btn ghost" href="#lesson-phishing">Phishing lesson</a></div></section>`;
+      <p class="muted">Your best: ${Number(best) || 0}/${g.deck.length}</p><div class="row" style="justify-content:center">${g.wrong.length ? `<button class="btn brand" id="retryp">↺ Retry the ${g.wrong.length} you got wrong</button>` : ""}<button class="btn ${g.wrong.length ? "ghost" : "brand"}" id="again">Play again</button><a class="btn ghost" href="#lesson-phishing">Phishing lesson</a></div></section>`;
     $("again").onclick = () => { newPhish(); drawPhish(); };
     if ($("retryp")) $("retryp").onclick = () => { newPhish(shuffle(g.wrong)); drawPhish(); };
     return;
@@ -153,17 +153,23 @@ function drawQuiz() {
   }
   const q = g.deck[g.i];
   box.innerHTML = `<div class="game-bar"><span>Question ${g.i + 1} of ${g.deck.length}</span><span>Score ${g.score}</span></div><section class="panel" id="qp"></section>`;
-  $("qp").appendChild(quizBlock(q, {
+  // The way on: added after an answer, and again when coming back to a question already answered.
+  const next = wrap => {
+    const nb = document.createElement("button"); nb.className = "btn brand"; nb.style.justifySelf = "start";
+    nb.textContent = g.i + 1 < g.deck.length ? "Next question" : "See score";
+    nb.onclick = () => { g.i++; g.answered = null; drawQuiz(); };
+    wrap.appendChild(nb);
+  };
+  const block = quizBlock(q, {
     answered: g.answered,
     onAnswer: (choice, correct, wrap) => {
       g.answered = choice;
       if (correct) { g.score++; award(10, "Correct answer"); } else { g.wrong.push(q); }
-      const nb = document.createElement("button"); nb.className = "btn brand"; nb.style.justifySelf = "start";
-      nb.textContent = g.i + 1 < g.deck.length ? "Next question" : "See score";
-      nb.onclick = () => { g.i++; g.answered = null; drawQuiz(); };
-      wrap.appendChild(nb);
+      next(wrap);
     }
-  }));
+  });
+  $("qp").appendChild(block);
+  if (g.answered != null) next(block);
 }
 
 /* CAREERS */

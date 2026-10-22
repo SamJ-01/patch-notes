@@ -273,6 +273,17 @@ def cached_cves(days=None, ids=()):
     return out
 
 
+def cached_extras():
+    """KEV and EPSS details saved by earlier runs, keyed by CVE ID: the fallback when CISA or FIRST is down."""
+    if not DB_PATH.exists():
+        return {}
+    out = {}
+    for (data,) in open_db().execute("SELECT data FROM cves"):
+        cve = json.loads(data)
+        out[cve["id"]] = {k: cve.get(k) for k in ("kev", "epss", "epss_pct")}
+    return out
+
+
 def collect(days):
     """Fetch, enrich, prioritise and store CVEs. Returns (rows sorted by priority, meta).
 
@@ -291,8 +302,14 @@ def collect(days):
         nvd_ok = False
         print(f"  ! NVD unavailable ({exc}); using {len(cves)} CVEs saved by earlier runs", file=sys.stderr)
 
+    # KEV and EPSS add context but aren't essential: if either is down, keep what earlier runs saved and deploy anyway.
+    extras = None
     print("Fetching CISA Known Exploited Vulnerabilities...")
-    kev = fetch_kev()
+    try:
+        kev, kev_ok = fetch_kev(), True
+    except (OSError, ValueError, EOFError, http.client.HTTPException, KeyError, TypeError) as exc:
+        kev, kev_ok, extras = {}, False, cached_extras()
+        print(f"  ! CISA KEV unavailable ({exc}); keeping KEV details saved by earlier runs", file=sys.stderr)
 
     # KEV often adds OLD CVEs that just started being exploited. Include recent additions
     # even if NVD published them years ago - these are usually the most urgent items.
@@ -323,18 +340,26 @@ def collect(days):
             }
 
     print("Fetching EPSS exploit-probability scores...")
-    epss = fetch_epss(cves.keys())
+    try:
+        epss, epss_ok = fetch_epss(cves.keys()), True
+    except (OSError, ValueError, EOFError, http.client.HTTPException, KeyError, TypeError) as exc:
+        extras = extras if extras is not None else cached_extras()
+        epss, epss_ok = {i: (e["epss"], e["epss_pct"]) for i, e in extras.items() if e.get("epss") is not None}, False
+        print(f"  ! FIRST EPSS unavailable ({exc}); using {len(epss)} scores saved by earlier runs", file=sys.stderr)
 
     watchlist = load_watchlist()
     for cve in cves.values():
         k = kev.get(cve["id"])
-        cve["kev"] = {
-            "added": k["dateAdded"],
-            "due": k["dueDate"],
-            "ransomware": k["knownRansomwareCampaignUse"] == "Known",
-            "name": k["vulnerabilityName"],
-            "action": k["requiredAction"],
-        } if k else None
+        if not kev_ok:
+            cve["kev"] = (extras.get(cve["id"]) or {}).get("kev")
+        else:
+            cve["kev"] = {
+                "added": k["dateAdded"],
+                "due": k["dueDate"],
+                "ransomware": k["knownRansomwareCampaignUse"] == "Known",
+                "name": k["vulnerabilityName"],
+                "action": k["requiredAction"],
+            } if k else None
         if k:
             # CISA names the product that's actually being attacked; show it first.
             kev_product = f"{k['vendorProject']} {k['product']}".lower()
@@ -357,6 +382,8 @@ def collect(days):
         "total": len(rows),
         "new": len(new_ids),
         "nvd_fresh": nvd_ok,
+        "kev_fresh": kev_ok,
+        "epss_fresh": epss_ok,
     }
     return rows, meta
 

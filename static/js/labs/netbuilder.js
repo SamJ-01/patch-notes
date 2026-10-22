@@ -4,7 +4,7 @@
 // Pure parts (expand, sanitize, goals) are tested in tests/netbuilder.test.mjs; the model is net/model.js.
 import * as M from "../net/model.js";
 import * as V from "../net/view.js";
-import { createCli } from "./vlan.js";
+import { createCli, parseList, compress } from "./vlan.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const clone = v => JSON.parse(JSON.stringify(v));
@@ -219,7 +219,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
       <div class="row nb-addv"><label>New VLAN <input id="nb-newv" inputmode="numeric" placeholder="10" size="5"></label><label>Name <input id="nb-newn" placeholder="Staff" maxlength="32" size="10"></label><button type="button" class="btn ghost" id="nb-addv">Add</button></div>
       <h3 class="eyebrow">Connected ports</h3>${used.length ? `<div class="nb-ports">${used.map(p => { const x = d.ports[p], op = M.opMode(topo, selected, p); return `<fieldset class="nb-port"><legend><b>${esc(p)}</b> → ${esc(portLabel(selected, p))} <span class="tag">${op === "trunk" ? "trunking" : "access"}</span></legend>
         <label>Mode <select data-port="${p}" data-pk="mode">${MODES.map(m => `<option${m === x.mode ? " selected" : ""}>${m}</option>`).join("")}</select></label>
-        ${op === "trunk" ? `<label>Native VLAN <select data-port="${p}" data-pk="native">${opt(x.native)}</select></label><label>Allowed VLANs <input data-port="${p}" data-pk="allowed" value="${x.allowed ? x.allowed.join(",") : "all"}" spellcheck="false"></label>` : `<label>VLAN <select data-port="${p}" data-pk="access">${opt(x.access)}</select></label>`}
+        ${op === "trunk" ? `<label>Native VLAN <select data-port="${p}" data-pk="native">${opt(x.native)}</select></label><label>Allowed VLANs <input data-port="${p}" data-pk="allowed" value="${x.allowed ? compress(x.allowed) || "none" : "all"}" spellcheck="false"></label>` : `<label>VLAN <select data-port="${p}" data-pk="access">${opt(x.access)}</select></label>`}
         <label class="nb-check"><input type="checkbox" data-port="${p}" data-pk="shutdown"${x.shutdown ? " checked" : ""}> Shut down</label></fieldset>`; }).join("")}</div>` : `<p class="muted">No cables yet. Unused ports aren't shown.</p>`}`;
   }
   function routerForm(d) {
@@ -245,9 +245,13 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     });
     pane.querySelectorAll("[data-port]").forEach(i => i.addEventListener("change", () => {
       const port = d.ports[i.dataset.port], k = i.dataset.pk;
+      // Allowed VLANs take what IOS takes: all, none, or a list with ranges (10,20-25).
+      const list = k === "allowed" ? i.value.trim().toLowerCase() : "";
+      const parsed = k !== "allowed" || list === "all" || !list || list === "none" ? true : parseList(list, 1, 4094);
+      if (!parsed) { drawAll(); say(`${selected} ${i.dataset.port}: "${list}" isn't a VLAN list. Use all, none, or numbers and ranges like 10,20-25.`); return; }
       change(() => {
         if (k === "shutdown") port.shutdown = i.checked;
-        else if (k === "allowed") { const v = i.value.trim().toLowerCase(); port.allowed = v === "all" || !v ? null : v === "none" ? [] : (v.split(",").map(x => Number(x.trim())).filter(x => vid(x))); }
+        else if (k === "allowed") port.allowed = list === "all" || !list ? null : list === "none" ? [] : parsed;
         else if (k === "mode") port.mode = i.value;
         else port[k] = Number(i.value);
       });
