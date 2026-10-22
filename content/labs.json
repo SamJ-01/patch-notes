@@ -2436,6 +2436,154 @@
   "card": "Wire an RJ45 plug, T568A or B"
  },
  {
+  "id": "wifi-survey",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 12,
+  "lesson": "wireless",
+  "title": "Wi-Fi survey: what's in the air?",
+  "skill": "Read a Wi-Fi scan: bands, channels, security, and a network that shouldn't be there",
+  "card": "Channels, security and an impostor",
+  "intro": "Ashgrove Library (fictional) asked IT to check its Wi-Fi. This is a scan from a staff laptop. Read it like a network technician: what's weak, what's crowded, what's fake?",
+  "artifact": {
+   "kind": "log",
+   "name": "Wi-Fi scan (Windows 10, netsh)",
+   "placeholder": "e.g. Authentication",
+   "text": "C:\\Users\\it-desk> netsh wlan show networks mode=bssid\n\nInterface name : Wi-Fi\nThere are 5 networks currently visible.\n\nSSID 1 : Ashgrove-Staff\n    Network type            : Infrastructure\n    Authentication          : WPA2-Enterprise\n    Encryption              : CCMP\n    BSSID 1                 : 02:4a:6c:10:2e:40\n         Signal             : 84%\n         Radio type         : 802.11ax\n         Channel            : 36\n         Basic rates (Mbps) : 6 12 24\n         Other rates (Mbps) : 9 18 36 48 54\n    BSSID 2                 : 02:4a:6c:10:2e:41\n         Signal             : 90%\n         Radio type         : 802.11ax\n         Channel            : 1\n         Basic rates (Mbps) : 1 2 5.5 11\n         Other rates (Mbps) : 6 9 12 18 24 36 48 54\n\nSSID 2 : Ashgrove-Guest\n    Network type            : Infrastructure\n    Authentication          : Open\n    Encryption              : None\n    BSSID 1                 : 02:4a:6c:10:2e:50\n         Signal             : 81%\n         Radio type         : 802.11ax\n         Channel            : 11\n         Basic rates (Mbps) : 1 2 5.5 11\n         Other rates (Mbps) : 6 9 12 18 24 36 48 54\n\nSSID 3 : Ashgrove-Staff\n    Network type            : Infrastructure\n    Authentication          : WPA2-Personal\n    Encryption              : CCMP\n    BSSID 1                 : 02:91:3b:7e:05:c2\n         Signal             : 99%\n         Radio type         : 802.11n\n         Channel            : 6\n         Basic rates (Mbps) : 1 2 5.5 11\n         Other rates (Mbps) : 6 9 12 18 24 36 48 54\n\nSSID 4 : PRINTER-2F\n    Network type            : Infrastructure\n    Authentication          : WPA2-Personal\n    Encryption              : CCMP\n    BSSID 1                 : 02:5c:22:91:a0:0b\n         Signal             : 63%\n         Radio type         : 802.11n\n         Channel            : 4\n         Basic rates (Mbps) : 1 2 5.5 11\n         Other rates (Mbps) : 6 9 12 18 24 36 48 54\n\nSSID 5 : CCTV-OLD\n    Network type            : Infrastructure\n    Authentication          : Open\n    Encryption              : WEP\n    BSSID 1                 : 02:7e:10:44:6f:91\n         Signal             : 47%\n         Radio type         : 802.11g\n         Channel            : 11\n         Basic rates (Mbps) : 1 2 5.5 11\n         Other rates (Mbps) : 6 9 12 18 24 36 48 54"
+  },
+  "primer": {
+   "title": "Before you start: reading a Wi-Fi scan",
+   "keys": [
+    {
+     "icon": "doc",
+     "label": "SSID",
+     "text": "The network's name. Anyone can broadcast any name."
+    },
+    {
+     "icon": "ap",
+     "label": "BSSID",
+     "text": "One access point radio's MAC address. A network can have several."
+    },
+    {
+     "icon": "gauge",
+     "label": "Channel",
+     "text": "1 to 13 is 2.4 GHz; 36 and up is 5 GHz."
+    }
+   ],
+   "results": [
+    [
+     "Open / None",
+     "no encryption",
+     "bad"
+    ],
+    [
+     "WEP",
+     "broken encryption",
+     "bad"
+    ],
+    [
+     "WPA2-Personal",
+     "one shared password",
+     "warn"
+    ],
+    [
+     "WPA2-Enterprise",
+     "each user logs in",
+     "ok"
+    ]
+   ]
+  },
+  "steps": [
+   {
+    "type": "text",
+    "q": "Which network sends everything unencrypted? (SSID)",
+    "answers": [
+     "Ashgrove-Guest"
+    ],
+    "hint": "Look for Encryption: None.",
+    "explain": "Open and None means anyone in range can read unencrypted traffic. A sign-in page (captive portal) doesn't add encryption: guests should rely on HTTPS and a VPN.",
+    "where": "Encryption              : None"
+   },
+   {
+    "type": "text",
+    "q": "Which network uses encryption that's been broken for over 20 years? (SSID)",
+    "answers": [
+     "CCTV-OLD"
+    ],
+    "hint": "One network's encryption is neither CCMP nor None.",
+    "explain": "WEP can be cracked in minutes. That camera network needs replacing or moving to WPA2/WPA3, and anything on it treated as exposed.",
+    "where": "WEP"
+   },
+   {
+    "type": "choice",
+    "q": "There are two networks called Ashgrove-Staff. Which detail gives the impostor away?",
+    "options": [
+     "It has a stronger signal",
+     "It uses WPA2-Personal with a different BSSID, while the real staff network is WPA2-Enterprise",
+     "It's on channel 6",
+     "Its name is spelt differently"
+    ],
+    "answer": 1,
+    "explain": "Same name, different security and an unknown BSSID: a classic evil twin, hoping staff devices will connect and type their passwords. The strongest signal often belongs to the fake, because it's close to its victims.",
+    "where": "WPA2-Personal"
+   },
+   {
+    "type": "choice",
+    "q": "PRINTER-2F is on channel 4. Why is that a problem on 2.4 GHz?",
+    "options": [
+     "Channel 4 is illegal in the UK",
+     "It overlaps with networks on channels 1 and 6, so they interfere with each other",
+     "Printers must use 5 GHz",
+     "It isn't: every channel is separate"
+    ],
+    "answer": 1,
+    "explain": "2.4 GHz channels are 5 MHz apart but 20 MHz wide. Only 1, 6 and 11 don't overlap, so the printer should move to one of those.",
+    "where": "Channel            : 4"
+   },
+   {
+    "type": "choice",
+    "q": "The real staff network has a radio on channel 36 and one on channel 1. Which band is channel 36?",
+    "options": [
+     "2.4 GHz",
+     "5 GHz",
+     "6 GHz",
+     "It can't be told from the scan"
+    ],
+    "answer": 1,
+    "explain": "Channels 1 to 13 are 2.4 GHz, and 36 is the first common 5 GHz channel. Windows 10's netsh doesn't print the band, so the channel tells you. 5 GHz is faster and less crowded, with shorter range.",
+    "where": "Channel            : 36"
+   },
+   {
+    "type": "text",
+    "q": "Which radio type (standard) is Wi-Fi 6?",
+    "answers": [
+     "802.11ax"
+    ],
+    "hint": "Look at the Radio type lines.",
+    "explain": "802.11ax is Wi-Fi 6 (Wi-Fi 6E when it uses 6 GHz). 802.11n is Wi-Fi 4 and 802.11g is older still.",
+    "where": "802.11ax"
+   },
+   {
+    "type": "choice",
+    "q": "What should the library do about the staff network's security?",
+    "options": [
+     "Switch it to an open network with a captive portal",
+     "Keep 802.1X (Enterprise) logins, and report the fake Ashgrove-Staff so it can be found and removed",
+     "Change it to WEP for older devices",
+     "Hide the SSID"
+    ],
+    "answer": 1,
+    "explain": "Enterprise mode gives each person their own login, which is right. The impostor is the problem: find it by signal strength, and remind staff that their device should never ask for their password on a network that looks like the staff one. Hiding the SSID doesn't secure anything: devices still announce it."
+   }
+  ],
+  "next": [
+   {
+    "label": "Wi-Fi Alliance: Wi-Fi security (WPA3)",
+    "url": "https://www.wi-fi.org/discover-wi-fi/security"
+   }
+  ]
+ },
+ {
   "id": "vlans",
   "kind": "vlan",
   "category": "Networking",

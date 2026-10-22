@@ -4023,7 +4023,8 @@
    "rogue access points"
   ],
   "auto": false,
-  "short": "A fake Wi-Fi access point with the same name as a real one, so devices connect to the attacker instead."
+  "short": "A fake Wi-Fi access point with the same name as a real one, so devices connect to the attacker instead.",
+  "lesson": "wireless"
  },
  {
   "id": "pivoting",
@@ -4162,5 +4163,123 @@
   "auto": false,
   "short": "Ransomware that spread worldwide in 2017 through a Windows SMB flaw, hitting hundreds of thousands of computers including NHS trusts.",
   "lesson": "ransomware"
+ },
+ {
+  "id": "wpa",
+  "term": "WPA2 / WPA3 / WEP",
+  "kind": "Technology",
+  "aliases": [
+   "WPA2",
+   "WPA3",
+   "WEP",
+   "WPA2-Personal",
+   "WPA3-Personal",
+   "WPA2-Enterprise",
+   "WPA3-Enterprise"
+  ],
+  "auto": false,
+  "short": "Wi-Fi security protocols. WEP is broken; WPA2 is common; WPA3 adds SAE, which stops offline password guessing.",
+  "lesson": "wireless"
+ },
+ {
+  "id": "ssid",
+  "term": "SSID / BSSID",
+  "kind": "Concept",
+  "aliases": [
+   "SSID",
+   "SSIDs",
+   "BSSID",
+   "BSSIDs"
+  ],
+  "auto": false,
+  "short": "The SSID is a Wi-Fi network's name; a BSSID is one access point radio's MAC address. Anyone can broadcast any SSID.",
+  "lesson": "wireless",
+  "see": [
+   "evil-twin"
+  ]
+ },
+ {
+  "id": "dot1x",
+  "term": "802.1X / RADIUS",
+  "kind": "Technology",
+  "aliases": [
+   "802.1X",
+   "RADIUS",
+   "Enterprise mode"
+  ],
+  "auto": false,
+  "short": "Network login per person: the access point or switch checks each user's credentials with a RADIUS server before letting them on.",
+  "lesson": "wireless"
+ },
+ {
+  "id": "captive-portal",
+  "term": "Captive portal",
+  "kind": "Technology",
+  "aliases": [
+   "captive portal",
+   "captive portals"
+  ],
+  "auto": false,
+  "short": "The sign-in page on guest Wi-Fi. It controls who gets online, but doesn't encrypt the connection.",
+  "lesson": "wireless"
+ },
+ {
+  "id": "wps",
+  "term": "WPS (Wi-Fi Protected Setup)",
+  "kind": "Technology",
+  "aliases": [
+   "WPS",
+   "Wi-Fi Protected Setup"
+  ],
+  "auto": false,
+  "short": "A push-button or PIN way to join Wi-Fi. The PIN method can be guessed quickly, so turn WPS off.",
+  "lesson": "wireless"
+ },
+ {
+  "id": "krack",
+  "term": "KRACK",
+  "kind": "Attack",
+  "aliases": [
+   "KRACK"
+  ],
+  "auto": false,
+  "short": "Key reinstallation attacks (2017): a flaw in WPA2's handshake that let someone in range decrypt some traffic until devices were patched.",
+  "lesson": "wireless"
+ },
+ {
+  "id": "wifi-standards",
+  "term": "802.11 standards (Wi-Fi 4 to 7)",
+  "kind": "Technology",
+  "aliases": [
+   "802.11ax",
+   "802.11ac",
+   "802.11n",
+   "802.11g",
+   "802.11be",
+   "Wi-Fi 6",
+   "Wi-Fi 6E",
+   "Wi-Fi 7",
+   "Wi-Fi 5",
+   "Wi-Fi 4"
+  ],
+  "auto": false,
+  "short": "Wi-Fi generations: 802.11n is Wi-Fi 4, ac is Wi-Fi 5, ax is Wi-Fi 6 (6E adds 6 GHz), be is Wi-Fi 7.",
+  "lesson": "wireless"
+ },
+ {
+  "id": "access-point",
+  "term": "Wireless access point",
+  "kind": "Technology",
+  "aliases": [
+   "access point",
+   "access points",
+   "wireless access point"
+  ],
+  "auto": false,
+  "short": "The device that puts a Wi-Fi network on the air and connects wireless devices to the wired network.",
+  "lesson": "wireless",
+  "see": [
+   "evil-twin"
+  ]
  }
 ]

@@ -129,6 +129,10 @@
       {
        "type": "agency",
        "id": "shift-02"
+      },
+      {
+       "type": "lab",
+       "id": "wifi-survey"
       }
      ],
      "gap": "Social engineering, malware, web and network attacks (including a hands-on SYN flood) and patching are well covered. A few specific indicators and mitigation techniques aren't."
@@ -259,6 +263,14 @@
       {
        "type": "tool",
        "id": "headers-check"
+      },
+      {
+       "type": "lesson",
+       "id": "wireless"
+      },
+      {
+       "type": "lab",
+       "id": "wifi-survey"
       }
      ],
      "gap": "The SOC, log analysis, email investigation, vulnerability scoring, incident response and two simulated SOC shifts are hands-on. Automation and digital forensics in depth aren't yet."

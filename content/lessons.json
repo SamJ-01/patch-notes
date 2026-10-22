@@ -2389,6 +2389,120 @@
   ]
  },
  {
+  "id": "wireless",
+  "title": "Wi-Fi & wireless security",
+  "track": "Foundations",
+  "level": "Beginner",
+  "minutes": 6,
+  "hook": "Bands, channels and the locks on the air.",
+  "what": "Wi-Fi sends data by radio, so anyone in range can pick it up: encryption is what keeps it private. Networks are named by an SSID, and each access point radio has its own BSSID (a MAC address). Wi-Fi uses three bands. 2.4 GHz reaches furthest but is crowded, with only three channels that don't overlap (1, 6 and 11). 5 GHz has many more channels and more speed over a shorter range, and 6 GHz (Wi-Fi 6E and Wi-Fi 7) adds more room still. Standards have generation names: 802.11n is Wi-Fi 4, 802.11ac is Wi-Fi 5 and 802.11ax is Wi-Fi 6. For security, WEP is broken and must never be used. WPA2-Personal uses one shared password, so a captured handshake can be attacked offline with password guesses. WPA3-Personal uses SAE, which stops that offline guessing. Enterprise mode (802.1X with a RADIUS server) gives every user their own login, which is what businesses should use. An open network, even one with a captive portal sign-in page, doesn't encrypt anything.",
+  "example": {
+   "title": "KRACK",
+   "year": "2017",
+   "text": "Researcher Mathy Vanhoef showed that WPA2's handshake could be tricked into reusing encryption keys (key reinstallation attacks), letting someone in range decrypt some traffic. It was a flaw in the standard itself, so it affected almost every Wi-Fi device; vendors patched it, and WPA3 was designed partly in response.",
+   "source": {
+    "label": "Wikipedia: KRACK",
+    "url": "https://en.wikipedia.org/wiki/KRACK"
+   }
+  },
+  "defend": [
+   "Use WPA3, or WPA2/WPA3 mixed mode for older devices; never WEP",
+   "Use Enterprise mode (802.1X) for staff, so each person has their own login",
+   "Keep guests on their own network, separated from staff systems",
+   "Turn off WPS, and watch for rogue access points copying your network's name"
+  ],
+  "practice": {
+   "label": "Read a real Wi-Fi survey in the wireless lab",
+   "url": "#lab-wifi-survey"
+  },
+  "checks": [
+   {
+    "q": "Which 2.4 GHz channels don't overlap with each other?",
+    "options": [
+     "1, 2 and 3",
+     "1, 6 and 11",
+     "6, 7 and 8",
+     "Every channel overlaps"
+    ],
+    "answer": 1,
+    "why": "Each 2.4 GHz channel is 20 MHz wide but only 5 MHz apart, so only 1, 6 and 11 avoid each other.",
+    "see": "what"
+   },
+   {
+    "q": "Why is WPA3-Personal stronger than WPA2-Personal?",
+    "options": [
+     "It uses a longer password",
+     "Its SAE handshake stops attackers guessing the password offline from a captured handshake",
+     "It hides the network name",
+     "It only works on 5 GHz"
+    ],
+    "answer": 1,
+    "why": "With WPA2-Personal, a captured handshake can be attacked with guesses offline. SAE means each guess needs a live exchange with the network.",
+    "see": "concept"
+   },
+   {
+    "q": "Why did KRACK affect almost every Wi-Fi device?",
+    "options": [
+     "It was a flaw in the WPA2 standard itself, not one vendor's code",
+     "Everyone used the same password",
+     "All routers ran the same software",
+     "It only affected open networks"
+    ],
+    "answer": 0,
+    "why": "When the flaw is in the standard, every correct implementation inherits it until patched.",
+    "see": "example"
+   }
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "Wi-Fi security, weakest to strongest",
+   "items": [
+    {
+     "label": "Open",
+     "icon": "alert",
+     "text": "No encryption at all. A captive portal sign-in page doesn't change that."
+    },
+    {
+     "label": "WEP",
+     "icon": "bug",
+     "text": "Broken since the early 2000s: cracked in minutes. Never use it."
+    },
+    {
+     "label": "WPA2-Personal",
+     "icon": "key",
+     "text": "One shared password. Strong if the password is long; a weak one can be guessed offline."
+    },
+    {
+     "label": "WPA3-Personal",
+     "icon": "lock",
+     "text": "SAE handshake: no offline guessing, and a fresh key for each connection."
+    },
+    {
+     "label": "Enterprise (802.1X)",
+     "icon": "users",
+     "text": "Each person logs in with their own account through a RADIUS server. Leavers lose access alone."
+    }
+   ]
+  },
+  "keys": [
+   {
+    "icon": "ap",
+    "label": "Bands",
+    "text": "2.4 GHz reaches further; 5 and 6 GHz are faster."
+   },
+   {
+    "icon": "gauge",
+    "label": "Channels",
+    "text": "Only 1, 6 and 11 don't overlap on 2.4 GHz."
+   },
+   {
+    "icon": "shield",
+    "label": "Security",
+    "text": "WEP is broken; use WPA3 or Enterprise mode."
+   }
+  ]
+ },
+ {
   "id": "encryption",
   "title": "Encryption & hashing",
   "track": "Foundations",

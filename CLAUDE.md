@@ -87,6 +87,9 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - "How an app talks to the internet", two labs on `static/js/labs/journey.js` (tests `tests/journey.test.mjs`), content in `labs.json` `chapters`:
   part 1 `#lab-finding-the-server` (DNS, ports, ARP, routing, NAT, tiers), part 2 `#lab-one-request` (HTTP, TCP/UDP, HTTPS, load balancer,
   reverse proxy, firewall, WebSockets). Each stop is a pure model plus a scene keyed by chapter id; animated handlers use `guard()`.
+- Wireless: lesson `wireless` (bands, channels, 802.11 generations, WEP to WPA3 and 802.1X; KRACK) and lab `wifi-survey`
+  (Windows 10 `netsh wlan show networks mode=bssid` output: open guest network, WEP camera, an evil twin of the staff SSID,
+  an overlapping channel). Network+ 2.3 is now partly covered.
 - Hashing lab (`#lab-hashing`, `static/js/labs/hashing.js`, tests `tests/hashing.test.mjs`): MD5/SHA-1/SHA-256, salts, slow hashes.
 - Device drawings (`static/js/hw.js`, `HW`): a 3/4 view (`hwBox` adds a lit top and shaded side, which also carry
   `hw-body` so state colours reach them; `--hw-face-top/side` per theme). Keep detail readable at ~50 px.

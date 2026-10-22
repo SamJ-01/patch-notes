@@ -204,9 +204,18 @@
     {
      "id": "2.3",
      "title": "Wireless devices and technologies",
-     "coverage": "none",
-     "activities": [],
-     "gap": "Wi-Fi standards, channels, frequencies, SSIDs and wireless encryption aren't covered yet."
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "wireless"
+      },
+      {
+       "type": "lab",
+       "id": "wifi-survey"
+      }
+     ],
+     "gap": "Bands, channels, 802.11 standards and Wi-Fi security (WEP to WPA3, 802.1X) are covered, with a hands-on scan; antennas, roaming, heat-map site surveys and wireless controllers aren't yet."
     },
     {
      "id": "2.4",
@@ -336,6 +345,10 @@
       {
        "type": "lab",
        "id": "telnet-ssh"
+      },
+      {
+       "type": "lesson",
+       "id": "wireless"
       }
      ],
      "gap": "The CIA triad, PKI details, RADIUS/TACACS+/LDAP and compliance aren't covered yet."
@@ -364,9 +377,13 @@
       {
        "type": "mission",
        "id": "phish-triage"
+      },
+      {
+       "type": "lab",
+       "id": "wifi-survey"
       }
      ],
-     "gap": "SYN floods and phishing triage are hands-on; VLAN hopping, MAC flooding, ARP and DNS poisoning and evil twins are explained only in the glossary and practice questions."
+     "gap": "SYN floods, phishing triage and spotting an evil twin in a Wi-Fi scan are hands-on; VLAN hopping, MAC flooding, ARP and DNS poisoning are explained only in the glossary and practice questions."
     },
     {
      "id": "4.3",
