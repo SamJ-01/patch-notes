@@ -38,7 +38,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         </div>
         <div class="ag-in-side">
           <ol class="dk-msgs ag-chat" id="ag-chat" aria-live="polite" aria-label="Messages from ${esc(leadName)}"></ol>
-          <div class="ag-dossier" id="ag-dossier" hidden>${shift.clientImage ? `<img class="ag-scene" src="${esc(shift.clientImage.src)}" alt="${esc(shift.clientImage.alt)}" width="1200" height="340" decoding="async">` : ""}<div class="eyebrow">Client file</div><h2>${esc(shift.client)}</h2>
+          <div class="ag-dossier" id="ag-dossier" hidden>${DESK.scene(shift.clientImage)}<div class="eyebrow">Client file</div><h2>${esc(shift.client)}</h2>
             <dl class="fields"><div><dt>Alerts waiting</dt><dd>${waiting}, with more likely</dd></div><div><dt>Logs you can search</dt><dd>${Object.keys(shift.sources).length}</dd></div><div><dt>Shift length</dt><dd>about ${shift.minutes} min</dd></div>${done ? `<div><dt>Your record</dt><dd>✓ worked before</dd></div>` : ""}</dl>
             <button class="btn brand" type="button" id="ag-desk-go">Take the desk</button></div>
         </div>

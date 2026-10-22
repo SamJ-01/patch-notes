@@ -11,8 +11,8 @@
  "card": "Five alerts, mostly noise. Find the real one",
  "briefing": "Morning. The night shift left you four alerts for Pellow & Finch, and more may come in. Most nights it's noise, but check each one properly: decide what it is, ask other teams to act where it's needed, and leave a clean handover. The clock only moves when you do something, so take your time reading.",
  "lead": "Morgan, shift lead",
- "leadPhoto": "img/agency/morgan.svg",
- "clientImage": { "src": "img/agency/pellow-finch-depot.svg", "alt": "Pellow & Finch's parcel depot: a warehouse with four loading bays, delivery vans and parcels in the yard" },
+ "leadPhoto": "img/agency/morgan.webp",
+ "clientImage": { "src": "img/agency/pellow-finch-depot.webp", "small": "img/agency/pellow-finch-depot-800.webp", "width": 1536, "height": 538, "alt": "Pellow & Finch's parcel depot: a warehouse with four loading bays, delivery vans and parcels in the yard" },
  "simplification": "Simplified simulation: a real shift has more alerts and far longer logs. The Linux log lines follow Ubuntu 22.04's OpenSSH, sudo, shadow-utils (useradd, usermod, passwd) and nginx formats. The sign-in log is a generic SIEM export written for this shift: real identity providers and VPNs each have their own format. Countries are invented for the story, because documentation addresses have no real location. Department replies are scripted. All people and companies are fictional.",
  "costs": {
   "search": 1,
@@ -615,7 +615,7 @@
  "departments": {
   "identity": {
    "name": "Identity & Access",
-   "contact": { "name": "Priya Raman", "photo": "img/agency/priya.svg", "role": "Identity & Access" },
+   "contact": { "name": "Priya Raman", "photo": "img/agency/priya.webp", "role": "Identity & Access" },
    "requests": [
     {
      "id": "lock-svcbackup2",
@@ -688,7 +688,7 @@
   },
   "netops": {
    "name": "Network Operations",
-   "contact": { "name": "Tomasz Nowak", "photo": "img/agency/tomasz.svg", "role": "Network Operations" },
+   "contact": { "name": "Tomasz Nowak", "photo": "img/agency/tomasz.webp", "role": "Network Operations" },
    "requests": [
     {
      "id": "block-77",
@@ -741,7 +741,7 @@
   },
   "servicedesk": {
    "name": "Service Desk",
-   "contact": { "name": "Grace Adeyemi", "photo": "img/agency/grace.svg", "role": "Service Desk" },
+   "contact": { "name": "Grace Adeyemi", "photo": "img/agency/grace.webp", "role": "Service Desk" },
    "requests": [
     {
      "id": "call-jpatel",
@@ -777,7 +777,7 @@
   },
   "client": {
    "name": "Dana Whitfield (Pellow & Finch IT)",
-   "contact": { "name": "Dana Whitfield", "photo": "img/agency/dana.svg", "role": "Client: Pellow & Finch IT" },
+   "contact": { "name": "Dana Whitfield", "photo": "img/agency/dana.webp", "role": "Client: Pellow & Finch IT" },
    "requests": [
     {
      "id": "report-incident",

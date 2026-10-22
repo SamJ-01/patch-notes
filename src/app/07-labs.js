@@ -252,7 +252,7 @@ VIEWS.agency = () => {
         <dl class="ag-id-stats"><div><dt>Shifts worked</dt><dd>${worked} of ${shifts.length}</dd></div><div><dt>Best report</dt><dd>${worked ? `${Math.round(best * 100)}%` : "–"}</dd></div></dl>
       </section>
       <section class="ag-tc ag-tc-hub" aria-labelledby="ag-next-h">
-        ${next.clientImage ? `<img class="ag-scene" src="${esc(next.clientImage.src)}" alt="${esc(next.clientImage.alt)}" width="1200" height="340" loading="lazy" decoding="async">` : ""}
+        ${DESK.scene(next.clientImage, { lazy: true })}
         <div class="ag-tc-screen" aria-hidden="true"><span>${esc(day(next.date))}</span><b>${esc(next.startsAt)}</b><span>${rec(next.id) ? "WORKED BEFORE" : "NEXT SHIFT"}</span></div>
         <h2 id="ag-next-h">${esc(next.title)}</h2>
         <p>${esc(next.card || next.summary)}</p>

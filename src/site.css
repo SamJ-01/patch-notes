@@ -1764,10 +1764,10 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .dk-chan > span[aria-hidden] { color: var(--muted); margin-right: -6px; }
 .dk-chan-about { flex-basis: 100%; font: 400 0.74rem var(--font-body); color: var(--muted); }
 .dk-msgs { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.dk-msg { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 10px; align-items: start; }
-.dk-av { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; font: 700 0.75rem var(--font-body); color: #fff; background: hsl(var(--dk-h, 200) 55% 32%); }
+.dk-msg { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 10px; align-items: start; }
+.dk-av { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 9px; font: 700 0.75rem var(--font-body); color: #fff; background: hsl(var(--dk-h, 200) 55% 32%); }
 .dk-bubble { min-width: 0; padding: 8px 12px; border-radius: 4px 12px 12px 12px; background: var(--surface-2); border: 1px solid var(--line); font-size: 0.9rem; }
-.dk-msg.me { grid-template-columns: minmax(0, 1fr) 32px; }
+.dk-msg.me { grid-template-columns: minmax(0, 1fr) 38px; }
 .dk-msg.me .dk-av { order: 2; background: var(--brand); color: var(--brand-ink); }
 .dk-msg.me .dk-bubble { background: var(--brand-soft); border-radius: 12px 4px 12px 12px; }
 .dk-msg.warn .dk-bubble { border-color: var(--sun); }
@@ -1791,4 +1791,4 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .ag-work { margin: 4px 0 0; }
 .ag-lead .dk-av, .ag-lead-av { width: 26px; height: 26px; font-size: 0.66rem; }
 .dk-photo { display: block; object-fit: cover; background: var(--surface-2); }
-.ag-scene { display: block; width: 100%; max-width: 100%; min-width: 0; height: auto; aspect-ratio: 1200 / 340; border-radius: var(--radius-sm); border: 1px solid var(--line); }
+.dk-scene { display: block; width: 100%; max-width: 100%; min-width: 0; height: auto; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--surface-2); }

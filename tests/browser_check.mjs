@@ -20,7 +20,7 @@ const routes = process.argv.slice(2).length ? process.argv.slice(2) : ["#today",
 const axePath = process.env.AXE || new URL("../node_modules/axe-core/axe.min.js", import.meta.url).pathname;
 const axe = existsSync(axePath) ? readFileSync(axePath, "utf8") : null;
 const progress = process.env.PROGRESS ? readFileSync(process.env.PROGRESS, "utf8") : null;
-const TYPES = { ".html": "text/html", ".js": "text/javascript", ".json": "application/json", ".png": "image/png", ".xml": "application/xml", ".css": "text/css", ".svg": "image/svg+xml" };
+const TYPES = { ".html": "text/html", ".js": "text/javascript", ".json": "application/json", ".png": "image/png", ".xml": "application/xml", ".css": "text/css", ".svg": "image/svg+xml", ".webp": "image/webp" };
 
 const { chromium } = (() => { try { return require("playwright"); } catch { return require(execSync("npm root -g").toString().trim() + "/playwright"); } })();
 const server = createServer((req, res) => {

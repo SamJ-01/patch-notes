@@ -38,8 +38,14 @@ export const DESK = (() => {
 
   // An avatar: the person's portrait when there is one (decorative: their name is next to it), else their initials.
   const avatar = (who, photo, cls = "dk-av") => (photo
-    ? `<img class="${cls} dk-photo" src="${esc(photo)}" alt="" width="32" height="32" loading="lazy" decoding="async">`
+    ? `<img class="${cls} dk-photo" src="${esc(photo)}" alt="" width="38" height="38" loading="lazy" decoding="async">`
     : `<span class="${cls}" aria-hidden="true">${esc(initials(who))}</span>`);
+
+  // A scene picture (a client's site, say): full description for screen readers, a smaller file on phones.
+  // img = { src, small, width, height, alt }.
+  const scene = (img, { lazy = false } = {}) => (img?.src
+    ? `<img class="dk-scene" src="${esc(img.src)}"${img.small ? ` srcset="${esc(img.small)} 800w, ${esc(img.src)} ${Number(img.width) || 1536}w" sizes="(max-width: 900px) 100vw, 800px"` : ""} alt="${esc(img.alt)}" width="${Number(img.width) || 1536}" height="${Number(img.height) || 538}"${lazy ? ' loading="lazy"' : ""} decoding="async">`
+    : "");
 
   // A staff message. m = { from, role, team, at, html, ref, status, me, sys, typing, photo }.
   // System notices (sys) are one slim line with an icon; people get an avatar, a team badge and a bubble.
@@ -56,5 +62,5 @@ export const DESK = (() => {
   // A channel: a header (# name, who's in it) above a list of messages.
   const channel = (name, about, listAttrs = "") => `<div class="dk-channel"><p class="dk-chan"><span aria-hidden="true">#</span>${esc(name)}${about ? `<span class="dk-chan-about">${esc(about)}</span>` : ""}</p><ol class="dk-msgs" ${listAttrs}></ol></div>`;
 
-  return { ticket, message, channel, avatar, pill, refChip, initials, hue, STATUS, PRIORITY };
+  return { ticket, message, channel, avatar, scene, pill, refChip, initials, hue, STATUS, PRIORITY };
 })();

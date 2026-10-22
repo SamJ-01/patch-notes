@@ -38,6 +38,10 @@ test("messages: people get a team badge and a ticket chip; system notices are on
   const pic = DESK.message({ from: "Grace", photo: "img/agency/grace.svg\" onerror=x", html: "hi" });
   assert.match(pic, /<img class="dk-av dk-photo" src="img\/agency\/grace.svg&quot; onerror=x" alt=""/, "a portrait is decorative and escaped");
   assert.doesNotMatch(DESK.message({ me: true, photo: "a.svg", html: "x" }), /<img/, "you are always your initials");
+  const sc = DESK.scene({ src: "a.webp", small: "a-800.webp", width: 1536, height: 538, alt: "A <depot>" }, { lazy: true });
+  assert.match(sc, /srcset="a-800.webp 800w, a.webp 1536w"/);
+  assert.match(sc, /alt="A &lt;depot&gt;" width="1536" height="538" loading="lazy"/, "described, sized so the page doesn't jump, escaped");
+  assert.equal(DESK.scene(null), "");
   const sys = DESK.message({ sys: true, html: "New alert" });
   assert.match(sys, /dk-msg sys/); assert.doesNotMatch(sys, /dk-bubble/);
   assert.equal(DESK.hue("Network Operations"), DESK.hue("Network Operations"), "same team, same colour");
@@ -57,8 +61,8 @@ test("every shift alert has a ticket number and every team a named contact", () 
     assert.equal(new Set(refs).size, refs.length, "ticket numbers are unique");
     for (const d of Object.values(sh.departments)) assert.ok(d.contact?.name && d.contact?.role, d.name);
     // Portraits and the client picture are files in static/img, so a typo would show a broken image.
-    const imgs = [sh.leadPhoto, sh.clientImage?.src, ...Object.values(sh.departments).map(d => d.contact.photo)].filter(Boolean);
-    assert.ok(imgs.length >= 6, "the pilot has a lead, four contacts and a client picture");
+    const imgs = [sh.leadPhoto, sh.clientImage?.src, sh.clientImage?.small, ...Object.values(sh.departments).map(d => d.contact.photo)].filter(Boolean);
+    assert.ok(imgs.length >= 7, "the pilot has a lead, four contacts and a client picture in two sizes");
     for (const src of imgs) assert.ok(existsSync(new URL(`../static/${src}`, import.meta.url)), src);
     assert.ok(sh.clientImage.alt.length > 20, "the client picture is described for screen readers");
   }
