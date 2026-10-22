@@ -1,7 +1,7 @@
 {
  "cert": "security-plus",
  "exam": "SY0-701",
- "reviewed": "2026-10-21",
+ "reviewed": "2026-10-22",
  "note": "Original practice questions written for Patch Notes. They are not real exam questions.",
  "questions": [
   {
@@ -244,6 +244,303 @@
      "text": "A read receipt",
      "correct": false,
      "why": "A read receipt shows it was opened, not who sent it."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.0-10",
+   "objective": "1.0",
+   "stem": "Your browser trusts the certificate for shop.example.com. Who vouched that the public key in it belongs to that site?",
+   "options": [
+    {
+     "text": "The certificate authority (CA) that signed the certificate",
+     "correct": true,
+     "why": "The CA checked the site controls the name, then signed the certificate. Your browser trusts the CA because its root certificate is in the device's trust store."
+    },
+    {
+     "text": "The website, by signing it with its own private key",
+     "correct": false,
+     "why": "Anyone can sign their own certificate; that's a self-signed certificate, and browsers warn about it because nobody independent vouched for it."
+    },
+    {
+     "text": "The DNS server that gave the site's IP address",
+     "correct": false,
+     "why": "DNS only maps names to addresses. It says nothing about who owns a key."
+    },
+    {
+     "text": "The TLS session key agreed during the handshake",
+     "correct": false,
+     "why": "Session keys encrypt the connection after the certificate has already been checked; they don't prove identity."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.0-11",
+   "objective": "1.0",
+   "stem": "A web server's private key has been stolen. What should happen to its certificate?",
+   "options": [
+    {
+     "text": "Revoke it, then issue a new certificate for a newly generated key pair",
+     "correct": true,
+     "why": "Revocation tells clients to stop trusting the old certificate, and a new key pair means the stolen key is useless for the replacement."
+    },
+    {
+     "text": "Renew it early with the same key pair",
+     "correct": false,
+     "why": "The thief still holds that private key, so a renewed certificate with the same key is just as compromised."
+    },
+    {
+     "text": "Leave it until it expires, then replace it",
+     "correct": false,
+     "why": "Until then the attacker could impersonate the server to anyone they can intercept."
+    },
+    {
+     "text": "Change the server's administrator password",
+     "correct": false,
+     "why": "Worth doing if the server was breached, but it does nothing about a key that's already been copied."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.0-12",
+   "objective": "1.0",
+   "stem": "Which protocol lets a client ask about the revocation status of one certificate, instead of downloading a whole list?",
+   "options": [
+    {
+     "text": "OCSP (Online Certificate Status Protocol)",
+     "correct": true,
+     "why": "The client (or the server, with OCSP stapling) gets a signed good, revoked or unknown answer for that one certificate."
+    },
+    {
+     "text": "CRL (certificate revocation list)",
+     "correct": false,
+     "why": "A CRL is the whole list of revoked serial numbers that the client downloads and searches."
+    },
+    {
+     "text": "CSR (certificate signing request)",
+     "correct": false,
+     "why": "A CSR is what you send a CA to ask for a certificate in the first place."
+    },
+    {
+     "text": "SCEP",
+     "correct": false,
+     "why": "SCEP is a protocol for enrolling devices to get certificates, not for checking revocation."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.0-13",
+   "objective": "1.0",
+   "stem": "An administrator needs a certificate for a new web server. What do they send to the certificate authority?",
+   "options": [
+    {
+     "text": "A certificate signing request (CSR) with the public key and the server's name",
+     "correct": true,
+     "why": "The CSR carries the public key and the identity to put in the certificate. The private key stays on the server."
+    },
+    {
+     "text": "The server's private key, so the CA can sign it",
+     "correct": false,
+     "why": "The private key should never leave the server. The CA only needs the public key."
+    },
+    {
+     "text": "The CA's own root certificate",
+     "correct": false,
+     "why": "The CA already has that; it's what browsers use to check certificates the CA issues."
+    },
+    {
+     "text": "A certificate revocation list",
+     "correct": false,
+     "why": "That's for listing revoked certificates, not requesting new ones."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.0-14",
+   "objective": "1.0",
+   "stem": "A company buys a wildcard certificate for *.example.com. Which name does it cover?",
+   "options": [
+    {
+     "text": "shop.example.com",
+     "correct": true,
+     "why": "The * matches exactly one label to the left of example.com."
+    },
+    {
+     "text": "example.com",
+     "correct": false,
+     "why": "A wildcard doesn't match the bare domain, so certificates usually list it as an extra name too."
+    },
+    {
+     "text": "dev.shop.example.com",
+     "correct": false,
+     "why": "The * stands for one label only, so it doesn't reach two levels down."
+    },
+    {
+     "text": "shop.example.net",
+     "correct": false,
+     "why": "That's a different domain altogether."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.0-15",
+   "objective": "1.0",
+   "stem": "Why do certificate authorities sign website certificates with an intermediate CA instead of their root CA?",
+   "options": [
+    {
+     "text": "The root's private key can stay offline; if an intermediate is compromised it can be revoked without replacing the root on every device",
+     "correct": true,
+     "why": "Roots are built into operating systems and browsers, so they are hard to replace. Keeping them offline and using intermediates limits the damage of a breach."
+    },
+    {
+     "text": "Intermediate certificates use stronger encryption than roots",
+     "correct": false,
+     "why": "Strength depends on the key type and size, not on where the certificate sits in the chain."
+    },
+    {
+     "text": "Browsers can't check a root CA's signature",
+     "correct": false,
+     "why": "They can: every chain is checked up to a trusted root."
+    },
+    {
+     "text": "It lets the website skip sending its own certificate",
+     "correct": false,
+     "why": "The server still sends its certificate, usually along with the intermediate."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.0-16",
+   "objective": "1.0",
+   "stem": "A firewall rule blocks inbound RDP from the internet. Which control category and type is it?",
+   "options": [
+    {
+     "text": "Technical, preventive",
+     "correct": true,
+     "why": "It's enforced by technology, and it stops the connection before anything happens."
+    },
+    {
+     "text": "Technical, detective",
+     "correct": false,
+     "why": "Detective controls notice and record events, like an IDS alert. This rule blocks them."
+    },
+    {
+     "text": "Physical, preventive",
+     "correct": false,
+     "why": "Physical controls are things like locks and fences."
+    },
+    {
+     "text": "Managerial, directive",
+     "correct": false,
+     "why": "Managerial controls are policies and risk decisions; this is a rule enforced by a device."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.0-17",
+   "objective": "1.0",
+   "stem": "An intrusion detection system (IDS) raises an alert when it sees a known attack pattern, but lets the traffic through. What type of control is it?",
+   "options": [
+    {
+     "text": "Detective",
+     "correct": true,
+     "why": "It spots and reports the activity; someone or something else has to act on it."
+    },
+    {
+     "text": "Preventive",
+     "correct": false,
+     "why": "That would be an intrusion prevention system (IPS), which can block the traffic."
+    },
+    {
+     "text": "Corrective",
+     "correct": false,
+     "why": "Corrective controls fix things afterwards, such as restoring from backup."
+    },
+    {
+     "text": "Deterrent",
+     "correct": false,
+     "why": "Deterrents discourage attempts, like a warning banner; an attacker usually can't even see an IDS."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.0-18",
+   "objective": "1.0",
+   "stem": "An old machine can't run the company's endpoint protection, so it's moved to an isolated network segment with strict firewall rules and extra monitoring. What type of control is this?",
+   "options": [
+    {
+     "text": "Compensating",
+     "correct": true,
+     "why": "It reduces the risk in a different way when the normal control can't be used."
+    },
+    {
+     "text": "Corrective",
+     "correct": false,
+     "why": "Nothing has gone wrong yet; corrective controls fix things after an incident."
+    },
+    {
+     "text": "Directive",
+     "correct": false,
+     "why": "Directive controls tell people what to do, such as a policy."
+    },
+    {
+     "text": "Deterrent",
+     "correct": false,
+     "why": "It's not there to discourage anyone; it limits what an attacker could reach."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.0-19",
+   "objective": "1.0",
+   "stem": "Every new member of staff must read and sign an acceptable use policy. Which control category and type is it?",
+   "options": [
+    {
+     "text": "Managerial, directive",
+     "correct": true,
+     "why": "It's set by management and tells people what they must and mustn't do."
+    },
+    {
+     "text": "Technical, preventive",
+     "correct": false,
+     "why": "A signed policy doesn't technically stop anything."
+    },
+    {
+     "text": "Operational, detective",
+     "correct": false,
+     "why": "Detective controls find events after they happen, like log reviews."
+    },
+    {
+     "text": "Physical, deterrent",
+     "correct": false,
+     "why": "Physical controls are things like fences, locks and guards."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.0-20",
+   "objective": "1.0",
+   "stem": "Which two are technical controls? (Choose two.)",
+   "options": [
+    {
+     "text": "Multi-factor authentication on email",
+     "correct": true,
+     "why": "Enforced by the sign-in system itself."
+    },
+    {
+     "text": "Full-disk encryption on laptops",
+     "correct": true,
+     "why": "Enforced by software on the device."
+    },
+    {
+     "text": "Security awareness training",
+     "correct": false,
+     "why": "That's an operational control: people do it, and it relies on them."
+    },
+    {
+     "text": "A fence around the data centre",
+     "correct": false,
+     "why": "That's a physical control."
     }
    ]
   },

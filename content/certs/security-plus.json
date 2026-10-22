@@ -44,7 +44,7 @@
        "id": "frameworks"
       }
      ],
-     "gap": "The CIA triad, encryption basics, hashing (hands-on), authentication and zero trust are covered. Control categories and types, PKI in depth, physical security and change management aren't yet."
+     "gap": "The CIA triad, encryption basics, hashing (hands-on), authentication and zero trust are covered. Control categories and types and PKI (CAs, CSRs, revocation, certificate chains) have practice questions but no lesson yet. Physical security and change management aren't covered yet."
     }
    ]
   },

@@ -42,7 +42,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - Missions: DHCP, DNS, SSH brute force ("The 3am logins": the first with a log viewer, `scenario.log` + `engine.searchLog`),
   phishing triage ("Which email was it?", `phish-triage.json`: the email inspector, `scenario.emails` with raw headers parsed by
   `engine.parseHeaders`; findings come from `engine.inspectEmail`). Keep its headers, log lines and findings in step: tests check they agree.
-- Exam prep: Network+ N10-009 (25 objectives, 60 questions, "Am I ready?" panel), Security+ map (5 domains, 42 questions, mock exams).
+- Exam prep: Network+ N10-009 (25 objectives, 60 questions, "Am I ready?" panel), Security+ map (5 domains, 53 questions incl. PKI and control types, mock exams).
 - PATCH//AGENCY: its own nav tab and hub (`#agency`, `VIEWS.agency` in 07-labs: badge, time clock, rota). Two shifts:
   shift-01 (Pellow & Finch: VPN spray, new sudo account) and shift-02 (Fernhollow Vets: MFA fatigue, hidden inbox rule,
   lookalike-supplier bank change; mailbox sources `{ kind: "email", emails }` opened with `A.openEmail` and shown with MAIL).
@@ -87,4 +87,4 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - Feedback: public GitHub issue form (`.github/ISSUE_TEMPLATE/feedback.yml`), linked from every done card, the Agency debrief
   and the footer (`DATA.site.feedback`). Read new `feedback` issues before planning.
 - Next: learner feedback on the shift and the new labs, inter-VLAN routing lab on the network model, more Security+
-  questions (PKI, control types), more Agency shifts (one client and incident each; the people for a shift made in one image). No accounts/backend until real users need cross-device saves.
+  questions (a PKI and control types lesson to back the new questions), more Agency shifts (one client and incident each; the people for a shift made in one image). No accounts/backend until real users need cross-device saves.

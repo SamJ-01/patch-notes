@@ -3761,5 +3761,104 @@
   "see": [
    "mfa-fatigue"
   ]
+ },
+ {
+  "id": "pki",
+  "term": "PKI (public key infrastructure)",
+  "kind": "Concept",
+  "aliases": [
+   "PKI",
+   "public key infrastructure",
+   "chain of trust",
+   "root CA",
+   "intermediate CA"
+  ],
+  "auto": false,
+  "short": "The system of certificate authorities, certificates and trust stores that lets you trust a stranger's public key.",
+  "lesson": "encryption",
+  "see": [
+   "certificate",
+   "ocsp",
+   "csr"
+  ]
+ },
+ {
+  "id": "csr",
+  "term": "CSR (certificate signing request)",
+  "kind": "Technology",
+  "aliases": [
+   "CSR",
+   "CSRs",
+   "certificate signing request",
+   "certificate signing requests"
+  ],
+  "auto": false,
+  "short": "What you send a certificate authority to ask for a certificate: your public key and name. The private key stays with you.",
+  "lesson": "encryption",
+  "see": [
+   "pki",
+   "certificate"
+  ]
+ },
+ {
+  "id": "ocsp",
+  "term": "OCSP and CRLs (certificate revocation)",
+  "kind": "Technology",
+  "aliases": [
+   "OCSP",
+   "OCSP stapling",
+   "CRL",
+   "CRLs",
+   "certificate revocation list",
+   "certificate revocation lists",
+   "revoked certificate",
+   "revoked certificates"
+  ],
+  "auto": false,
+  "short": "Ways to check a certificate hasn't been cancelled early: a CRL is the CA's full list of revoked certificates; OCSP asks about one.",
+  "lesson": "encryption",
+  "see": [
+   "pki",
+   "certificate"
+  ]
+ },
+ {
+  "id": "ids-ips",
+  "term": "IDS / IPS",
+  "kind": "Defence",
+  "aliases": [
+   "IDS",
+   "IPS",
+   "intrusion detection system",
+   "intrusion detection systems",
+   "intrusion prevention system",
+   "intrusion prevention systems"
+  ],
+  "auto": false,
+  "short": "Watches network or host activity for attacks. An IDS alerts; an IPS sits in the path and can also block.",
+  "lesson": "soc",
+  "see": [
+   "firewall"
+  ]
+ },
+ {
+  "id": "control-types",
+  "term": "Security control types",
+  "kind": "Concept",
+  "aliases": [
+   "compensating control",
+   "compensating controls",
+   "detective control",
+   "detective controls",
+   "preventive control",
+   "preventive controls",
+   "corrective control",
+   "corrective controls",
+   "deterrent control",
+   "directive control"
+  ],
+  "auto": false,
+  "short": "What a control does: prevent, deter, detect, correct, direct, or compensate when the usual control can't be used.",
+  "lesson": "frameworks"
  }
 ]
