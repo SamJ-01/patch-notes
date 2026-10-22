@@ -44,6 +44,10 @@
    },
    {
     "type": "lab",
+    "id": "finding-the-server"
+   },
+   {
+    "type": "lab",
     "id": "one-request"
    },
    {
@@ -107,6 +111,10 @@
    },
    {
     "type": "lab",
+    "id": "finding-the-server"
+   },
+   {
+    "type": "lab",
     "id": "one-request"
    },
    {
@@ -148,6 +156,10 @@
    {
     "type": "lesson",
     "id": "cloud"
+   },
+   {
+    "type": "lab",
+    "id": "finding-the-server"
    },
    {
     "type": "lab",

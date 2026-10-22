@@ -71,6 +71,7 @@ SCENE["subnet-calc"] = SCENE.subnetting;
 SCENE["ssh-brute"] = SCENE["log-detective"];
 SCENE["phish-triage"] = { d: [["attacker", 34, 46, 0.58], ["laptop", 166, 48, 0.55]], g: [["mail", 100, 46, 1.1]], t: [["1 ≠ l", 100, 20, "bad"]], l: [[50, 46, 86, 46], [114, 46, 148, 48]], p: ["M34 46L166 48"], tone: "bad" };
 SCENE["one-request"] = { d: [["phone", 30, 48, 0.62], ["firewall", 100, 48, 0.5], ["server", 168, 46, 0.6]], l: [[42, 48, 84, 48], [116, 48, 154, 46]], t: [["GET 200", 64, 22], ["TLS", 136, 22]], p: ["M30 48L168 46", "M168 46L30 48"] };
+SCENE["finding-the-server"] = { d: [["phone", 30, 48, 0.62], ["router", 100, 50, 0.5], ["server", 168, 46, 0.6]], l: [[42, 48, 78, 50], [122, 50, 154, 46]], t: [["A?", 52, 20], ["TTL 300", 132, 20]], p: ["M30 48L168 46"] };
 SCENE.agency = SCENE.soc;
 function sceneSvg(sc) {
   const pk = (sc.p || []).map((d, i) => `<circle class="cpkt ${sc.tone || ""}" r="4" opacity="0"><animateMotion begin="indefinite" dur="1.5s" path="${d}" fill="freeze"/><animate attributeName="opacity" begin="indefinite" dur="1.5s" values="0;1;1;0" keyTimes="0;0.1;0.85;1" fill="freeze"/></circle>`).join("");

@@ -140,3 +140,92 @@ test("lab content is consistent", () => {
   for (const c of lab.chapters) assert.ok(c.label && c.title && c.idea && c.goal && c.security, c.id);
   assert.ok(!JSON.stringify(lab).includes("—"), "no em dashes");
 });
+
+// ---------- Part 1: how a request finds its server
+const lab1 = JSON.parse(readFileSync(new URL("../content/labs.json", import.meta.url), "utf8")).find(l => l.id === "finding-the-server");
+const ch1 = id => lab1.chapters.find(c => c.id === id);
+
+test("DNS: the first lookup asks the servers, later ones use the cache until the TTL runs out, even after a move", () => {
+  const d = ch1("dns");
+  let r = J.dnsLookup(J.dnsStart(d.zone), d.host, 0);
+  assert.deepEqual([r.from, r.ip, r.ttl, r.chain.length], ["servers", "203.0.113.10", 300, 3]);
+  r = J.dnsLookup(r.state, d.host, 60);
+  assert.deepEqual([r.from, r.ttl], ["cache", 240], "the TTL counts down");
+  r.state.zone[d.host].ip = d.movedIp;
+  assert.equal(J.dnsLookup(r.state, d.host, 299).ip, "203.0.113.10", "a cached answer is stale until it expires");
+  const after = J.dnsLookup(r.state, d.host, 300);
+  assert.deepEqual([after.from, after.ip], ["servers", d.movedIp]);
+  assert.match(J.digAnswer(d.host, after, d.resolver), /^;; ANSWER SECTION:\napi\.hopper\.example\.\t300\tIN\tA\t203\.0\.113\.20\n/);
+  assert.match(J.digAnswer("nope.example", J.dnsLookup(J.dnsStart({}), "nope.example", 0), d.resolver), /status: NXDOMAIN/);
+});
+
+test("ports: 0.0.0.0 answers everyone, 127.0.0.1 only the machine itself; nc and ss read like the real tools", () => {
+  const sv = structuredClone(ch1("ports").services), H = "203.0.113.10";
+  assert.equal(J.nc(sv, "remote", H, 443).out, "Connection to 203.0.113.10 443 port [tcp/https] succeeded!");
+  assert.equal(J.nc(sv, "remote", H, 5432).out, "nc: connect to 203.0.113.10 port 5432 (tcp) failed: Connection refused");
+  assert.ok(J.nc(sv, "remote", H, 6379).ok, "Redis starts exposed: that's the mistake to fix");
+  assert.ok(J.nc(sv, "local", "127.0.0.1", 5432).ok);
+  assert.ok(!J.nc(sv, "local", "127.0.0.1", 22).ok, "nothing listening, refused even locally");
+  const ss = J.ssLines(sv).split("\n");
+  assert.match(ss[0], /^State\s+Recv-Q\s+Send-Q\s+Local Address:Port\s+Peer Address:Port\s+Process$/);
+  assert.match(ss[2], /^LISTEN\s+0\s+244\s+127\.0\.0\.1:5432\s+0\.0\.0\.0:\*\s+users:\(\("postgres",pid=901,fd=7\)\)$/);
+  assert.equal(new Set(ss.map(l => l.indexOf(":5432") >= 0 ? l.indexOf(":5432") : null).filter(x => x !== null)).size, 1);
+});
+
+test("ARP: same network means ask for the device itself; anywhere else means ask for the gateway", () => {
+  const a = ch1("arp");
+  assert.equal(J.nextHop(a.me, "192.168.1.31"), "192.168.1.31");
+  assert.equal(J.nextHop(a.me, "203.0.113.10"), "192.168.1.1");
+  assert.ok(!J.sameNetwork("192.168.1.24", "192.168.2.24", "255.255.255.0"));
+  assert.ok(J.sameNetwork("10.0.0.1", "10.0.3.9", "255.255.252.0"));
+  let r = J.arpResolve({}, a.lan, a.me, "203.0.113.10");
+  assert.deepEqual([r.hop, r.cached, r.mac, r.replier], ["192.168.1.1", false, "00:00:5e:00:53:01", "Home router"]);
+  r = J.arpResolve(r.state, a.lan, a.me, "198.51.100.9");
+  assert.equal(r.cached, true, "every internet address uses the router's MAC, already known");
+  r = J.arpResolve(r.state, a.lan, a.me, "192.168.1.99");
+  assert.equal(r.mac, null);
+  assert.equal(J.ipNeigh(r.state), "192.168.1.1 dev wlan0 lladdr 00:00:5e:00:53:01 REACHABLE\n192.168.1.99 dev wlan0 FAILED");
+  for (const h of [a.me, ...a.lan]) assert.match(h.mac, /^00:00:5e:00:53:[0-9a-f]{2}$/, "documentation MAC range (RFC 7042)");
+});
+
+test("traceroute: each TTL reveals one more hop; silent routers are stars; the server says port unreachable", () => {
+  const H = ch1("route").hops;
+  assert.equal(J.probe(H, 1).icmp, "time exceeded");
+  assert.ok(J.probe(H, 3).silent);
+  assert.deepEqual([J.probe(H, H.length).reached, J.probe(H, H.length).icmp], [true, "port unreachable"]);
+  assert.match(J.tracerouteLine(H, 1), /^ 1 {2}_gateway \(192\.168\.1\.1\) {2}\d+\.\d{3} ms {2}\d+\.\d{3} ms {2}\d+\.\d{3} ms$/);
+  assert.equal(J.tracerouteLine(H, 3), " 3  * * *");
+  assert.match(J.tracerouteLine(H, 6), /^ 6 {2}api\.hopper\.example \(203\.0\.113\.10\)/);
+  const first = Number(J.tracerouteLine(H, 1).match(/\) {2}([\d.]+)/)[1]), last = Number(J.tracerouteLine(H, 6).match(/\) {2}([\d.]+)/)[1]);
+  assert.ok(first < last, "further hops take longer");
+});
+
+test("NAT: outbound gets a public address and port; only replies to something in the table come back in", () => {
+  let st = J.natStart("198.51.100.7");
+  let r = J.natOut(st, "192.168.1.24:51514", "203.0.113.10:443"); st = r.state;
+  assert.equal(r.row.outside, "198.51.100.7:40001");
+  r = J.natOut(st, "192.168.1.31:49822", "198.51.100.200:443"); st = r.state;
+  assert.equal(r.row.outside, "198.51.100.7:40002", "two devices, two ports");
+  assert.equal(J.natOut(st, "192.168.1.24:51514", "203.0.113.10:443").state.table.length, 2, "the same flow reuses its entry");
+  assert.equal(J.natIn(st, "203.0.113.10:443", "198.51.100.7:40001").row.inside, "192.168.1.24:51514");
+  assert.equal(J.natIn(st, "203.0.113.66:55012", "198.51.100.7:22").allowed, false);
+  assert.equal(J.natIn(st, "203.0.113.66:443", "198.51.100.7:40001").allowed, false, "the right port from the wrong sender is still dropped");
+});
+
+test("tiers: private subnets stop the internet; security groups decide inside; the database fix is to allow only the app tier", () => {
+  const t = ch1("tiers"), tiers = structuredClone(t.tiers);
+  const wrong = () => t.tests.filter(x => J.tierCheck(tiers, x).ok !== x.expect);
+  assert.deepEqual(wrong().map(x => `${x.from}>${x.to}`), ["lb>db"], "only the loose rule is wrong at the start");
+  assert.equal(J.tierCheck(tiers, { from: "internet", to: "db", port: 5432 }).layer, "network", "the private subnet saves it from the internet");
+  tiers.db.rules[0].from = "lb";
+  assert.ok(wrong().length > 0);
+  tiers.db.rules[0].from = "app";
+  assert.equal(wrong().length, 0);
+});
+
+test("part 1 content is consistent and links to part 2", () => {
+  assert.equal(lab1.next, "one-request");
+  assert.equal(lab.prev, "finding-the-server");
+  for (const c of lab1.chapters) assert.ok(c.label && c.title && c.idea && c.goal && c.security && c.deeper?.href, c.id);
+  assert.ok(!JSON.stringify(lab1).includes("—"), "no em dashes");
+});

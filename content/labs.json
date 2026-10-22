@@ -1710,6 +1710,319 @@
   "holdTicks": 8
  },
  {
+  "id": "finding-the-server",
+  "kind": "journey",
+  "category": "Networking",
+  "track": "Foundations",
+  "minutes": 20,
+  "lesson": "networking",
+  "series": "How an app talks to the internet",
+  "part": 1,
+  "next": "one-request",
+  "title": "How a request finds its server",
+  "skill": "Follow one app's request from a name to a server: DNS and TTLs, ports and localhost, MAC addresses and ARP, routing and traceroute, NAT, and network tiers",
+  "intro": "Before Hopper (a made-up ride app) can ask anything, it has to find the server: turn a name into an address, find the right door on that machine, get out of your home network and across the internet, and get past the layers guarding the database. Six stops, one idea each.",
+  "simplification": "Simplified for learning: the DNS chain is shown as root, TLD and the domain's own server, with no other caches in between; .example names are reserved, so these servers are illustrative. MAC addresses use the range set aside for documentation (00:00:5e:00:53:xx). Traceroute timings are made up but in a realistic range. The NAT table works like a home router's; real ones also time entries out. Security groups are modelled on cloud ones (allow rules only, sources as other groups).",
+  "chapters": [
+   {
+    "id": "dns",
+    "label": "DNS",
+    "title": "From a name to an address",
+    "host": "api.hopper.example",
+    "resolver": "198.51.100.53",
+    "zone": {
+     "api.hopper.example": {
+      "ip": "203.0.113.10",
+      "ttl": 300
+     }
+    },
+    "movedIp": "203.0.113.20",
+    "idea": "The app knows a name, api.hopper.example, but the network needs an IP address. A resolver finds it by asking the root servers, then the .example servers, then Hopper's own name server, and then remembers the answer for its TTL (time to live) so the next lookup is instant.",
+    "goal": "Look it up twice (the second answer comes from the cache), then let the TTL run out and look again.",
+    "security": "Because answers are cached, a wrong or poisoned record can linger until its TTL runs out, and every user of that resolver gets it. DNSSEC lets resolvers check that records really came from the domain's owner. Attackers use very short TTLs too, to move a malicious site between servers faster than blocklists can follow (fast flux).",
+    "deeper": {
+     "href": "#mission-dns",
+     "label": "Mission: Why won't the intranet load? (a stale DNS record)"
+    }
+   },
+   {
+    "id": "ports",
+    "label": "Ports",
+    "title": "Many services, one machine",
+    "host": "203.0.113.10",
+    "services": [
+     {
+      "name": "Website (nginx)",
+      "process": "nginx",
+      "port": 443,
+      "bind": "0.0.0.0",
+      "pid": 812,
+      "fd": 6,
+      "backlog": 511,
+      "public": true
+     },
+     {
+      "name": "Database (PostgreSQL)",
+      "process": "postgres",
+      "port": 5432,
+      "bind": "127.0.0.1",
+      "pid": 901,
+      "fd": 7,
+      "backlog": 244,
+      "public": false
+     },
+     {
+      "name": "Cache (Redis)",
+      "process": "redis-server",
+      "port": 6379,
+      "bind": "0.0.0.0",
+      "pid": 877,
+      "fd": 6,
+      "backlog": 511,
+      "public": false
+     }
+    ],
+    "idea": "One server, one IP address, several services. Each listens on its own port, like doors in one building. And each chooses which address to listen on: 0.0.0.0 means every address, so other machines can connect; 127.0.0.1 (localhost) means only programs on the same machine can. A service can be up but not reachable.",
+    "goal": "Lock it down: other machines reach only the website, while the database and cache still answer on the server itself.",
+    "security": "Databases and caches listening on every address are a classic mistake. Redis with no password exposed to the internet is scanned for constantly and taken over within minutes, often to mine cryptocurrency. Listen on localhost unless something else really needs to connect, and firewall it either way.",
+    "deeper": {
+     "href": "#lab-ports-protocols",
+     "label": "Lab: Ports and protocols"
+    }
+   },
+   {
+    "id": "arp",
+    "label": "MAC and ARP",
+    "title": "Who has 192.168.1.1?",
+    "me": {
+     "name": "Phone",
+     "ip": "192.168.1.24",
+     "mask": "255.255.255.0",
+     "gw": "192.168.1.1",
+     "mac": "00:00:5e:00:53:24"
+    },
+    "lan": [
+     {
+      "name": "Home router",
+      "ip": "192.168.1.1",
+      "mac": "00:00:5e:00:53:01",
+      "kind": "router"
+     },
+     {
+      "name": "Laptop",
+      "ip": "192.168.1.31",
+      "mac": "00:00:5e:00:53:31",
+      "kind": "laptop"
+     },
+     {
+      "name": "Smart TV",
+      "ip": "192.168.1.40",
+      "mac": "00:00:5e:00:53:40",
+      "kind": "pc"
+     }
+    ],
+    "destinations": [
+     {
+      "label": "The laptop",
+      "ip": "192.168.1.31"
+     },
+     {
+      "label": "api.hopper.example",
+      "ip": "203.0.113.10"
+     },
+     {
+      "label": "The smart TV",
+      "ip": "192.168.1.40"
+     },
+     {
+      "label": "An address nobody has",
+      "ip": "192.168.1.99"
+     }
+    ],
+    "idea": "An IP address says where on the internet; a MAC address is burned into each network card and only matters on the local network, where frames are delivered by MAC. So before sending, a device asks everyone nearby \"who has this IP?\" (an ARP broadcast), and only the owner replies with its MAC.",
+    "goal": "Send to a device on your network and to the Hopper server, and see which address the phone actually asks for.",
+    "security": "ARP has no proof of identity: anyone on the network can reply \"that's me\". In ARP spoofing an attacker claims to be the router, so the phone sends them everything (a man-in-the-middle). Switches with Dynamic ARP Inspection, and encryption such as TLS, are the defences.",
+    "deeper": {
+     "href": "#lab-vlans",
+     "label": "Lab: VLANs, where broadcasts like ARP stop"
+    }
+   },
+   {
+    "id": "route",
+    "label": "Routing",
+    "title": "Hop by hop across the internet",
+    "host": "api.hopper.example",
+    "hops": [
+     {
+      "name": "Home router",
+      "ip": "192.168.1.1",
+      "rdns": "_gateway",
+      "rtt": 2.1
+     },
+     {
+      "name": "Your ISP",
+      "ip": "100.64.0.1",
+      "rtt": 9.4
+     },
+     {
+      "name": "ISP core",
+      "ip": "198.51.100.1",
+      "rtt": 14.8,
+      "silent": true
+     },
+     {
+      "name": "Backbone",
+      "ip": "198.51.100.77",
+      "rtt": 31.7
+     },
+     {
+      "name": "Hopper's edge",
+      "ip": "203.0.113.1",
+      "rtt": 44.0
+     },
+     {
+      "name": "Hopper",
+      "ip": "203.0.113.10",
+      "rdns": "api.hopper.example",
+      "rtt": 48.3
+     }
+    ],
+    "idea": "Your phone only knows its first hop, the home router. Each router looks at the destination IP and passes the packet one hop closer. traceroute reveals the path with a trick: it sends probes that may only cross 1 router, then 2, then 3, and each router where a probe runs out sends back a message.",
+    "goal": "Send probes until one reaches the Hopper server.",
+    "ipmac": "The IP addresses (where it's going) stay the same the whole way, apart from your router's NAT (next stop). The MAC addresses change on every link: each router addresses the frame to the next router's MAC.",
+    "security": "Routers trust each other's announcements about which addresses they can reach (BGP). In 2018 attackers announced Amazon's DNS addresses as their own, redirected visitors of a cryptocurrency wallet site to a fake one, and stole funds. RPKI lets networks check who really owns an address range.",
+    "deeper": {
+     "href": "#lab-net-detective",
+     "label": "Lab: Network detective (ping, traceroute, nslookup)"
+    }
+   },
+   {
+    "id": "nat",
+    "label": "NAT",
+    "title": "Many devices, one public address",
+    "pub": "198.51.100.7",
+    "actions": [
+     {
+      "label": "Phone opens Hopper",
+      "kind": "out",
+      "inside": "192.168.1.24:51514",
+      "dest": "203.0.113.10:443"
+     },
+     {
+      "label": "Hopper replies",
+      "kind": "reply",
+      "of": 0
+     },
+     {
+      "label": "Laptop checks for updates",
+      "kind": "out",
+      "inside": "192.168.1.31:49822",
+      "dest": "198.51.100.200:443"
+     },
+     {
+      "label": "A stranger tries to connect in",
+      "kind": "in",
+      "from": "203.0.113.66:55012",
+      "to": "198.51.100.7:22"
+     }
+    ],
+    "idea": "Your devices have private addresses (192.168.x.x) that mean nothing on the internet. Your router rewrites each outgoing packet to come from its one public address, picks a port to tell them apart, and writes it in a table. Replies are matched against the table; anything else arriving is dropped. A cloud NAT gateway does the same for private servers.",
+    "goal": "Send traffic out, let a reply back in, and see what happens to a stranger.",
+    "security": "NAT hides inside addresses and drops unexpected inbound traffic, but it isn't a firewall: port forwarding and UPnP open holes on purpose (often by apps, without asking), and outbound traffic is unrestricted, so malware inside can still call home freely.",
+    "deeper": {
+     "href": "#lab-network-builder",
+     "label": "Lab: Network builder"
+    }
+   },
+   {
+    "id": "tiers",
+    "label": "Tiers",
+    "title": "Control the traffic between layers",
+    "tiers": {
+     "lb": {
+      "label": "Load balancer",
+      "subnet": "Public subnet",
+      "public": true,
+      "rules": [
+       {
+        "port": 443,
+        "from": "anywhere"
+       }
+      ]
+     },
+     "app": {
+      "label": "App servers",
+      "subnet": "App subnet (private)",
+      "public": false,
+      "rules": [
+       {
+        "port": 8080,
+        "from": "lb"
+       }
+      ]
+     },
+     "db": {
+      "label": "Database",
+      "subnet": "Data subnet (private)",
+      "public": false,
+      "rules": [
+       {
+        "port": 5432,
+        "from": "anywhere"
+       }
+      ]
+     }
+    },
+    "editable": "db",
+    "tests": [
+     {
+      "from": "internet",
+      "to": "lb",
+      "port": 443,
+      "expect": true
+     },
+     {
+      "from": "internet",
+      "to": "app",
+      "port": 8080,
+      "expect": false
+     },
+     {
+      "from": "lb",
+      "to": "app",
+      "port": 8080,
+      "expect": true
+     },
+     {
+      "from": "app",
+      "to": "db",
+      "port": 5432,
+      "expect": true
+     },
+     {
+      "from": "lb",
+      "to": "db",
+      "port": 5432,
+      "expect": false
+     },
+     {
+      "from": "internet",
+      "to": "db",
+      "port": 5432,
+      "expect": false
+     }
+    ],
+    "idea": "Hopper splits its network into tiers. Only the public subnet faces the internet; the app servers and the database sit in private subnets. On top of that, each tier's security group says who may connect: the app tier accepts only the load balancer, and the database should accept only the app tier. Two layers, so one mistake isn't fatal.",
+    "goal": "One rule is too loose. Fix the database's rule so every test comes out right.",
+    "security": "This is defence in depth: the internet can't reach the database even with the loose rule, because the data subnet is private. But the load balancer could, so anyone who took it over would have a path straight to the data. Rules that name the tier in front (not \"anywhere\") close that path.",
+    "deeper": {
+     "href": "#lab-one-request",
+     "label": "Part 2: One request, start to finish"
+    }
+   }
+  ]
+ },
+ {
   "id": "one-request",
   "kind": "journey",
   "category": "Networking",
@@ -2085,7 +2398,10 @@
     },
     "security": "The upgrade is an ordinary HTTP request, so it needs the same sign-in checks as any other. The server should also check the Origin header, or another website could open a socket using the rider's signed-in session (cross-site WebSocket hijacking)."
    }
-  ]
+  ],
+  "series": "How an app talks to the internet",
+  "part": 2,
+  "prev": "finding-the-server"
  },
  {
   "id": "telnet-ssh",
