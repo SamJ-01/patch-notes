@@ -121,7 +121,7 @@ function cveCard(c) {
       <div class="lesson-grid">
         ${c.kev ? `<div class="kevbox"><strong>What defenders are told to do:</strong> ${esc(c.kev.action)}</div>` : ""}
         <section><h4>What kind of bug is this?</h4>${lessonHtml}</section>
-        <section><h4>How would an attacker use it?</h4>${vector ? `<ul>${vector.map(s => `<li>${esc(s)}</li>`).join("")}</ul><p class="vector">${esc(c.vector)}</p>` : "<p>No CVSS vector yet, so the attack path hasn't been formally described. Check the vendor advisory.</p>"}</section>
+        <section><h4>How would an attacker use it?</h4>${vector ? `<ul>${vector.map(s => `<li>${esc(s)}</li>`).join("")}</ul><p class="vector"><a href="#cvss-decode/${encodeURIComponent(c.vector)}" title="Explain this vector">${esc(c.vector)}</a></p>` : "<p>No CVSS vector yet, so the attack path hasn't been formally described. Check the vendor advisory.</p>"}</section>
         <section><h4>How worried should you be?</h4>${worry(c).map(l => `<p>${l}</p>`).join("")}</section>
         <div class="links"><a href="https://nvd.nist.gov/vuln/detail/${esc(c.id)}" target="_blank" rel="noopener">Full NVD record</a><a href="https://www.cve.org/CVERecord?id=${esc(c.id)}" target="_blank" rel="noopener">CVE.org</a><a href="#lesson-vuln-management">Lesson: how teams prioritise</a></div>
       </div>

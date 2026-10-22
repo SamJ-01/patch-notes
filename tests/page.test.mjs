@@ -35,13 +35,16 @@ vm.runInContext([
   template.match(/const reEsc = .*\n/)[0],
   extract("const MATCH = (() =>"),
   extract("function findTerms(text)"),
-  extract("function cvss31(v)"),
+  extract("function cvss31(v, v30 = false)"),
   template.match(/const cvssSeverity = .*\n/)[0],
   template.match(/const parseVector = .*\n/)[0],
   extract("function decodeVector(vec)"),
-  "this.api = { findTerms, cvss31, cvssSeverity, parseVector, decodeVector };",
+  template.match(/const CVSS_METRICS = \[[\s\S]*?\n\];\n/)[0],
+  template.match(/const CVSS4_METRICS = \[[\s\S]*?\n\];\n/)[0],
+  extract("function readVector(str)"),
+  "this.api = { findTerms, cvss31, cvssSeverity, parseVector, decodeVector, readVector };",
 ].join("\n"), ctx);
-const { findTerms, cvss31, cvssSeverity, parseVector, decodeVector } = ctx.api;
+const { findTerms, cvss31, cvssSeverity, parseVector, decodeVector, readVector } = ctx.api;
 // Copy results out of the vm sandbox: its arrays have a different prototype, which strict deep-equal rejects.
 const terms = text => JSON.parse(JSON.stringify(findTerms(text).map(h => [text.substr(h.i, h.len), h.id])));
 
@@ -147,4 +150,21 @@ test("route map: a full last row sends the finish round the turn; phones use two
   const phone = routeLayout(6, 2, { W: 350, rowH: 145, R: 46, pad: 40 });
   assert.deepEqual(JSON.parse(JSON.stringify(phone.stops.map(s => s.row))), [0, 0, 1, 1, 2, 2]);
   for (const s of phone.stops) assert.ok(s.x - 60 >= 0 && s.x + 60 <= 350, "labels have room at phone width");
+});
+
+test("CVSS decoder: checks the vector, scores 3.0 and 3.1, decodes 4.0 without inventing a score", () => {
+  const r = readVector("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H");
+  assert.deepEqual([r.ok, r.version, r.score, r.severity], [true, "3.1", 10, "Critical"]);
+  assert.equal(readVector("CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N").score, 6.5, "matches FIRST's calculator");
+  assert.equal(readVector("CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H").score, 9.8);
+  // By hand: exploitability 8.22 x 0.55 x 0.44 x 0.27 x 0.62 = 0.333, impact 6.42 x 0.22 = 1.412, total 1.745, rounded up 1.8.
+  assert.equal(readVector("  (CVSS:3.1/AV:L/AC:H/PR:H/UI:R/S:U/C:N/I:N/A:L)  ").score, 1.8, "brackets and spaces are fine");
+  const v4 = readVector("CVSS:4.0/AV:L/AC:L/AT:N/PR:L/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N");
+  assert.deepEqual([v4.ok, v4.version, v4.score], [true, "4.0", null]);
+  assert.match(v4.note, /FIRST/);
+  assert.equal(readVector("AV:N/AC:L/Au:N/C:P/I:P/A:P").version, "2.0");
+  assert.match(readVector("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H").error, /A is missing/);
+  assert.match(readVector("CVSS:3.1/AV:X/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H").error, /AV:X isn't a valid value/);
+  assert.match(readVector("CVSS:3.1/AV:N/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H").error, /appears twice/);
+  assert.equal(readVector("hello").ok, false);
 });

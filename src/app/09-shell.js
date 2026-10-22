@@ -62,6 +62,8 @@ function searchAll(q) {
   DATA.missions.forEach(m => { if (hit(m.title) || hit(m.topic) || hit(m.summary)) out.push({ k: "mission", t: m.title, h: m.minutes + " min", go: () => go("mission-" + m.id) }); });
   (DATA.agency || []).forEach(sh => { if (hit(sh.title) || hit("agency soc shift") || hit(sh.summary)) out.push({ k: "mission", t: "PATCH//AGENCY: " + sh.title, h: sh.minutes + " min", go: () => go("agency-" + sh.id) }); });
   if (hit("email header checker spf dkim dmarc phishing analyse")) out.push({ k: "lab", t: "Email header checker", h: "tool", go: () => go("headers-check") });
+  if (hit("log search auth.log access log grep ssh nginx apache")) out.push({ k: "lab", t: "Log search", h: "tool", go: () => go("log-search") });
+  if (hit("cvss decoder vector score severity")) out.push({ k: "lab", t: "CVSS decoder", h: "tool", go: () => go("cvss-decode") });
   DATA.labs.forEach(l => { if (hit(l.title) || hit(l.skill)) out.push({ k: "lab", t: l.title, h: l.minutes + " min", go: () => go("lab-" + l.id) }); });
   DATA.paths.forEach(p => { if (hit(p.title) || hit(p.id)) out.push({ k: "path", t: p.title, h: p.steps.length + " steps", go: () => go("path-" + p.id) }); });
   DATA.lessons.forEach(l => { if (hit(l.title) || hit(l.id) || hit(l.hook)) out.push({ k: "lesson", t: l.title, h: l.minutes + " min", go: () => go("lesson-" + l.id) }); });
@@ -203,6 +205,8 @@ function parseRoute() {
   if (h.startsWith("mission-")) return { tab: "missions", path: "missions/" + h.slice(8), draw: () => missionView(h.slice(8)) };
   if (h === "labs") return { tab: "missions", path: "missions", draw: VIEWS.missions };
   if (h === "headers-check") return { tab: "missions", path: "tools/headers-check", draw: headersToolView };
+  if (h === "log-search") return { tab: "missions", path: "tools/log-search", draw: logToolView };
+  if (h === "cvss-decode" || h.startsWith("cvss-decode/")) return { tab: "missions", path: "tools/cvss-decode", draw: () => cvssToolView(h) };
   if (h === "subnet-calc" || h.startsWith("subnet-calc/")) return { tab: "missions", path: "tools/subnet-calc", draw: () => calcView(h) };
   if (h === "glossary") return { tab: "learn", path: "learn/glossary", draw: VIEWS.glossary };
   if (h === "stack") return { tab: "today", path: "today/stack", draw: VIEWS.stack };

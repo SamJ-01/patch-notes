@@ -15,5 +15,67 @@
    "org": "ashbylane.example",
    "headers": "Return-Path: <it-support@ashby1ane.example>\nReceived: from mail.ashby1ane.example (mail.ashby1ane.example [203.0.113.77])\n\tby mail01.ashbylane.example (Postfix) with ESMTPS id 4A7B21C0D9;\n\tWed, 21 Oct 2026 09:14:22 +0000 (UTC)\nAuthentication-Results: mail01.ashbylane.example; spf=pass smtp.mailfrom=ashby1ane.example\nAuthentication-Results: mail01.ashbylane.example; dkim=pass header.d=ashby1ane.example header.s=default\nAuthentication-Results: mail01.ashbylane.example; dmarc=pass (p=none dis=none) header.from=ashby1ane.example\nFrom: \"Ashby Lane IT\" <it-support@ashby1ane.example>\nTo: undisclosed-recipients:;\nSubject: Action required: your mailbox password expires today\nDate: Wed, 21 Oct 2026 09:14:19 +0000\nMessage-ID: <20261021091419.77f3@ashby1ane.example>"
   }
+ ],
+ "logSamples": [
+  {
+   "label": "Overnight SSH logins (auth.log)",
+   "lines": [
+    "Oct 20 17:40:02 web01 sshd[1876]: Accepted publickey for sam from 198.51.100.23 port 60212 ssh2: ED25519 SHA256:Xk2p9fQm7Lr0bW4sT1yVn8cJ3hG6aZ5dE2uK9oP1qRs",
+    "Oct 20 17:40:02 web01 sshd[1876]: pam_unix(sshd:session): session opened for user sam(uid=1000) by (uid=0)",
+    "Oct 20 18:02:45 web01 sshd[1876]: pam_unix(sshd:session): session closed for user sam",
+    "Oct 21 02:17:01 web01 CRON[2188]: pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)",
+    "Oct 21 02:17:01 web01 CRON[2188]: pam_unix(cron:session): session closed for user root",
+    "Oct 21 03:04:09 web01 sshd[2205]: Failed password for root from 203.0.113.45 port 51122 ssh2",
+    "Oct 21 03:04:12 web01 sshd[2205]: Failed password for root from 203.0.113.45 port 51122 ssh2",
+    "Oct 21 03:04:15 web01 sshd[2205]: Failed password for root from 203.0.113.45 port 51122 ssh2",
+    "Oct 21 03:04:15 web01 sshd[2205]: Connection closed by authenticating user root 203.0.113.45 port 51122 [preauth]",
+    "Oct 21 03:05:40 web01 sshd[2231]: Invalid user admin from 203.0.113.45 port 51130",
+    "Oct 21 03:05:40 web01 sshd[2231]: Failed password for invalid user admin from 203.0.113.45 port 51130 ssh2",
+    "Oct 21 03:05:43 web01 sshd[2231]: Failed password for invalid user admin from 203.0.113.45 port 51130 ssh2",
+    "Oct 21 03:05:43 web01 sshd[2231]: Connection closed by invalid user admin 203.0.113.45 port 51130 [preauth]",
+    "Oct 21 03:07:02 web01 sshd[2257]: Invalid user test from 203.0.113.45 port 51188",
+    "Oct 21 03:07:02 web01 sshd[2257]: Failed password for invalid user test from 203.0.113.45 port 51188 ssh2",
+    "Oct 21 03:07:05 web01 sshd[2257]: Failed password for invalid user test from 203.0.113.45 port 51188 ssh2",
+    "Oct 21 03:07:05 web01 sshd[2257]: Connection closed by invalid user test 203.0.113.45 port 51188 [preauth]",
+    "Oct 21 03:08:31 web01 sshd[2290]: Invalid user oracle from 203.0.113.45 port 51240",
+    "Oct 21 03:08:31 web01 sshd[2290]: Failed password for invalid user oracle from 203.0.113.45 port 51240 ssh2",
+    "Oct 21 03:08:34 web01 sshd[2290]: Failed password for invalid user oracle from 203.0.113.45 port 51240 ssh2",
+    "Oct 21 03:08:34 web01 sshd[2290]: Connection closed by invalid user oracle 203.0.113.45 port 51240 [preauth]",
+    "Oct 21 03:10:18 web01 sshd[2334]: Failed password for deploy from 203.0.113.45 port 51302 ssh2",
+    "Oct 21 03:10:21 web01 sshd[2334]: Failed password for deploy from 203.0.113.45 port 51302 ssh2",
+    "Oct 21 03:10:21 web01 sshd[2334]: Connection closed by authenticating user deploy 203.0.113.45 port 51302 [preauth]",
+    "Oct 21 03:12:47 web01 sshd[2390]: Accepted password for deploy from 203.0.113.45 port 52018 ssh2",
+    "Oct 21 03:12:47 web01 sshd[2390]: pam_unix(sshd:session): session opened for user deploy(uid=1001) by (uid=0)",
+    "Oct 21 03:14:02 web01 sudo:   deploy : TTY=pts/0 ; PWD=/home/deploy ; USER=root ; COMMAND=/usr/bin/crontab -l",
+    "Oct 21 03:14:02 web01 sudo: pam_unix(sudo:session): session opened for user root(uid=0) by deploy(uid=1001)",
+    "Oct 21 03:14:02 web01 sudo: pam_unix(sudo:session): session closed for user root",
+    "Oct 21 03:17:01 web01 CRON[2412]: pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)",
+    "Oct 21 03:17:01 web01 CRON[2412]: pam_unix(cron:session): session closed for user root"
+   ]
+  },
+  {
+   "label": "A web shop's access log (nginx)",
+   "lines": [
+    "198.51.100.23 - - [21/Oct/2026:08:01:12 +0000] \"GET / HTTP/1.1\" 200 5120 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\"",
+    "198.51.100.23 - - [21/Oct/2026:08:01:13 +0000] \"GET /css/site.css HTTP/1.1\" 200 18342 \"https://shop.example/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\"",
+    "198.51.100.41 - - [21/Oct/2026:08:02:40 +0000] \"GET /products/garden-chairs HTTP/1.1\" 200 9211 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\"",
+    "198.51.100.41 - - [21/Oct/2026:08:02:58 +0000] \"POST /basket/add HTTP/1.1\" 302 0 \"https://shop.example/products/garden-chairs\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\"",
+    "203.0.113.9 - - [21/Oct/2026:03:12:40 +0000] \"GET /.env HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "203.0.113.9 - - [21/Oct/2026:03:12:41 +0000] \"GET /.git/config HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "203.0.113.9 - - [21/Oct/2026:03:12:41 +0000] \"GET /wp-login.php HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "203.0.113.9 - - [21/Oct/2026:03:12:42 +0000] \"GET /phpmyadmin/ HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "203.0.113.9 - - [21/Oct/2026:03:12:42 +0000] \"GET /admin/ HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "203.0.113.9 - - [21/Oct/2026:03:12:43 +0000] \"GET /backup.zip HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "203.0.113.9 - - [21/Oct/2026:03:12:43 +0000] \"GET /xmlrpc.php HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "203.0.113.9 - - [21/Oct/2026:03:12:44 +0000] \"GET /config.php.bak HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "203.0.113.9 - - [21/Oct/2026:03:12:44 +0000] \"GET /server-status HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "203.0.113.9 - - [21/Oct/2026:03:12:45 +0000] \"GET /.aws/credentials HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "203.0.113.9 - - [21/Oct/2026:03:12:46 +0000] \"GET /static/../../../../etc/passwd HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "203.0.113.9 - - [21/Oct/2026:03:13:02 +0000] \"GET /products?id=1%27%20UNION%20SELECT%20username,password%20FROM%20users-- HTTP/1.1\" 200 7480 \"-\" \"sqlmap/1.8.4#stable (https://sqlmap.org)\"",
+    "203.0.113.9 - - [21/Oct/2026:03:13:05 +0000] \"GET /products?id=1%27%20OR%20%271%27=%271 HTTP/1.1\" 500 612 \"-\" \"sqlmap/1.8.4#stable (https://sqlmap.org)\"",
+    "198.51.100.77 - - [21/Oct/2026:09:15:20 +0000] \"GET /search?q=%3Cscript%3Ealert(1)%3C/script%3E HTTP/1.1\" 200 4102 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\"",
+    "198.51.100.23 - - [21/Oct/2026:09:30:01 +0000] \"GET /account HTTP/1.1\" 200 6120 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\""
+   ]
+  }
  ]
 }

@@ -111,14 +111,16 @@ document.addEventListener("mouseover", e => {
   setTimeout(() => delete card.dataset.playing, 2200);
 });
 // Practise page: security tracks first, so networking (the biggest track) doesn't bury the rest.
-const CATEGORY_ORDER = ["Security operations", "Cryptography", "Linux", "Networking", "Ethical hacking", "Games"];
+const CATEGORY_ORDER = ["Security operations", "Your own evidence", "Cryptography", "Linux", "Networking", "Ethical hacking", "Games"];
 // "Start here": one pick per track. When a pick is done, the next unfinished item in its track takes its place.
 const PRACTISE_PICKS = ["agency:shift-01", "lab:hashing", "lab:permissions", "lab:network-builder"];
 const PS = { track: "All", open: {} };  // the chosen filter and which tracks are expanded, for this visit
 function practiseItems() {
   return [
     ...(DATA.agency || []).map(sh => ({ key: `agency:${sh.id}`, cat: "Security operations", done: !!(P.agency || {})[sh.id], html: shiftCard(sh) })),
-    { key: "tool:headers-check", cat: "Security operations", done: false, html: headerToolCard() },
+    { key: "tool:headers-check", cat: "Your own evidence", done: false, html: headerToolCard() },
+    { key: "tool:log-search", cat: "Your own evidence", done: false, html: logToolCard() },
+    { key: "tool:cvss-decode", cat: "Your own evidence", done: false, html: cvssToolCard() },
     ...DATA.missions.map(m => ({ key: `mission:${m.id}`, cat: m.category || "Networking", done: Object.keys((P.missions || {})[m.id] || {}).length === Object.keys(m.modes).length, html: missionCard(m) })),
     ...DATA.labs.map(l => ({ key: `lab:${l.id}`, cat: l.category || "Security operations", done: !!P.labs[l.id], html: labCard(l) })),
     { key: "tool:subnet-calc", cat: "Networking", done: false, html: toolCard() },
@@ -165,6 +167,22 @@ function gamesCard() {
 function toolCard() {
   return `<a class="lcard art-card" href="#subnet-calc">${cardArt("subnet-calc")}
     <span class="eyebrow">Tool</span><h3>Subnet calculator</h3><p>Type any address and watch the network change: class, CIDR, mask, hosts, ranges and a live diagram</p><span class="lmeta"><span>Use any time</span><span>Shareable links</span></span></a>`;
+}
+function logToolCard() {
+  return `<a class="lcard art-card" href="#log-search">${cardArt("log-detective")}
+    <span class="eyebrow">Tool · your own evidence</span><h3>Log search</h3><p>Paste a real log; spot guessing and scanning</p><span class="lmeta"><span>Use any time</span><span>Stays on your device</span></span></a>`;
+}
+function cvssToolCard() {
+  return `<a class="lcard art-card" href="#cvss-decode">${cardArt("cvss-builder")}
+    <span class="eyebrow">Tool · your own evidence</span><h3>CVSS decoder</h3><p>Paste a vector; see the score and what it means</p><span class="lmeta"><span>Use any time</span><span>3.0, 3.1 and 4.0</span></span></a>`;
+}
+// Log search: paste or open a real log (static/js/tools/logs.js).
+function logToolView() {
+  main.innerHTML = `<div class="view"><div class="view-head"><a class="link-btn" href="#missions">← Practise</a><div class="eyebrow">Tool · your own evidence</div><h1>Log search</h1>
+    <p>Paste or open a real log. Search it like ${gloss("grep", 1)}, and see the summary an analyst would build first.</p></div>
+    <div id="lg-root"><div class="empty">Loading…</div></div></div>`;
+  import("./js/tools/logs.js").then(mod => { if (parseRoute().path === "tools/log-search") mod.mount($("lg-root"), { samples: DATA.tools?.logSamples || [] }); })
+    .catch(() => { $("lg-root").innerHTML = `<div class="empty">Couldn't load the log search. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
 }
 function headerToolCard() {
   return `<a class="lcard art-card" href="#headers-check">${cardArt("header-inspector")}
@@ -392,17 +410,80 @@ const CVSS_METRICS = [
   ["I", "Integrity impact (data changed)", [["N", "None"], ["L", "Low (some data)"], ["H", "High (anything)"]]],
   ["A", "Availability impact (service down)", [["N", "None"], ["L", "Low (slower / partial)"], ["H", "High (fully down)"]]],
 ];
-function cvss31(v) {
+// v30: CVSS 3.0 uses the same formula, but simply rounds up to one decimal (3.1 rounds carefully to avoid float errors).
+function cvss31(v, v30 = false) {
   const W = { AV: { N: 0.85, A: 0.62, L: 0.55, P: 0.2 }, AC: { L: 0.77, H: 0.44 }, UI: { N: 0.85, R: 0.62 }, CIA: { H: 0.56, L: 0.22, N: 0 } };
   const pr = v.S === "C" ? { N: 0.85, L: 0.68, H: 0.5 } : { N: 0.85, L: 0.62, H: 0.27 };
   const iss = 1 - (1 - W.CIA[v.C]) * (1 - W.CIA[v.I]) * (1 - W.CIA[v.A]);
   const impact = v.S === "U" ? 6.42 * iss : 7.52 * (iss - 0.029) - 3.25 * Math.pow(iss - 0.02, 15);
   const expl = 8.22 * W.AV[v.AV] * W.AC[v.AC] * pr[v.PR] * W.UI[v.UI];
   if (impact <= 0) return 0;
-  const roundup = x => { const i = Math.round(x * 100000); return i % 10000 === 0 ? i / 100000 : (Math.floor(i / 10000) + 1) / 10; };
+  const roundup = v30 ? x => Math.ceil(Math.round(x * 100000) / 10000) / 10 : x => { const i = Math.round(x * 100000); return i % 10000 === 0 ? i / 100000 : (Math.floor(i / 10000) + 1) / 10; };
   return roundup(Math.min((v.S === "U" ? 1 : 1.08) * (impact + expl), 10));
 }
 const cvssSeverity = s => s === 0 ? "None" : s < 4 ? "Low" : s < 7 ? "Medium" : s < 9 ? "High" : "Critical";
+// CVSS decoder ("bring your own evidence"): read any vector, check it, score 3.x, explain each part.
+// Version 4.0 is decoded but not scored: its scores come from FIRST's lookup tables, so we link to their calculator.
+const CVSS4_METRICS = [
+  ["AV", "Attack vector", [["N", "Network"], ["A", "Adjacent"], ["L", "Local"], ["P", "Physical"]]],
+  ["AC", "Attack complexity", [["L", "Low"], ["H", "High"]]],
+  ["AT", "Attack requirements", [["N", "None"], ["P", "Present (needs special conditions)"]]],
+  ["PR", "Privileges required", [["N", "None"], ["L", "Low"], ["H", "High"]]],
+  ["UI", "User interaction", [["N", "None"], ["P", "Passive (just view something)"], ["A", "Active (click, open, run)"]]],
+  ["VC", "Confidentiality (the vulnerable system)", [["H", "High"], ["L", "Low"], ["N", "None"]]],
+  ["VI", "Integrity (the vulnerable system)", [["H", "High"], ["L", "Low"], ["N", "None"]]],
+  ["VA", "Availability (the vulnerable system)", [["H", "High"], ["L", "Low"], ["N", "None"]]],
+  ["SC", "Confidentiality (other systems)", [["H", "High"], ["L", "Low"], ["N", "None"]]],
+  ["SI", "Integrity (other systems)", [["H", "High"], ["L", "Low"], ["N", "None"]]],
+  ["SA", "Availability (other systems)", [["H", "High"], ["L", "Low"], ["N", "None"]]],
+];
+function readVector(str) {
+  const raw = String(str || "").trim().replace(/^\(|\)$/g, "");
+  const ver = (raw.match(/^CVSS:(3\.0|3\.1|4\.0)\//) || [])[1] || (/\bAu:/.test(raw) ? "2.0" : "");
+  if (!ver) return { ok: false, error: "That doesn't look like a CVSS vector. They start with CVSS:3.1/, CVSS:3.0/ or CVSS:4.0/, like CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H." };
+  if (ver === "2.0") return { ok: true, version: ver, metrics: parseVector(raw), defs: [], score: null, note: "This is CVSS version 2, retired in 2015. It's decoded below but not scored here; most databases now give a 3.1 or 4.0 score too." };
+  const parts = raw.split("/").slice(1).filter(Boolean), metrics = {}, errors = [];
+  for (const p of parts) {
+    const [k, v] = p.split(":");
+    if (k in metrics) errors.push(`${k} appears twice.`);
+    metrics[k] = v;
+  }
+  const defs = ver === "4.0" ? CVSS4_METRICS : CVSS_METRICS;
+  for (const [k, , opts] of defs) {
+    if (!(k in metrics)) errors.push(`${k} is missing.`);
+    else if (!opts.some(([v]) => v === metrics[k])) errors.push(`${k}:${metrics[k]} isn't a valid value (it can be ${opts.map(([v]) => v).join(", ")}).`);
+  }
+  if (errors.length) return { ok: false, error: `This vector has problems: ${errors.join(" ")}` };
+  if (ver === "4.0") return { ok: true, version: ver, metrics, defs, score: null, note: "CVSS 4.0 scores come from lookup tables published by FIRST, so this page doesn't calculate one. The metrics are explained below; get the official score from FIRST's calculator." };
+  const score = cvss31(metrics, ver === "3.0");
+  return { ok: true, version: ver, metrics, defs, score, severity: cvssSeverity(score) };
+}
+function cvssToolView(h) {
+  const start = decodeURIComponent((h.match(/^cvss-decode\/(.+)$/) || [])[1] || "");
+  const EX = [["Log4Shell (3.1)", "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"], ["A phishing-style bug (3.1)", "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N"], ["A local bug (4.0)", "CVSS:4.0/AV:L/AC:L/AT:N/PR:L/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N"]];
+  main.innerHTML = `<div class="view"><div class="view-head"><a class="link-btn" href="#missions">← Practise</a><div class="eyebrow">Tool · your own evidence</div><h1>CVSS decoder</h1>
+    <p>Paste a ${gloss("CVSS", 1)} vector from an advisory and see what each part means, with the score.</p></div>
+    <section class="panel hc-in"><label for="cv-in" class="sr-only">CVSS vector</label><input id="cv-in" class="mono cv-in" placeholder="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H" autocomplete="off" spellcheck="false" value="${esc(start)}">
+      <div class="row"><button class="btn brand" type="button" id="cv-go">Decode</button><span class="muted hc-try">or try:</span>${EX.map(([l, v]) => `<button class="chip" type="button" data-cv="${esc(v)}">${esc(l)}</button>`).join("")}</div></section>
+    <div id="cv-out" aria-live="polite"></div></div>`;
+  const run = () => {
+    const v = $("cv-in").value.trim(), r = readVector(v);
+    if (v) history.replaceState(null, "", "#cvss-decode/" + encodeURIComponent(v));
+    if (!r.ok) { $("cv-out").innerHTML = `<div class="feedback"><b class="no">Not quite.</b> ${esc(r.error)}</div>`; return; }
+    const plain = decodeVector(v.replace(/^CVSS:[\d.]+\//, "")) || [];
+    const sev = (r.severity || "").toLowerCase();
+    $("cv-out").innerHTML = `<section class="panel cv-res">
+      ${r.score != null ? `<div class="cv-score ${esc(sev)}"><b>${r.score.toFixed(1)}</b><span>${esc(r.severity)}</span><span class="muted">CVSS ${esc(r.version)} base score</span></div>
+        <div class="cv-scale" aria-hidden="true"><span style="left:${r.score * 10}%"></span></div><div class="cv-bands" aria-hidden="true"><span>None</span><span>Low</span><span>Medium</span><span>High</span><span>Critical</span></div>` : `<p class="feedback">${esc(r.note)}${r.version === "4.0" ? ` <a href="https://www.first.org/cvss/calculator/4.0#${esc(v)}" target="_blank" rel="noopener">Open FIRST's CVSS 4.0 calculator ↗</a>` : ""}</p>`}
+      ${plain.length ? `<h2>In plain English</h2><ul class="checklist">${plain.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+      ${r.defs.length ? `<h2>Each part</h2><dl class="cv-metrics">${r.defs.map(([k, label, opts]) => `<div><dt>${esc(label)} <span class="mono muted">${esc(k)}</span></dt><dd>${opts.map(([o, name]) => `<span class="cv-opt${o === r.metrics[k] ? " on" : ""}"${o === r.metrics[k] ? ' aria-current="true"' : ' aria-hidden="true"'}>${esc(name.replace(/ \(.*\)$/, ""))}</span>`).join("")}</dd></div>`).join("")}</dl>` : ""}
+      <p class="muted hc-small">CVSS says how bad it could be, not how likely an attack is. For that, check whether it's on the ${gloss("KEV", 1)} list and its ${gloss("EPSS", 1)} score. <a href="#lab-cvss-builder">Practise scoring in the CVSS lab</a>.</p></section>`;
+  };
+  $("cv-go").addEventListener("click", run);
+  $("cv-in").addEventListener("keydown", e => { if (e.key === "Enter") run(); });
+  main.querySelectorAll("[data-cv]").forEach(b => b.addEventListener("click", () => { $("cv-in").value = b.dataset.cv; run(); }));
+  if (start) run();
+}
 const parseVector = str => Object.fromEntries(str.split("/").map(p => p.split(":")));
 function cvssLab(l) {
   const done = new Set(P.labSteps[l.id] || []);
