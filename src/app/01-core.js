@@ -2,6 +2,8 @@
 const DATA = /*__DATA__*/null;
 /* ---------- device library (static/js/hw.js, inlined by build.py) ---------- */
 /*__HW__*/
+/* ---------- email component (static/js/mail.js, inlined by build.py) ---------- */
+/*__MAIL__*/
 
 /* ---------- helpers ---------- */
 // A link to the public feedback form (a GitHub issue form), titled with the page it came from.

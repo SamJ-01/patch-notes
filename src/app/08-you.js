@@ -117,26 +117,20 @@ function drawPhish() {
     if ($("retryp")) $("retryp").onclick = () => { newPhish(shuffle(g.wrong)); drawPhish(); };
     return;
   }
-  const m = g.deck[g.i];
+  const m = g.deck[g.i], answered = g.answered != null, ok = g.answered === m.verdict;
+  const mail = { fromName: m.fromName, fromAddr: m.fromAddr, subject: m.subject, body: m.body, links: m.link ? [m.link] : [] };
   box.innerHTML = `<div class="game-bar"><span>Email ${g.i + 1} of ${g.deck.length}</span><span>Score ${g.score}</span></div>
-    <div class="email">
-      <div class="email-head"><div class="from"><b>${esc(m.fromName)}</b> <span class="addr">&lt;${esc(m.fromAddr)}&gt;</span></div><div class="subj">${esc(m.subject)}</div></div>
-      <div class="email-body">${m.body.map(p => `<p>${esc(p)}</p>`).join("")}
-        ${m.link ? `<button class="cta" id="cta" title="Tap to inspect where this link goes">${esc(m.link.text)}</button><p class="inspect" id="insp">Tip: tap the button to inspect the link before deciding.</p>` : ""}
-      </div>
-    </div>
+    ${answered ? `<p class="result ${ok ? "ok" : "no"}" role="status" tabindex="-1"><strong>${ok ? "Correct" : "Not this time"}: this one is ${m.verdict === "phish" ? "phishing" : "legitimate"}.</strong> The numbers show where to look.</p>` : ""}
+    ${MAIL.card(mail, { id: "pg-mail", reveal: answered, pins: answered ? m.clues : [] })}
     <div id="pv"></div>`;
-  if (m.link) $("cta").onclick = () => { $("insp").innerHTML = `Link really goes to: <strong>${esc(m.link.href)}</strong>`; };
+  if (!box.dataset.emWired) { MAIL.wire(box); box.dataset.emWired = "1"; }
   const pv = $("pv");
-  if (g.answered == null) {
+  if (!answered) {
     pv.innerHTML = `<div class="verdict"><button class="btn" data-v="phish">It's phishing</button><button class="btn ghost" data-v="legit">It's legit</button></div>`;
     pv.onclick = e => { const b = e.target.closest("[data-v]"); if (!b) return; g.answered = b.dataset.v;
-      if (g.answered === m.verdict) { g.score++; award(15, "Spotted it"); } else g.wrong.push(m); drawPhish(); };
+      if (g.answered === m.verdict) { g.score++; award(15, "Spotted it"); } else g.wrong.push(m); drawPhish(); box.querySelector(".result")?.focus(); };
   } else {
-    const ok = g.answered === m.verdict;
-    if (m.link) $("insp").innerHTML = `Link really goes to: <strong>${esc(m.link.href)}</strong>`;
-    pv.innerHTML = `<div class="result ${ok ? "ok" : "no"}"><strong>${ok ? "Correct" : "Not this time"}: this one is ${m.verdict === "phish" ? "phishing" : "legitimate"}.</strong><ul>${m.clues.map(c => `<li>${esc(c)}</li>`).join("")}</ul></div>
-      <button class="btn brand" id="nextp" style="justify-self:start">${g.i + 1 < g.deck.length ? "Next email" : "See score"}</button>`;
+    pv.innerHTML = `<button class="btn brand" id="nextp" style="justify-self:start">${g.i + 1 < g.deck.length ? "Next email" : "See score"}</button>`;
     $("nextp").onclick = () => { g.i++; g.answered = null; drawPhish(); };
   }
 }

@@ -184,7 +184,7 @@ document.addEventListener("keydown", e => {
   if (typing || !cmdk.hidden || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === "/") { e.preventDefault(); openCmd(); }
   else if (e.key === "?") { e.preventDefault(); openCmd("help", true); }
-  else if (/^[1-6]$/.test(e.key)) { const tabs = ["today", "learn", "missions", "progress", "news", "cves"]; location.hash = tabs[Number(e.key) - 1]; }
+  else if (/^[1-7]$/.test(e.key)) { const tabs = ["today", "learn", "missions", "agency", "progress", "news", "cves"]; location.hash = tabs[Number(e.key) - 1]; }
 });
 
 /* ---------- router ---------- */
@@ -198,7 +198,7 @@ function parseRoute() {
   if (h.startsWith("path-")) return { tab: "learn", path: "learn/paths/" + h.slice(5), draw: () => pathView(h.slice(5)) };
   if (h.startsWith("cert-")) return { tab: "learn", path: "learn/certs/" + h.slice(5), draw: () => certView(h.slice(5)) };
   if (h.startsWith("lab-")) return { tab: "missions", path: "missions/" + h.slice(4), draw: () => labView(h.slice(4)) };
-  if (h.startsWith("agency-")) return { tab: "missions", path: "missions/agency/" + h.slice(7), draw: () => agencyView(h.slice(7)) };
+  if (h.startsWith("agency-")) return { tab: "agency", path: "agency/" + h.slice(7), draw: () => agencyView(h.slice(7)) };
   if (h.startsWith("mission-")) return { tab: "missions", path: "missions/" + h.slice(8), draw: () => missionView(h.slice(8)) };
   if (h === "labs") return { tab: "missions", path: "missions", draw: VIEWS.missions };
   if (h === "subnet-calc" || h.startsWith("subnet-calc/")) return { tab: "missions", path: "tools/subnet-calc", draw: () => calcView(h) };

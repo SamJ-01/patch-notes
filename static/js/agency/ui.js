@@ -11,26 +11,48 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
   const all = A.findings(shift);
   const clockAt = m => { const [h, mi] = shift.startsAt.split(":").map(Number), t = h * 60 + mi + m; return `${String(Math.floor(t / 60) % 24).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`; };
 
+  const leadName = shift.lead.split(",")[0];
+  const initials = n => String(n).split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join("");
+  const day = shift.date.replace(/^(\w{3})\w*\s+(\d+)\s+(\w{3}).*$/, "$1 $2 $3").toUpperCase();
+  const waiting = shift.alerts.filter(a => (a.arrives?.at ?? 0) === 0).length;
+  // The briefing arrives as chat messages, a sentence or two each.
+  const briefing = shift.briefing.match(/[^.!?]+[.!?]+(\s|$)/g).map(x => x.trim()).reduce((out, sen) => { const last = out.at(-1); if (last && last.length + sen.length < 140) out[out.length - 1] = `${last} ${sen}`; else out.push(sen); return out; }, []);
+
   root.innerHTML = `<div class="agency">
-    <div class="view-head"><a class="link-btn" href="#missions">← Missions</a>
-      <div class="eyebrow">PATCH//AGENCY · Pilot · ${esc(shift.agency)}</div>
-      <h1>${esc(shift.title)}</h1><p>${esc(shift.summary)}</p></div>
-    <section class="panel ag-brief"><div class="panel-title"><h2>Briefing</h2><span class="sim-tag">Simulation</span></div>
-      <p><b>${esc(shift.lead)}:</b> “${esc(shift.briefing)}”</p>
-      <p class="muted">${esc(shift.date)} · client: ${esc(shift.client)} · about ${shift.minutes} min${done ? " · ✓ you've completed this shift before" : ""}</p>
-      <details class="tbl simplification"><summary>How this simulation differs from a real shift</summary><p>${esc(shift.simplification)}</p></details></section>
-    <div class="ag-bar panel" role="group" aria-label="Shift clock">
-      <span class="ag-clock"><span class="eyebrow">Shift time</span> <b class="mono" id="ag-clock"></b></span>
-      <span class="muted" id="ag-count"></span>
-      <button class="btn ghost" type="button" id="ag-wait">Wait ${shift.costs.wait} min</button>
+    <section class="ag-in" id="ag-in" aria-labelledby="ag-in-h">
+      <div class="ag-in-head"><a class="link-btn" href="#agency">← The Agency</a><div class="eyebrow">PATCH//AGENCY · ${esc(shift.agency)}</div>
+        <h1 id="ag-in-h">${esc(shift.title)}</h1></div>
+      <div class="ag-in-grid">
+        <div class="ag-tc" id="ag-tc">
+          <div class="ag-tc-screen" aria-hidden="true"><span>${esc(day)}</span><b>${esc(shift.startsAt)}</b><span id="ag-tc-msg">TAP YOUR BADGE</span></div>
+          <button type="button" class="ag-tc-badge" id="ag-tap"><span class="ag-tc-card" aria-hidden="true"><span class="ag-tc-logo">LANTERNFIELD</span><span class="ag-tc-chip"></span></span><span class="ag-tc-text">Tap your badge to clock in</span></button>
+          <p class="ag-stamp" id="ag-stamp" hidden></p>
+        </div>
+        <div class="ag-in-side">
+          <ol class="ag-chat" id="ag-chat" aria-live="polite" aria-label="Messages from ${esc(leadName)}"></ol>
+          <div class="ag-dossier" id="ag-dossier" hidden><div class="eyebrow">Client file</div><h2>${esc(shift.client)}</h2>
+            <dl class="fields"><div><dt>Alerts waiting</dt><dd>${waiting}, with more likely</dd></div><div><dt>Logs you can search</dt><dd>${Object.keys(shift.sources).length}</dd></div><div><dt>Shift length</dt><dd>about ${shift.minutes} min</dd></div>${done ? `<div><dt>Your record</dt><dd>✓ worked before</dd></div>` : ""}</dl>
+            <button class="btn brand" type="button" id="ag-desk-go">Take the desk</button></div>
+        </div>
+      </div>
+      <details class="tbl simplification"><summary>How this simulation differs from a real shift</summary><p>${esc(shift.simplification)}</p></details>
+    </section>
+    <div class="ag-desk" id="ag-desk" hidden>
+      <div class="ag-bar" role="group" aria-label="Shift clock">
+        <span class="ag-logo" aria-hidden="true">PATCH<b>//</b>AGENCY</span>
+        <span class="ag-clock"><span class="eyebrow">Shift time</span> <b class="mono" id="ag-clock"></b></span>
+        <span class="ag-count" id="ag-count"></span>
+        <span class="ag-lead"><span class="ag-av" aria-hidden="true">${esc(initials(leadName))}</span>${esc(shift.lead)}</span>
+        <button class="btn ghost" type="button" id="ag-wait">Wait ${shift.costs.wait} min</button>
+      </div>
+      <div class="ag-grid">
+        <nav class="panel ag-queue" aria-labelledby="ag-q-h"><h2 id="ag-q-h">Alert queue</h2><ol id="ag-queue"></ol></nav>
+        <section class="panel ag-alert" id="ag-alert"></section>
+        <section class="panel ag-comms" aria-labelledby="ag-c-h" tabindex="0"><h2 id="ag-c-h">Messages</h2><ol class="ag-msgs" id="ag-inbox" aria-live="polite"></ol></section>
+      </div>
+      <section class="panel ag-hand" id="ag-hand" hidden></section>
+      <section class="panel debrief ag-report" id="ag-debrief" hidden></section>
     </div>
-    <div class="ag-grid">
-      <nav class="panel ag-queue" aria-labelledby="ag-q-h"><h2 id="ag-q-h">Alert queue</h2><ol id="ag-queue"></ol></nav>
-      <section class="panel ag-alert" id="ag-alert"></section>
-    </div>
-    <section class="panel ag-inbox"><h2>Teams and replies</h2><ol class="transcript" id="ag-inbox" aria-live="polite"></ol></section>
-    <section class="panel ag-hand" id="ag-hand" hidden></section>
-    <section class="panel debrief" id="ag-debrief" hidden></section>
     <p class="sr-only" id="ag-say" aria-live="assertive"></p>
   </div>`;
   const $ = id => root.querySelector("#" + id);
@@ -40,25 +62,27 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     state = r.state;
     const notes = [];
     for (const ev of r.events) {
-      if (ev.type === "arrive") { inbox(`<b>New alert:</b> ${esc(ev.title)}`); notes.push(`New alert: ${ev.title}`); }
+      if (ev.type === "arrive") { inbox(`<b>New alert:</b> ${esc(ev.title)}`, "", "Alert system"); notes.push(`New alert: ${ev.title}`); }
       else if (ev.type === "search") showSearch(ev);
-      else if (ev.type === "sent") inbox(`You asked <b>${esc(ev.dept)}</b>: ${esc(ev.label)}${ev.attached ? ` <span class="muted">(attached: ${esc(ev.attached)})</span>` : ""}. Expect a reply by ${clockAt(ev.due)}.`);
+      else if (ev.type === "sent") inbox(`To <b>${esc(ev.dept)}</b>: ${esc(ev.label)}${ev.attached ? ` <span class="muted">(attached: ${esc(ev.attached)})</span>` : ""}. Expect a reply by ${clockAt(ev.due)}.`, "", "You");
       else if (ev.type === "reply") {
-        inbox(`<span class="mono">${clockAt(ev.at)}</span> <b>${esc(ev.dept)}</b> (${esc(STATUS_WORDS[ev.outcome])}): ${esc(ev.text)}`, ev.outcome);
+        inbox(`<span class="ag-st ${esc(ev.outcome)}">${esc(STATUS_WORDS[ev.outcome])}</span> ${esc(ev.text)}`, ev.outcome, ev.dept, ev.at);
         notes.push(`Reply from ${ev.dept}`);
       }
-      else if (ev.type === "wait") inbox(`You waited ${ev.minutes} minutes.`);
+      else if (ev.type === "wait") inbox(`Waited ${ev.minutes} minutes.`, "", "You");
       else if (ev.type === "closed") notes.push(`Closed: ${ev.title}.`);
       else if (ev.type === "complete") return finish(ev.report);
     }
     renderAll(r.events.some(e => ["arrive", "closed", "reopened"].includes(e.type)));
     if (notes.length) say(notes.join(" "));
   }
-  function inbox(html, tone = "") {
+  // One message in the Messages column: who, when, what. Newest at the bottom, like a chat.
+  function inbox(html, tone = "", who = "Alert system", at = state ? state.clock : 0) {
     const li = document.createElement("li");
-    li.innerHTML = html;
-    if (tone === "refused" || tone === "asks") li.className = "warnline";
+    li.className = `ag-msg${who === "You" ? " me" : who === "Alert system" ? " sys" : ""}${tone === "refused" || tone === "asks" ? " warn" : ""}`;
+    li.innerHTML = `<span class="ag-av" aria-hidden="true">${esc(who === "Alert system" ? "!" : initials(who))}</span><div><p class="ag-msg-h"><b>${esc(who)}</b> <span class="mono">${clockAt(at)}</span></p><p>${html}</p></div>`;
     $("ag-inbox").appendChild(li);
+    li.scrollIntoView?.({ block: "nearest" });
   }
 
   // ---------- queue and clock
@@ -185,7 +209,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
           <label>Status <select name="status-${a.id}">${Object.entries(A.STATUSES).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("")}</select></label>
           ${a.answer.summaries.map((s, i) => `<div class="ev-item"><label><input type="radio" name="summary-${a.id}" value="${i}" required><span>${esc(s)}</span></label></div>`).join("")}</fieldset>`).join("")}
         <label class="ag-note">Anything else for the next shift? (optional, shown next to a model handover in the debrief)<textarea name="note" rows="4" maxlength="2000"></textarea></label>
-        <div class="row"><button class="btn brand" type="submit">Hand over and end the shift</button></div></form>`;
+        <div class="row"><button class="btn brand" type="submit">Hand over and clock out</button></div></form>`;
     $("ag-handform").addEventListener("submit", e => {
       e.preventDefault();
       const f = new FormData(e.target);
@@ -204,7 +228,8 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     const mins = Object.entries(rep.spent).map(([k, v]) => `${k} ${v} min`).join(", ");
     const ok = b => `<b class="${b ? "ok" : "no"}">${b ? "✓" : "✗"}</b>`;
     d.hidden = false;
-    d.innerHTML = `<div class="eyebrow">Debrief</div><h2 tabindex="-1" id="ag-d-h">Shift over: ${rep.passed} of ${rep.checks.length} checks passed</h2>
+    d.innerHTML = `<div class="ag-out"><span class="ag-stamp out">OUT ${esc(clockAt(rep.clock))} · ${esc(day)}</span><span class="eyebrow">Shift report · ${esc(shift.client)}</span></div>
+      <h2 tabindex="-1" id="ag-d-h">Clocked out: ${rep.passed} of ${rep.checks.length} checks passed</h2>
       <ul class="ag-checks">${rep.checks.map(c => `<li>${ok(c.ok)} <b>${esc(c.label)}:</b> ${esc(c.text)}</li>`).join("")}</ul>
       <p class="muted">Shift time ${clockAt(0)} to ${clockAt(rep.clock)} (${rep.clock} min: ${esc(mins) || "no actions"}). Time is shown, never scored.</p>
       ${rep.costs.length ? `<h3 class="eyebrow">Went too far</h3><ul class="findings">${rep.costs.map(c => `<li><b>${esc(c.label)}.</b> ${esc(c.cost)}</li>`).join("")}</ul>` : ""}
@@ -230,8 +255,38 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
   $("ag-wait").addEventListener("click", () => run(A.wait(shift, state)));
   const r0 = A.start(shift);
   state = r0.state;
-  for (const ev of r0.events) inbox(`<b>In the queue:</b> ${esc(ev.title)}`);
+  inbox(`<b>${plural(r0.events.length, "alert")} in the queue</b> from the night shift: ${r0.events.map(ev => esc(ev.title)).join("; ")}.`, "", "Alert system");
   select(state.arrived[0], false);
+
+  // ---------- clocking in: tap the badge, the clock stamps the time, the lead briefs you, then the desk.
+  const reduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const pause = ms => new Promise(res => setTimeout(res, reduced ? 0 : ms));
+  $("ag-tap").addEventListener("click", async () => {
+    const tap = $("ag-tap");
+    if (tap.disabled) return;
+    tap.disabled = true; $("ag-tc").classList.add("tapped");
+    $("ag-tc-msg").textContent = "READING…";
+    await pause(650);
+    $("ag-tc-msg").textContent = "CLOCKED IN";
+    $("ag-stamp").textContent = `IN ${shift.startsAt} · ${day}`; $("ag-stamp").hidden = false;
+    tap.querySelector(".ag-tc-text").textContent = "Clocked in";
+    for (const line of briefing) {
+      const li = document.createElement("li");
+      li.className = "ag-msg typing";
+      li.innerHTML = `<span class="ag-av" aria-hidden="true">${esc(initials(leadName))}</span><div><p class="ag-msg-h"><b>${esc(leadName)}</b> <span class="mono">${esc(shift.startsAt)}</span></p><p><span class="ag-dots" aria-hidden="true"><i></i><i></i><i></i></span></p></div>`;
+      $("ag-chat").appendChild(li);
+      await pause(500 + line.length * 6);
+      li.classList.remove("typing"); li.querySelector("div p:last-child").textContent = line;
+    }
+    await pause(250);
+    $("ag-dossier").hidden = false;
+    $("ag-desk-go").focus();
+  });
+  $("ag-desk-go").addEventListener("click", () => {
+    $("ag-in").hidden = true; $("ag-desk").hidden = false;
+    root.scrollIntoView?.({ block: "start" });
+    root.querySelector(`[data-alert="${state.arrived[0]}"]`)?.focus();
+  });
   // The page uses inProgress to warn before leaving mid-shift (the shift is short; there is no mid-shift save).
   return { get state() { return state; }, get inProgress() { return !state.complete && state.clock > 0; } };
 }

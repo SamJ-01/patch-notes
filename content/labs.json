@@ -4073,12 +4073,19 @@
   "track": "Phishing",
   "minutes": 6,
   "skill": "Reading raw email headers to spot spoofing",
-  "intro": "Jordan forwarded a 'bank security alert' and asked if it's real. The email looks perfect, but the headers tell the true story. (In most email apps: More → Show original / View source.)",
+  "intro": "Jordan forwarded a 'bank security alert' and asked if it's real. The email looks perfect, but the headers tell the true story. Open Original (in most email apps: More, then Show original) to read them.",
   "lesson": "phishing",
   "artifact": {
    "kind": "headers",
    "name": "Message headers",
-   "text": "Return-Path: <bounce-7731@mail-x7-delivery.biz>\nReceived: from mail-x7-delivery.biz (mail-x7-delivery.biz [198.51.100.23])\n        by mx.halcyonlabs.com with ESMTP id 4f9a2c; Mon, 12 Oct 2026 08:41:07 +0000\nAuthentication-Results: mx.halcyonlabs.com;\n       spf=fail (sender IP is 198.51.100.23) smtp.mailfrom=mail-x7-delivery.biz;\n       dkim=none (message not signed);\n       dmarc=fail action=quarantine header.from=northvalebank.com\nFrom: \"Northvale Bank Security\" <security@northvalebank.com>\nReply-To: northvale-verify@quickmail.example\nTo: jordan@halcyonlabs.com\nSubject: Unusual sign-in detected - verify within 12 hours\nDate: Mon, 12 Oct 2026 08:41:02 +0000\nMessage-ID: <20261012084102.7731@mail-x7-delivery.biz>\nX-Mailer: MassMail Pro 4.2"
+   "text": "Return-Path: <bounce-7731@mail-x7-delivery.biz>\nReceived: from mail-x7-delivery.biz (mail-x7-delivery.biz [198.51.100.23])\n        by mx.halcyonlabs.com with ESMTP id 4f9a2c; Mon, 12 Oct 2026 08:41:07 +0000\nAuthentication-Results: mx.halcyonlabs.com;\n       spf=fail (sender IP is 198.51.100.23) smtp.mailfrom=mail-x7-delivery.biz;\n       dkim=none (message not signed);\n       dmarc=fail action=quarantine header.from=northvalebank.com\nFrom: \"Northvale Bank Security\" <security@northvalebank.com>\nReply-To: northvale-verify@quickmail.example\nTo: jordan@halcyonlabs.com\nSubject: Unusual sign-in detected - verify within 12 hours\nDate: Mon, 12 Oct 2026 08:41:02 +0000\nMessage-ID: <20261012084102.7731@mail-x7-delivery.biz>\nX-Mailer: MassMail Pro 4.2",
+   "body": "Dear Jordan,\n\nWe noticed a sign-in to your Northvale account from a new device. If this wasn't you, verify your identity within 12 hours or online banking will be locked.\n\nNorthvale Bank Security Team",
+   "links": [
+    {
+     "text": "Verify my identity",
+     "href": "http://mail-x7-delivery.biz/nv/verify"
+    }
+   ]
   },
   "steps": [
    {

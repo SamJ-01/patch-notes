@@ -6,6 +6,7 @@
 import * as engine from "./engine.js";
 import * as layout from "./layout.js";
 import { HW } from "../hw.js";
+import { MAIL } from "../mail.js";
 
 const NS = "http://www.w3.org/2000/svg";
 const { CARD } = layout;
@@ -408,31 +409,14 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
       <div class="row mail-tabs" role="group" aria-label="Choose a reported email">${scenario.emails.items.map(e => `<button class="chip" type="button" data-email="${esc(e.id)}" aria-pressed="false">${esc(e.label)} <span class="n">${esc(e.reportedBy)}</span></button>`).join("")}</div>
       <div id="m-mail" aria-live="polite"><p class="muted">Pick an email above to inspect it.</p></div>`;
     v.querySelectorAll("[data-email]").forEach(b => b.addEventListener("click", () => run(engine.inspectEmail(scenario, state, b.dataset.email))));
+    MAIL.wire(v.querySelector("#m-mail"));
   }
-  const RESULT_TONE = { pass: "ok", fail: "bad", softfail: "warn", neutral: "warn", none: "warn", temperror: "warn", permerror: "bad" };
-  // The domain part of an address, set apart in a fixed-width font so a 1 and an l look different.
-  const showAddr = a => a.domain ? `${esc(a.address.slice(0, -a.domain.length))}<b class="mail-domain">${esc(a.domain)}</b>` : esc(a.address);
-  const hostAt = l => (l.real ? l.href.toLowerCase().indexOf(l.real) : -1);
-  const outside = d => d !== scenario.emails.org && !d.endsWith("." + scenario.emails.org);
+  // The email itself is the site's shared email (static/js/mail.js): Message, Details (who, route, checks) and Original.
   function showEmail(ev) {
-    const { email: e, parsed: h, links } = ev, auth = h.auth;
+    const e = ev.email;
     $("m-mailview").querySelectorAll("[data-email]").forEach(b => b.setAttribute("aria-pressed", b.dataset.email === e.id));
-    const reply = h.replyTo && h.replyTo.address.toLowerCase() !== h.from.address.toLowerCase()
-      ? `<p class="mail-row warn"><span class="mail-k">Replies go to</span><span class="mono">${showAddr(h.replyTo)}</span><span class="tag">not the From address</span></p>` : "";
-    const verdict = (k, label, what) => { const r = auth[k]; return `<li class="mail-check ${RESULT_TONE[r.result] || "warn"}"><b>${label}</b><span class="mail-res">${esc(r.result)}</span><span class="muted">${esc(what)}</span>${r.detail ? `<code>${esc(r.detail)}</code>` : ""}</li>`; };
-    const hops = h.received.map(r => `<li><span class="mail-hop ${outside(r.rdns || r.helo) ? "out" : "in"}"><b>${esc(r.rdns || r.helo || "unknown")}</b><span class="mono">${esc(r.ip)}</span><span class="tag">${outside(r.rdns || r.helo) ? "outside" : "your network"}</span></span><span class="mail-arrow" aria-hidden="true">→</span><span class="mail-hop in"><b>${esc(r.by)}</b><span class="tag">your server</span></span></li>`).join("");
-    const linkRows = links.length ? `<ul class="mail-links">${links.map(l => `<li class="${l.mismatch ? "bad" : ""}"><span class="mail-k">Link says</span><span class="mono">${esc(l.text)}</span><span class="mail-k">Really goes to</span><span class="mono">${hostAt(l) >= 0 ? `${esc(l.href.slice(0, hostAt(l)))}<b class="mail-domain">${esc(l.href.slice(hostAt(l), hostAt(l) + l.real.length))}</b>${esc(l.href.slice(hostAt(l) + l.real.length))}` : esc(l.href)}</span>${l.mismatch ? `<span class="tag no">doesn't match the text</span>` : ""}</li>`).join("")}</ul>` : `<p class="muted">No links.</p>`;
-    $("m-mail").innerHTML = `<article class="mail-card">
-      <header><div class="eyebrow">Reported by ${esc(e.reportedBy)} · found in ${esc(e.folder)}</div><h3>${esc(h.subject)}</h3>${e.note ? `<p class="mail-note">${esc(e.note)}</p>` : ""}</header>
-      <section><h4 class="eyebrow">Who sent it</h4>
-        <p class="mail-row"><span class="mail-k">Name shown</span><span class="mail-name">${esc(h.from.name || "(none)")}</span><span class="muted">anyone can type any name</span></p>
-        <p class="mail-row"><span class="mail-k">Real address</span><span class="mono">${showAddr(h.from)}</span><span class="tag ${outside(h.from.domain) ? "" : "watch"}">${outside(h.from.domain) ? "outside the firm" : "claims to be from the firm"}</span></p>${reply}</section>
-      <section><h4 class="eyebrow">How it reached you</h4><ol class="mail-route">${hops}</ol></section>
-      <section><h4 class="eyebrow">${esc(h.received.at(-1)?.by || "Your server")}'s checks</h4><ul class="mail-checks">
-        ${verdict("spf", "SPF", "Was the sending server allowed to send for this domain?")}${verdict("dkim", "DKIM", "Was it signed by the domain, unchanged?")}${verdict("dmarc", "DMARC", "Does the From domain match what SPF or DKIM proved?")}</ul>
-        <p class="muted mail-fine">Passing proves which domain sent it, not that the domain is honest.</p></section>
-      <section><h4 class="eyebrow">The message</h4><div class="mail-body">${esc(e.body)}</div>${linkRows}</section>
-      <details class="tbl"><summary>Raw headers</summary><pre class="evidence console mail-raw" tabindex="0">${esc(e.headers)}</pre></details></article>`;
+    $("m-mail").innerHTML = `${e.note ? `<p class="m-mailnote"><b>${esc(e.reportedBy)}</b> reported it from ${esc(e.folder)}: ${esc(e.note.replace(/^[^:]+:\s*/, ""))}</p>` : ""}
+      ${MAIL.card({ headers: e.headers, body: e.body, links: e.links, folder: e.folder }, { id: `m-em-${e.id}`, org: scenario.emails.org })}`;
     logLine(`You inspected <strong>${esc(e.label)}</strong> (reported by ${esc(e.reportedBy)})${ev.found.length ? ` → ${ev.found.map(esc).join(" ")}` : ""}`);
     renderFindings();
   }

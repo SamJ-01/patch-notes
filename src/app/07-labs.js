@@ -190,17 +190,57 @@ const MISSION = id => DATA.missions.find(x => x.id === id);
 const SHIFT = id => (DATA.agency || []).find(x => x.id === id);
 function shiftCard(sh) {
   const rec = (P.agency || {})[sh.id];
-  return `<a class="lcard mission-card art-card" href="#agency-${esc(sh.id)}">${cardArt("agency")}${rec ? '<span class="done">DONE</span>' : ""}
+  return `<a class="lcard mission-card art-card" href="#agency">${cardArt("agency")}${rec ? '<span class="done">DONE</span>' : ""}
     <span class="eyebrow">PATCH//AGENCY · Pilot</span><h3>${esc(sh.title)}</h3><p>${esc(sh.summary)}</p>
     <span class="lmeta"><span>${sh.minutes} min</span><span>${rec ? `Best: ${rec.best} of ${rec.total} checks` : `+${sh.xp} XP`}</span></span></a>`;
 }
+// The Agency's own section: the agency, your staff badge, the time clock and the rota. Clocking in opens a shift.
+VIEWS.agency = () => {
+  const shifts = DATA.agency || [], rec = id => (P.agency || {})[id];
+  const worked = shifts.filter(sh => rec(sh.id)).length, next = shifts.find(sh => !rec(sh.id)) || shifts[0];
+  if (!next) { main.innerHTML = `<div class="view"><div class="empty">No shifts yet.</div></div>`; return; }
+  const rank = worked ? "Analyst, tier 1" : "Trainee analyst";
+  const best = shifts.map(sh => rec(sh.id)).filter(Boolean).reduce((a, r) => Math.max(a, r.total ? r.best / r.total : 0), 0);
+  const day = d => d.replace(/^(\w{3})\w*\s+(\d+)\s+(\w{3}).*$/, "$1 $2 $3").toUpperCase();
+  main.innerHTML = `<div class="view ag-hub">
+    <header class="ag-hero"><div class="ag-logo" aria-hidden="true">PATCH<b>//</b>AGENCY</div>
+      <h1>${esc(next.agency)}</h1>
+      <p>A security operations centre (SOC) watching its clients' systems around the clock. You take the desk: read the alerts, work out what's real, get other teams to act, and hand over to the next shift.</p></header>
+    <div class="ag-hubgrid">
+      <section class="ag-idcard" aria-label="Your staff badge">
+        <div class="ag-id-top"><span class="ag-logo sm" aria-hidden="true">LANTERNFIELD</span><span class="ag-id-no mono">LF-${String(1000 + worked * 37).padStart(4, "0")}</span></div>
+        <svg class="ag-id-face" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="22" r="11"/><path d="M9 57c2-12 10-19 21-19s19 7 21 19z"/></svg>
+        <div class="ag-id-name">You</div><div class="ag-id-rank">${rank}</div>
+        <dl class="ag-id-stats"><div><dt>Shifts worked</dt><dd>${worked} of ${shifts.length}</dd></div><div><dt>Best report</dt><dd>${worked ? `${Math.round(best * 100)}%` : "–"}</dd></div></dl>
+      </section>
+      <section class="ag-tc ag-tc-hub" aria-labelledby="ag-next-h">
+        <div class="ag-tc-screen" aria-hidden="true"><span>${esc(day(next.date))}</span><b>${esc(next.startsAt)}</b><span>${rec(next.id) ? "WORKED BEFORE" : "NEXT SHIFT"}</span></div>
+        <h2 id="ag-next-h">${esc(next.title)}</h2>
+        <p>${esc(next.summary)}</p>
+        <a class="btn brand ag-clockin" href="#agency-${esc(next.id)}">Clock in</a>
+        <p class="muted">About ${next.minutes} minutes. The clock only moves when you act, so take your time reading.</p>
+      </section>
+    </div>
+    <section class="panel"><h2>The rota</h2>
+      <ol class="ag-rota">${shifts.map(sh => `<li><span class="mono ag-rota-when">${esc(day(sh.date))} · ${esc(sh.startsAt)}</span><b>${esc(sh.client)}</b><span class="muted">${esc(sh.title.split(":")[0])}, ${sh.minutes} min</span>
+        <span class="ag-rota-st">${rec(sh.id) ? `✓ ${rec(sh.id).best} of ${rec(sh.id).total} checks` : "Open"}</span><a class="btn ghost" href="#agency-${esc(sh.id)}">${rec(sh.id) ? "Work it again" : "Clock in"}</a></li>`).join("")}
+        <li class="ag-rota-soon"><span class="mono ag-rota-when">COMING</span><b>More shifts are being written</b><span class="muted">Each one a new client and new alerts</span></li></ol></section>
+    <section class="panel"><h2>How a shift works</h2>
+      <ol class="ag-steps">
+        <li><b>Clock in</b><span>Tap your badge. Your shift lead briefs you and hands you the client file.</span></li>
+        <li><b>Work the queue</b><span>Open each alert and search the logs behind it. Most are noise; some aren't.</span></li>
+        <li><b>Ask other teams</b><span>You can't fix everything yourself. Ask, give a reason, and wait for replies.</span></li>
+        <li><b>Hand over and clock out</b><span>Close every alert with evidence, leave notes for the next shift, and get your report.</span></li></ol>
+      <p class="muted">${feedbackHref("PATCH//AGENCY") ? `The Agency is a pilot. <a href="${esc(feedbackHref("PATCH//AGENCY"))}" target="_blank" rel="noopener">Tell us what you think ↗</a>` : ""}</p></section>
+  </div>`;
+};
 // A PATCH//AGENCY shift. Leaving mid-shift restarts it, so route() asks first (agencyShift.inProgress).
 let agencyShift = null;
 function agencyView(id) {
   const sh = SHIFT(id); if (!sh) return VIEWS.missions();
   main.innerHTML = `<div class="view" id="agency-root"><div class="empty">Loading the shift…</div></div>`;
   import("./js/agency/ui.js").then(ui => {
-    if (parseRoute().path !== "missions/agency/" + id) return;
+    if (parseRoute().path !== "agency/" + id) return;
     agencyShift = ui.mount($("agency-root"), sh, {
       done: !!(P.agency || {})[id],
       onAgain: () => agencyView(id),
@@ -269,9 +309,10 @@ function labView(id) {
   main.innerHTML = `<div class="view"><article class="article" style="max-width:900px">
     <a class="link-btn" href="#missions">← Missions</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${l.minutes} min · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.intro)}</p></div>
-    <section class="panel"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
+    ${l.artifact.kind === "headers" ? `<section class="panel"><div class="panel-title"><h2>The email</h2><span class="sim-tag">Simulated email</span></div>
+      ${MAIL.card({ headers: l.artifact.text, body: l.artifact.body, links: l.artifact.links }, { id: "lab-mail", views: ["message", "original"] })}</section>` : `<section class="panel"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
       ${l.artifact.kind === "log" ? `<div class="row"><label class="sr" for="lab-f">Filter lines</label><span class="mono" style="color:var(--sun)">grep</span><input id="lab-f" type="search" placeholder="e.g. Failed password" autocomplete="off" spellcheck="false"></div>` : ""}
-      <pre class="evidence" id="lab-pre" tabindex="0" aria-label="Evidence"></pre></section>
+      <pre class="evidence" id="lab-pre" tabindex="0" aria-label="Evidence"></pre></section>`}
     <section class="stack" id="lab-steps">${l.steps.map((st, i) => `<div class="panel lab-step ${solved.has(i) ? "got" : ""}" data-i="${i}">
       <div class="panel-title"><h2>Question ${i + 1}</h2>${solved.has(i) ? '<span class="eyebrow" style="color:var(--good)">Solved</span>' : ""}</div>
       <p class="q">${esc(st.q)}</p>
@@ -289,7 +330,7 @@ function labView(id) {
     $("lab-pre").innerHTML = shown.map(x => hl ? esc(x).replace(hl, m => `<mark>${m}</mark>`) : esc(x)).join("\n") || "(no matching lines)";
     $("lab-n").textContent = `${shown.length} of ${lines.length} lines`;
   };
-  drawLog();
+  if ($("lab-pre")) drawLog(); else MAIL.wire($("lab-mail").parentElement);
   $("lab-f")?.addEventListener("input", drawLog);
   const solve = (i, box) => {
     solved.add(i); P.labSteps[id] = [...solved];

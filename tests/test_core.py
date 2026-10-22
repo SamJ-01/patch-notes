@@ -417,6 +417,13 @@ class DeviceLibrary(unittest.TestCase):
         self.assertNotRegex(src, r"^\s*import ", "hw.js is inlined into the page and can't import")
         self.assertIn("/*__HW__*/", build.assemble_template())
 
+    def test_inlined_email_component_is_self_contained(self):
+        """static/js/mail.js is inlined the same way, and keeps everything inside MAIL so it can't clash with page names."""
+        src = (ROOT / "static" / "js" / "mail.js").read_text()
+        self.assertNotRegex(src, r"^\s*import ", "mail.js is inlined into the page and can't import")
+        self.assertEqual(re.findall(r"^export (?:const|function|let) (\w+)", src, re.M), ["MAIL"], "one global: MAIL")
+        self.assertIn("/*__MAIL__*/", build.assemble_template())
+
 
 class ContentIntegrity(unittest.TestCase):
     """Catch broken cross-references before they reach the live site."""
@@ -596,6 +603,12 @@ class ContentIntegrity(unittest.TestCase):
         for m in content("phish.json"):
             self.assertIn(m["verdict"], ("phish", "legit"))
             self.assertTrue(m["clues"])
+            # Each clue is pinned to the part of the email it's about (static/js/mail.js), or to nothing.
+            for c in m["clues"]:
+                self.assertIn(c["at"], ("", "from", "replyTo", "subject", "body", "link", "attachment"), c["text"])
+                self.assertTrue(c["text"])
+                if c["at"] == "link":
+                    self.assertTrue(m.get("link"), c["text"])
 
 
 if __name__ == "__main__":

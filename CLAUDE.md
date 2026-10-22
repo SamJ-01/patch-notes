@@ -7,7 +7,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - The page: `site_template.html` (HTML skeleton, ~5 KB) + `src/site.css` + `src/app/*.js`, joined by `build.assemble_template()`.
   The app files share one scope and run in name order: 01-core (DATA, helpers), 02-glossary, 03-progress, 04-home,
   05-news-cves, 06-learn (lessons, certs, loop), 07-labs (missions, labs, Agency), 08-you (progress, play, careers),
-  09-shell (status bar, palette, router). Views are `VIEWS.x` / `xxxView()` functions; routes in `parseRoute()`.
+  09-shell (status bar, palette, router). Nav tabs (keys 1-7): home, learn, practise, agency, you, news, cve-radar. Views are `VIEWS.x` / `xxxView()` functions; routes in `parseRoute()`.
 - `static/js/`: ES modules loaded on demand. `missions/engine.js` (pure rules, no DOM), `missions/ui.js`, `missions/layout.js`,
   `exam.js` (cert practice + `readiness()`), `labs/*.js`, `hw.js` (device drawings), `flow.js`, `concept.js`.
 - `content/`: all content as JSON. Missions in `content/missions/*.json` and Agency shifts in `content/agency/*.json` (picked up automatically), certs in `content/certs/`,
@@ -38,8 +38,12 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   phishing triage ("Which email was it?", `phish-triage.json`: the email inspector, `scenario.emails` with raw headers parsed by
   `engine.parseHeaders`; findings come from `engine.inspectEmail`). Keep its headers, log lines and findings in step: tests check they agree.
 - Exam prep: Network+ N10-009 (25 objectives, 60 questions, "Am I ready?" panel), Security+ map (5 domains, 42 questions, mock exams).
-- PATCH//AGENCY pilot: one SOC shift (`content/agency/shift-01.json`, `static/js/agency/`, route `#agency-shift-01`,
-  tests `tests/agency.test.mjs`). Design and decisions: `docs/agency-pilot.md`. Logs are searched with `engine.searchLines`.
+- PATCH//AGENCY pilot: its own nav tab and hub (`#agency`, `VIEWS.agency` in 07-labs: badge, time clock, rota). A shift
+  (`content/agency/shift-01.json`, `static/js/agency/`, route `#agency-shift-01`, tests `tests/agency.test.mjs`) opens with
+  clocking in (badge tap, the lead's briefing as chat, the client file), then the desk (queue, alert, messages), then clock out.
+  Design and decisions: `docs/agency-pilot.md`. Logs are searched with `engine.searchLines`.
+- Emails anywhere on the site use `static/js/mail.js` (`MAIL.card`/`MAIL.wire`; inlined into the page like hw.js): a mail
+  app look, links that reveal where they go, Details/Original views from raw headers, clues pinned with `{ at, text }`.
 - "How an app talks to the internet", two labs on `static/js/labs/journey.js` (tests `tests/journey.test.mjs`), content in `labs.json` `chapters`:
   part 1 `#lab-finding-the-server` (DNS, ports, ARP, routing, NAT, tiers), part 2 `#lab-one-request` (HTTP, TCP/UDP, HTTPS, load balancer,
   reverse proxy, firewall, WebSockets). Each stop is a pure model plus a scene keyed by chapter id; animated handlers use `guard()`.

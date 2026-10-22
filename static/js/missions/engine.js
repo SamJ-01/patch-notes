@@ -6,6 +6,8 @@
 // UI turns into animations, narration and text. Because the engine is pure, every learner
 // path (right answers, wrong answers, workarounds, resets) can be tested without a browser.
 
+import { MAIL } from "../mail.js";
+
 const clone = value => JSON.parse(JSON.stringify(value));
 
 export const get = (obj, path) => path.split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
@@ -216,40 +218,8 @@ export function searchLog(scenario, state, query) {
 }
 
 // ---------- Email inspector (scenario.emails: { org, intro, items: [{ id, headers, body, links, findings }] })
-// Parse raw RFC 5322 headers into the parts an analyst reads: who it claims to be from, where replies go,
-// the servers it passed through and the receiving server's SPF, DKIM and DMARC verdicts (RFC 8601).
-// The scenario stores the raw headers only, so the picture can never disagree with them.
-const addr = v => {
-  const m = String(v || "").match(/^\s*(?:"?([^"<]*?)"?\s*)?<([^>]+)>\s*$/) || [null, "", String(v || "").trim()];
-  const address = m[2].trim();
-  return { name: (m[1] || "").trim(), address, domain: address.includes("@") ? address.split("@").pop().toLowerCase() : "" };
-};
-export function parseHeaders(raw) {
-  const fields = [];
-  for (const line of String(raw || "").split(/\r?\n/)) {
-    if (/^[ \t]/.test(line) && fields.length) fields.at(-1)[1] += " " + line.trim();
-    else { const i = line.indexOf(":"); if (i > 0) fields.push([line.slice(0, i).trim().toLowerCase(), line.slice(i + 1).trim()]); }
-  }
-  const one = n => fields.find(([k]) => k === n)?.[1] || "";
-  // Received headers are added on top, so the first one is the last hop: reverse them to read in order.
-  const received = fields.filter(([k]) => k === "received").map(([, v]) => {
-    const m = v.match(/^from\s+(\S+)\s+\(([^)]*?)\[([\d.:a-fA-F]+)\]\)\s+by\s+([^\s;]+)/);
-    return m ? { helo: m[1], rdns: m[2].trim(), ip: m[3], by: m[4] } : { helo: "", rdns: "", ip: "", by: (v.match(/by\s+([^\s;]+)/) || [])[1] || "" };
-  }).reverse();
-  const results = fields.filter(([k]) => k === "authentication-results").map(([, v]) => v).join("; ");
-  const verdict = k => { const m = results.match(new RegExp(`\\b${k}=(\\w+)([^;]*)`)); return m ? { result: m[1].toLowerCase(), detail: m[2].trim() } : { result: "none", detail: "" }; };
-  return {
-    from: addr(one("from")), replyTo: one("reply-to") ? addr(one("reply-to")) : null, returnPath: addr(one("return-path")),
-    to: one("to"), subject: one("subject"), date: one("date"), messageId: one("message-id"),
-    received, auth: { spf: verdict("spf"), dkim: verdict("dkim"), dmarc: verdict("dmarc") },
-  };
-}
-// Where a link really goes: the host in its href, against the text the reader sees.
-export function linkFacts({ text, href }) {
-  const host = s => (String(s).match(/^[a-z][\w+.-]*:\/\/([^/:?#]+)/i) || [])[1]?.toLowerCase() || "";
-  const real = host(href), shown = host(text);
-  return { text, href, real, shown, mismatch: !!shown && shown !== real };
-}
+// Headers are read by the site's shared email component (static/js/mail.js), so every email on the site parses alike.
+export const parseHeaders = MAIL.parseHeaders, linkFacts = MAIL.linkFacts;
 // Open a reported email: its findings are recorded as evidence (tool "email").
 export function inspectEmail(scenario, state, id) {
   const email = scenario.emails?.items.find(e => e.id === id);
