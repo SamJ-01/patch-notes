@@ -106,7 +106,9 @@ const headArt = k => `<span class="head-art card-art" aria-hidden="true">${scene
 const CARD_PHOTOS = new Set(["dhcp", "dns", "phish-triage", "ssh-brute", "hashing", "permissions",
   "osi-model", "topologies", "ports-protocols", "subnetting", "tcp-handshake", "cable-wiring",
   "finding-the-server", "one-request", "vlans", "network-builder", "telnet-ssh", "linux-terminal",
-  "net-detective", "log-detective", "header-inspector", "cvss-builder", "recon-basics", "play"]);
+  "net-detective", "log-detective", "header-inspector", "cvss-builder", "recon-basics", "play",
+  // Lessons (the Learn page)
+  "cia-triad", "frameworks", "phishing", "ransomware", "malware", "zero-day"]);
 // Tools reuse the picture of the lab they belong with.
 const PHOTO_ALIAS = { "subnet-calc": "subnetting" };
 const cardPhoto = (src, w = 506, h = 253) => `<span class="card-art photo"><img class="card-img" src="${esc(src)}" alt="" width="${w}" height="${h}" loading="lazy" decoding="async"></span>`;
