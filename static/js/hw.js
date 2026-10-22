@@ -31,11 +31,12 @@ export const HW = {
     <rect class="hw-body" x="-20" y="4" width="40" height="13" rx="6.5"/><circle class="hw-led" cx="0" cy="10.5" r="1.7"/>`,
   cloud: `<path class="hw-body hw-cloud" d="M-17 16a12 12 0 0 1-2-23.8a15 15 0 0 1 28.5-5.2a11.5 11.5 0 0 1 11 29z"/>
     <path class="hw-line hw-globe" d="M-6 6a7 7 0 1 0 14 0a7 7 0 1 0-14 0M-6 6h14M1-1c-3 4-3 10 0 14c3-4 3-10 0-14"/>`,
-  // The attacker: a hooded figure behind a laptop, face in shadow.
+  // The attacker: a hooded figure behind a laptop, face in shadow. We see the back of the lid (logo, no keyboard),
+  // tilted away from us, so the laptop faces them.
   attacker: `<path class="hw-body hw-threat" d="M-27 19c0-10 7-15 15-17h24c8 2 15 7 15 17z"/>
     <path class="hw-body hw-threat" d="M0-24c-10 0-16 8-16 18 0 5 2 9 4 11h24c2-2 4-6 4-11 0-10-6-18-16-18z"/>
     <path class="hw-face" d="M0-16c-6 0-9 5-9 10 0 4 3 7 9 7s9-3 9-7c0-5-3-10-9-10z"/><path class="hw-glint" d="M-5-5h3.5M1.5-5h3.5"/>
-    <rect class="hw-body" x="-17" y="2" width="34" height="14" rx="2"/><path class="hw-body" d="M-22 16h44l-2 3h-40z"/><circle class="hw-led" cx="0" cy="9" r="1.6"/>`,
+    <path class="hw-body" d="M-15 1h30l2 16h-34z"/><path class="hw-line" d="M-16 19.5h32"/><circle class="hw-led" cx="0" cy="9" r="1.8"/>`,
 };
 
 export const HW_INFO = {
