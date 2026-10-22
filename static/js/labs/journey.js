@@ -292,7 +292,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   const $ = id => root.querySelector("#" + id);
   function stops() {
     $("jr-stops").innerHTML = C.map((c, i) => `<li class="${done.has(c.id) ? "done" : ""}${i === at ? " here" : ""}"><button type="button" data-stop="${i}"${i === at ? ' aria-current="step"' : ""}>
-      <span class="jr-dot" aria-hidden="true">${done.has(c.id) ? "✓" : i + 1}</span><span class="jr-name">${esc(c.label)}</span><span class="sr-only">${done.has(c.id) ? " (done)" : ""}</span></button></li>`).join("");
+      <span class="jr-dot" aria-hidden="true">${i + 1}${done.has(c.id) ? '<span class="st-tick" aria-hidden="true">✓</span>' : ""}</span><span class="jr-name">${esc(c.label)}</span><span class="sr-only">${done.has(c.id) ? " (done)" : ""}</span></button></li>`).join("");
   }
   $("jr-stops").addEventListener("click", e => { const b = e.target.closest("[data-stop]"); if (b) { at = Number(b.dataset.stop); show(true); } });
   function show(focus) {

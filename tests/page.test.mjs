@@ -179,3 +179,11 @@ test("the page's markText matches the engine's (one behaviour everywhere)", asyn
   const engine = await import("../static/js/missions/engine.js");
   for (const [t, terms] of [['"GET /t" <b>', ["GET", "t"]], ["abcabc", ["bca", "ab"]], ["Failed password for root", ["failed password"]]]) assert.equal(markText(t, terms), engine.markText(t, terms));
 });
+
+// Numbered steps keep their numbers when done (a tick badge is added), so a list never reads 1, 2, ✓, 4.
+test("numbered steps never swap their number for a tick", async () => {
+  const { readdirSync, readFileSync: rf } = await import("node:fs");
+  const files = [...readdirSync(new URL("../src/app/", import.meta.url)).map(f => new URL(`../src/app/${f}`, import.meta.url)),
+    ...["labs/journey.js"].map(f => new URL(`../static/js/${f}`, import.meta.url))];
+  for (const f of files) assert.doesNotMatch(rf(f, "utf8"), /\? "✓" : (i \+ 1|"\d")/, String(f));
+});

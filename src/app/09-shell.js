@@ -278,6 +278,36 @@ document.addEventListener("click", e => {
 });
 window.addEventListener("hashchange", route);
 
+// Scroll boxes (terminals, logs, raw headers, wide tables) move along one axis per gesture, never diagonally.
+// Wheel and trackpad: only the stronger axis moves the box; once the box can't go further that way, the page
+// carries on. Touch: CSS leaves up/down to the browser (touch-action: pan-y) and sideways drags move only sideways.
+const SCROLL_BOX = ".log-out, .term-out, .evidence, .em-raw, .tap-capture, .pm-ls, .pm-scroll, .jr-code pre, .vl-table, .tbl-wrap, .table-wrap, .chart, .ag-comms";
+const canScroll = (el, axis, d) => axis === "x"
+  ? (d < 0 ? el.scrollLeft > 0 : el.scrollLeft + el.clientWidth < el.scrollWidth - 1)
+  : (d < 0 ? el.scrollTop > 0 : el.scrollTop + el.clientHeight < el.scrollHeight - 1);
+document.addEventListener("wheel", e => {
+  const el = e.target.closest?.(SCROLL_BOX);
+  if (!el || e.ctrlKey) return;
+  const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientHeight : 1, dx = e.deltaX * k, dy = e.deltaY * k;
+  if (!dx || !dy) return;  // already one axis: the browser's own scrolling is fine
+  e.preventDefault();
+  if (Math.abs(dx) > Math.abs(dy)) { if (canScroll(el, "x", dx)) el.scrollLeft += dx; }
+  else if (canScroll(el, "y", dy)) el.scrollTop += dy;
+  else window.scrollBy(0, dy);
+}, { passive: false });
+let drag = null;
+document.addEventListener("touchstart", e => {
+  const el = e.touches.length === 1 && e.target.closest?.(SCROLL_BOX);
+  drag = el && el.scrollWidth > el.clientWidth + 1 ? { el, x: e.touches[0].clientX, y: e.touches[0].clientY, left: el.scrollLeft, axis: null } : null;
+}, { passive: true });
+document.addEventListener("touchmove", e => {
+  if (!drag || e.touches.length !== 1) return;
+  const dx = e.touches[0].clientX - drag.x, dy = e.touches[0].clientY - drag.y;
+  if (!drag.axis && Math.hypot(dx, dy) > 8) drag.axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+  if (drag.axis === "x") drag.el.scrollLeft = drag.left - dx;
+}, { passive: true });
+document.addEventListener("touchend", () => { drag = null; }, { passive: true });
+
 $("ver").textContent = "v" + DATA.meta.version;
 $("foot-meta").textContent = `Updated ${DATA.meta.generated}.` + (DATA.site.author ? ` Built by ${DATA.site.author}.` : "");
 $("xp").addEventListener("click", () => { location.hash = "progress"; });

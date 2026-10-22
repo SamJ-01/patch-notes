@@ -70,7 +70,7 @@ function drawRoute() {
       ${steps.map((st, i) => { const s = L.stops[i], state = st.done ? "done" : i === next ? "next" : "todo";
         return `<a href="${st.href}" class="route-stop ${state}" aria-label="${esc(`Stop ${i + 1} of ${steps.length}: ${st.label} (${KIND_WORD[st.kind] || st.kind})${st.done ? ", done" : i === next ? ", next" : ""}`)}">
           <g transform="translate(${s.x},${s.y})">${state === "next" ? '<circle class="route-pulse" r="27"/>' : ""}<circle class="route-dot" r="19"/>
-          <text class="route-n" y="5" text-anchor="middle">${st.done ? "✓" : i + 1}</text>
+          <text class="route-n" y="5" text-anchor="middle">${i + 1}</text>${st.done ? '<g class="route-tick" transform="translate(14,-14)"><circle r="8"/><path d="M-3.5 0 l2.5 2.5 l4.5 -5"/></g>' : ""}
           <text class="route-kind" y="38" text-anchor="middle">${esc((KIND_WORD[st.kind] || st.kind).toUpperCase())}</text>
           ${routeWrap(st.label, maxCh).map((ln, k) => `<text class="route-lbl" y="${56 + k * 17}" text-anchor="middle">${esc(ln)}</text>`).join("")}</g></a>`; }).join("")}
       <g class="route-finish${next === -1 ? " done" : ""}" transform="translate(${L.finish.x},${L.finish.y})" aria-hidden="true"><rect x="-26" y="-22" width="52" height="44" rx="10"/><text y="5" text-anchor="middle">${next === -1 ? "★" : "FINISH"}</text></g>

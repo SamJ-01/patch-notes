@@ -89,7 +89,7 @@ function drawFlags() {
   const got = P.flags || {};
   $("game").innerHTML = `<div class="game-bar"><span>Capture the flag</span><span>${Object.keys(got).length}/3 captured · 50 XP each</span></div>
     <p class="muted">Three flags are hidden in this site. Each looks like <span class="mono">flag{...}</span>.</p>
-    <div class="flags">${FLAG_INFO.map((f, i) => `<div class="flag ${got[i] ? "got" : ""}"><span class="st">${got[i] ? "✓" : i + 1}</span><div class="stack" style="gap:4px"><h3>${esc(f.name)}</h3><p>${esc(f.hint)}</p></div></div>`).join("")}</div>
+    <div class="flags">${FLAG_INFO.map((f, i) => `<div class="flag ${got[i] ? "got" : ""}"><span class="st">${i + 1}${got[i] ? '<span class="st-tick" aria-hidden="true">✓</span><span class="sr-only"> (captured)</span>' : ""}</span><div class="stack" style="gap:4px"><h3>${esc(f.name)}</h3><p>${esc(f.hint)}</p></div></div>`).join("")}</div>
     <form class="flag-form" id="flag-form"><label class="sr" for="flag-in">Flag</label><input id="flag-in" placeholder="flag{...}" autocomplete="off" spellcheck="false"><button class="btn brand" type="submit">Submit</button></form>
     <div id="flag-msg" aria-live="polite"></div>
     <p class="muted" style="font-size:0.88rem">Useful free tool: <a href="https://gchq.github.io/CyberChef/" target="_blank" rel="noopener">CyberChef ↗</a>, made by GCHQ for decoding and transforming data.</p>`;

@@ -1818,3 +1818,14 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .ag-mail span:nth-child(2) { overflow-wrap: anywhere; }
 @media (max-width: 600px) { .ag-mail { grid-template-columns: minmax(0, 1fr) auto; } .ag-mail span:nth-child(2) { grid-column: 1 / -1; grid-row: 2; } }
 #ag-mailview .em { margin-top: 8px; }
+/* Finished steps keep their number (1, 2, 3...) and gain a tick, so a list never reads 1, 2, ✓, 4. */
+.steps .st { position: relative; }
+.st-tick { position: absolute; top: -7px; right: -7px; display: grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--good); color: var(--bg); font-size: 0.62rem; line-height: 1; }
+.route-tick circle { fill: var(--good); stroke: var(--bg); stroke-width: 2; }
+.route-tick path { fill: none; stroke: var(--bg); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.loop-dot, .flag .st, .jr-dot { position: relative; }
+/* Scroll boxes move one way at a time: the browser does up/down, a sideways drag only goes sideways (09-shell.js),
+   and sideways swipes inside them don't turn into the browser's back gesture. Pinch-zoom still works. */
+.log-out, .term-out, .evidence, .em-raw, .tap-capture, .pm-ls, .pm-scroll, .jr-code pre, .vl-table, .tbl-wrap, .table-wrap, .chart, .ag-comms {
+  touch-action: pan-y pinch-zoom; overscroll-behavior-x: contain;
+}

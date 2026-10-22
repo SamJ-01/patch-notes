@@ -47,7 +47,7 @@ function pathView(id) {
     <a class="link-btn" href="#learn">← Learn</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">Learning path · ${done}/${steps.length} done</div><h1>${esc(p.title)}</h1><p class="hook">${esc(p.blurb)}</p></div>
     <div class="progress"><span class="trk" aria-hidden="true" style="flex-basis:100%"><i style="width:${Math.round(done / steps.length * 100)}%"></i></span></div>
-    <ol class="steps">${steps.map((st, i) => `<li class="${st.done ? "got" : ""}"><span class="st">${st.done ? "✓" : i + 1}</span><span class="stack" style="gap:2px"><span class="eyebrow">${esc(st.kind)}</span><a href="${st.href}"${st.flags ? ' data-play-mode="flags"' : st.kind === "game" ? ' data-play-mode="phish"' : ""}>${esc(st.label)}</a></span></li>`).join("")}</ol>
+    <ol class="steps">${steps.map((st, i) => `<li class="${st.done ? "got" : ""}"><span class="st">${i + 1}${st.done ? '<span class="st-tick" aria-hidden="true">✓</span><span class="sr-only"> (done)</span>' : ""}</span><span class="stack" style="gap:2px"><span class="eyebrow">${esc(st.kind)}</span><a href="${st.href}"${st.flags ? ' data-play-mode="flags"' : st.kind === "game" ? ' data-play-mode="phish"' : ""}>${esc(st.label)}</a></span></li>`).join("")}</ol>
     <p class="muted">${P.paths[p.id] ? `Completed on ${esc(P.paths[p.id])}. Nice work.` : `Finish every step to earn <strong>+${PATH_XP} XP</strong> and the Pathfinder badge.`}${career ? ` See the <a href="#careers">${esc(career.role)}</a> career guide.` : ""}</p>
   </article></div>`;
 }
@@ -226,7 +226,8 @@ function topicStages(lessonId) {
 // The horizontal stage strip. `current` is the stage the learner is on now (not a link).
 function loopStrip(lessonId, current) {
   const stages = topicStages(lessonId); if (stages.length < 2) return "";
-  const mark = s => s.status === "done" ? "✓" : s.key === "understand" ? "1" : s.key === "experiment" ? "2" : s.key === "diagnose" ? "3" : "4";
+  // Number the stages this topic actually has (some have no Diagnose step), so it never reads 1, 2, 4.
+  const mark = s => `${stages.indexOf(s) + 1}${s.status === "done" ? '<span class="st-tick" aria-hidden="true">✓</span>' : ""}`;
   const node = s => { const [label, sub] = LOOP_META[s.key], here = s.key === current;
     const inner = `<span class="loop-dot">${mark(s)}</span><span class="loop-lbl"><b>${label}</b><span>${s.count || sub}</span></span>`;
     return here ? `<span class="loop-node ${s.status} here" aria-current="step">${inner}</span>`
