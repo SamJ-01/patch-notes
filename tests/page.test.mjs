@@ -196,3 +196,17 @@ test("home: a newcomer is someone with no XP and nothing finished", () => {
   assert.equal(check({ xp: 20, done: {}, labs: {}, missions: {}, agency: {} }), false, "a daily question answered counts as started");
   assert.equal(check({ xp: 0, done: {}, labs: {}, missions: {}, agency: { "shift-01": { best: 3 } } }), false);
 });
+
+// Regression: "Next" used to be the first unfinished step anywhere in the path, so two unfinished lessons
+// (phishing, then passwords) pointed back at each other.
+test("next step: goes forward through a path, and only goes back for skipped steps at the end", () => {
+  const src = template.match(/const afterInPath = [\s\S]*?\n};\n/)[0];
+  const ctx = {}; vm.createContext(ctx); vm.runInContext(src + "; this.next = (...a) => JSON.stringify(afterInPath(...a));", ctx);
+  const at = id => JSON.stringify({ step: steps.find(s => s.id === id), back: id === "a" });
+  const steps = ["a", "b", "c", "d"].map(id => ({ type: "lesson", id, done: false }));
+  assert.equal(ctx.next(steps, "lesson", "b"), at("c"), "b leads on to c, not back to a");
+  steps[2].done = steps[3].done = true;
+  assert.equal(ctx.next(steps, "lesson", "b"), at("a"), "with the rest done, it points at the skipped a");
+  steps[0].done = true;
+  assert.equal(ctx.next(steps, "lesson", "b"), undefined, "nothing left");
+});

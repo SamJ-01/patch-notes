@@ -499,7 +499,7 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .hw-cloud, .hw-globe { stroke: var(--good); }
 .hw-threat { stroke: var(--bad); }
 .hw-face { fill: #05080C; stroke: none; }
-.hw-eye { fill: var(--bad); }
+.hw-prompt { fill: none; stroke: var(--bad); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 @media (prefers-reduced-motion: no-preference) {
   .hw-live .hw-led { animation: hw-blink 2.4s steps(1) infinite; }
   .hw-live .hw:nth-child(3n) .hw-led { animation-delay: -0.8s; } .hw-live .hw:nth-child(3n+1) .hw-led { animation-delay: -1.7s; }

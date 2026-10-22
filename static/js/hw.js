@@ -31,9 +31,10 @@ export const HW = {
     <rect class="hw-body" x="-20" y="4" width="40" height="13" rx="6.5"/><circle class="hw-led" cx="0" cy="10.5" r="1.7"/>`,
   cloud: `<path class="hw-body hw-cloud" d="M-17 16a12 12 0 0 1-2-23.8a15 15 0 0 1 28.5-5.2a11.5 11.5 0 0 1 11 29z"/>
     <path class="hw-line hw-globe" d="M-6 6a7 7 0 1 0 14 0a7 7 0 1 0-14 0M-6 6h14M1-1c-3 4-3 10 0 14c3-4 3-10 0-14"/>`,
-  attacker: `<path class="hw-body hw-threat" d="M-19 22v-5a19 13 0 0 1 38 0v5z"/>
-    <path class="hw-body hw-threat" d="M-14-3c0-11 6-18 14-18s14 7 14 18v5c0 7-6 12-14 12s-14-5-14-12z"/>
-    <path class="hw-screen hw-face" d="M-8-1h16v4c0 4.5-3.5 7-8 7s-8-2.5-8-7z"/><circle class="hw-eye" cx="-3.5" cy="2.5" r="1.3"/><circle class="hw-eye" cx="3.5" cy="2.5" r="1.3"/>`,
+  // The attacker as their machine (a laptop in the threat colour, a command prompt on screen), in the same
+  // style as the other devices rather than a cartoon face.
+  attacker: `<rect class="hw-body hw-threat" x="-24" y="-21" width="48" height="31" rx="3"/><rect class="hw-face" x="-21" y="-18" width="42" height="25" rx="1.5"/>
+    <path class="hw-prompt" d="M-14-11l6 5-6 5M-4 0h10"/><path class="hw-body hw-threat" d="M-31 11h62l-4 7h-54z"/><path class="hw-line" d="M-6 14.5h12"/>`,
 };
 
 export const HW_INFO = {

@@ -238,11 +238,18 @@ function loopStrip(lessonId, current) {
 // What to do after finishing something: the next unfinished step of a learning path that includes it
 // (paths already in progress first), otherwise practice for a lesson or the lesson behind a lab.
 const pathRank = p => (P.paths[p.id] ? -1 : pathSteps(p).some(st => st.done) ? 1 : 0);
+// The first unfinished step after this one; only when everything after it is done, an earlier one that was skipped.
+// (Taking the first unfinished step overall sent a learner back and forth between two lessons they hadn't finished.)
+const afterInPath = (steps, type, id) => {
+  const i = steps.findIndex(st => st.type === type && st.id === id);
+  const ahead = steps.slice(i + 1).find(st => !st.done);
+  return ahead ? { step: ahead, back: false } : (s => s && { step: s, back: true })(steps.slice(0, i).find(st => !st.done));
+};
 function nextStep(type, id) {
   const paths = DATA.paths.filter(p => p.steps.some(st => st.type === type && st.id === id)).sort((a, b) => pathRank(b) - pathRank(a));
   for (const p of paths) {
-    const n = pathSteps(p).find(st => !st.done && !(st.type === type && st.id === id));
-    if (n) return { ...n, why: `Next in ${p.title}` };
+    const n = afterInPath(pathSteps(p), type, id);
+    if (n) return { ...n.step, why: n.back ? `Still to do in ${p.title}` : `Next in ${p.title}` };
   }
   // Follow the topic's learning loop: the next stage that isn't done, in order.
   const lessonId = type === "lesson" ? id : type === "lab" ? DATA.labs.find(x => x.id === id)?.lesson : MISSION(id)?.lesson;
