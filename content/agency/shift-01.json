@@ -275,6 +275,7 @@
  "alerts": [
   {
    "id": "a1",
+   "ref": "SOC-24117",
    "title": "Multiple failed SSH logins on web01",
    "time": "01:16",
    "severity": "medium",
@@ -335,6 +336,7 @@
   },
   {
    "id": "a2",
+   "ref": "SOC-24131",
    "title": "Impossible travel: j.patel",
    "time": "06:49",
    "severity": "high",
@@ -402,6 +404,7 @@
   },
   {
    "id": "a3",
+   "ref": "SOC-24126",
    "title": "Web server 404 spike on web01",
    "time": "06:42",
    "severity": "medium",
@@ -461,6 +464,7 @@
   },
   {
    "id": "a4",
+   "ref": "SOC-24129",
    "title": "New account added to the sudo group on files01",
    "time": "06:14",
    "severity": "high",
@@ -536,6 +540,7 @@
   },
   {
    "id": "a5",
+   "ref": "SOC-24133",
    "title": "Password spray against the VPN",
    "severity": "medium",
    "arrives": {
@@ -608,6 +613,7 @@
  "departments": {
   "identity": {
    "name": "Identity & Access",
+   "contact": { "name": "Priya Raman", "role": "Identity & Access" },
    "requests": [
     {
      "id": "lock-svcbackup2",
@@ -680,6 +686,7 @@
   },
   "netops": {
    "name": "Network Operations",
+   "contact": { "name": "Tomasz Nowak", "role": "Network Operations" },
    "requests": [
     {
      "id": "block-77",
@@ -732,6 +739,7 @@
   },
   "servicedesk": {
    "name": "Service Desk",
+   "contact": { "name": "Grace Adeyemi", "role": "Service Desk" },
    "requests": [
     {
      "id": "call-jpatel",
@@ -767,6 +775,7 @@
   },
   "client": {
    "name": "Dana Whitfield (Pellow & Finch IT)",
+   "contact": { "name": "Dana Whitfield", "role": "Client: Pellow & Finch IT" },
    "requests": [
     {
      "id": "report-incident",

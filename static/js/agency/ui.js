@@ -2,20 +2,26 @@
 // handover and the debrief. Rules live in shift.js; this only renders the events it returns.
 import * as A from "./shift.js";
 import { markText } from "../missions/engine.js";
+import { DESK } from "../desk.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 // Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
 const gl = (t, n = 3, seen) => (globalThis.PN_gloss ? globalThis.PN_gloss(t, n, seen) : esc(t));
 const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
 const STATUS_WORDS = { pending: "waiting for a reply", asks: "they asked for a reason", done: "done", refused: "refused" };
+// Ticket numbers: alerts carry their own (ref in the shift file); requests are numbered in the order you raise them.
+const reqNo = (state, ref) => { const i = state.requests.map(r => r.ref).lastIndexOf(ref); return i < 0 ? "" : `REQ-${5301 + i}`; };
 
 export function mount(root, shift, { done = false, onComplete = () => {}, onAgain = null, feedback = "" } = {}) {
   let state, selected = null, source = null;
   const all = A.findings(shift);
   const clockAt = m => { const [h, mi] = shift.startsAt.split(":").map(Number), t = h * 60 + mi + m; return `${String(Math.floor(t / 60) % 24).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`; };
 
-  const leadName = shift.lead.split(",")[0];
-  const initials = n => String(n).split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join("");
+  const leadName = shift.lead.split(",")[0], leadRole = (shift.lead.split(",")[1] || "").trim();
+  const initials = DESK.initials;
+  // Who answers for a team: its named contact, or the team itself.
+  const contact = ref => { const d = shift.departments[String(ref).split(":")[0]] || {}; return { from: d.contact?.name || d.name, role: d.contact?.role || d.name }; };
+  const tref = a => a.ref || `SOC-${a.id}`;
   const day = shift.date.replace(/^(\w{3})\w*\s+(\d+)\s+(\w{3}).*$/, "$1 $2 $3").toUpperCase();
   const waiting = shift.alerts.filter(a => (a.arrives?.at ?? 0) === 0).length;
   // The briefing arrives as chat messages, a sentence or two each.
@@ -32,7 +38,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
           <p class="ag-stamp" id="ag-stamp" hidden></p>
         </div>
         <div class="ag-in-side">
-          <ol class="ag-chat" id="ag-chat" aria-live="polite" aria-label="Messages from ${esc(leadName)}"></ol>
+          <ol class="dk-msgs ag-chat" id="ag-chat" aria-live="polite" aria-label="Messages from ${esc(leadName)}"></ol>
           <div class="ag-dossier" id="ag-dossier" hidden><div class="eyebrow">Client file</div><h2>${esc(shift.client)}</h2>
             <dl class="fields"><div><dt>Alerts waiting</dt><dd>${waiting}, with more likely</dd></div><div><dt>Logs you can search</dt><dd>${Object.keys(shift.sources).length}</dd></div><div><dt>Shift length</dt><dd>about ${shift.minutes} min</dd></div>${done ? `<div><dt>Your record</dt><dd>✓ worked before</dd></div>` : ""}</dl>
             <button class="btn brand" type="button" id="ag-desk-go">Take the desk</button></div>
@@ -45,13 +51,13 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         <span class="ag-logo" aria-hidden="true">PATCH<b>//</b>AGENCY</span>
         <span class="ag-clock"><span class="eyebrow">Shift time</span> <b class="mono" id="ag-clock"></b></span>
         <span class="ag-count" id="ag-count"></span>
-        <span class="ag-lead"><span class="ag-av" aria-hidden="true">${esc(initials(leadName))}</span>${esc(shift.lead)}</span>
+        <span class="ag-lead"><span class="dk-av ag-lead-av" style="--dk-h:${DESK.hue(leadRole || "Shift lead")}" aria-hidden="true">${esc(initials(leadName))}</span>${esc(shift.lead)}</span>
         <button class="btn ghost" type="button" id="ag-wait">Wait ${shift.costs.wait} min</button>
       </div>
       <div class="ag-grid">
         <nav class="panel ag-queue" aria-labelledby="ag-q-h"><h2 id="ag-q-h">Alert queue</h2><ol id="ag-queue"></ol></nav>
         <section class="panel ag-alert" id="ag-alert"></section>
-        <section class="panel ag-comms" aria-labelledby="ag-c-h" tabindex="0"><h2 id="ag-c-h">Messages</h2><ol class="ag-msgs" id="ag-inbox" aria-live="polite"></ol></section>
+        <section class="panel ag-comms" aria-labelledby="ag-c-h" tabindex="0"><h2 id="ag-c-h">Team chat</h2>${DESK.channel(`${shift.client.split(/\s+/)[0].toLowerCase()}-soc`, "you, your lead and the teams you ask", 'id="ag-inbox" aria-live="polite"')}</section>
       </div>
       <section class="panel ag-hand" id="ag-hand" hidden></section>
       <section class="panel debrief ag-report" id="ag-debrief" hidden></section>
@@ -65,25 +71,25 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     state = r.state;
     const notes = [];
     for (const ev of r.events) {
-      if (ev.type === "arrive") { inbox(`<b>New alert:</b> ${esc(ev.title)}`, "", "Alert system"); notes.push(`New alert: ${ev.title}`); }
+      if (ev.type === "arrive") { const a = A.alertById(shift, ev.id); inbox({ sys: true, ref: a ? tref(a) : "", html: `New alert: <b>${esc(ev.title)}</b>` }); notes.push(`New alert: ${ev.title}`); }
       else if (ev.type === "search") showSearch(ev);
-      else if (ev.type === "sent") inbox(`To <b>${esc(ev.dept)}</b>: ${esc(ev.label)}${ev.attached ? ` <span class="muted">(attached: ${esc(ev.attached)})</span>` : ""}. Expect a reply by ${clockAt(ev.due)}.`, "", "You");
+      else if (ev.type === "sent") inbox({ me: true, ref: reqNo(state, ev.ref), status: "pending", html: `<p>@${esc(contact(ev.ref).from)}, raised for <b>${esc(ev.dept)}</b>: ${esc(ev.label)}.</p>${ev.attached ? `<p class="dk-attach"><span aria-hidden="true">📎</span> ${esc(ev.attached)}</p>` : ""}<p class="dk-note">Reply expected by ${clockAt(ev.due)}.</p>` });
       else if (ev.type === "reply") {
-        inbox(`<span class="ag-st ${esc(ev.outcome)}">${esc(STATUS_WORDS[ev.outcome])}</span> ${gl(ev.text, 2)}`, ev.outcome, ev.dept, ev.at);
+        inbox({ ...contact(ev.ref), ref: reqNo(state, ev.ref), status: ev.outcome, at: ev.at, html: `<p>${gl(ev.text, 2)}</p>` });
         notes.push(`Reply from ${ev.dept}`);
       }
-      else if (ev.type === "wait") inbox(`Waited ${ev.minutes} minutes.`, "", "You");
+      else if (ev.type === "wait") inbox({ sys: true, from: "Shift clock", html: `You waited ${ev.minutes} minutes.` });
       else if (ev.type === "closed") notes.push(`Closed: ${ev.title}.`);
       else if (ev.type === "complete") return finish(ev.report);
     }
     renderAll(r.events.some(e => ["arrive", "closed", "reopened"].includes(e.type)));
     if (notes.length) say(notes.join(" "));
   }
-  // One message in the Messages column: who, when, what. Newest at the bottom, like a chat.
-  function inbox(html, tone = "", who = "Alert system", at = state ? state.clock : 0) {
-    const li = document.createElement("li");
-    li.className = `ag-msg${who === "You" ? " me" : who === "Alert system" ? " sys" : ""}${tone === "refused" || tone === "asks" ? " warn" : ""}`;
-    li.innerHTML = `<span class="ag-av" aria-hidden="true">${esc(who === "Alert system" ? "!" : initials(who))}</span><div><p class="ag-msg-h"><b>${esc(who)}</b> <span class="mono">${clockAt(at)}</span></p><p>${html}</p></div>`;
+  // One message in the team chat: who, which team, when, the ticket it's about. Newest at the bottom, like a chat.
+  function inbox(m) {
+    const t = document.createElement("template");
+    t.innerHTML = DESK.message({ ...m, at: clockAt(m.at ?? (state ? state.clock : 0)) });
+    const li = t.content.firstElementChild;
     $("ag-inbox").appendChild(li);
     li.scrollIntoView?.({ block: "nearest" });
   }
@@ -95,12 +101,17 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     $("ag-count").textContent = `${plural(state.arrived.length, "alert")} in the queue, ${open} open`;
     $("ag-queue").innerHTML = state.arrived.map(id => {
       const a = A.alertById(shift, id), closed = id in state.closed;
-      return `<li><button type="button" class="ag-qitem${closed ? " closed" : ""}" data-alert="${id}" ${id === selected ? 'aria-current="true"' : ""}>
-        <span class="ag-qtitle">${closed ? "✓ " : ""}${esc(a.title)}</span>
-        <span class="ag-qmeta"><span class="tag sev-${esc(a.severity)}">${esc(a.severity)}</span> ${a.time ? `raised ${esc(a.time)}` : "new this shift"} · ${closed ? "closed" : "open"}</span></button></li>`;
+      return `<li><button type="button" class="ag-qitem p-${esc(a.severity)}${closed ? " closed" : ""}" data-alert="${id}" ${id === selected ? 'aria-current="true"' : ""}>
+        <span class="ag-qref"><span class="dk-ref">${esc(tref(a))}</span>${DESK.pill(closed ? "closed" : "open")}</span>
+        <span class="ag-qtitle">${esc(a.title)}</span>
+        <span class="ag-qmeta"><span class="tag sev-${esc(a.severity)}">${esc(a.severity)}</span> ${a.time ? `raised ${esc(a.time)}` : "new this shift"}</span></button></li>`;
     }).join("");
     $("ag-queue").querySelectorAll("[data-alert]").forEach(b => b.addEventListener("click", () => select(b.dataset.alert, true)));
-    if (selected) { renderFound(); renderAsk(); if (structural) renderClose(); }
+    if (selected) {
+      const pill = $("ag-tk-st"), now = DESK.pill(selected in state.closed ? "closed" : "open", "ag-tk-st");
+      if (pill && pill.outerHTML !== now) pill.outerHTML = now;
+      renderFound(); renderAsk(); if (structural) renderClose();
+    }
     const hand = $("ag-hand");
     if (A.canHandOver(shift, state)) { if (hand.hidden) renderHandover(); }
     else hand.hidden = true;
@@ -111,8 +122,12 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     selected = id;
     const a = A.alertById(shift, id);
     source = a.sources[0];
-    $("ag-alert").innerHTML = `<div class="eyebrow">Alert · ${a.time ? `raised ${esc(a.time)}` : "raised this shift"} · detection severity: ${esc(a.severity)}</div>
-      <h2 tabindex="-1" id="ag-a-h">${esc(a.title)}</h2><p class="ag-detect">${gl(a.detection, 2)}</p>
+    $("ag-alert").innerHTML = `${DESK.ticket({
+        kind: "Alert", ref: tref(a), title: a.title, priority: a.severity, status: id in state.closed ? "closed" : "open",
+        fields: [["Client", shift.client], ["Raised", a.time ? `${a.time}, by the night shift's SIEM` : "This shift"], ["Assigned to", "You"], ["Logs", plural(a.sources.length, "source")]],
+        bodyLabel: "What the detection rule saw", body: `<p>${gl(a.detection, 2)}</p>`,
+      }, { headingId: "ag-a-h", statusId: "ag-tk-st" })}
+      <h3 class="eyebrow ag-work">Investigate</h3>
       <div class="row" role="group" aria-label="Log sources for this alert">${a.sources.map(s => `<button type="button" class="chip" data-src="${s}" aria-pressed="${s === source}">${esc(shift.sources[s].name)}</button>`).join("")}</div>
       <div class="m-logview" id="ag-log"></div>
       <div id="ag-found"></div>
@@ -153,8 +168,11 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
   function renderAsk() {
     const reqs = A.requestsFor(shift, state, selected);
     const can = reqs.filter(r => r.canSend);
+    // Each request you've raised is a small ticket of its own, with where it has got to.
+    const steps = st => [{ label: "Raised", state: "done" }, { label: "With the team", state: st === "pending" ? "now" : "done" },
+      { label: st === "pending" ? "Reply" : STATUS_WORDS[st].replace(/^\w/, c => c.toUpperCase()), state: st === "pending" ? "todo" : "now" }];
     $("ag-ask").innerHTML = `<h3 class="eyebrow">Ask another team</h3>
-      ${reqs.some(r => r.status) ? `<ul class="findings">${reqs.filter(r => r.status).map(r => `<li>${esc(r.dept)}: ${esc(r.label)}: <b>${esc(STATUS_WORDS[r.status])}</b></li>`).join("")}</ul>` : ""}
+      ${reqs.some(r => r.status) ? `<ul class="dk-list">${reqs.filter(r => r.status).map(r => `<li>${DESK.ticket({ kind: "Request", ref: reqNo(state, r.ref), title: r.label, status: r.status, fields: [["Team", contact(r.ref).role], ["Contact", contact(r.ref).from]], steps: steps(r.status) }, { level: 4, compact: true })}</li>`).join("")}</ul>` : ""}
       ${can.length ? `<form class="ag-askform" id="ag-askform">
         <label>Request <select id="ag-req">${can.map(r => `<option value="${esc(r.ref)}">${esc(r.dept)}: ${esc(r.label)}</option>`).join("")}</select></label>
         <label>Attach a finding as the reason (optional) <select id="ag-att"><option value="">Nothing attached</option>${state.found.map(f => `<option value="${esc(f)}">${esc(all[f])}</option>`).join("")}</select></label>
@@ -165,7 +183,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     const a = A.alertById(shift, selected), c = state.closed[selected];
     const box = $("ag-close");
     if (c) {
-      box.innerHTML = `<h3 class="eyebrow">Closed</h3><p>${esc(A.VERDICTS[c.verdict])} · severity ${esc(c.severity)} · ${plural(c.evidence.length, "evidence item")} ticked${c.related.length ? ` · linked to ${c.related.map(id => esc(A.alertById(shift, id).title)).join(", ")}` : ""}.</p>
+      box.innerHTML = `<div class="dk-resolve"><span class="dk-resolve-stamp">Resolved</span><dl class="dk-fields"><div><dt>Verdict</dt><dd>${esc(A.VERDICTS[c.verdict])}</dd></div><div><dt>Your severity</dt><dd>${esc(c.severity)}</dd></div><div><dt>Evidence</dt><dd>${plural(c.evidence.length, "item")} ticked</dd></div>${c.related.length ? `<div><dt>Linked to</dt><dd>${c.related.map(id => esc(tref(A.alertById(shift, id)))).join(", ")}</dd></div>` : ""}</dl></div>
         <div class="row"><button class="btn ghost" type="button" id="ag-reopen">Reopen</button></div>`;
       $("ag-reopen").addEventListener("click", () => run(A.reopen(shift, state, selected)));
       return;
@@ -254,7 +272,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
   $("ag-wait").addEventListener("click", () => run(A.wait(shift, state)));
   const r0 = A.start(shift);
   state = r0.state;
-  inbox(`<b>${plural(r0.events.length, "alert")} in the queue</b> from the night shift: ${r0.events.map(ev => esc(ev.title)).join("; ")}.`, "", "Alert system");
+  inbox({ sys: true, html: `<b>${plural(r0.events.length, "alert")} in the queue</b> from the night shift.` });
   select(state.arrived[0], false);
 
   // ---------- clocking in: tap the badge, the clock stamps the time, the lead briefs you, then the desk.
@@ -270,12 +288,12 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     $("ag-stamp").textContent = `IN ${shift.startsAt} · ${day}`; $("ag-stamp").hidden = false;
     tap.querySelector(".ag-tc-text").textContent = "Clocked in";
     for (const line of briefing) {
-      const li = document.createElement("li");
-      li.className = "ag-msg typing";
-      li.innerHTML = `<span class="ag-av" aria-hidden="true">${esc(initials(leadName))}</span><div><p class="ag-msg-h"><b>${esc(leadName)}</b> <span class="mono">${esc(shift.startsAt)}</span></p><p><span class="ag-dots" aria-hidden="true"><i></i><i></i><i></i></span></p></div>`;
+      const t = document.createElement("template");
+      t.innerHTML = DESK.message({ from: leadName, role: leadRole || "Shift lead", at: shift.startsAt, typing: true });
+      const li = t.content.firstElementChild;
       $("ag-chat").appendChild(li);
       await pause(500 + line.length * 6);
-      li.classList.remove("typing"); li.querySelector("div p:last-child").innerHTML = gl(line, 2);
+      li.classList.remove("typing"); li.querySelector(".dk-text").innerHTML = `<p>${gl(line, 2)}</p>`;
     }
     await pause(250);
     $("ag-dossier").hidden = false;

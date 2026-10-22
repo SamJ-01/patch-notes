@@ -391,7 +391,10 @@ def main():
     hw_js = re.sub(r"^export ", "", (STATIC / "js" / "hw.js").read_text(), flags=re.M)
     # The shared email component (static/js/mail.js) is inlined the same way.
     mail_js = re.sub(r"^export ", "", (STATIC / "js" / "mail.js").read_text(), flags=re.M)
-    page = template.replace("<!--__META__-->", meta).replace("/*__DATA__*/null", embed_json(data)).replace("/*__HW__*/", hw_js).replace("/*__MAIL__*/", mail_js)
+    # And the service desk component (static/js/desk.js: tickets and staff messages).
+    desk_js = re.sub(r"^export ", "", (STATIC / "js" / "desk.js").read_text(), flags=re.M)
+    page = (template.replace("<!--__META__-->", meta).replace("/*__DATA__*/null", embed_json(data)).replace("/*__HW__*/", hw_js)
+            .replace("/*__MAIL__*/", mail_js).replace("/*__DESK__*/", desk_js))
     # PN_NO_CSP=1 is only for local testing tools that inject scripts (e.g. an accessibility checker).
     csp = "" if os.environ.get("PN_NO_CSP") else csp_meta(page)
     out.write_text('<!doctype html>\n<html lang="en">\n<meta charset="utf-8">\n' + csp + page)

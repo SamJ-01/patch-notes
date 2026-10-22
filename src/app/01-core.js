@@ -4,6 +4,8 @@ const DATA = /*__DATA__*/null;
 /*__HW__*/
 /* ---------- email component (static/js/mail.js, inlined by build.py) ---------- */
 /*__MAIL__*/
+/* ---------- service desk component: tickets and staff messages (static/js/desk.js, inlined by build.py) ---------- */
+/*__DESK__*/
 
 /* ---------- helpers ---------- */
 // Highlight search terms: match in the raw text, merge overlaps, then escape each piece (same as engine.markText).

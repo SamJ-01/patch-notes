@@ -259,6 +259,8 @@ VIEWS.agency = () => {
         <p class="muted">About ${next.minutes} minutes. The clock only moves when you act, so take your time reading.</p>
       </section>
     </div>
+    <section class="panel ag-pinned" aria-labelledby="ag-pin-h"><h2 id="ag-pin-h">Pinned by your lead</h2>
+      <ol class="dk-msgs">${DESK.message({ from: next.lead.split(",")[0], role: (next.lead.split(",")[1] || "Shift lead").trim(), at: next.startsAt, html: `<p>${gloss((next.briefing.match(/[^.!?]+[.!?]+/g) || [next.briefing]).slice(0, 2).join(" ").trim(), 2)}</p>` })}</ol></section>
     <section class="panel"><h2>The rota</h2>
       <ol class="ag-rota">${shifts.map(sh => `<li><span class="mono ag-rota-when">${esc(day(sh.date))} · ${esc(sh.startsAt)}</span><b>${esc(sh.client)}</b><span class="muted">${esc(sh.title.split(":")[0])}, ${sh.minutes} min</span>
         <span class="ag-rota-st">${rec(sh.id) ? `✓ ${rec(sh.id).best} of ${rec(sh.id).total} checks` : "Open"}</span><a class="btn ghost" href="#agency-${esc(sh.id)}">${rec(sh.id) ? "Work it again" : "Clock in"}</a></li>`).join("")}
