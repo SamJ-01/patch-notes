@@ -1710,6 +1710,384 @@
   "holdTicks": 8
  },
  {
+  "id": "one-request",
+  "kind": "journey",
+  "category": "Networking",
+  "track": "Foundations",
+  "minutes": 25,
+  "lesson": "networking",
+  "title": "One request, start to finish",
+  "skill": "Follow one app's request through HTTP, TCP and UDP, TLS, a load balancer, a reverse proxy, a firewall and WebSockets",
+  "intro": "Hopper is a (made-up) ride app. Every time a rider checks where their driver is, the same few ideas carry the request there and back. Seven stops, one idea each: play with each one, then see why it matters for security.",
+  "simplification": "Simplified for learning: TCP segments are numbered 1 to 5 here (real TCP numbers every byte), every segment is acknowledged straight away, and there's no selective acknowledgement (SACK). The TLS capture is random-looking stand-in bytes in a real TLS 1.3 record layout, not real encryption. The load balancer runs its health check with every request (real ones check on a timer, often every 2 seconds). Sign-in tokens are shortened. Hopper and its domains are made up, using the reserved .example name.",
+  "chapters": [
+   {
+    "id": "http",
+    "label": "HTTP",
+    "title": "Ask, then answer",
+    "host": "api.hopper.example",
+    "idea": "The app asks for something (a request) and the server answers (a response). Both are plain text: a first line, headers, a blank line, then the body. The first line of the answer is a status code that says how it went.",
+    "goal": "Send all four requests and compare the status codes.",
+    "security": "Status codes tell a story in logs: a burst of 401s from one address is someone guessing sign-in tokens, and lots of 404s for paths like /wp-login.php is a scanner looking for weak spots. The token in the Authorization header is as good as a password: whoever holds it is you.",
+    "exchanges": [
+     {
+      "label": "Where's my driver?",
+      "method": "GET",
+      "path": "/rides/42/driver",
+      "headers": [
+       [
+        "Host",
+        "api.hopper.example"
+       ],
+       [
+        "Authorization",
+        "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyaWRlci03In0.w9Lq"
+       ],
+       [
+        "Accept",
+        "application/json"
+       ]
+      ],
+      "status": 200,
+      "responseHeaders": [
+       [
+        "Content-Type",
+        "application/json"
+       ]
+      ],
+      "responseBody": "{\"driver\":\"Sam\",\"car\":\"Blue Kia Niro\",\"lat\":51.5257,\"lng\":-0.1357}",
+      "note": "2xx means it worked. GET only reads; asking twice changes nothing."
+     },
+     {
+      "label": "Book a ride",
+      "method": "POST",
+      "path": "/rides",
+      "headers": [
+       [
+        "Host",
+        "api.hopper.example"
+       ],
+       [
+        "Authorization",
+        "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyaWRlci03In0.w9Lq"
+       ],
+       [
+        "Content-Type",
+        "application/json"
+       ]
+      ],
+      "body": "{\"pickup\":\"Euston Square\",\"dropoff\":\"King's Cross\"}",
+      "status": 201,
+      "responseHeaders": [
+       [
+        "Content-Type",
+        "application/json"
+       ],
+       [
+        "Location",
+        "/rides/43"
+       ]
+      ],
+      "responseBody": "{\"id\":43,\"status\":\"finding_driver\"}",
+      "note": "POST sends data to create something. 201 Created, and the Location header says where the new ride lives."
+     },
+     {
+      "label": "An old ride",
+      "method": "GET",
+      "path": "/rides/9999/driver",
+      "headers": [
+       [
+        "Host",
+        "api.hopper.example"
+       ],
+       [
+        "Authorization",
+        "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyaWRlci03In0.w9Lq"
+       ],
+       [
+        "Accept",
+        "application/json"
+       ]
+      ],
+      "status": 404,
+      "responseHeaders": [
+       [
+        "Content-Type",
+        "application/json"
+       ]
+      ],
+      "responseBody": "{\"error\":\"ride not found\"}",
+      "note": "4xx means the request was the problem: here, nothing exists at that path."
+     },
+     {
+      "label": "Not signed in",
+      "method": "GET",
+      "path": "/rides/42/driver",
+      "headers": [
+       [
+        "Host",
+        "api.hopper.example"
+       ],
+       [
+        "Accept",
+        "application/json"
+       ]
+      ],
+      "status": 401,
+      "responseHeaders": [
+       [
+        "WWW-Authenticate",
+        "Bearer"
+       ],
+       [
+        "Content-Type",
+        "application/json"
+       ]
+      ],
+      "responseBody": "{\"error\":\"sign in required\"}",
+      "note": "No Authorization header, so 401: the server doesn't know who's asking. (403 would mean it knows, and the answer is no.)"
+     }
+    ]
+   },
+   {
+    "id": "tcp",
+    "label": "TCP and UDP",
+    "title": "Nothing goes missing (unless you'd rather it did)",
+    "idea": "Data is cut into segments. TCP numbers them, the receiver acknowledges what it has, and anything lost is sent again, so the app gets everything in order. UDP just sends: no numbers, no acknowledgements, no waiting. Lose a segment each way and compare.",
+    "goal": "Lose at least one segment over TCP, then over UDP.",
+    "headerNote": "TCP spends 12 more bytes on every segment: a sequence number (ordering), an acknowledgment number (delivery), flags such as SYN, ACK and FIN, and a window (how much more the receiver can take). UDP carries only ports, a length and a checksum. Options can stretch a TCP header to 60 bytes. Web pages, email and SSH use TCP; DNS lookups, video calls and games usually use UDP, and so does HTTP/3 (over QUIC, which adds its own resending).",
+    "security": "UDP has no handshake, so the sender's address can be faked. Attackers send small UDP questions (to DNS or NTP servers) with a victim's address as the sender, and the much bigger answers flood the victim: an amplification DDoS. TCP's handshake makes that kind of forgery far harder."
+   },
+   {
+    "id": "tls",
+    "label": "HTTPS",
+    "title": "Anyone on the path can read it, unless it's encrypted",
+    "host": "api.hopper.example",
+    "idea": "On café Wi-Fi, anyone on the same network can capture your traffic. Without encryption they read it all. TLS (the S in HTTPS) encrypts it in transit, and the server's certificate proves you're talking to the real api.hopper.example.",
+    "goal": "Turn on TLS, then find a certificate the app must refuse.",
+    "payload": "POST /rides HTTP/1.1\nHost: api.hopper.example\nAuthorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyaWRlci03In0.w9Lq\nContent-Type: application/json\n\n{\"pickup\":\"Euston Square\",\"lat\":51.5257,\"lng\":-0.1357}",
+    "certIntro": "When TLS starts, the server shows a certificate. The app checks three things: is it for this name, is it signed by an authority the phone trusts, and is it in date? Try each one.",
+    "today": "2026-10-22",
+    "trusted": [
+     "Let's Encrypt (R11)",
+     "DigiCert Global G2"
+    ],
+    "certs": [
+     {
+      "label": "The real one",
+      "names": [
+       "api.hopper.example"
+      ],
+      "issuer": "Let's Encrypt (R11)",
+      "from": "2026-09-01",
+      "until": "2026-11-30",
+      "story": ""
+     },
+     {
+      "label": "From someone on the Wi-Fi",
+      "names": [
+       "api.hopper.example"
+      ],
+      "issuer": "Hopper Secure CA",
+      "from": "2026-10-21",
+      "until": "2027-10-21",
+      "story": "Someone in the middle can make a certificate with any name on it, but no trusted authority will sign it. This check is what stops them reading your traffic even when they sit on the path."
+     },
+     {
+      "label": "A lookalike",
+      "names": [
+       "*.hopper-rides.example"
+      ],
+      "issuer": "Let's Encrypt (R11)",
+      "from": "2026-10-01",
+      "until": "2026-12-30",
+      "story": "A genuine certificate, but for a different name. Anyone can get one for a domain they own, which is why a padlock alone doesn't make a site honest."
+     },
+     {
+      "label": "An old one",
+      "names": [
+       "api.hopper.example"
+      ],
+      "issuer": "DigiCert Global G2",
+      "from": "2025-06-01",
+      "until": "2026-06-01",
+      "story": "Expired certificates are usually a forgotten renewal, not an attack, but the app can't tell the difference, so it refuses."
+     }
+    ],
+    "security": "HTTPS hides what you said, not who you talked to: the server's name and the DNS lookup can still show where you went. And the padlock means encrypted, not trustworthy: phishing sites have certificates too."
+   },
+   {
+    "id": "lb",
+    "label": "Load balancer",
+    "title": "One server isn't enough",
+    "idea": "Thousands of riders at once would overload one server. A load balancer sits in front of several identical servers and shares the requests out. It also checks each server's health, and stops sending to one that isn't answering.",
+    "goal": "Crash a server, keep sending, and watch the load balancer route around it.",
+    "servers": [
+     "app-1",
+     "app-2",
+     "app-3"
+    ],
+    "durations": [
+     4,
+     1,
+     1,
+     3,
+     1,
+     1,
+     2,
+     1,
+     1,
+     1
+    ],
+    "security": "Spreading load also helps absorb floods of traffic, and health checks keep a broken server from serving errors. But every server behind it must be patched and configured the same: an attacker only needs one weak one."
+   },
+   {
+    "id": "proxy",
+    "label": "Reverse proxy",
+    "title": "One front door for many services",
+    "host": "api.hopper.example",
+    "idea": "Behind api.hopper.example are separate services for rides, drivers and payments. A reverse proxy is the single front door: it ends the HTTPS connection, reads the path, and passes each request to the right service inside. The longest matching rule wins.",
+    "goal": "Send requests to all three services, and one that matches nothing.",
+    "locations": [
+     {
+      "prefix": "/",
+      "to": null
+     },
+     {
+      "prefix": "/rides/",
+      "to": "rides"
+     },
+     {
+      "prefix": "/drivers/",
+      "to": "drivers"
+     },
+     {
+      "prefix": "/pay/",
+      "to": "payments"
+     },
+     {
+      "prefix": "/pay/admin/",
+      "to": null
+     }
+    ],
+    "examples": [
+     "/rides/42",
+     "/drivers/7/location",
+     "/pay/receipts/43",
+     "/pay/admin/refunds",
+     "/wp-login.php"
+    ],
+    "security": "Only the proxy faces the internet, so the services behind it stay hidden, and dangerous paths (like /pay/admin/) can be blocked in one place. It's also where a web application firewall (WAF) usually sits, checking requests for attacks before they reach the app."
+   },
+   {
+    "id": "fw",
+    "label": "Firewall",
+    "title": "Who's allowed in?",
+    "idea": "A firewall checks every new connection against its rules, top to bottom. The first rule that matches decides, and anything no rule matches is denied. Two of Hopper's rules are wrong. Fix them so every test passes.",
+    "goal": "Make every test traffic line come out right.",
+    "hosts": {
+     "rider": {
+      "label": "Riders"
+     },
+     "attacker": {
+      "label": "Attacker"
+     },
+     "api": {
+      "label": "Hopper API"
+     },
+     "db": {
+      "label": "Database"
+     }
+    },
+    "rules": [
+     {
+      "src": "any",
+      "dst": "api",
+      "port": 443,
+      "action": "allow"
+     },
+     {
+      "src": "any",
+      "dst": "db",
+      "port": 5432,
+      "action": "allow"
+     },
+     {
+      "src": "api",
+      "dst": "db",
+      "port": 5432,
+      "action": "allow"
+     },
+     {
+      "src": "any",
+      "dst": "api",
+      "port": 22,
+      "action": "allow"
+     }
+    ],
+    "tests": [
+     {
+      "src": "rider",
+      "dst": "api",
+      "port": 443,
+      "expect": "allow"
+     },
+     {
+      "src": "attacker",
+      "dst": "api",
+      "port": 443,
+      "expect": "allow"
+     },
+     {
+      "src": "api",
+      "dst": "db",
+      "port": 5432,
+      "expect": "allow"
+     },
+     {
+      "src": "rider",
+      "dst": "db",
+      "port": 5432,
+      "expect": "deny"
+     },
+     {
+      "src": "attacker",
+      "dst": "db",
+      "port": 5432,
+      "expect": "deny"
+     },
+     {
+      "src": "attacker",
+      "dst": "api",
+      "port": 22,
+      "expect": "deny"
+     }
+    ],
+    "solvedNote": "Only the API can reach the database, and SSH isn't open to the internet. Notice the attacker can still reach the public API on 443: a firewall can't tell them from a rider, so the app itself has to be secure too. Cloud security groups do the same job, but only with allow rules: anything not listed is blocked.",
+    "security": "Open only what's needed, only to who needs it (least privilege). Databases and SSH left open to the internet are among the most common ways attackers get in, and scanners find them within minutes."
+   },
+   {
+    "id": "ws",
+    "label": "WebSockets",
+    "title": "Live updates without asking again and again",
+    "idea": "To show the driver moving, the app could ask every couple of seconds (polling), mostly to hear nothing has changed. A WebSocket upgrades one HTTP request into a connection that stays open, so the server can push each update the moment it happens.",
+    "goal": "Watch the same ride with polling, then with a WebSocket.",
+    "seconds": 30,
+    "interval": 2,
+    "updates": [
+     5,
+     13,
+     22
+    ],
+    "upgrade": {
+     "request": "GET /rides/42/live HTTP/1.1\nHost: api.hopper.example\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\nSec-WebSocket-Version: 13\nOrigin: https://app.hopper.example",
+     "response": "HTTP/1.1 101 Switching Protocols\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo="
+    },
+    "security": "The upgrade is an ordinary HTTP request, so it needs the same sign-in checks as any other. The server should also check the Origin header, or another website could open a socket using the rider's signed-in session (cross-site WebSocket hijacking)."
+   }
+  ]
+ },
+ {
   "id": "telnet-ssh",
   "kind": "wiretap",
   "category": "Networking",

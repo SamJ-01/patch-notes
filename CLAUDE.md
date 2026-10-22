@@ -40,6 +40,8 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - Exam prep: Network+ N10-009 (25 objectives, 60 questions, "Am I ready?" panel), Security+ map (5 domains, 42 questions, mock exams).
 - PATCH//AGENCY pilot: one SOC shift (`content/agency/shift-01.json`, `static/js/agency/`, route `#agency-shift-01`,
   tests `tests/agency.test.mjs`). Design and decisions: `docs/agency-pilot.md`. Logs are searched with `engine.searchLines`.
+- "One request, start to finish" (`#lab-one-request`, `static/js/labs/journey.js`, tests `tests/journey.test.mjs`): seven stops
+  (HTTP, TCP/UDP, HTTPS, load balancer, reverse proxy, firewall, WebSockets), each a pure model plus a scene; content in `labs.json` `chapters`.
 - Hashing lab (`#lab-hashing`, `static/js/labs/hashing.js`, tests `tests/hashing.test.mjs`): MD5/SHA-1/SHA-256, salts, slow hashes.
 - Network model and picture: `static/js/net/model.js` (segments, carried VLANs, ping results with reasons, issues) and
   `net/view.js` (one colour per broadcast domain). Use them for any network diagram. Network builder: `#lab-network-builder`.

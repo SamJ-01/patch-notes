@@ -5,6 +5,7 @@ Run with:  python3 -m unittest discover -s tests -v
 
 import datetime as dt
 import json
+import re
 import sys
 import tempfile
 import unittest
@@ -568,9 +569,13 @@ class ContentIntegrity(unittest.TestCase):
                 self.assertIn(step["type"], ("lesson", "lab", "mission", "agency", "game", "flags"), p["id"])
 
     def test_lab_answers_are_in_the_evidence(self):
+        # Labs with their own module (MODULE_LABS in the app) have their own tests in tests/*.test.mjs.
+        src = (ROOT / "src" / "app" / "07-labs.js").read_text()
+        modules = set(re.findall(r'"(\w+)"', re.search(r"const MODULE_LABS = \[([^\]]*)\]", src).group(1)))
+        self.assertIn("journey", modules)
         for lab in self.labs.values():
-            if lab.get("kind") in ("osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring", "wiretap", "vlan", "hashing", "netbuilder", "perms"):
-                continue  # these have their own tests in tests/labs.test.mjs
+            if lab.get("kind") in modules:
+                continue
             if lab.get("kind") == "cvss":
                 for sc in lab["scenarios"]:
                     self.assertEqual(len(sc["target"].split("/")), 8, sc["title"])

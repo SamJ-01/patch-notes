@@ -43,6 +43,10 @@
     "id": "networking"
    },
    {
+    "type": "lab",
+    "id": "one-request"
+   },
+   {
     "type": "mission",
     "id": "dhcp",
     "mode": "practice"
@@ -102,6 +106,10 @@
     "id": "networking"
    },
    {
+    "type": "lab",
+    "id": "one-request"
+   },
+   {
     "type": "lesson",
     "id": "osint"
    },
@@ -140,6 +148,10 @@
    {
     "type": "lesson",
     "id": "cloud"
+   },
+   {
+    "type": "lab",
+    "id": "one-request"
    },
    {
     "type": "lesson",
