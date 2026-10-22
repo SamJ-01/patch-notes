@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Priya Raman, Identity and Access">
+<rect width="120" height="120" fill="#a7dadc"/>
+<circle cx="96" cy="22" r="30" fill="#b4ebee"/>
+<path d="M35 52 C33 26 49 19 60 19 C73 19 88 27 85 53 L88 96 C80 101 71 95 70 88 L50 88 C49 95 40 101 32 96 Z" fill="#1b1311"/>
+<path d="M51 70 h18 v18 c0 5 -18 5 -18 0 z" fill="#966843"/>
+<path d="M12 120 C14 97 34 86 60 86 C86 86 106 97 108 120 Z" fill="#2f7f86"/>
+<path d="M50 86 L60 100 L70 86 C67 85 53 85 50 86 Z" fill="#46bec9"/>
+<circle cx="39.5" cy="55" r="5" fill="#966843"/><circle cx="80.5" cy="55" r="5" fill="#966843"/>
+<ellipse cx="60" cy="52" rx="21" ry="24" fill="#b07a4f"/>
+<path d="M38 52 C37 31 48 23 60 23 C73 23 84 31 82 52 C78 40 70 33 60 33 C52 36 44 42 38 52 Z" fill="#1b1311"/>
+<path d="M48 47 q4 -3 8 0 M64 47 q4 -3 8 0" stroke="#18110f" stroke-width="2" stroke-linecap="round" fill="none"/>
+<circle cx="52" cy="54" r="2.3" fill="#1d1a19"/><circle cx="68" cy="54" r="2.3" fill="#1d1a19"/>
+<circle cx="52.8" cy="53.2" r="0.8" fill="#fff"/><circle cx="68.8" cy="53.2" r="0.8" fill="#fff"/>
+<path d="M59 57 q-2 6 1 7" stroke="#7f5839" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+<circle cx="47" cy="62" r="3.5" fill="#e0707a" opacity="0.18"/><circle cx="73" cy="62" r="3.5" fill="#e0707a" opacity="0.18"/>
+<path d="M53 67 q7 6 14 0" stroke="#61432b" stroke-width="2" stroke-linecap="round" fill="none"/>
+<g fill="none" stroke="#2a2a2a" stroke-width="1.8"><rect x="44.5" y="48.5" width="15" height="11" rx="4"/><rect x="60.5" y="48.5" width="15" height="11" rx="4"/><path d="M59.5 53 h1 M44.5 52 l-4 -1 M75.5 52 l4 -1"/></g>
+</svg>

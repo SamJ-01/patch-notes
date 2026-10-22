@@ -53,6 +53,9 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   into the page like mail.js; tests `tests/desk.test.mjs`): a numbered ticket with a priority stripe, status pill, fields and the
   description set apart, and a team chat (avatar, team badge, ticket chip; system notices as one slim line). Agency alerts carry a
   `ref` (SOC-…), teams a `contact` { name, role }; requests are numbered REQ-… in the order raised. Keep logs and CLIs in their own look.
+- Images (pilot): flat vector illustrations in one style, in `static/img/` (served as `img/…`). Agency staff portraits
+  (`contact.photo`, `leadPhoto`, shown by `DESK.avatar`, decorative alt) and a client scene (`clientImage` { src, alt })
+  on the client file and hub. Never fake screenshots of real tools; keep teaching diagrams as live SVG. Tested: files exist.
 - Email header checker ("bring your own evidence"): `#headers-check`, `static/js/tools/headers.js` (pure `analyse()` + page;
   tests `tests/headers-tool.test.mjs`), examples in `content/tools.json` (`DATA.tools`). Runs in the browser only; never
   says "safe". `MAIL.parseHeaders` trusts only the topmost Authentication-Results (and others from the same server) and

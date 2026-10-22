@@ -36,13 +36,18 @@ export const DESK = (() => {
       ${steps}${t.foot ? `<div class="dk-foot">${t.foot}</div>` : ""}</article>`;
   }
 
-  // A staff message. m = { from, role, team, at, html, ref, status, me, sys, typing }.
+  // An avatar: the person's portrait when there is one (decorative: their name is next to it), else their initials.
+  const avatar = (who, photo, cls = "dk-av") => (photo
+    ? `<img class="${cls} dk-photo" src="${esc(photo)}" alt="" width="32" height="32" loading="lazy" decoding="async">`
+    : `<span class="${cls}" aria-hidden="true">${esc(initials(who))}</span>`);
+
+  // A staff message. m = { from, role, team, at, html, ref, status, me, sys, typing, photo }.
   // System notices (sys) are one slim line with an icon; people get an avatar, a team badge and a bubble.
   function message(m) {
     if (m.sys) return `<li class="dk-msg sys"><span class="dk-sysicon" aria-hidden="true">!</span><p><b>${esc(m.from || "Alert system")}</b> <span class="dk-time">${esc(m.at || "")}</span> ${refChip(m.ref)} ${m.html || ""}</p></li>`;
     const who = m.me ? "You" : m.from;
     return `<li class="dk-msg${m.me ? " me" : ""}${m.typing ? " typing" : ""}${m.status === "asks" || m.status === "refused" ? " warn" : ""}" style="--dk-h:${hue(m.team || who)}">
-      <span class="dk-av" aria-hidden="true">${esc(initials(who))}</span>
+      ${avatar(who, m.me ? "" : m.photo)}
       <div class="dk-bubble"><p class="dk-who"><b>${esc(who)}</b>${m.team || m.role ? `<span class="dk-team">${esc(m.role || m.team)}</span>` : ""}<span class="dk-time">${esc(m.at || "")}</span></p>
         ${m.ref || m.status ? `<p class="dk-about">${refChip(m.ref)}${pill(m.status)}</p>` : ""}
         <div class="dk-text">${m.typing ? '<span class="dk-dots" aria-hidden="true"><i></i><i></i><i></i></span>' : m.html || ""}</div></div></li>`;
@@ -51,5 +56,5 @@ export const DESK = (() => {
   // A channel: a header (# name, who's in it) above a list of messages.
   const channel = (name, about, listAttrs = "") => `<div class="dk-channel"><p class="dk-chan"><span aria-hidden="true">#</span>${esc(name)}${about ? `<span class="dk-chan-about">${esc(about)}</span>` : ""}</p><ol class="dk-msgs" ${listAttrs}></ol></div>`;
 
-  return { ticket, message, channel, pill, refChip, initials, hue, STATUS, PRIORITY };
+  return { ticket, message, channel, avatar, pill, refChip, initials, hue, STATUS, PRIORITY };
 })();

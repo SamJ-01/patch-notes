@@ -252,6 +252,7 @@ VIEWS.agency = () => {
         <dl class="ag-id-stats"><div><dt>Shifts worked</dt><dd>${worked} of ${shifts.length}</dd></div><div><dt>Best report</dt><dd>${worked ? `${Math.round(best * 100)}%` : "–"}</dd></div></dl>
       </section>
       <section class="ag-tc ag-tc-hub" aria-labelledby="ag-next-h">
+        ${next.clientImage ? `<img class="ag-scene" src="${esc(next.clientImage.src)}" alt="${esc(next.clientImage.alt)}" width="1200" height="340" loading="lazy" decoding="async">` : ""}
         <div class="ag-tc-screen" aria-hidden="true"><span>${esc(day(next.date))}</span><b>${esc(next.startsAt)}</b><span>${rec(next.id) ? "WORKED BEFORE" : "NEXT SHIFT"}</span></div>
         <h2 id="ag-next-h">${esc(next.title)}</h2>
         <p>${esc(next.card || next.summary)}</p>
@@ -260,7 +261,7 @@ VIEWS.agency = () => {
       </section>
     </div>
     <section class="panel ag-pinned" aria-labelledby="ag-pin-h"><h2 id="ag-pin-h">Pinned by your lead</h2>
-      <ol class="dk-msgs">${DESK.message({ from: next.lead.split(",")[0], role: (next.lead.split(",")[1] || "Shift lead").trim(), at: next.startsAt, html: `<p>${gloss((next.briefing.match(/[^.!?]+[.!?]+/g) || [next.briefing]).slice(0, 2).join(" ").trim(), 2)}</p>` })}</ol></section>
+      <ol class="dk-msgs">${DESK.message({ from: next.lead.split(",")[0], role: (next.lead.split(",")[1] || "Shift lead").trim(), at: next.startsAt, photo: next.leadPhoto, html: `<p>${gloss((next.briefing.match(/[^.!?]+[.!?]+/g) || [next.briefing]).slice(0, 2).join(" ").trim(), 2)}</p>` })}</ol></section>
     <section class="panel"><h2>The rota</h2>
       <ol class="ag-rota">${shifts.map(sh => `<li><span class="mono ag-rota-when">${esc(day(sh.date))} · ${esc(sh.startsAt)}</span><b>${esc(sh.client)}</b><span class="muted">${esc(sh.title.split(":")[0])}, ${sh.minutes} min</span>
         <span class="ag-rota-st">${rec(sh.id) ? `✓ ${rec(sh.id).best} of ${rec(sh.id).total} checks` : "Open"}</span><a class="btn ghost" href="#agency-${esc(sh.id)}">${rec(sh.id) ? "Work it again" : "Clock in"}</a></li>`).join("")}

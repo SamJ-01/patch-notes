@@ -18,9 +18,8 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
   const clockAt = m => { const [h, mi] = shift.startsAt.split(":").map(Number), t = h * 60 + mi + m; return `${String(Math.floor(t / 60) % 24).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`; };
 
   const leadName = shift.lead.split(",")[0], leadRole = (shift.lead.split(",")[1] || "").trim();
-  const initials = DESK.initials;
   // Who answers for a team: its named contact, or the team itself.
-  const contact = ref => { const d = shift.departments[String(ref).split(":")[0]] || {}; return { from: d.contact?.name || d.name, role: d.contact?.role || d.name }; };
+  const contact = ref => { const d = shift.departments[String(ref).split(":")[0]] || {}; return { from: d.contact?.name || d.name, role: d.contact?.role || d.name, photo: d.contact?.photo || "" }; };
   const tref = a => a.ref || `SOC-${a.id}`;
   const day = shift.date.replace(/^(\w{3})\w*\s+(\d+)\s+(\w{3}).*$/, "$1 $2 $3").toUpperCase();
   const waiting = shift.alerts.filter(a => (a.arrives?.at ?? 0) === 0).length;
@@ -39,7 +38,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         </div>
         <div class="ag-in-side">
           <ol class="dk-msgs ag-chat" id="ag-chat" aria-live="polite" aria-label="Messages from ${esc(leadName)}"></ol>
-          <div class="ag-dossier" id="ag-dossier" hidden><div class="eyebrow">Client file</div><h2>${esc(shift.client)}</h2>
+          <div class="ag-dossier" id="ag-dossier" hidden>${shift.clientImage ? `<img class="ag-scene" src="${esc(shift.clientImage.src)}" alt="${esc(shift.clientImage.alt)}" width="1200" height="340" decoding="async">` : ""}<div class="eyebrow">Client file</div><h2>${esc(shift.client)}</h2>
             <dl class="fields"><div><dt>Alerts waiting</dt><dd>${waiting}, with more likely</dd></div><div><dt>Logs you can search</dt><dd>${Object.keys(shift.sources).length}</dd></div><div><dt>Shift length</dt><dd>about ${shift.minutes} min</dd></div>${done ? `<div><dt>Your record</dt><dd>✓ worked before</dd></div>` : ""}</dl>
             <button class="btn brand" type="button" id="ag-desk-go">Take the desk</button></div>
         </div>
@@ -51,7 +50,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         <span class="ag-logo" aria-hidden="true">PATCH<b>//</b>AGENCY</span>
         <span class="ag-clock"><span class="eyebrow">Shift time</span> <b class="mono" id="ag-clock"></b></span>
         <span class="ag-count" id="ag-count"></span>
-        <span class="ag-lead"><span class="dk-av ag-lead-av" style="--dk-h:${DESK.hue(leadRole || "Shift lead")}" aria-hidden="true">${esc(initials(leadName))}</span>${esc(shift.lead)}</span>
+        <span class="ag-lead">${DESK.avatar(leadName, shift.leadPhoto, "dk-av ag-lead-av")}${esc(shift.lead)}</span>
         <button class="btn ghost" type="button" id="ag-wait">Wait ${shift.costs.wait} min</button>
       </div>
       <div class="ag-grid">
@@ -289,7 +288,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     tap.querySelector(".ag-tc-text").textContent = "Clocked in";
     for (const line of briefing) {
       const t = document.createElement("template");
-      t.innerHTML = DESK.message({ from: leadName, role: leadRole || "Shift lead", at: shift.startsAt, typing: true });
+      t.innerHTML = DESK.message({ from: leadName, role: leadRole || "Shift lead", at: shift.startsAt, photo: shift.leadPhoto, typing: true });
       const li = t.content.firstElementChild;
       $("ag-chat").appendChild(li);
       await pause(500 + line.length * 6);

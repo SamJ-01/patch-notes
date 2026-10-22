@@ -1,6 +1,6 @@
 // Browser check for a built site (not part of CI): serves site/, opens each route at desktop and
 // phone widths in dark and light themes, and reports page errors, failed requests, sideways
-// overflow and axe-core WCAG A/AA violations. Screenshots go to $OUT (default: site/_checks).
+// overflow, broken images and axe-core WCAG A/AA violations. Screenshots go to $OUT (default: site/_checks).
 //
 //   python3 build.py --offline && node tests/browser_check.mjs                 # default routes
 //   node tests/browser_check.mjs "#mission-ssh-brute|[data-mode=challenge]"     # route|selector to click first
@@ -20,7 +20,7 @@ const routes = process.argv.slice(2).length ? process.argv.slice(2) : ["#today",
 const axePath = process.env.AXE || new URL("../node_modules/axe-core/axe.min.js", import.meta.url).pathname;
 const axe = existsSync(axePath) ? readFileSync(axePath, "utf8") : null;
 const progress = process.env.PROGRESS ? readFileSync(process.env.PROGRESS, "utf8") : null;
-const TYPES = { ".html": "text/html", ".js": "text/javascript", ".json": "application/json", ".png": "image/png", ".xml": "application/xml", ".css": "text/css" };
+const TYPES = { ".html": "text/html", ".js": "text/javascript", ".json": "application/json", ".png": "image/png", ".xml": "application/xml", ".css": "text/css", ".svg": "image/svg+xml" };
 
 const { chromium } = (() => { try { return require("playwright"); } catch { return require(execSync("npm root -g").toString().trim() + "/playwright"); } })();
 const server = createServer((req, res) => {
@@ -47,6 +47,8 @@ for (const spec of routes) {
     if (click) { await page.click(click).catch(e => errs.push("click failed: " + e.message.split("\n")[0])); await page.waitForTimeout(400); }
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
     if (overflow) errs.push("horizontal overflow");
+    const broken = await page.evaluate(() => [...document.images].filter(i => i.complete && i.naturalWidth === 0 && i.loading !== "lazy").map(i => i.getAttribute("src")));
+    if (broken.length) errs.push("broken images: " + broken.join(", "));
     if (axe) {
       await page.addScriptTag({ content: axe });
       const v = await page.evaluate(async () => (await axe.run(document, { runOnly: ["wcag2a", "wcag2aa"] })).violations.map(v => `${v.id} ×${v.nodes.length}: ${v.nodes[0].target}`));

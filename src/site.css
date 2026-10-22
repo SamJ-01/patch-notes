@@ -1616,7 +1616,7 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .ag-id-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; padding: 10px 14px 0; margin: 6px 0 0; border-top: 1px dashed var(--line); }
 .ag-id-stats dt { font-size: 0.72rem; color: var(--muted); }
 .ag-id-stats dd { margin: 0; font: 700 1rem var(--font-mono); }
-.ag-tc { display: grid; gap: 12px; align-content: start; padding: 18px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); }
+.ag-tc { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; padding: 18px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); }
 .ag-tc h2, .ag-tc p { margin: 0; }
 .ag-tc-screen { display: grid; justify-items: center; gap: 2px; padding: 14px; border-radius: 10px; background: #0b0f0a; border: 3px solid #2a2f26; color: #ffb000; font-family: var(--font-mono); text-shadow: 0 0 10px rgba(255, 176, 0, 0.45); }
 .ag-tc-screen b { font-size: 2.6rem; line-height: 1.1; letter-spacing: 0.06em; }
@@ -1636,7 +1636,7 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .ag-in-grid { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 18px; align-items: start; }
 .ag-in-side { display: grid; gap: 14px; }
 @keyframes ag-dot { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-.ag-dossier { display: grid; gap: 8px; padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--line); border-top: 4px solid var(--sun); background: var(--surface); }
+.ag-dossier { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--line); border-top: 4px solid var(--sun); background: var(--surface); }
 .ag-dossier h2 { margin: 0; }
 .ag-dossier .btn { justify-self: start; }
 .ag-lead { display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; }
@@ -1790,3 +1790,5 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .ag-qref .dk-ref { font-size: 0.68rem; }
 .ag-work { margin: 4px 0 0; }
 .ag-lead .dk-av, .ag-lead-av { width: 26px; height: 26px; font-size: 0.66rem; }
+.dk-photo { display: block; object-fit: cover; background: var(--surface-2); }
+.ag-scene { display: block; width: 100%; max-width: 100%; min-width: 0; height: auto; aspect-ratio: 1200 / 340; border-radius: var(--radius-sm); border: 1px solid var(--line); }
