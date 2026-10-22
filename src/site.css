@@ -37,7 +37,7 @@
   --panel-bg: linear-gradient(180deg, rgba(20, 32, 48, 0.55), rgba(13, 19, 28, 0.9));
   --faint: #3A4A60; --statusbar: #04070B;
   --dg-line: #2B3D55; --dg-box: #24344A; --dg-strong: #4D6280;
-  --hw-stroke: #4A6080; --hw-screen: #0A1A26; --hw-port: #0A1018; --hw-top: #22324A; --hw-bot: #101A28; --hw-shadow: rgba(0, 0, 0, 0.45);
+  --hw-stroke: #4A6080; --hw-screen: #0A1A26; --hw-port: #0A1018; --hw-top: #22324A; --hw-bot: #101A28; --hw-face-top: #2E4262; --hw-face-side: #0B131E; --hw-shadow: rgba(0, 0, 0, 0.45);
   --card-line: #24334A;
   --elev: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.4), 0 14px 34px rgba(0, 0, 0, 0.55);
   --elev-hover: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.4), 0 18px 44px rgba(0, 0, 0, 0.65), 0 0 28px rgba(63, 224, 232, 0.1);
@@ -63,7 +63,7 @@
   --panel-bg: linear-gradient(180deg, #FFFFFF, #FAFBFD);
   --faint: #B3BFCF; --statusbar: #E2E8F0;
   --dg-line: #9FB1C7; --dg-box: #B9C6D7; --dg-strong: #7F93AE;
-  --hw-stroke: #6F84A0; --hw-screen: #DCE7F2; --hw-port: #E7EDF5; --hw-top: #FFFFFF; --hw-bot: #D9E2EE; --hw-shadow: rgba(15, 27, 45, 0.18);
+  --hw-stroke: #6F84A0; --hw-screen: #DCE7F2; --hw-port: #E7EDF5; --hw-top: #FFFFFF; --hw-bot: #D9E2EE; --hw-face-top: #F7FAFD; --hw-face-side: #BCCADB; --hw-shadow: rgba(15, 27, 45, 0.18);
   --card-line: #CDD6E3;
   --elev: 0 1px 2px rgba(15, 27, 45, 0.06), 0 10px 28px rgba(15, 27, 45, 0.1);
   --elev-hover: 0 2px 4px rgba(15, 27, 45, 0.08), 0 16px 40px rgba(15, 27, 45, 0.16);
@@ -500,6 +500,12 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .hw-threat { stroke: var(--bad); }
 .hw-face { fill: #05080C; stroke: none; }
 .hw-glint { fill: none; stroke: var(--bad); stroke-width: 1.6; stroke-linecap: round; opacity: .9; }
+/* Depth faces of the 3/4 view: a lit top and a shaded side (they also carry hw-body, so state colours reach them). */
+.hw-body.hw-top { fill: var(--hw-face-top); }
+.hw-body.hw-side { fill: var(--hw-face-side); }
+.hw-ant { fill: none; stroke: var(--hw-stroke); stroke-width: 3; stroke-linecap: round; }
+.hw-vent { fill: none; stroke: var(--hw-stroke); stroke-width: 1.2; stroke-linecap: round; opacity: 0.6; }
+.hw-btn { fill: none; stroke: var(--good); stroke-width: 1.2; }
 @media (prefers-reduced-motion: no-preference) {
   .hw-live .hw-led { animation: hw-blink 2.4s steps(1) infinite; }
   .hw-live .hw:nth-child(3n) .hw-led { animation-delay: -0.8s; } .hw-live .hw:nth-child(3n+1) .hw-led { animation-delay: -1.7s; }
