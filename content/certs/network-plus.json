@@ -45,9 +45,13 @@
       {
        "type": "lesson",
        "id": "iot-ot"
+      },
+      {
+       "type": "lab",
+       "id": "one-request"
       }
      ],
-     "gap": "Load balancers, proxies, IDS/IPS, NAS/SAN, CDN and QoS aren't covered in depth yet."
+     "gap": "Load balancers, reverse proxies and firewalls are shown in the one-request lab; IDS/IPS, NAS/SAN, CDN and QoS aren't covered in depth yet."
     },
     {
      "id": "1.3",
@@ -73,6 +77,18 @@
       {
        "type": "lesson",
        "id": "networking"
+      },
+      {
+       "type": "lab",
+       "id": "one-request"
+      },
+      {
+       "type": "lab",
+       "id": "finding-the-server"
+      },
+      {
+       "type": "lab",
+       "id": "telnet-ssh"
       }
      ],
      "gap": "Unicast, multicast, anycast and broadcast aren't covered yet."
@@ -116,6 +132,10 @@
       {
        "type": "mission",
        "id": "dhcp"
+      },
+      {
+       "type": "lab",
+       "id": "network-builder"
       }
      ]
     },
@@ -149,9 +169,17 @@
       {
        "type": "lab",
        "id": "topologies"
+      },
+      {
+       "type": "lab",
+       "id": "network-builder"
+      },
+      {
+       "type": "lab",
+       "id": "finding-the-server"
       }
      ],
-     "gap": "Connected routes and router-on-a-stick inter-VLAN routing are hands-on; static vs dynamic routing, OSPF/BGP/EIGRP, route selection and NAT details aren't covered yet."
+     "gap": "Connected routes, router-on-a-stick and NAT basics are hands-on; static vs dynamic routing, OSPF/BGP/EIGRP and route selection aren't covered yet."
     },
     {
      "id": "2.2",
@@ -165,6 +193,10 @@
       {
        "type": "lab",
        "id": "intervlan"
+      },
+      {
+       "type": "lab",
+       "id": "network-builder"
       }
      ],
      "gap": "VLANs, 802.1Q trunks, native and voice VLANs are covered hands-on; spanning tree and MTU aren't yet."
@@ -249,6 +281,10 @@
       {
        "type": "lesson",
        "id": "networking"
+      },
+      {
+       "type": "lab",
+       "id": "finding-the-server"
       }
      ],
      "gap": "DHCP and DNS basics are covered; NTP, SLAAC and DNS record types aren't yet."
@@ -265,9 +301,13 @@
       {
        "type": "lesson",
        "id": "identity"
+      },
+      {
+       "type": "lab",
+       "id": "telnet-ssh"
       }
      ],
-     "gap": "Site-to-site vs client VPN, jump boxes and in-band vs out-of-band management aren't covered yet."
+     "gap": "SSH vs Telnet is hands-on; site-to-site vs client VPN, jump boxes and in-band vs out-of-band management aren't covered yet."
     }
    ]
   },
@@ -292,6 +332,10 @@
       {
        "type": "lesson",
        "id": "cloud"
+      },
+      {
+       "type": "lab",
+       "id": "telnet-ssh"
       }
      ],
      "gap": "The CIA triad, PKI details, RADIUS/TACACS+/LDAP and compliance aren't covered yet."
@@ -316,9 +360,13 @@
       {
        "type": "lesson",
        "id": "malware"
+      },
+      {
+       "type": "mission",
+       "id": "phish-triage"
       }
      ],
-     "gap": "SYN floods are covered hands-on; VLAN hopping, MAC flooding, ARP and DNS poisoning and evil twins aren't yet."
+     "gap": "SYN floods and phishing triage are hands-on; VLAN hopping, MAC flooding, ARP and DNS poisoning and evil twins are explained only in the glossary and practice questions."
     },
     {
      "id": "4.3",
@@ -370,9 +418,14 @@
     {
      "id": "5.2",
      "title": "Cabling and physical interface issues",
-     "coverage": "none",
-     "activities": [],
-     "gap": "Cable faults, interface errors and PoE issues aren't covered yet."
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "cable-wiring"
+      }
+     ],
+     "gap": "Wiring faults (T568A/B pinouts, straight-through vs crossover) are hands-on in the wiring lab; cable testers, interface errors and PoE issues aren't covered yet."
     },
     {
      "id": "5.3",
@@ -398,9 +451,17 @@
       {
        "type": "lab",
        "id": "vlans"
+      },
+      {
+       "type": "lab",
+       "id": "intervlan"
+      },
+      {
+       "type": "lab",
+       "id": "network-builder"
       }
      ],
-     "gap": "DHCP and DNS failures are covered, and a VLAN fault (links that don't trunk); routing faults aren't yet."
+     "gap": "DHCP and DNS failures, VLAN faults (links that don't trunk) and a missing default gateway are covered; deeper routing faults aren't yet."
     },
     {
      "id": "5.4",
@@ -421,6 +482,10 @@
       {
        "type": "lab",
        "id": "net-detective"
+      },
+      {
+       "type": "lab",
+       "id": "network-builder"
       }
      ],
      "gap": "ping, traceroute and nslookup are practised in Network detective; tcpdump, Wireshark and nmap aren't yet."

@@ -52,7 +52,7 @@
        "id": "frameworks"
       }
      ],
-     "gap": "The CIA triad, control categories and types, encryption, hashing (hands-on), certificates and PKI, authentication and zero trust are covered. Physical security and change management aren't yet."
+     "gap": "The CIA triad, control categories and types, encryption, hashing (hands-on), certificates and PKI and authentication are covered. Zero trust is only in the practice questions so far, and physical security and change management aren't covered yet."
     }
    ]
   },
@@ -113,6 +113,22 @@
       {
        "type": "lesson",
        "id": "ai-security"
+      },
+      {
+       "type": "mission",
+       "id": "phish-triage"
+      },
+      {
+       "type": "mission",
+       "id": "ssh-brute"
+      },
+      {
+       "type": "lab",
+       "id": "header-inspector"
+      },
+      {
+       "type": "agency",
+       "id": "shift-02"
       }
      ],
      "gap": "Social engineering, malware, web and network attacks (including a hands-on SYN flood) and patching are well covered. A few specific indicators and mitigation techniques aren't."
@@ -148,9 +164,25 @@
       {
        "type": "lesson",
        "id": "iot-ot"
+      },
+      {
+       "type": "lab",
+       "id": "vlans"
+      },
+      {
+       "type": "lab",
+       "id": "intervlan"
+      },
+      {
+       "type": "lab",
+       "id": "network-builder"
+      },
+      {
+       "type": "lab",
+       "id": "one-request"
       }
      ],
-     "gap": "Network design, segmentation, cloud and IoT/OT are covered. Zero-trust architecture in depth, data protection design and resilience/recovery architecture aren't yet."
+     "gap": "Network design, segmentation (VLANs, routing and ACLs, hands-on), cloud and IoT/OT are covered. Zero-trust architecture in depth, data protection design and resilience/recovery architecture aren't yet."
     }
    ]
   },
@@ -191,9 +223,41 @@
       {
        "type": "lesson",
        "id": "identity"
+      },
+      {
+       "type": "agency",
+       "id": "shift-01"
+      },
+      {
+       "type": "agency",
+       "id": "shift-02"
+      },
+      {
+       "type": "mission",
+       "id": "phish-triage"
+      },
+      {
+       "type": "lab",
+       "id": "permissions"
+      },
+      {
+       "type": "lab",
+       "id": "telnet-ssh"
+      },
+      {
+       "type": "lab",
+       "id": "cvss-builder"
+      },
+      {
+       "type": "tool",
+       "id": "log-search"
+      },
+      {
+       "type": "tool",
+       "id": "headers-check"
       }
      ],
-     "gap": "The SOC, log analysis, incident response and email investigation are hands-on. Vulnerability-management operations, automation and digital forensics in depth aren't yet."
+     "gap": "The SOC, log analysis, email investigation, vulnerability scoring, incident response and two simulated SOC shifts are hands-on. Automation and digital forensics in depth aren't yet."
     }
    ]
   },

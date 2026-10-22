@@ -522,6 +522,7 @@ class ContentIntegrity(unittest.TestCase):
     def test_certification_maps_are_complete_and_honest(self):
         labs = {l["id"] for l in self.labs.values()}
         missions = {json.loads(f.read_text())["id"] for f in (ROOT / "content" / "missions").glob("*.json")}
+        shifts = {json.loads(f.read_text())["id"] for f in (ROOT / "content" / "agency").glob("*.json")}
         for f in (ROOT / "content" / "certs").glob("*.json"):
             if f.stem.endswith("-questions"):
                 continue
@@ -544,8 +545,19 @@ class ContentIntegrity(unittest.TestCase):
                     if o["coverage"] != "strong":
                         self.assertTrue(o.get("gap"), f"{o['id']}: say what's missing")
                     for a in o["activities"]:
-                        known = {"lesson": self.lessons, "lab": labs, "mission": missions, "tool": {"subnet-calc"}}[a["type"]]
+                        known = {"lesson": self.lessons, "lab": labs, "mission": missions, "agency": shifts,
+                                 "tool": {"subnet-calc", "headers-check", "log-search", "cvss-decode"}}[a["type"]]
                         self.assertIn(a["id"], known, f"{o['id']}: unknown {a['type']} {a['id']}")
+
+    def test_everything_counts_towards_an_exam(self):
+        """Every lesson, lab, mission and Agency shift is mapped to at least one exam objective, so nothing that
+        teaches an objective is missing from the exams tab and its "Am I ready?" study plan."""
+        mapped = {(a["type"], a["id"]) for f in (ROOT / "content" / "certs").glob("*.json") if not f.stem.endswith("-questions")
+                  for d in json.loads(f.read_text())["domains"] for o in d["objectives"] for a in o["activities"]}
+        everything = [("lesson", i) for i in self.lessons] + [("lab", i) for i in self.labs] \
+            + [("mission", json.loads(f.read_text())["id"]) for f in (ROOT / "content" / "missions").glob("*.json")] \
+            + [("agency", json.loads(f.read_text())["id"]) for f in (ROOT / "content" / "agency").glob("*.json")]
+        self.assertEqual([x for x in everything if x not in mapped], [], "map these to the objectives they teach")
 
     def test_certs_load_in_study_order(self):
         """Network+, then Security+, then PenTest+: the exams tab and lessons' "Prove it" reach the gentler exam first."""

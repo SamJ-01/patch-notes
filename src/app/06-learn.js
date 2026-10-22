@@ -57,7 +57,8 @@ function certActivity(a) {
   if (a.type === "lesson") { const l = LESSON[a.id]; return l && { label: l.title, href: "#lesson-" + a.id, done: !!P.done[a.id] }; }
   if (a.type === "lab") { const l = DATA.labs.find(x => x.id === a.id); return l && { label: l.title, href: "#lab-" + a.id, done: !!P.labs[a.id] }; }
   if (a.type === "mission") { const m = MISSION(a.id); return m && { label: m.title, href: "#mission-" + a.id, done: count((P.missions || {})[a.id]) > 0 }; }
-  if (a.type === "tool" && a.id === "subnet-calc") return { label: "Subnet calculator", href: "#subnet-calc", done: null };  // a tool: nothing to complete
+  if (a.type === "agency") { const sh = SHIFT(a.id); return sh && { label: `PATCH//AGENCY: ${sh.title}`, href: "#agency-" + a.id, done: !!(P.agency || {})[a.id] }; }
+  if (a.type === "tool" && CERT_TOOLS[a.id]) return { label: CERT_TOOLS[a.id], href: "#" + a.id, done: null };  // a tool: nothing to complete
   return null;
 }
 // Practice progress for one objective: mapped activities you've completed (tools don't count).
@@ -65,6 +66,7 @@ function objectiveProgress(o) {
   const acts = o.activities.map(certActivity).filter(Boolean), countable = acts.filter(a => a.done !== null);
   return { acts, done: countable.filter(a => a.done).length, total: countable.length };
 }
+const CERT_TOOLS = { "subnet-calc": "Subnet calculator", "headers-check": "Email header checker", "log-search": "Log search", "cvss-decode": "CVSS decoder" };
 const certObjectives = c => c.domains.flatMap(d => d.objectives.map(o => ({ ...o, domain: d })));
 // Exam prep has its own tab, so certification material doesn't crowd the lessons.
 VIEWS.exams = () => {
