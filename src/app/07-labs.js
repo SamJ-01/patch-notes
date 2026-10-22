@@ -117,7 +117,7 @@ const CARD_PHOTOS = new Set(["dhcp", "dns", "phish-triage", "ssh-brute", "hashin
   "cloud", "identity", "iot-ot", "web-sqli", "web-xss", "web-access",
   "networking", "encryption", "linux", "soc", "incident-response", "osint"]);
 // Tools reuse the picture of the lab they belong with.
-const PHOTO_ALIAS = { "subnet-calc": "subnetting" };
+const PHOTO_ALIAS = { "subnet-calc": "subnetting", certificates: "telnet-ssh", "security-controls": "permissions" };  // stand-ins until their own pictures are made
 const cardPhoto = (src, w = 506, h = 253) => `<span class="card-art photo"><img class="card-img" src="${esc(src)}" alt="" width="${w}" height="${h}" loading="lazy" decoding="async"></span>`;
 // The card's picture as a slim banner at the top of its lesson, lab or mission page (a decorative ::before, so it
 // shows while a module loads and whatever the module draws). Nothing when the card has no photo.

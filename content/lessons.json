@@ -214,6 +214,125 @@
   ]
  },
  {
+  "id": "security-controls",
+  "title": "Security controls",
+  "track": "Foundations",
+  "level": "Beginner",
+  "minutes": 5,
+  "hook": "Prevent, detect, correct: what each defence is for.",
+  "what": "A control is anything that reduces risk. Controls come in four categories by how they work: technical (enforced by technology, like a firewall or MFA), managerial (decisions and policies, like a risk assessment), operational (things people do, like security awareness training or checking logs) and physical (locks, fences, badges). Each control also has a type, by what it does: preventive controls stop something happening, deterrent controls discourage the attempt, detective controls notice it, corrective controls fix things afterwards, directive controls tell people what to do, and compensating controls stand in when the usual control can't be used. Good defence layers several types, because no single control is perfect.",
+  "example": {
+   "title": "Target",
+   "year": "2013",
+   "text": "Attackers got in using a heating contractor's stolen login and planted malware on Target's checkout tills, taking about 40 million payment card numbers. Bloomberg Businessweek later reported that Target's malware detection system had raised alerts during the attack and nobody acted on them. A detective control did its job; there was no response to correct the problem.",
+   "source": {
+    "label": "Infosecurity Magazine: Target may have ignored pre-breach intrusion warning",
+    "url": "https://infosecurity-magazine.com/news/target-may-have-ignored-pre-breach-intrusion"
+   }
+  },
+  "defend": [
+   "Pair every detective control with someone who acts on its alerts",
+   "Layer controls so one failure isn't the whole defence",
+   "Add a compensating control when a system can't meet the standard, and write down why",
+   "Review controls after incidents: which one should have stopped this?"
+  ],
+  "practice": {
+   "label": "Practise control types in the Security+ questions",
+   "url": "#cert-security-plus"
+  },
+  "checks": [
+   {
+    "q": "An intrusion detection system alerts the SOC but lets the traffic through. What type of control is it?",
+    "options": [
+     "Preventive",
+     "Detective",
+     "Corrective",
+     "Directive"
+    ],
+    "answer": 1,
+    "why": "It notices and reports. A prevention system (IPS) would block the traffic.",
+    "see": "concept"
+   },
+   {
+    "q": "Which category does a written acceptable use policy belong to?",
+    "options": [
+     "Technical",
+     "Physical",
+     "Managerial",
+     "Corrective"
+    ],
+    "answer": 2,
+    "why": "Policies are decisions set by management. Corrective is a type, not a category.",
+    "see": "what"
+   },
+   {
+    "q": "What does the Target breach show about detective controls?",
+    "options": [
+     "They are useless",
+     "They only work with someone ready to act on the alerts",
+     "They replace preventive controls",
+     "They should be switched off to reduce noise"
+    ],
+    "answer": 1,
+    "why": "The alerts were raised; the missing piece was a response to them.",
+    "see": "example"
+   }
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "What each type of control does",
+   "items": [
+    {
+     "label": "Preventive",
+     "icon": "lock",
+     "text": "Stops it happening: a firewall rule, MFA, a locked door."
+    },
+    {
+     "label": "Deterrent",
+     "icon": "alert",
+     "text": "Discourages the attempt: a warning banner, a CCTV sign."
+    },
+    {
+     "label": "Detective",
+     "icon": "eye",
+     "text": "Notices it: an IDS alert, a log review, a camera recording."
+    },
+    {
+     "label": "Corrective",
+     "icon": "cycle",
+     "text": "Fixes things afterwards: restoring from backup, patching, reimaging a laptop."
+    },
+    {
+     "label": "Directive",
+     "icon": "doc",
+     "text": "Tells people what to do: a policy, a procedure, a sign saying staff only."
+    },
+    {
+     "label": "Compensating",
+     "icon": "shield",
+     "text": "Stands in when the usual control can't be used, such as isolating an unpatchable machine."
+    }
+   ]
+  },
+  "keys": [
+   {
+    "icon": "chip",
+    "label": "Categories",
+    "text": "How it works: technical, managerial, operational or physical."
+   },
+   {
+    "icon": "gauge",
+    "label": "Types",
+    "text": "What it does: prevent, deter, detect, correct, direct, compensate."
+   },
+   {
+    "icon": "users",
+    "label": "Layers",
+    "text": "No control is perfect, so combine several types."
+   }
+  ]
+ },
+ {
   "id": "phishing",
   "title": "Phishing & social engineering",
   "track": "Threats",
@@ -2400,6 +2519,115 @@
     "icon": "doc",
     "label": "Hashing",
     "text": "A one-way fingerprint, used to store passwords."
+   }
+  ]
+ },
+ {
+  "id": "certificates",
+  "title": "Certificates & PKI",
+  "track": "Foundations",
+  "level": "Beginner",
+  "minutes": 5,
+  "hook": "How your browser knows a site is real.",
+  "what": "A certificate ties a public key to a name, like shop.example.com. A certificate authority (CA) checks that the requester controls the name, then signs the certificate. Your device trusts a short list of root CAs, built into the operating system or browser. Roots sign intermediate CAs, which sign site certificates, so your browser follows the chain up to a root it already trusts. To get a certificate, a server sends the CA a certificate signing request (CSR) holding its public key; the private key never leaves the server. If that key is stolen, the certificate is revoked: CAs publish revocation lists (CRLs) and can answer single questions over OCSP, though many browsers now get revocation data pushed to them by the browser maker instead. This whole system of CAs, certificates and trust is called PKI.",
+  "example": {
+   "title": "DigiNotar",
+   "year": "2011",
+   "text": "Attackers broke into DigiNotar, a Dutch certificate authority, and issued themselves a valid certificate for google.com. It was used to intercept Gmail traffic, mostly from users in Iran. Browser makers removed DigiNotar from their trusted lists, which made every certificate it had issued worthless, and the company went bankrupt within weeks.",
+   "source": {
+    "label": "Wikipedia: DigiNotar",
+    "url": "https://en.wikipedia.org/wiki/DigiNotar"
+   }
+  },
+  "defend": [
+   "Keep private keys on the server (or in a hardware security module) and never email them",
+   "Revoke and replace a certificate as soon as its key may be exposed",
+   "Automate renewal so certificates never expire unnoticed",
+   "Never click through a browser's certificate warning on a site you log in to"
+  ],
+  "practice": {
+   "label": "Inspect a real site's certificate chain with SSL Labs",
+   "url": "https://www.ssllabs.com/ssltest/"
+  },
+  "checks": [
+   {
+    "q": "What does a certificate authority do when it signs a certificate?",
+    "options": [
+     "Encrypts the website's data for it",
+     "Vouches that the public key in it belongs to that name",
+     "Stores the website's private key",
+     "Speeds up the connection"
+    ],
+    "answer": 1,
+    "why": "The CA checks the requester controls the name, then signs to say so. Your browser trusts that signature because it trusts the CA.",
+    "see": "what"
+   },
+   {
+    "q": "A server's private key is stolen. What should happen to its certificate?",
+    "options": [
+     "Nothing until it expires",
+     "Renew it with the same key",
+     "Revoke it and issue a new one with a new key pair",
+     "Change the server's admin password"
+    ],
+    "answer": 2,
+    "why": "Revocation tells clients to stop trusting it, and a new key pair makes the stolen key useless for the replacement.",
+    "see": "what"
+   },
+   {
+    "q": "Why did removing DigiNotar from browsers' trusted lists stop its rogue google.com certificate working?",
+    "options": [
+     "Browsers check every certificate's chain up to a trusted root",
+     "Google changed its IP address",
+     "The certificate was encrypted",
+     "Gmail stopped using HTTPS"
+    ],
+    "answer": 0,
+    "why": "No trusted root means no trusted chain, so every DigiNotar certificate failed the check.",
+    "see": "example"
+   }
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "The chain your browser checks",
+   "items": [
+    {
+     "label": "Root CA",
+     "icon": "shield",
+     "text": "Built into your device's trust store. Its private key is kept offline because replacing a root is so hard."
+    },
+    {
+     "label": "Intermediate CA",
+     "icon": "key",
+     "text": "Signed by the root, and does the day-to-day signing. If it's compromised it can be revoked without touching the root."
+    },
+    {
+     "label": "Site certificate",
+     "icon": "doc",
+     "text": "The site's name, public key and expiry date, signed by the intermediate. The server sends it with the intermediate."
+    },
+    {
+     "label": "Revocation",
+     "icon": "alert",
+     "text": "A way to cancel a certificate early, through a revocation list (CRL) or an OCSP check."
+    }
+   ]
+  },
+  "keys": [
+   {
+    "icon": "doc",
+    "label": "Certificate",
+    "text": "Ties a public key to a name, signed by a CA."
+   },
+   {
+    "icon": "users",
+    "label": "Trust",
+    "text": "Your device trusts a short list of root CAs."
+   },
+   {
+    "icon": "lock",
+    "label": "Private key",
+    "text": "Stays on the server; if it leaks, revoke the certificate."
    }
   ]
  },

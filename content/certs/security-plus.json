@@ -6,7 +6,7 @@
   "label": "CompTIA: Security+ certification",
   "url": "https://www.comptia.org/en-us/certifications/security/"
  },
- "reviewed": "2026-10-21",
+ "reviewed": "2026-10-22",
  "note": "CompTIA's five SY0-701 domains and their weights, each with the lessons and labs that cover it, and honest gaps. It's preparation, not a guarantee of passing, and the practice questions are original, not real exam questions.",
  "study": {
   "label": "Professor Messer's free SY0-701 course",
@@ -29,7 +29,15 @@
       },
       {
        "type": "lesson",
+       "id": "security-controls"
+      },
+      {
+       "type": "lesson",
        "id": "encryption"
+      },
+      {
+       "type": "lesson",
+       "id": "certificates"
       },
       {
        "type": "lab",
@@ -44,7 +52,7 @@
        "id": "frameworks"
       }
      ],
-     "gap": "The CIA triad, encryption basics, hashing (hands-on), authentication and zero trust are covered. Control categories and types and PKI (CAs, CSRs, revocation, certificate chains) have practice questions but no lesson yet. Physical security and change management aren't covered yet."
+     "gap": "The CIA triad, control categories and types, encryption, hashing (hands-on), certificates and PKI, authentication and zero trust are covered. Physical security and change management aren't yet."
     }
    ]
   },

@@ -1807,7 +1807,7 @@
    "code signing"
   ],
   "short": "A digital ID proving a website or program is genuine, issued by a certificate authority (CA). Rogue or stolen certificates let fakes look trusted.",
-  "lesson": "encryption"
+  "lesson": "certificates"
  },
  {
   "id": "encryption",
@@ -3775,7 +3775,7 @@
   ],
   "auto": false,
   "short": "The system of certificate authorities, certificates and trust stores that lets you trust a stranger's public key.",
-  "lesson": "encryption",
+  "lesson": "certificates",
   "see": [
    "certificate",
    "ocsp",
@@ -3794,7 +3794,7 @@
   ],
   "auto": false,
   "short": "What you send a certificate authority to ask for a certificate: your public key and name. The private key stays with you.",
-  "lesson": "encryption",
+  "lesson": "certificates",
   "see": [
    "pki",
    "certificate"
@@ -3816,7 +3816,7 @@
   ],
   "auto": false,
   "short": "Ways to check a certificate hasn't been cancelled early: a CRL is the CA's full list of revoked certificates; OCSP asks about one.",
-  "lesson": "encryption",
+  "lesson": "certificates",
   "see": [
    "pki",
    "certificate"
@@ -3859,6 +3859,6 @@
   ],
   "auto": false,
   "short": "What a control does: prevent, deter, detect, correct, direct, or compensate when the usual control can't be used.",
-  "lesson": "frameworks"
+  "lesson": "security-controls"
  }
 ]
