@@ -38,7 +38,7 @@ try {
 /* ---------- command palette ---------- */
 const cmdk = $("cmdk"), cmdIn = $("cmdk-input"), cmdOut = $("cmdk-out");
 let cmdLog = [], cmdSel = 0, cmdItems = [], sudoTried = false;
-const SECTIONS = [["today", "Daily briefing"], ["news", "Security news, explained"], ["cves", "CVE Radar"], ["learn", "Lessons & paths"], ["glossary", "Glossary A–Z"], ["missions", "Missions & labs"], ["play", "Games & flag hunt"], ["careers", "Career paths & resources"], ["progress", "Your XP, badges & level"], ["stack", "Am I affected? (your tech)"]];
+const SECTIONS = [["today", "Daily briefing"], ["news", "Security news, explained"], ["cves", "CVE Radar"], ["learn", "Lessons & paths"], ["exams", "Exam prep: Network+ and Security+"], ["glossary", "Glossary A–Z"], ["missions", "Missions & labs"], ["play", "Games & flag hunt"], ["careers", "Career paths & resources"], ["progress", "Your XP, badges & level"], ["stack", "Am I affected? (your tech)"]];
 const HELP = [
   ["help", "show this list"], ["ls", "list sections"], ["cd <section>", "go to a section, e.g. cd news"],
   ["open <lesson>", "open a lesson, e.g. open ransomware"], ["define <term>", "explain a term, e.g. define rce"],
@@ -190,7 +190,7 @@ document.addEventListener("keydown", e => {
   if (typing || !cmdk.hidden || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === "/") { e.preventDefault(); openCmd(); }
   else if (e.key === "?") { e.preventDefault(); openCmd("help", true); }
-  else if (/^[1-7]$/.test(e.key)) { const tabs = ["today", "learn", "missions", "agency", "progress", "news", "cves"]; location.hash = tabs[Number(e.key) - 1]; }
+  else if (/^[1-8]$/.test(e.key)) { const tabs = ["today", "learn", "missions", "agency", "exams", "progress", "news", "cves"]; location.hash = tabs[Number(e.key) - 1]; }
 });
 
 /* ---------- router ---------- */
@@ -202,7 +202,7 @@ function parseRoute() {
   const h = (location.hash || "#today").slice(1);
   if (h.startsWith("lesson-")) return { tab: "learn", path: "learn/" + h.slice(7), draw: () => lessonView(h.slice(7)) };
   if (h.startsWith("path-")) return { tab: "learn", path: "learn/paths/" + h.slice(5), draw: () => pathView(h.slice(5)) };
-  if (h.startsWith("cert-")) return { tab: "learn", path: "learn/certs/" + h.slice(5), draw: () => certView(h.slice(5)) };
+  if (h.startsWith("cert-")) return { tab: "exams", path: "exams/" + h.slice(5), draw: () => certView(h.slice(5)) };
   if (h.startsWith("lab-")) return { tab: "missions", path: "missions/" + h.slice(4), draw: () => labView(h.slice(4)) };
   if (h.startsWith("agency-")) return { tab: "agency", path: "agency/" + h.slice(7), draw: () => agencyView(h.slice(7)) };
   if (h.startsWith("mission-")) return { tab: "missions", path: "missions/" + h.slice(8), draw: () => missionView(h.slice(8)) };

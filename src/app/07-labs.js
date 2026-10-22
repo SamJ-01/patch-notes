@@ -92,6 +92,7 @@ const RADAR_ART = `<g class="radar" transform="translate(100,46)"><circle r="40"
   <path class="sweep" d="M0 0L0-40A40 40 0 0 1 28.3-28.3z"/><circle class="blip b1" cx="17" cy="-22" r="3"/><circle class="blip b2" cx="-24" cy="9" r="3"/><circle class="blip b3" cx="9" cy="27" r="2.5"/></g>`;
 const HEAD_SCENE = {
   missions: SCENE.networking,
+  exams: { d: [["pc", 56, 50, 0.7]], g: [["doc", 132, 44, 1.7], ["gauge", 178, 46, 1.2, "good"]], l: [[80, 50, 112, 46]], p: ["M56 50L132 44"], tone: "good" },
   learn: { d: [["laptop", 52, 50, 0.72]], g: [["shield", 140, 46, 2, "good"]], l: [[76, 50, 116, 46]], p: ["M52 50L140 46"], tone: "good" },
   play: { d: [["attacker", 40, 48, 0.68], ["firewall", 116, 48, 0.6]], g: [["key", 170, 46, 1.3]], l: [[58, 48, 100, 48], [132, 48, 156, 46]], t: [["flag{…}", 116, 14]], p: ["M40 48L116 48L170 46"], tone: "bad" },
   careers: { d: [["laptop", 34, 66, 0.5], ["server", 100, 48, 0.58], ["cloud", 166, 28, 0.62]], l: [[48, 62, 88, 52], [112, 44, 150, 32]], t: [["SOC", 100, 80]], p: ["M34 66L100 48L166 28"] },
@@ -156,13 +157,14 @@ VIEWS.missions = () => {
     .map(p => (p.done ? items.find(i => i.cat === p.cat && !i.done && !PRACTISE_PICKS.includes(i.key)) || p : p));
   main.innerHTML = `<div class="view">
     <div class="view-head with-art">${headArt("missions")}<h1>Practise by doing</h1><p>Missions, labs, the Agency shift and games. Start with one from each track, or pick what you want to get better at.</p></div>
-    <section class="stack pr-start"><h2 class="cat-h">Start here: one from each track</h2><div class="lessons">${picks.map(p => p.html).join("")}</div></section>
+    <section class="stack pr-start"${PS.track === "All" ? "" : " hidden"}><h2 class="cat-h">Start here: one from each track</h2><div class="lessons">${picks.map(p => p.html).join("")}</div></section>
     <div class="row pr-tracks" role="group" aria-label="Show a track">${["All", ...cats].map(c => `<button type="button" class="chip" data-t="${esc(c)}" aria-pressed="${PS.track === c}">${esc(c)} <span class="n">${c === "All" ? items.length : items.filter(i => i.cat === c).length}</span></button>`).join("")}</div>
     <div class="stack" id="pr-grid" style="gap:30px"></div>
   </div>`;
   const SHOW = 4;
   const draw = () => {
     const shown = PS.track === "All" ? cats : [PS.track];
+    main.querySelector(".pr-start").hidden = PS.track !== "All";  // the picks only repeat cards once a track is chosen
     $("pr-grid").innerHTML = shown.map(c => {
       const list = items.filter(i => i.cat === c), all = PS.track !== "All" || PS.open[c] || list.length <= SHOW + 1;
       return `<section class="stack"><h2 class="cat-h">${esc(c)}</h2><div class="lessons">${(all ? list : list.slice(0, SHOW)).map(i => i.html).join("")}</div>

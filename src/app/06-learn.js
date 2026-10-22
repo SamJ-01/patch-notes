@@ -12,7 +12,6 @@ VIEWS.learn = () => {
       <div class="row" id="ltracks">${tracks.map(t => `<button class="chip" data-t="${esc(t)}" aria-pressed="${LS.track === t}">${esc(t)}</button>`).join("")}</div>
       <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(doneCount / DATA.lessons.length * 100)}%"></i></span><span>${doneCount} of ${DATA.lessons.length} done</span></div>
     </div>
-    ${DATA.certs.length ? `<section class="stack" style="gap:12px"><h2 class="eyebrow" style="font-size:0.8rem">Exam prep</h2><div class="paths">${DATA.certs.map(certCard).join("")}</div></section>` : ""}
     <section class="stack" style="gap:12px"><div class="panel-title"><h2 class="eyebrow" style="font-size:0.8rem">Learning paths</h2><span class="muted" style="font-size:0.85rem">Finish a path for +${PATH_XP} XP and a badge</span></div>
       <div class="paths-grid">${DATA.paths.map(pathCard).join("")}</div></section>
     <div class="stack" id="lgrid" style="gap:30px"></div>
@@ -67,10 +66,19 @@ function objectiveProgress(o) {
   return { acts, done: countable.filter(a => a.done).length, total: countable.length };
 }
 const certObjectives = c => c.domains.flatMap(d => d.objectives.map(o => ({ ...o, domain: d })));
+// Exam prep has its own tab, so certification material doesn't crowd the lessons.
+VIEWS.exams = () => {
+  main.innerHTML = `<div class="view">
+    <div class="view-head with-art">${headArt("exams")}<h1>Exam prep</h1>
+      <p>CompTIA objectives mapped to what you can practise here, with practice questions, mock exams and an honest "Am I ready?" check.</p></div>
+    <div class="paths">${DATA.certs.map(certCard).join("")}</div>
+    <p class="muted cert-note">The questions are original, not real exam questions. It's preparation, not a guarantee of passing.</p>
+  </div>`;
+};
 function certCard(c) {
   const objs = certObjectives(c), practised = objs.filter(o => { const p = objectiveProgress(o); return p.total && p.done === p.total; }).length;
   return `<a class="lcard" href="#cert-${esc(c.id)}"><span class="eyebrow">${esc(c.exam)} · ${objs.length} objectives</span><h3>${esc(c.name)}</h3>
-    <p>Objectives, practice questions and what to study elsewhere</p>
+    <p>${c.questions.length} practice questions, timed mock exams and where to study the rest</p>
     <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(practised / objs.length * 100)}%"></i></span><span>${practised} of ${objs.length} practised</span></div></a>`;
 }
 // Practice question results: { [questionId]: { r: times right, w: times wrong, last: 1|0 } }
@@ -82,7 +90,7 @@ function recordAnswer(q, right) {
 const MASTERY_LABEL = { new: ["Not tried", "muted"], started: ["Started", "sun"], weak: ["Revise", "bad"], strong: ["All correct", "good"] };
 function startPractice(c, mode, questions, title) {
   import("./js/exam.js").then(ex => {
-    if (parseRoute().path !== "learn/certs/" + c.id) return;
+    if (parseRoute().path !== "exams/" + c.id) return;
     const names = Object.fromEntries(certObjectives(c).map(o => [o.id, o.title]));
     main.innerHTML = `<div class="view"><article class="article lesson"><a class="link-btn" href="#cert-${esc(c.id)}">← ${esc(c.name)} objectives</a><h1 class="sr-only">${esc(c.name)} practice: ${esc(title)}</h1><section class="panel wide ex" id="ex-root"></section></article></div>`;
     window.scrollTo(0, 0);
@@ -105,7 +113,7 @@ const pctOf = v => Math.round((v || 0) * 100);
 const readyTone = v => (v >= 0.7 ? "good" : v >= 0.4 ? "sun" : "bad");
 function readinessPanel(c, progress) {
   import("./js/exam.js").then(ex => {
-    const el = $("cert-ready"); if (!el || parseRoute().path !== "learn/certs/" + c.id) return;
+    const el = $("cert-ready"); if (!el || parseRoute().path !== "exams/" + c.id) return;
     const progressOf = o => { const p = progress.get(o.id); return { done: p.done, total: p.total, next: p.acts.find(a => a.done === false) || null }; };
     const r = ex.readiness({ domains: c.domains, questions: c.questions, stats: P.exam, progressOf, mocks: P.mocks[c.id] || [] });
     const [head, tone, base] = READY_VERDICT[r.verdict];
@@ -136,7 +144,7 @@ function readinessPanel(c, progress) {
   }).catch(() => { const el = $("cert-ready"); if (el) el.innerHTML = `<div class="panel-title"><h2 id="ready-h">Am I ready?</h2></div><p class="muted" style="margin:0">Couldn't load the readiness check. Try reloading the page.</p>`; });
 }
 function certView(id) {
-  const c = DATA.certs.find(x => x.id === id); if (!c) return VIEWS.learn();
+  const c = DATA.certs.find(x => x.id === id); if (!c) return VIEWS.exams();
   const objs = certObjectives(c), cov = k => objs.filter(o => o.coverage === k).length;
   const progress = new Map(objs.map(o => [o.id, objectiveProgress(o)]));
   const practised = objs.filter(o => { const p = progress.get(o.id); return p.total && p.done === p.total; }).length;
@@ -145,7 +153,7 @@ function certView(id) {
     return { answered: seen.length, right, total: qs.length, level: !seen.length ? "new" : right < seen.length ? "weak" : seen.length < qs.length ? "started" : "strong" }; };
   const reviewed = new Date(c.reviewed + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
   main.innerHTML = `<div class="view"><article class="article lesson">
-    <a class="link-btn" href="#learn">← Learn</a>
+    <a class="link-btn" href="#exams">← Exam prep</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">Exam prep · ${esc(c.exam)}</div><h1>${esc(c.name)}</h1>
       <p class="hook">Every exam objective, mapped to what you can practise here, with honest gaps.</p></div>
     <p class="muted cert-note">${esc(c.note)} Objectives last checked ${esc(reviewed)} against <a href="${esc(c.source.url)}" target="_blank" rel="noopener">${esc(c.source.label)} ↗</a>.</p>
@@ -182,10 +190,6 @@ function certView(id) {
     const qs = c.questions.filter(q => pp.objIds.includes(q.objective));
     if (qs.length) startPractice(c, "drill", qs, pp.title);
   }
-}
-// Objectives a lesson counts towards, shown as small links on the lesson page.
-function lessonObjectives(id) {
-  return DATA.certs.flatMap(c => certObjectives(c).filter(o => o.activities.some(a => a.type === "lesson" && a.id === id)).map(o => ({ c, o })));
 }
 
 /* THE LEARNING LOOP: one topic, four stages — Understand (lesson) → Experiment (lab) → Diagnose (mission) → Prove it
@@ -306,8 +310,7 @@ function lessonView(id) {
   const lseen = new Set([id]);
   main.innerHTML = `<div class="view"${bannerAttr(id)}><article class="article lesson">
     <a class="link-btn" href="#learn">← All lessons</a>
-    <div class="stack" style="gap:8px"><div class="eyebrow">${esc(l.track)} · ${esc(l.level)} · ${l.minutes} min</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.hook)}</p>
-      ${lessonObjectives(id).length ? `<p class="muted obj-links">Exam objectives: ${lessonObjectives(id).map(({ c, o }) => `<a href="#cert-${esc(c.id)}">${esc(c.name.replace("CompTIA ", ""))} ${esc(o.id)}</a>`).join(" · ")}</p>` : ""}</div>
+    <div class="stack" style="gap:8px"><div class="eyebrow">${esc(l.track)} · ${esc(l.level)} · ${l.minutes} min</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.hook)}</p></div>
     ${loopStrip(id, "understand")}
     <section id="l-what" tabindex="-1"><h2>What it is</h2>
       ${l.keys ? `<ul class="keys">${l.keys.map(k => `<li>${keyIcon(k.icon)}<b>${esc(k.label)}</b><span>${gloss(k.text, 1, lseen)}</span></li>`).join("")}</ul>

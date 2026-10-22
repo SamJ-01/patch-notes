@@ -45,7 +45,7 @@ const PRIO = {
   5: { label: "Other", tile: "other", why: "Lower or no score yet." },
 };
 const WKEY = "patch-notes-watch";
-const RS = { q: "", prio: "all", onlyNew: false, onlyWatch: false, sort: "priority", shown: 25, watch: null };
+const RS = { q: "", prio: "all", onlyNew: false, onlyWatch: false, sort: "priority", shown: 10, watch: null };
 try { const w = JSON.parse(localStorage.getItem(WKEY)); if (Array.isArray(w)) RS.watch = w; } catch (e) {}
 if (!RS.watch) RS.watch = DATA.meta.watchlist.slice();
 const saveWatch = () => { try { localStorage.setItem(WKEY, JSON.stringify(RS.watch)); } catch (e) {} };
@@ -133,9 +133,7 @@ VIEWS.cves = () => {
     <div class="view-head with-art">${headArt("cves")}<h1>Which vulnerabilities actually matter</h1>
       <p>This week's vulnerabilities, ranked by real-world risk.</p></div>
     <section class="glance" id="glance" aria-label="At a glance"></section>
-    ${trendsHtml()}
-    <div class="stack" style="gap:10px">
-      <h3>How the priority works</h3>
+    <details class="more-what fold-sec"><summary><h2>How the priority works</h2><span class="muted">exploited, likely, critical, high, other</span></summary>
       <div class="ladder">
         <div class="rung p1"><b>1 · Exploited</b><span>On CISA's KEV list. Patch now.</span></div>
         <div class="rung p2"><b>2 · Likely</b><span>EPSS of 10% or more.</span></div>
@@ -144,7 +142,8 @@ VIEWS.cves = () => {
         <div class="rung p5"><b>5 · Other</b><span>Lower or not scored yet.</span></div>
       </div>
       <p class="muted" style="font-size:0.88rem">New to CVE, CVSS, EPSS and KEV? <a href="#lesson-vuln-management">Take the 5-minute lesson</a>.</p>
-    </div>
+    </details>
+    ${trendsHtml()}
     <div class="controls">
       <div class="row"><label class="sr" for="rq">Search vulnerabilities</label><input id="rq" type="search" placeholder="Search a product, vendor, CVE or bug type (e.g. apple, SQL injection)" value="${esc(RS.q)}">
         <label class="sr" for="rsort">Sort</label><select id="rsort">
@@ -157,19 +156,19 @@ VIEWS.cves = () => {
     <button class="btn ghost more" id="rmore" hidden>Show more</button>
   </div>`;
   $("rsort").value = RS.sort;
-  $("rq").addEventListener("input", e => { RS.q = e.target.value; RS.shown = 25; drawRadarList(); });
+  $("rq").addEventListener("input", e => { RS.q = e.target.value; RS.shown = 10; drawRadarList(); });
   $("rsort").addEventListener("change", e => { RS.sort = e.target.value; drawRadarList(); });
-  $("rmore").addEventListener("click", () => { RS.shown += 25; drawRadarList(); });
+  $("rmore").addEventListener("click", () => { RS.shown += 10; drawRadarList(); });
   $("glance").addEventListener("click", e => {
     const t = e.target.closest(".tile"); if (!t) return;
     if (t.dataset.key === "watch") { RS.onlyWatch = !RS.onlyWatch; RS.prio = "all"; } else { RS.prio = t.dataset.key; RS.onlyWatch = false; }
-    RS.shown = 25; drawRadar();
+    RS.shown = 10; drawRadar();
   });
   $("rchips").addEventListener("click", e => {
     const b = e.target.closest(".chip"); if (!b) return;
     if (b.dataset.prio) RS.prio = b.dataset.prio;
     if (b.dataset.toggle) RS[b.dataset.toggle] = !RS[b.dataset.toggle];
-    RS.shown = 25; drawRadar();
+    RS.shown = 10; drawRadar();
   });
   $("rwatch").addEventListener("click", e => { const rm = e.target.closest("[data-rm]"); if (!rm) return; RS.watch.splice(Number(rm.dataset.rm), 1); saveWatch(); drawRadar(); });
   $("rwatch").addEventListener("submit", e => {
@@ -280,13 +279,13 @@ function rankChart(items, label, linkFn) {
 }
 function trendsHtml() {
   const t = DATA.trends;
-  return `<section class="stack" style="gap:12px" aria-labelledby="trends-h">
-    <div class="panel-title"><h2 id="trends-h" class="eyebrow" style="font-size:0.8rem">Trends</h2><span class="muted" style="font-size:0.85rem">Click a bar to filter</span></div>
+  // Folded away so the list of vulnerabilities is near the top; opening it is one tap.
+  return `<details class="more-what fold-sec" id="trends"><summary><h2 id="trends-h">Trends this week</h2><span class="muted">new CVEs per day, bug types, vendors · click a bar to filter</span></summary>
     <div class="trend-grid">
       <section class="panel"><h3>New CVEs per day</h3>${dailyChart(t.daily)}</section>
       <section class="panel"><h3>Most common bug types</h3>${rankChart(t.cwes.map(c => ({ label: c.name, n: c.n, id: c.id })), "Most common bug types", it => it.id.toLowerCase())}</section>
       <section class="panel"><h3>Most-affected vendors</h3>${rankChart(t.vendors.map(v => ({ label: v.name, n: v.n })), "Most-affected vendors", it => it.label.toLowerCase())}</section>
-    </div></section>`;
+    </div></details>`;
 }
 const tipEl = document.createElement("div"); tipEl.className = "chart-tip"; tipEl.hidden = true; document.body.appendChild(tipEl);
 document.addEventListener("pointermove", e => {
@@ -299,7 +298,7 @@ document.addEventListener("pointermove", e => {
 });
 document.addEventListener("click", e => {
   const q = e.target.closest?.("[data-chart-q]"); if (!q) return;
-  RS.q = q.dataset.chartQ; RS.prio = "all"; RS.onlyWatch = false; RS.shown = 25;
+  RS.q = q.dataset.chartQ; RS.prio = "all"; RS.onlyWatch = false; RS.shown = 10;
   $("rq").value = RS.q; drawRadarList(); $("rq").scrollIntoView({ block: "center" });
 });
 

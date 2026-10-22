@@ -892,8 +892,13 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
   .xp-log li .mono { display: none; }
   body.has-status { padding-bottom: 0; }
   nav.tabs a kbd { display: none; }
+  nav.tabs a { padding: 6px 8px; }
   .tab-group.updates { margin-left: 0; }
   .tab-group + .tab-group { border-left: 0; padding-left: 0; }
+}
+@media (max-width: 380px) {
+  nav.tabs a { padding: 6px 5px; font-size: 0.82rem; }
+  .tab-group { gap: 0; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .toast { animation: pop 0.25s ease-out; }
@@ -1167,7 +1172,6 @@ a.loop-node:hover { border-color: var(--brand); }
 .cert-done { font: 0.78rem var(--font-mono); color: var(--muted); white-space: nowrap; } .cert-done.ok { color: var(--good); }
 .cert-acts { gap: 6px; }
 .cert-gap { margin: 0; font-size: 0.88rem; }
-.obj-links { margin: 0; font-size: 0.88rem; }
 .ex-scenario { margin: 0; padding: 10px 12px; border-left: 3px solid var(--brand); background: var(--surface-2); border-radius: var(--radius-sm); }
 .ex-hint { margin: 0; font-size: 0.88rem; }
 .ex-opts { display: grid; gap: 8px; }
@@ -1676,6 +1680,15 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .more-what { margin-top: 12px; }
 .more-what summary { cursor: pointer; color: var(--brand); font-weight: 600; }
 .more-what p { margin: 10px 0 0; }
+/* A section folded behind its heading (radar trends, priority ladder): the page leads with what matters. */
+.fold-sec { margin: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.fold-sec > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; list-style: none; }
+.fold-sec > summary::-webkit-details-marker { display: none; }
+.fold-sec > summary::before { content: "▸"; color: var(--brand); width: 1em; }
+.fold-sec[open] > summary::before { content: "▾"; }
+.fold-sec > summary h2 { display: inline; margin: 0; font-size: 1rem; color: var(--ink); }
+.fold-sec > summary .muted { font-weight: 400; font-size: 0.85rem; }
+.fold-sec[open] > summary { margin-bottom: 12px; }
 .news-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .news-lines li { display: grid; gap: 2px; }
 .news-lines .muted { font-size: 0.8rem; }

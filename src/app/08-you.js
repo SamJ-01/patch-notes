@@ -14,10 +14,10 @@ VIEWS.progress = () => {
       <div class="badges">${BADGES.map(b => `<div class="badge ${P.badges[b.id] ? "got" : ""}"><span class="ico" aria-hidden="true">${P.badges[b.id] ? "★" : "☆"}</span><span class="stack" style="gap:2px"><b>${esc(b.name)}</b><span>${esc(b.desc)}</span>${P.badges[b.id] ? `<span class="mono" style="font-size:0.7rem;color:var(--good)">earned ${esc(P.badges[b.id])}</span>` : ""}</span></div>`).join("")}</div></section>
     <section class="stack"><h2 class="eyebrow" style="font-size:0.8rem">Learning paths</h2><div class="paths-grid">${DATA.paths.map(pathCard).join("")}</div></section>
     <section class="panel"><h2>Recent XP</h2>${P.log.length ? `<ul class="xp-log">${P.log.slice(0, 15).map(x => `<li><span class="mono">${esc(x.d)}</span><span>${esc(x.why)}</span><b>+${Number(x.n) || 0}</b></li>`).join("")}</ul>` : `<p class="muted">Nothing yet. Try today's challenge, a lesson or a lab.</p>`}</section>
-    <section class="panel"><h2>How to earn XP</h2><ul class="xp-log">
+    <details class="more-what fold-sec"><summary><h2>How to earn XP</h2><span class="muted">lessons, labs, flags, paths and more</span></summary><ul class="xp-log">
       <li><span></span><span>Daily challenge (correct)</span><b>+20</b></li><li><span></span><span>Finish a lesson</span><b>+25</b></li><li><span></span><span>Complete a lab</span><b>+${LAB_XP}</b></li>
       <li><span></span><span>Capture a hidden flag</span><b>+50</b></li><li><span></span><span>Complete a learning path</span><b>+${PATH_XP}</b></li><li><span></span><span>Unlock a badge</span><b>+${BADGE_XP}</b></li>
-      <li><span></span><span>Correct quiz answer / spotted phish</span><b>+10 / +15</b></li><li><span></span><span>Set up your stack</span><b>+10</b></li><li><span></span><span>New glossary term or story explanation</span><b>+2</b></li></ul></section>
+      <li><span></span><span>Correct quiz answer / spotted phish</span><b>+10 / +15</b></li><li><span></span><span>Set up your stack</span><b>+10</b></li><li><span></span><span>New glossary term or story explanation</span><b>+2</b></li></ul></details>
     <section class="panel"><h2>Keep your progress</h2>
       <p class="muted" style="max-width:70ch">Saved <b>in this browser only</b>, with no account. Some browsers (Safari especially) clear it after a while, so back it up: copy a code or download a file.</p>
       <details class="tbl" id="pcode-box"><summary>Back up / restore with a code</summary>
