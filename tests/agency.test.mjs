@@ -383,3 +383,19 @@ test("progress: what's open, what's on its way, and when it's time to hand over"
   const p = A.progress(shift, done);
   assert.equal(p.open, 0); assert.equal(p.arrived, 5); assert.equal(p.handover, true);
 });
+
+// Shadowing: the expert run is built from each shift's own content through the rules, so it must be a perfect shift.
+for (const sh of shifts) test(`${sh.id}: shadowing shows a perfect shift, every alert and every guided search`, () => {
+  const { steps, report } = A.shadow(sh);
+  for (const c of report.checks) assert.ok(c.ok, `${c.label}: ${c.text}`);
+  for (const a of sh.alerts) {
+    const mine = steps.filter(x => x.id === a.id && x.kind !== "arrive");
+    assert.equal(mine[0].kind, "open", `${a.id} opens first`);
+    assert.equal(mine.filter(x => x.kind === "close").length, 1, `${a.id} is closed once`);
+    for (const [src, q] of a.guide.searches) assert.ok(mine.some(x => x.kind === "search" && x.source === src && x.query === q && x.lines.length), `${a.id}: ${src} "${q}" shows lines`);
+    for (const ref of a.answer.contain) assert.ok(mine.some(x => x.kind === "ask" && x.ref === ref), `${a.id} asks ${ref}`);
+  }
+  assert.ok(steps.every((x, i) => i === 0 || x.clock >= steps[i - 1].clock), "the clock never runs backwards");
+  assert.equal(steps.at(-1).kind, "handover");
+  assert.ok(!steps.some(x => x.kind === "reply" && x.outcome === "asks"), "no team has to ask for a reason: the evidence is attached first time");
+});

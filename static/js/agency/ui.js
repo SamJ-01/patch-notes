@@ -43,6 +43,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
           <div class="ag-dossier" id="ag-dossier" hidden>${DESK.scene(shift.clientImage)}<div class="eyebrow">Client file</div><h2>${esc(shift.client)}</h2>
             <dl class="fields"><div><dt>Alerts waiting</dt><dd>${waiting}, with more likely</dd></div><div><dt>Logs you can search</dt><dd>${Object.keys(shift.sources).length}</dd></div><div><dt>Shift length</dt><dd>about ${shift.minutes} min</dd></div>${done ? `<div><dt>Your record</dt><dd>✓ worked before</dd></div>` : ""}</dl>
             <fieldset class="ag-level"><legend>How do you want to work?</legend>
+              <label class="ag-lv"><input type="radio" name="ag-level" value="shadow"><span><b>Shadow</b> Watch ${esc(leadName)} work this shift, step by step and explained, then take your turn.</span></label>
               <label class="ag-lv"><input type="radio" name="ag-level" value="guided"${done ? "" : " checked"}><span><b>Guided</b> ${esc(leadName)} gives hints, suggests searches and checks each alert as you close it.</span></label>
               <label class="ag-lv"><input type="radio" name="ag-level" value="standard"${done ? " checked" : ""}><span><b>On your own</b> No hints. Everything is marked at the handover, as on a real shift.</span></label></fieldset>
             <button class="btn brand" type="button" id="ag-desk-go">Take the desk</button></div>
@@ -71,6 +72,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
       <section class="panel ag-hand" id="ag-hand" hidden></section>
       <section class="panel debrief ag-report" id="ag-debrief" hidden></section>
     </div>
+    <section class="panel ag-shadow" id="ag-shadow" aria-labelledby="ag-sh-h" hidden></section>
     <p class="sr-only" id="ag-say" aria-live="assertive"></p>
   </div>`;
   const $ = id => root.querySelector("#" + id);
@@ -413,11 +415,83 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
   });
   root.querySelectorAll(".ag-tab").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
   $("ag-desk-go").addEventListener("click", () => {
-    begin(root.querySelector('[name="ag-level"]:checked')?.value || "standard");
+    const level = root.querySelector('[name="ag-level"]:checked')?.value || "standard";
+    if (level === "shadow") { $("ag-in").hidden = true; startShadow(); root.scrollIntoView?.({ block: "start" }); return; }
+    begin(level);
     $("ag-in").hidden = true; $("ag-desk").hidden = false;
     root.scrollIntoView?.({ block: "start" });
     root.querySelector(`[data-alert="${state.arrived[0]}"]`)?.focus();
   });
+
+  // ---------- shadowing: watch the lead work the shift (A.shadow, from this shift's own content), one step at a
+  // time with Back and Next, then take your turn. Nothing is saved: watching doesn't count as working the shift.
+  function startShadow() {
+    const { steps } = A.shadow(shift), box = $("ag-shadow");
+    let i = 0;
+    const alertOf = st => A.alertById(shift, st.id);
+    const srcName = id => shift.sources[id]?.name || id;
+    const emailOf = st => shift.sources[st.source].emails.find(e => e.id === st.email);
+    const words = st => {
+      const a = st.id && alertOf(st);
+      switch (st.kind) {
+        case "open": return `Next in the queue: ${a.title}. Read what the detection saw first, then decide which log answers the question.`;
+        case "search": return `${st.say || `Searching ${srcName(st.source)} for "${st.query}".`} (${plural(st.lines.length, "line")} of ${st.total} match.)`;
+        case "email": { const h = MAIL.parseHeaders(emailOf(st).headers); return `Open "${h.subject}" and check Details: who really sent it, and from where?`; }
+        case "think": return st.say;
+        case "ask": return `This needs ${st.dept}: ${st.label.charAt(0).toLowerCase() + st.label.slice(1)}.${st.attached ? " I attach the finding as the reason, so they can act straight away." : ""}`;
+        case "reply": return `${st.dept} ${st.outcome === "done" ? "have done it" : "replied"}. Read the reply: it may hold a new finding.`;
+        case "arrive": return `A new alert has come in: ${st.title}. I'll finish what I'm on, then take it.`;
+        case "wait": return `Everything's closed. I wait ${st.minutes} minutes for the replies still on their way before handing over.`;
+        case "close": return `Closing it: ${st.verdict.toLowerCase()}, ${st.severity} severity. ${st.say}`;
+        case "handover": return "Last job: the handover, so the next shift knows what happened, what was done and what to watch.";
+      }
+      return "";
+    };
+    const alertTicket = (a, status, extra = {}) => DESK.ticket({ kind: "Alert", ref: tref(a), title: a.title, priority: a.severity, status,
+      fields: [["Raised", a.time || "This shift"], ["Logs", a.sources.map(srcName).join(", ")]], bodyLabel: "What the detection rule saw", body: `<p>${gl(a.detection, 2)}</p>`, ...extra }, { level: 3 });
+    const show = st => {
+      const a = st.id && alertOf(st);
+      switch (st.kind) {
+        case "open": case "think": return alertTicket(a, "open");
+        case "search": return `<div class="panel-title"><h3 class="mono">${esc(srcName(st.source))}</h3><span class="sim-tag">Simulated log</span></div>
+          <p class="muted log-count">Search: <b class="mono">${esc(st.query)}</b></p>
+          <pre class="evidence console log-out" tabindex="0" aria-label="Matching lines">${st.lines.map(l => markTerms(l, st.query.split(" "))).join("\n")}</pre>
+          ${st.found.length ? `<h4 class="eyebrow">New finding${st.found.length === 1 ? "" : "s"}</h4><ul class="findings">${st.found.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}`;
+        case "email": { const e = emailOf(st); return MAIL.card({ headers: e.headers, body: e.body, links: e.links, attachments: e.attachments, folder: e.folder }, { id: `ag-sh-em-${e.id}`, org: shift.sources[st.source].org }); }
+        case "ask": return DESK.ticket({ kind: "Request", title: st.label, status: "pending", fields: [["Team", contact(st.ref).role], ["Contact", contact(st.ref).from]],
+          bodyLabel: st.attached ? "Reason attached" : "", body: st.attached ? `<p>${esc(st.attached)}</p>` : "" }, { level: 3 });
+        case "reply": return `<ol class="dk-msgs">${DESK.message({ ...contact(st.ref), at: clockAt(st.clock), status: st.outcome, html: `<p>${gl(st.text, 2)}</p>` })}</ol>`;
+        case "arrive": return alertTicket(alertOf(st), "new");
+        case "wait": return `<p class="ag-sh-wait mono">${esc(clockAt(st.clock - st.minutes))} → ${esc(clockAt(st.clock))}</p>`;
+        case "close": return alertTicket(a, "closed", { fields: [["Verdict", st.verdict], ["Severity", st.severity]], bodyLabel: "Evidence", body: `<ul>${st.evidence.map(t => `<li>${gl(t, 1)}</li>`).join("")}</ul><p><b>Summary:</b> ${esc(st.summary)}</p>` });
+        case "handover": return `<h3>Handover</h3><p>${gl(st.text, 4)}</p>${st.links ? `<p class="muted">${gl(st.links, 2)}</p>` : ""}`;
+      }
+      return "";
+    };
+    const draw = () => {
+      const st = steps[i], last = i === steps.length - 1;
+      box.innerHTML = `<div class="ag-sh-head"><div><div class="eyebrow">Shadowing · ${esc(shift.client)}</div><h1 id="ag-sh-h">Watch ${esc(leadName)} work the shift</h1></div>
+          <span class="mono muted">${esc(clockAt(st.clock))} · step ${i + 1} of ${steps.length}</span></div>
+        <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(((i + 1) / steps.length) * 100)}%"></i></span></div>
+        <div class="ag-sh-grid"><ol class="dk-msgs ag-sh-say" aria-live="polite">${DESK.message({ from: leadName, role: leadRole || "Shift lead", photo: shift.leadPhoto, at: clockAt(st.clock), html: `<p>${gl(words(st), 3)}</p>` })}</ol>
+          <div class="ag-sh-show" id="ag-sh-show">${show(st)}</div></div>
+        <div class="row ag-sh-nav"><button class="btn ghost" type="button" id="ag-sh-back"${i === 0 ? " disabled" : ""}>‹ Back</button>
+          ${last ? "" : `<button class="btn brand" type="button" id="ag-sh-next">Next ›</button>`}</div>
+        ${last ? `<div class="ag-sh-turn"><h2>Your turn</h2><p>Same client, same alerts. Work them yourself: you'll be marked at the handover.</p>
+          <div class="row"><button class="btn brand" type="button" data-turn="guided">Work it, with hints (Guided)</button><button class="btn ghost" type="button" data-turn="standard">On your own</button></div></div>` : ""}`;
+      if (steps[i].kind === "email") MAIL.wire($("ag-sh-show"));
+      // Each step starts at the lead's explanation (on a phone the step can be taller than the screen); focus stays
+      // on the button you pressed, so the keyboard can keep going.
+      const top = () => { if (box.getBoundingClientRect().top < 0) box.scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" }); };
+      $("ag-sh-back").addEventListener("click", () => { i--; draw(); ($("ag-sh-back").disabled ? $("ag-sh-next") : $("ag-sh-back")).focus({ preventScroll: true }); top(); });
+      $("ag-sh-next")?.addEventListener("click", () => { i++; draw(); ($("ag-sh-next") || box.querySelector("[data-turn]")).focus({ preventScroll: true }); top(); });
+      box.querySelectorAll("[data-turn]").forEach(b => b.addEventListener("click", () => {
+        box.hidden = true; $("ag-desk").hidden = false; begin(b.dataset.turn);
+        root.scrollIntoView?.({ block: "start" }); root.querySelector(`[data-alert="${state.arrived[0]}"]`)?.focus();
+      }));
+    };
+    box.hidden = false; draw(); $("ag-sh-h").setAttribute("tabindex", "-1"); $("ag-sh-h").focus();
+  }
   // The page uses inProgress to warn before leaving mid-shift (the shift is short; there is no mid-shift save).
   return { get state() { return state; }, get inProgress() { return !!state && !state.complete && state.clock > 0; } };
 }

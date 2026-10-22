@@ -278,3 +278,69 @@ export function debrief(shift, state) {
   return { alerts, links, costs, pending, checks, passed: checks.filter(c => c.ok).length, clock: state.clock, spent: state.spent, note: state.handover?.note || "", modelNote: shift.handover?.model || "",
     level: state.level || "standard", hints: hintCount, linkNote: shift.handover?.links || "" };
 }
+
+// Shadowing: the shift worked by an experienced analyst, as a list of steps to watch, built by playing this
+// shift's own content through the rules above (so it can never disagree with them). For each alert, in the order
+// they arrive: the lead's guided searches (narrated with the guided hints), any emails with something to notice,
+// the requests the model answer needs (with a finding attached when the team wants a reason), then the close.
+// It ends with the model handover. Steps: { kind, clock, say, ... } where kind is open | search | email | think |
+// ask | reply | arrive | wait | close | handover.
+export function shadow(shift) {
+  let s = start(shift, { level: "guided" }).state;
+  const steps = [], all = findings(shift);
+  const push = (kind, extra = {}) => steps.push({ kind, clock: s.clock, ...extra });
+  // Department replies and new alerts that come in after any action become steps of their own.
+  const take = r => {
+    s = r.state;
+    for (const ev of r.events) {
+      if (ev.type === "reply") push("reply", { ref: ev.ref, dept: ev.dept, label: ev.label, text: ev.text, outcome: ev.outcome });
+      if (ev.type === "arrive") push("arrive", { id: ev.id, title: ev.title });
+    }
+    return r;
+  };
+  // The finding to attach to a request so the team acts on it: none if they don't need one, else the first
+  // (newest first) that gets a "done".
+  const attachFor = ref => {
+    for (const att of ["", ...[...s.found].reverse()]) {
+      const r = ask(shift, s, ref, att), sent = r.state.requests.at(-1);
+      if (r.events.length && sent?.ref === ref && request(shift, ref).replies[sent.reply].outcome !== "asks") return att;
+    }
+    return s.found.at(-1) || "";
+  };
+  const work = a => {
+    const hints = a.guide?.hints || [], searches = a.guide?.searches || [];
+    push("open", { id: a.id, say: a.detection });
+    searches.forEach(([src, q], i) => {
+      const r = take(search(shift, s, src, q)), ev = r.events.find(e => e.type === "search");
+      if (ev) steps.splice(steps.length - r.events.filter(e => e.type === "reply" || e.type === "arrive").length, 0,
+        { kind: "search", clock: s.clock, id: a.id, source: src, query: ev.query, lines: ev.lines, total: ev.total, found: ev.found, say: hints[i] || "" });
+    });
+    for (const src of a.sources.filter(id => shift.sources[id]?.kind === "email")) {
+      for (const e of shift.sources[src].emails.filter(e => (e.findings || []).length)) {
+        const r = take(openEmail(shift, s, src, e.id)), ev = r.events.find(x => x.type === "email");
+        steps.push({ kind: "email", clock: s.clock, id: a.id, source: src, email: e.id, found: ev?.found || [], say: "" });
+      }
+    }
+    for (const h of hints.slice(searches.length)) push("think", { id: a.id, say: h });
+    for (const ref of a.answer.contain || []) {
+      const att = attachFor(ref), def = request(shift, ref);
+      take(ask(shift, s, ref, att));
+      push("ask", { id: a.id, ref, dept: def.deptName, label: def.label, attached: att ? all[att] : "" });
+    }
+    const m = modelClose(shift, a.id);
+    take(close(shift, s, a.id, m));
+    push("close", { id: a.id, verdict: VERDICTS[m.verdict], severity: m.severity, evidence: m.evidence.map(i => a.evidence[i].text), related: m.related,
+      summary: a.answer.summaries[a.answer.summary], say: a.answer.why });
+  };
+  for (let guard = 0; guard < 12; guard++) {
+    const todo = s.arrived.map(id => alertById(shift, id)).filter(a => !(a.id in s.closed));
+    if (todo.length) { work(todo[0]); continue; }
+    if (canHandOver(shift, s) && !s.requests.some(r => r.status === "pending")) break;
+    take(wait(shift, s));
+    push("wait", { minutes: shift.costs.wait });
+  }
+  const r = handover(shift, s, { ...modelHandover(shift), note: shift.handover?.model || "" });
+  s = r.state;
+  push("handover", { text: shift.handover?.model || "", links: shift.handover?.links || "" });
+  return { steps, report: r.events[0]?.report || null };
+}

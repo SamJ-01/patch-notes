@@ -1915,3 +1915,17 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
   .ag-bar .btn { padding: 6px 10px; font-size: 0.72rem; }
   .ag-count { flex: 1; min-width: 0; font-size: 0.8rem; }
 }
+
+/* Shadowing a shift: the lead's narration beside what they're looking at, one step at a time. */
+.ag-shadow { display: grid; gap: 14px; scroll-margin-top: 120px; }
+.ag-sh-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 6px 16px; }
+.ag-sh-head h1 { margin: 2px 0 0; font-size: 1.4rem; }
+.ag-sh-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; min-height: 320px; }
+@media (min-width: 900px) { .ag-sh-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); } }
+.ag-sh-say { margin: 0; }
+.ag-sh-show { min-width: 0; display: grid; gap: 8px; }
+.ag-sh-show .log-out { max-height: 260px; overflow: auto; }
+.ag-sh-wait { font-size: 1.3rem; margin: 0; }
+.ag-sh-nav { justify-content: space-between; }
+.ag-sh-turn { border-top: 1px solid var(--line); padding-top: 12px; }
+.ag-sh-turn h2 { margin: 0 0 4px; }

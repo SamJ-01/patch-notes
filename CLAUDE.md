@@ -60,6 +60,9 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   fill-in. Progress saves `own` (done on your own at least once). Per shift: `handover.links` (missed-link line), `next` link.
   At 900 px and below the desk shows one part at a time (Queue, Alert, Chat tabs in the sticky bar; opens on the Queue;
   Chat counts unread replies). The bar's "what next" line comes from `A.progress()` (open, replies due, handover ready).
+  Shadow (third option on the client file): `A.shadow(shift)` plays the shift's own content through the rules (guided searches
+  narrated with `guide.hints`, emails with findings, `answer.contain` requests with a finding attached when needed, model
+  closes, model handover) into steps the page shows with Back/Next, then "Your turn". Tested to be a perfect shift; not saved.
 - Emails anywhere on the site use `static/js/mail.js` (`MAIL.card`/`MAIL.wire`; inlined into the page like hw.js): a mail
   app look, links that reveal where they go, Details/Original views from raw headers, clues pinned with `{ at, text }`.
 - Tickets and staff messages anywhere on the site use `static/js/desk.js` (`DESK.ticket`/`DESK.message`/`DESK.channel`; inlined
