@@ -65,6 +65,9 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   portraits (`contact.photo`, `leadPhoto`, shown by `DESK.avatar`, decorative alt) and a client scene (`clientImage`
   { src, small, width, height, alt }, `DESK.scene`) on the client file and hub. Fictional people only; no text in images
   except a correctly spelt company sign. Never fake screenshots of real tools; keep teaching diagrams as live SVG. Tested: files exist.
+  Card pictures: every practise and lesson card has one (`static/img/cards/<id>.webp`, 2:1, listed in `CARD_PHOTOS` in
+  07-labs, `PHOTO_ALIAS` for tools that reuse a lab's); made six at a time as a 2 x 3 grid with an earlier grid attached as
+  the style reference, then cropped with a script. New cards fall back to their drawn scene until they get a photo.
 - Email header checker ("bring your own evidence"): `#headers-check`, `static/js/tools/headers.js` (pure `analyse()` + page;
   tests `tests/headers-tool.test.mjs`), examples in `content/tools.json` (`DATA.tools`). Runs in the browser only; never
   says "safe". `MAIL.parseHeaders` trusts only the topmost Authentication-Results (and others from the same server) and
