@@ -601,6 +601,9 @@ class ContentIntegrity(unittest.TestCase):
                     self.assertEqual(len(sc["target"].split("/")), 8, sc["title"])
                 continue
             for step in lab["steps"]:
+                # "Show me where" must point at something that's really in the evidence.
+                if step.get("where"):
+                    self.assertIn(step["where"].lower(), lab["artifact"]["text"].lower(), step["q"])
                 if step["type"] == "text":
                     self.assertTrue(any(a.lower() in lab["artifact"]["text"].lower() for a in step["answers"]), step["q"])
                 else:

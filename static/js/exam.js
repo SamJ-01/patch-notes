@@ -3,6 +3,8 @@
 // The pure helpers (isCorrect, buildMock, mastery, weakObjectives) are tested in tests/exam.test.mjs.
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
+const gl = (t, n = 3, seen) => (globalThis.PN_gloss ? globalThis.PN_gloss(t, n, seen) : esc(t));
 const shuffle = (arr, rand = Math.random) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 export const MOCK_SIZE = 20, MOCK_MINUTES = 20;  // the real exam is up to 90 questions in 90 minutes: same pace
 
@@ -99,7 +101,7 @@ function mountDrill(el, qs, { title, objectiveName = id => id, onAnswer = () => 
     const state = checked ? (o.correct ? " right" : on ? " wrong" : "") : on ? " picked" : "";
     return `<button type="button" class="opt ex-opt${state}" data-k="${k}" role="${correctCount(q) > 1 ? "checkbox" : "radio"}" aria-checked="${on}" ${checked ? "disabled" : ""}>
       <span class="ex-letter" aria-hidden="true">${letter(k)}</span><span>${esc(o.text)}</span></button>
-      ${checked && (o.correct || on) ? `<p class="ex-why ${o.correct ? "ok" : "no"}"><b>${o.correct ? "Correct" : "Not this one"}:</b> ${esc(o.why)}</p>` : ""}`;
+      ${checked && (o.correct || on) ? `<p class="ex-why ${o.correct ? "ok" : "no"}"><b>${o.correct ? "Correct" : "Not this one"}:</b> ${gl(o.why)}</p>` : ""}`;
   }
   function draw() {
     if (i >= qs.length) return finish();
@@ -107,7 +109,7 @@ function mountDrill(el, qs, { title, objectiveName = id => id, onAnswer = () => 
     el.innerHTML = `<div class="panel-title"><h2>${esc(title)}</h2><span class="eyebrow">Question ${i + 1} of ${qs.length}</span></div>
       <div class="eyebrow">Objective ${esc(q.objective)} · ${esc(objectiveName(q.objective))}</div>
       ${q.scenario ? `<p class="ex-scenario">${esc(q.scenario)}</p>` : ""}
-      <p class="q">${esc(q.stem)}</p>${multi && !/choose/i.test(q.stem) ? `<p class="muted ex-hint">Choose ${correctCount(q)}.</p>` : ""}
+      <p class="q">${gl(q.stem)}</p>${multi && !/choose/i.test(q.stem) ? `<p class="muted ex-hint">Choose ${correctCount(q)}.</p>` : ""}
       <div class="ex-opts" role="${multi ? "group" : "radiogroup"}" aria-label="Answers">${q.options.map((_, k) => optionHtml(q, k)).join("")}</div>
       <div class="row ex-ctl">
         ${checked ? `<button class="btn brand" type="button" data-act="next">${i + 1 < qs.length ? "Next question ›" : "See results"}</button>`
@@ -155,7 +157,7 @@ function mountMock(el, qs, { title, objectiveName = id => id, onAnswer = () => {
       <div class="ex-qhead"><span class="eyebrow">Question ${i + 1} of ${qs.length} · Objective ${esc(q.objective)} · ${esc(objectiveName(q.objective))}</span>
         <button class="ex-flag${flagged.has(i) ? " on" : ""}" type="button" data-act="flag" aria-pressed="${flagged.has(i)}">⚑ ${flagged.has(i) ? "Flagged" : "Flag for review"}</button></div>
       ${q.scenario ? `<p class="ex-scenario">${esc(q.scenario)}</p>` : ""}
-      <p class="q">${esc(q.stem)}</p>${multi && !/choose/i.test(q.stem) ? `<p class="muted ex-hint">Choose ${correctCount(q)}.</p>` : ""}
+      <p class="q">${gl(q.stem)}</p>${multi && !/choose/i.test(q.stem) ? `<p class="muted ex-hint">Choose ${correctCount(q)}.</p>` : ""}
       <div class="ex-opts" role="${multi ? "group" : "radiogroup"}" aria-label="Answers">${q.options.map((o, k) => `<button type="button" class="opt ex-opt${chosen.has(k) ? " picked" : ""}" data-k="${k}" role="${multi ? "checkbox" : "radio"}" aria-checked="${chosen.has(k)}">
         <span class="ex-letter" aria-hidden="true">${letter(k)}</span><span>${esc(o.text)}</span></button>`).join("")}</div>
       <div class="row ex-nav">

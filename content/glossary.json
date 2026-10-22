@@ -1837,16 +1837,19 @@
  },
  {
   "id": "email-auth",
-  "term": "SPF, DKIM & DMARC",
+  "term": "Email authentication",
   "kind": "Defence",
   "aliases": [
-   "SPF",
-   "DKIM",
-   "DMARC",
+   "email authentication",
    "SMTP"
   ],
-  "short": "Email security standards that let receiving servers check a message really came from the domain it claims, which helps block spoofing. SMTP is the protocol that sends email.",
-  "lesson": "phishing"
+  "short": "Checks a receiving mail server runs to see whether an email really came from the domain it claims: SPF, DKIM and DMARC. (SMTP is the protocol that carries email.)",
+  "lesson": "phishing",
+  "see": [
+   "spf",
+   "dkim",
+   "dmarc"
+  ]
  },
  {
   "id": "rdp",
@@ -3616,6 +3619,115 @@
   "see": [
    "dns",
    "ttl"
+  ]
+ },
+ {
+  "id": "spf",
+  "term": "SPF",
+  "kind": "Defence",
+  "aliases": [
+   "SPF"
+  ],
+  "short": "Sender Policy Framework: a domain publishes a list of servers allowed to send its email. A receiving server checks the sender is on it. Results: pass, fail, softfail (probably not allowed) or none (no list).",
+  "lesson": "phishing",
+  "see": [
+   "dkim",
+   "dmarc",
+   "email-header"
+  ]
+ },
+ {
+  "id": "dkim",
+  "term": "DKIM",
+  "kind": "Defence",
+  "aliases": [
+   "DKIM"
+  ],
+  "short": "DomainKeys Identified Mail: the sending server signs each email, and the receiver checks the signature with the domain's public key. Pass means it really came from that domain, unchanged.",
+  "lesson": "phishing",
+  "see": [
+   "spf",
+   "dmarc",
+   "email-header"
+  ]
+ },
+ {
+  "id": "dmarc",
+  "term": "DMARC",
+  "kind": "Defence",
+  "aliases": [
+   "DMARC"
+  ],
+  "short": "Checks that the domain in the From line matches what SPF or DKIM proved, and says what to do if not: nothing (none), send to junk (quarantine) or refuse it (reject).",
+  "lesson": "phishing",
+  "see": [
+   "spf",
+   "dkim",
+   "email-header"
+  ]
+ },
+ {
+  "id": "spoofing",
+  "term": "Spoofing",
+  "kind": "Attack",
+  "aliases": [
+   "spoofing",
+   "spoofed",
+   "spoof"
+  ],
+  "short": "Faking where something comes from, such as an email's From address or a packet's source IP. The From line is just text the sender types.",
+  "lesson": "phishing",
+  "see": [
+   "spf",
+   "dkim",
+   "dmarc"
+  ]
+ },
+ {
+  "id": "reply-to",
+  "term": "Reply-To",
+  "kind": "Concept",
+  "aliases": [
+   "Reply-To"
+  ],
+  "short": "An email header that sends replies somewhere other than the From address. A different Reply-To is a common phishing trick.",
+  "lesson": "phishing",
+  "see": [
+   "spf",
+   "dkim",
+   "dmarc"
+  ]
+ },
+ {
+  "id": "return-path",
+  "term": "Return-Path",
+  "kind": "Concept",
+  "aliases": [
+   "Return-Path"
+  ],
+  "short": "An email header showing where bounced mail goes. It usually reveals the real sending domain, which SPF checks.",
+  "lesson": "phishing",
+  "see": [
+   "spf",
+   "dkim",
+   "dmarc"
+  ]
+ },
+ {
+  "id": "email-header",
+  "term": "Email headers",
+  "kind": "Concept",
+  "aliases": [
+   "email headers",
+   "email header",
+   "headers"
+  ],
+  "short": "The hidden lines at the top of an email recording who sent it, the servers it passed through and the checks it passed. In most mail apps: Show original.",
+  "lesson": "phishing",
+  "see": [
+   "spf",
+   "dkim",
+   "dmarc"
   ]
  }
 ]

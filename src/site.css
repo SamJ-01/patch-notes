@@ -1698,3 +1698,11 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .hl-time b { font: 800 1.2rem var(--font-mono); }
 .hl-year { font: 700 0.72rem var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--bad); }
 .hl-time li.ok .hl-year { color: var(--good); }
+/* Lab primers: what result words mean, and "Show me where" */
+.results { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.results li { display: inline-flex; gap: 8px; align-items: baseline; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--line); border-left: 4px solid var(--line); font-size: 0.86rem; }
+.results li.ok { border-left-color: var(--good); } .results li.ok b { color: var(--good); }
+.results li.bad { border-left-color: var(--bad); } .results li.bad b { color: var(--bad); }
+.results li.warn { border-left-color: var(--sun); } .results li.warn b { color: var(--sun); }
+.where { justify-self: start; font-size: 0.85rem; }
+.em-raw mark { background: rgba(var(--sun-rgb), 0.3); color: inherit; border-radius: 2px; }

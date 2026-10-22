@@ -315,17 +315,19 @@ function labView(id) {
   const solved = new Set(P.labSteps[id] || []);
   main.innerHTML = `<div class="view"><article class="article" style="max-width:900px">
     <a class="link-btn" href="#missions">← Missions</a>
-    <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${l.minutes} min · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.intro)}</p></div>
+    <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${l.minutes} min · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${gloss(l.intro, 4)}</p></div>
+    ${l.primer ? `<section class="panel"><h2>${esc(l.primer.title)}</h2><ul class="keys">${l.primer.keys.map(k => `<li>${keyIcon(k.icon)}<b>${gloss(k.label, 1)}</b><span>${esc(k.text)}</span></li>`).join("")}</ul>
+      ${l.primer.results ? `<p class="muted" style="margin:10px 0 4px">What each result means:</p><ul class="results">${l.primer.results.map(([w, m, tone]) => `<li class="${esc(tone)}"><b class="mono">${esc(w)}</b>${esc(m)}</li>`).join("")}</ul>` : ""}</section>` : ""}
     ${l.artifact.kind === "headers" ? `<section class="panel"><div class="panel-title"><h2>The email</h2><span class="sim-tag">Simulated email</span></div>
       ${MAIL.card({ headers: l.artifact.text, body: l.artifact.body, links: l.artifact.links }, { id: "lab-mail", views: ["message", "original"] })}</section>` : `<section class="panel"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
       ${l.artifact.kind === "log" ? `<div class="row"><label class="sr" for="lab-f">Filter lines</label><span class="mono" style="color:var(--sun)">grep</span><input id="lab-f" type="search" placeholder="e.g. Failed password" autocomplete="off" spellcheck="false"></div>` : ""}
       <pre class="evidence" id="lab-pre" tabindex="0" aria-label="Evidence"></pre></section>`}
     <section class="stack" id="lab-steps">${l.steps.map((st, i) => `<div class="panel lab-step ${solved.has(i) ? "got" : ""}" data-i="${i}">
       <div class="panel-title"><h2>Question ${i + 1}</h2>${solved.has(i) ? '<span class="eyebrow" style="color:var(--good)">Solved</span>' : ""}</div>
-      <p class="q">${esc(st.q)}</p>
+      <p class="q">${gloss(st.q, 3)}</p>${st.where ? `<button type="button" class="link-btn where" data-where="${i}">Show me where ↑</button>` : ""}
       ${st.type === "choice" ? `<div class="opts">${st.options.map((o, j) => `<button class="opt" data-j="${j}" ${solved.has(i) ? "disabled" : ""}>${esc(o)}</button>`).join("")}</div>`
         : `<form class="flag-form" data-form="${i}"><label class="sr" for="ans-${i}">Answer</label><input id="ans-${i}" autocomplete="off" spellcheck="false" ${solved.has(i) ? `value="${esc(st.answers[0])}" disabled` : ""}><button class="btn" type="submit" ${solved.has(i) ? "disabled" : ""}>Check</button></form>`}
-      <div class="fb">${solved.has(i) ? `<div class="feedback"><b class="ok">Correct.</b> ${esc(st.explain)}</div>` : ""}</div>
+      <div class="fb">${solved.has(i) ? `<div class="feedback"><b class="ok">Correct.</b> ${gloss(st.explain, 3)}</div>` : ""}</div>
     </div>`).join("")}</section>
     <div class="row"><button class="btn ghost" data-reset-lab="${esc(id)}">↺ Reset answers</button><span class="muted">${P.labs[id] ? `Completed ${esc(P.labs[id])}.` : ""} Related: <a href="#lesson-${esc(l.lesson)}">${esc(LESSON[l.lesson]?.title || l.lesson)}</a></span></div>
   </article></div>`;
@@ -342,12 +344,19 @@ function labView(id) {
   const solve = (i, box) => {
     solved.add(i); P.labSteps[id] = [...solved];
     box.classList.add("got");
-    box.querySelector(".fb").innerHTML = `<div class="feedback"><b class="ok">Correct.</b> ${esc(l.steps[i].explain)}</div>`;
+    box.querySelector(".fb").innerHTML = `<div class="feedback"><b class="ok">Correct.</b> ${gloss(l.steps[i].explain, 3)}</div>`;
     box.querySelectorAll("button, input").forEach(el => el.disabled = true);
     if (solved.size === l.steps.length) completeLab(l); else { saveP(); }
   };
-  const miss = (i, box, msg) => { box.querySelector(".fb").innerHTML = `<div class="feedback"><b class="no">Not quite.</b> ${esc(msg)}</div>`; };
+  const miss = (i, box, msg) => { box.querySelector(".fb").innerHTML = `<div class="feedback"><b class="no">Not quite.</b> ${gloss(msg, 3)}</div>`; };
+  // "Show me where": point at the evidence for a question. Emails open Original with the lines marked; logs are filtered.
+  const showWhere = i => {
+    const needle = l.steps[i].where;
+    if ($("lab-mail")) { MAIL.highlight($("lab-mail"), needle); $("lab-mail").scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); $("lab-mail").querySelector(".em-raw")?.focus({ preventScroll: true }); }
+    else if ($("lab-f")) { $("lab-f").value = needle; drawLog(); $("lab-pre").scrollIntoView({ block: "start" }); $("lab-pre").focus({ preventScroll: true }); }
+  };
   $("lab-steps").addEventListener("click", e => {
+    const w = e.target.closest("[data-where]"); if (w) return showWhere(Number(w.dataset.where));
     const b = e.target.closest(".opt"); if (!b || b.disabled) return;
     const box = b.closest(".lab-step"), i = Number(box.dataset.i), st = l.steps[i];
     Number(b.dataset.j) === st.answer ? solve(i, box) : (b.classList.add("wrong"), miss(i, box, "Look at the evidence again."));

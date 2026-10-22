@@ -34,7 +34,9 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - UK English, plain language, no em dashes in new copy. Commit messages explain why, and list what was verified.
 - Avoid reading fatigue: pictures before paragraphs. Lessons open with three `keys` ({ icon, label, text ≤12 words }, tested)
   and fold the full `what` away; cards use a short `card` line; keep intros and notes to about 30 words. Jargon is
-  underlined by `gloss()` on the page and `globalThis.PN_gloss` in modules: add missing terms to `content/glossary.json`.
+  underlined by `gloss()` on the page and `globalThis.PN_gloss` in modules (questions and explanations too, never inside
+  buttons): add missing terms to `content/glossary.json`. Question-and-evidence labs can add a `primer` (picture cards, plus
+  what result words mean) and a `where` per step for "Show me where" (`MAIL.highlight` for emails, the grep box for logs; tested).
 
 ## Status (Oct 2026)
 - Missions: DHCP, DNS, SSH brute force ("The 3am logins": the first with a log viewer, `scenario.log` + `engine.searchLog`),

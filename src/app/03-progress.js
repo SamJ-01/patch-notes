@@ -161,10 +161,10 @@ function quizBlock(q, { onAnswer, answered } = {}) {
   wrap.className = "stack";
   const draw = choice => {
     const done = choice != null;
-    wrap.innerHTML = `<p class="q">${esc(q.q)}</p><div class="opts">${q.options.map((o, i) => {
+    wrap.innerHTML = `<p class="q">${gloss(q.q, 3)}</p><div class="opts">${q.options.map((o, i) => {
       const cls = done ? (i === q.answer ? " right" : i === choice ? " wrong" : "") : "";
       return `<button class="opt${cls}" data-i="${i}" ${done ? "disabled" : ""}>${esc(o)}</button>`;
-    }).join("")}</div>` + (done ? `<div class="feedback">${choice === q.answer ? '<b class="ok">Correct.</b>' : '<b class="no">Not quite.</b>'} ${esc(q.why)}</div>` : "");
+    }).join("")}</div>` + (done ? `<div class="feedback">${choice === q.answer ? '<b class="ok">Correct.</b>' : '<b class="no">Not quite.</b>'} ${gloss(q.why, 3)}</div>` : "");
   };
   draw(answered);
   wrap.addEventListener("click", e => {

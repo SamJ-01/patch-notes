@@ -4036,7 +4036,8 @@
      "203.0.113.45"
     ],
     "hint": "Filter for \"Failed password\" and look at the address after \"from\".",
-    "explain": "203.0.113.45 tried root, admin1, postgres, www-data and backup: a classic brute-force pattern. In a real shell: grep \"Failed password\" auth.log | awk '{print $(NF-3)}' | sort | uniq -c | sort -nr"
+    "explain": "203.0.113.45 tried root, admin1, postgres, www-data and backup: a classic brute-force pattern. In a real shell: grep \"Failed password\" auth.log | awk '{print $(NF-3)}' | sort | uniq -c | sort -nr",
+    "where": "Failed password"
    },
    {
     "type": "text",
@@ -4045,7 +4046,8 @@
      "backup"
     ],
     "hint": "Filter for \"Accepted\" and the attacker's IP.",
-    "explain": "After 9 failed attempts against backup, the password was guessed. Service accounts like backup often have weak, never-changed passwords."
+    "explain": "After 9 failed attempts against backup, the password was guessed. Service accounts like backup often have weak, never-changed passwords.",
+    "where": "Accepted"
    },
    {
     "type": "text",
@@ -4054,7 +4056,8 @@
      "02:19:47"
     ],
     "hint": "It's on the \"Accepted password for backup\" line.",
-    "explain": "Times matter: they let you line up this log with firewall, EDR and other evidence to build the attack timeline."
+    "explain": "Times matter: they let you line up this log with firewall, EDR and other evidence to build the attack timeline.",
+    "where": "Accepted password"
    },
    {
     "type": "choice",
@@ -4065,7 +4068,8 @@
      "Can't tell from logs"
     ],
     "answer": 1,
-    "explain": "The sudo lines show backup running wget to fetch x.sh from the attacker's IP, then executing it as root. Assume full compromise of web-01."
+    "explain": "The sudo lines show backup running wget to fetch x.sh from the attacker's IP, then executing it as root. Assume full compromise of web-01.",
+    "where": "sudo"
    },
    {
     "type": "choice",
@@ -4114,7 +4118,8 @@
      "quickmail.example"
     ],
     "answer": 1,
-    "explain": "The Received and Return-Path lines show mail-x7-delivery.biz. The From line is just text the sender typed, and it's trivial to fake."
+    "explain": "The Received and Return-Path lines show mail-x7-delivery.biz. The From line is just text the sender typed, and it's trivial to fake.",
+    "where": "mail-x7-delivery.biz"
    },
    {
     "type": "choice",
@@ -4126,7 +4131,8 @@
      "none"
     ],
     "answer": 2,
-    "explain": "SPF checks whether the sending server is allowed to send for that domain. spf=fail means it isn't."
+    "explain": "SPF checks whether the sending server is allowed to send for that domain. spf=fail means it isn't.",
+    "where": "spf="
    },
    {
     "type": "text",
@@ -4135,7 +4141,8 @@
      "northvale-verify@quickmail.example"
     ],
     "hint": "Look for the Reply-To header.",
-    "explain": "A Reply-To that differs from the From address is a classic trick: replies quietly go to the attacker."
+    "explain": "A Reply-To that differs from the From address is a classic trick: replies quietly go to the attacker.",
+    "where": "Reply-To"
    },
    {
     "type": "choice",
@@ -4145,11 +4152,54 @@
      "Spoofed phishing email: report it and don't click"
     ],
     "answer": 1,
-    "explain": "DMARC failing means the message didn't prove it came from northvalebank.com. Combined with urgency and a mismatched Reply-To, it's phishing."
+    "explain": "DMARC failing means the message didn't prove it came from northvalebank.com. Combined with urgency and a mismatched Reply-To, it's phishing.",
+    "where": "dmarc="
    }
   ],
   "category": "Security operations",
-  "card": "Spot a spoofed email from its headers"
+  "card": "Spot a spoofed email from its headers",
+  "primer": {
+   "title": "Before you start: the three checks",
+   "keys": [
+    {
+     "icon": "server",
+     "label": "SPF",
+     "text": "Is the sending server allowed to send for this domain?"
+    },
+    {
+     "icon": "key",
+     "label": "DKIM",
+     "text": "Was the email signed by the domain, and is it unchanged?"
+    },
+    {
+     "icon": "shield",
+     "label": "DMARC",
+     "text": "Does the From domain match? If not: junk it or refuse it."
+    }
+   ],
+   "results": [
+    [
+     "pass",
+     "checked and fine",
+     "ok"
+    ],
+    [
+     "fail",
+     "checked and wrong",
+     "bad"
+    ],
+    [
+     "softfail",
+     "probably not allowed, but let through",
+     "warn"
+    ],
+    [
+     "none",
+     "nothing to check against",
+     "warn"
+    ]
+   ]
+  }
  },
  {
   "id": "cvss-builder",

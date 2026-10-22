@@ -322,7 +322,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
   }
   function showQuestion(q) {
     playing = false;
-    $("m-task").innerHTML = `<div class="eyebrow">Predict the next step</div><p class="q">${esc(q.q)}</p>
+    $("m-task").innerHTML = `<div class="eyebrow">Predict the next step</div><p class="q">${gl(q.q)}</p>
       <div class="opts">${q.options.map((o, i) => `<button class="opt" data-a="${i}">${esc(o)}</button>`).join("")}</div><div id="m-fb" aria-live="polite"></div>`;
     $("m-task").querySelectorAll("[data-a]").forEach(b => b.addEventListener("click", () => run(engine.answer(scenario, state, Number(b.dataset.a)))));
     $("m-task").querySelector(".opt")?.focus();
@@ -428,7 +428,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
   }
   function showHint(ev) { $("m-hinttext").innerHTML = `<div class="feedback">${gl(ev.text)}</div>`; }
   function showRootCause(q) {
-    $("m-rc").innerHTML = `<div class="rc"><div class="eyebrow">It works. Now justify it</div><p class="q">${esc(q.q)}</p>
+    $("m-rc").innerHTML = `<div class="rc"><div class="eyebrow">It works. Now justify it</div><p class="q">${gl(q.q)}</p>
       <div class="opts">${q.options.map((o, i) => `<button class="opt" data-rc="${i}">${esc(o)}</button>`).join("")}</div><div id="m-fb" aria-live="polite"></div></div>`;
     $("m-rc").querySelectorAll("[data-rc]").forEach(b => b.addEventListener("click", () => run(engine.answerRootCause(scenario, state, Number(b.dataset.rc)))));
     $("m-rc").querySelector(".opt")?.focus();
@@ -437,7 +437,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
   function showEvidenceCheck(ev) {
     const box = document.createElement("div");
     box.className = "ev";
-    box.innerHTML = `<fieldset class="ev-set"><legend class="q">${esc(ev.q)}</legend>
+    box.innerHTML = `<fieldset class="ev-set"><legend class="q">${gl(ev.q)}</legend>
       ${ev.items.map((it, i) => `<div class="ev-item" id="m-ev-${i}"><label><input type="checkbox" value="${i}"><span>${esc(it.text)}</span></label>
         ${it.tool && state.toolsUsed.includes(it.tool) ? `<span class="tag">you ran the related check</span>` : ""}<p class="ev-why" hidden></p></div>`).join("")}
       </fieldset>

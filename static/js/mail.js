@@ -124,5 +124,23 @@ export const MAIL = (() => {
       }
     });
   }
-  return { card, wire, parseHeaders, linkFacts };
+  // "Show me where": open an email's Original view and mark every header line containing `needle`.
+  // Returns how many lines were marked. Header lines that continue onto the next line are marked together.
+  function highlight(em, needle) {
+    const raw = em.querySelector(".em-raw"), tab = em.querySelector('[data-em-tab="original"]');
+    if (!raw || !tab) return 0;
+    tab.click();
+    const lines = raw.textContent.split("\n"), want = String(needle).toLowerCase();
+    let hits = 0, inHit = false;
+    raw.innerHTML = lines.map(l => {
+      const start = !/^[ \t]/.test(l);
+      if (start) inHit = l.toLowerCase().includes(want) || false;
+      const hit = inHit || l.toLowerCase().includes(want);
+      if (hit) hits++;
+      return hit ? `<mark>${esc(l)}</mark>` : esc(l);
+    }).join("\n");
+    raw.querySelector("mark")?.scrollIntoView?.({ block: "nearest" });
+    return hits;
+  }
+  return { card, wire, parseHeaders, linkFacts, highlight };
 })();
