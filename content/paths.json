@@ -2,7 +2,7 @@
  {
   "id": "awareness",
   "title": "Security basics for everyone",
-  "blurb": "Spot scams, protect your accounts and understand the headlines. Start here if you're brand new.",
+  "blurb": "Spot scams and protect your accounts. Start here if you're new.",
   "career": null,
   "steps": [
    {
@@ -35,7 +35,7 @@
  {
   "id": "soc",
   "title": "Path to SOC Analyst",
-  "blurb": "The most common first job in security: watching alerts, investigating and responding.",
+  "blurb": "The most common first job: watch alerts, investigate, respond.",
   "career": "soc",
   "steps": [
    {
@@ -102,7 +102,7 @@
  {
   "id": "pentest",
   "title": "Path to Web Pentester",
-  "blurb": "Learn how web apps break, how to score what you find, and the habits of a tester.",
+  "blurb": "How web apps break, and how testers score what they find.",
   "career": "pentest",
   "steps": [
    {
@@ -146,7 +146,7 @@
  {
   "id": "cloud",
   "title": "Path to Cloud Defender",
-  "blurb": "Identity, cloud configuration and the software supply chain: where modern breaches happen.",
+  "blurb": "Identity, cloud settings and the software supply chain.",
   "career": "cloud",
   "steps": [
    {

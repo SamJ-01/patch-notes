@@ -3,6 +3,8 @@
 import * as A from "./shift.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
+const gl = (t, n = 3, seen) => (globalThis.PN_gloss ? globalThis.PN_gloss(t, n, seen) : esc(t));
 const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
 const STATUS_WORDS = { pending: "waiting for a reply", asks: "they asked for a reason", done: "done", refused: "refused" };
 
@@ -66,7 +68,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
       else if (ev.type === "search") showSearch(ev);
       else if (ev.type === "sent") inbox(`To <b>${esc(ev.dept)}</b>: ${esc(ev.label)}${ev.attached ? ` <span class="muted">(attached: ${esc(ev.attached)})</span>` : ""}. Expect a reply by ${clockAt(ev.due)}.`, "", "You");
       else if (ev.type === "reply") {
-        inbox(`<span class="ag-st ${esc(ev.outcome)}">${esc(STATUS_WORDS[ev.outcome])}</span> ${esc(ev.text)}`, ev.outcome, ev.dept, ev.at);
+        inbox(`<span class="ag-st ${esc(ev.outcome)}">${esc(STATUS_WORDS[ev.outcome])}</span> ${gl(ev.text, 2)}`, ev.outcome, ev.dept, ev.at);
         notes.push(`Reply from ${ev.dept}`);
       }
       else if (ev.type === "wait") inbox(`Waited ${ev.minutes} minutes.`, "", "You");
@@ -109,7 +111,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     const a = A.alertById(shift, id);
     source = a.sources[0];
     $("ag-alert").innerHTML = `<div class="eyebrow">Alert · ${a.time ? `raised ${esc(a.time)}` : "raised this shift"} · detection severity: ${esc(a.severity)}</div>
-      <h2 tabindex="-1" id="ag-a-h">${esc(a.title)}</h2><p class="ag-detect">${esc(a.detection)}</p>
+      <h2 tabindex="-1" id="ag-a-h">${esc(a.title)}</h2><p class="ag-detect">${gl(a.detection, 2)}</p>
       <div class="row" role="group" aria-label="Log sources for this alert">${a.sources.map(s => `<button type="button" class="chip" data-src="${s}" aria-pressed="${s === source}">${esc(shift.sources[s].name)}</button>`).join("")}</div>
       <div class="m-logview" id="ag-log"></div>
       <div id="ag-found"></div>
@@ -241,7 +243,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         ${a.contain.length ? `<p>${ok(a.containOk)} Containment: ${a.contain.map(c => `${esc(c.label)} (${c.status ? esc(STATUS_WORDS[c.status]) : "not asked"})`).join("; ")}.</p>` : ""}
         <p>${ok(a.status.ok)} Status: ${esc(A.STATUSES[a.status.chosen] || "none")}${a.status.ok ? "" : `. Better: ${esc(A.STATUSES[a.status.answer])}`}.</p>
         <p>${ok(a.summary.ok)} Model summary: ${esc(a.summary.model)}</p>
-        <p class="muted">${esc(a.why)}</p></details>`).join("")}
+        <p class="muted">${gl(a.why)}</p></details>`).join("")}
       ${rep.pending.length ? `<p class="muted">Still on their way at handover: ${rep.pending.map(esc).join("; ")}.</p>` : ""}
       <h3 class="eyebrow">Handover notes</h3>
       <div class="ag-notes"><div><b>Yours</b><p>${rep.note ? esc(rep.note) : '<span class="muted">(none)</span>'}</p></div><div><b>A model handover</b><p>${esc(rep.modelNote)}</p></div></div>
@@ -276,7 +278,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
       li.innerHTML = `<span class="ag-av" aria-hidden="true">${esc(initials(leadName))}</span><div><p class="ag-msg-h"><b>${esc(leadName)}</b> <span class="mono">${esc(shift.startsAt)}</span></p><p><span class="ag-dots" aria-hidden="true"><i></i><i></i><i></i></span></p></div>`;
       $("ag-chat").appendChild(li);
       await pause(500 + line.length * 6);
-      li.classList.remove("typing"); li.querySelector("div p:last-child").textContent = line;
+      li.classList.remove("typing"); li.querySelector("div p:last-child").innerHTML = gl(line, 2);
     }
     await pause(250);
     $("ag-dossier").hidden = false;

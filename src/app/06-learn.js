@@ -17,14 +17,14 @@ VIEWS.learn = () => {
       <div class="paths-grid">${DATA.paths.map(pathCard).join("")}</div></section>
     <div class="stack" id="lgrid" style="gap:30px"></div>
     <section class="panel" style="grid-template-columns:minmax(0,1fr) auto;align-items:center">
-      <div class="stack" style="gap:6px"><h2>Glossary</h2><p class="muted">${DATA.glossary.length + Object.keys(DATA.cwe).length} terms explained in plain English, from APT to zero-day, plus the products that keep making headlines. Dotted words across the site open these explanations.</p></div>
+      <div class="stack" style="gap:6px"><h2>Glossary</h2><p class="muted">${DATA.glossary.length + Object.keys(DATA.cwe).length} terms in plain English. Dotted words anywhere on the site open them.</p></div>
       <a class="btn brand" href="#glossary">Open glossary</a>
     </section>
   </div>`;
   const drawGrid = () => {
     const card = l => `
       <a class="lcard art-card" href="#lesson-${esc(l.id)}">${cardArt(l.id)}${P.done[l.id] ? '<span class="done">DONE</span>' : ""}
-        <span class="eyebrow">${esc(l.track)}</span><h3>${esc(l.title)}</h3><p>${esc(l.hook)}</p>
+        <h3>${esc(l.title)}</h3><p>${esc(l.hook)}</p>
         <span class="lmeta"><span>${l.minutes} min</span><span>${esc(l.level)}</span></span></a>`;
     // Lessons are grouped by track, in learning order, so "All" reads as sections rather than a mix.
     const tracks = LESSON_TRACKS.filter(t => (LS.track === "All" || LS.track === t) && DATA.lessons.some(l => l.track === t));
@@ -70,7 +70,7 @@ const certObjectives = c => c.domains.flatMap(d => d.objectives.map(o => ({ ...o
 function certCard(c) {
   const objs = certObjectives(c), practised = objs.filter(o => { const p = objectiveProgress(o); return p.total && p.done === p.total; }).length;
   return `<a class="lcard" href="#cert-${esc(c.id)}"><span class="eyebrow">${esc(c.exam)} · ${objs.length} objectives</span><h3>${esc(c.name)}</h3>
-    <p>See which exam objectives Patch Notes covers, practise them, and find the gaps to study elsewhere.</p>
+    <p>Objectives, practice questions and what to study elsewhere</p>
     <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(practised / objs.length * 100)}%"></i></span><span>${practised} of ${objs.length} practised</span></div></a>`;
 }
 // Practice question results: { [questionId]: { r: times right, w: times wrong, last: 1|0 } }
@@ -284,20 +284,24 @@ function showDoneCard(type, item, title) {
   setTimeout(() => { const c = root.querySelector("#done-card"); c?.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); c?.focus({ preventScroll: true }); }, 400);
 }
 
+// A key idea's picture: a device drawing (hw.js) or one of the small line icons (GLYPH in 07-labs).
+const keyIcon = k => `<svg class="key-ic" viewBox="-22 -18 44 36" aria-hidden="true">${HW[k] ? hw(k, 0, 0, 0.62) : `<g class="gl">${GLYPH[k] || GLYPH.shield}</g>`}</svg>`;
 const SECTION_NAME = { what: "What it is", diagram: "See it", concept: "See it", example: "Real case", defend: "How defenders stop it" };
 function lessonView(id) {
   const l = LESSON[id]; if (!l) return VIEWS.learn();
   const related = DATA.news.filter(n => n.topics.includes(id)).slice(0, 5);
   const internal = l.practice.url.startsWith("#");
-  const practice = [...DATA.missions.filter(m => m.lesson === id).map(m => ({ kind: "Mission", href: "#mission-" + m.id, title: m.title, sub: m.summary, min: m.minutes, done: count((P.missions || {})[m.id]) > 0 })),
-    ...DATA.labs.filter(x => x.lesson === id).map(x => ({ kind: "Lab", href: "#lab-" + x.id, title: x.title, sub: x.skill, min: x.minutes, done: !!P.labs[x.id] }))];
+  const practice = [...DATA.missions.filter(m => m.lesson === id).map(m => ({ kind: "Mission", href: "#mission-" + m.id, title: m.title, sub: m.card || m.summary, min: m.minutes, done: count((P.missions || {})[m.id]) > 0 })),
+    ...DATA.labs.filter(x => x.lesson === id).map(x => ({ kind: "Lab", href: "#lab-" + x.id, title: x.title, sub: x.card || x.skill, min: x.minutes, done: !!P.labs[x.id] }))];
   const lseen = new Set([id]);
   main.innerHTML = `<div class="view"><article class="article lesson">
     <a class="link-btn" href="#learn">← All lessons</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">${esc(l.track)} · ${esc(l.level)} · ${l.minutes} min</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.hook)}</p>
       ${lessonObjectives(id).length ? `<p class="muted obj-links">Exam objectives: ${lessonObjectives(id).map(({ c, o }) => `<a href="#cert-${esc(c.id)}">${esc(c.name.replace("CompTIA ", ""))} ${esc(o.id)}</a>`).join(" · ")}</p>` : ""}</div>
     ${loopStrip(id, "understand")}
-    <section id="l-what" tabindex="-1"><h2>What it is</h2><p>${gloss(l.what, 6, lseen)}</p></section>
+    <section id="l-what" tabindex="-1"><h2>What it is</h2>
+      ${l.keys ? `<ul class="keys">${l.keys.map(k => `<li>${keyIcon(k.icon)}<b>${esc(k.label)}</b><span>${gloss(k.text, 1, lseen)}</span></li>`).join("")}</ul>
+      <details class="more-what" id="l-what-more"><summary>Read the full explanation</summary><p>${gloss(l.what, 6, lseen)}</p></details>` : `<p>${gloss(l.what, 6, lseen)}</p>`}</section>
     ${l.tip ? `<aside class="qtip"><span class="qtip-k">★ Quick tip</span><p>${gloss(l.tip, 3, lseen)}</p></aside>` : ""}
     ${l.diagram ? `<section class="panel wide" id="l-diagram" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">Step through it</span></div><div id="lflow"><div class="empty">Loading the diagram…</div></div></section>` : ""}
     ${l.concept ? `<section class="panel wide" id="l-concept" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">${l.concept.type === "cards" ? "At a glance" : "Select a part"}</span></div><div id="lconcept"><div class="empty">Loading the diagram…</div></div></section>` : ""}
@@ -310,7 +314,7 @@ function lessonView(id) {
     </section>
     <section class="panel" id="lcheck"><div class="panel-title"><h2>Check yourself</h2><span class="eyebrow" id="lcheck-n">${P.done[id] ? '<span style="color:var(--good)">Completed</span>' : `${l.checks.length} questions · +25 XP`}</span></div><div class="stack" id="lcheck-body"></div></section>
     <div id="lnext">${nextStepCard("lesson", id)}</div>
-    ${related.length ? `<section class="panel wide"><h2>In the news this week</h2><div class="stories">${related.map(storyHtml).join("")}</div></section>` : ""}
+    ${related.length ? `<section class="panel wide"><h2>In the news this week</h2><ul class="news-lines">${related.slice(0, 3).map(n => `<li><a href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.title)} ↗</a><span class="muted">${esc(n.source)} · ${ago(n.date)}</span></li>`).join("")}</ul></section>` : ""}
   </article></div>`;
   if (l.diagram) import("./js/flow.js").then(f => { if (parseRoute().path === "learn/" + id && $("lflow")) f.mount($("lflow"), l.diagram); })
     .catch(() => { if ($("lflow")) $("lflow").innerHTML = `<div class="empty">Couldn't load the diagram.</div>`; });
@@ -349,7 +353,7 @@ function lessonChecks(l, id) {
     if (b.hasAttribute("data-nextq")) { i++; ask(); }
     else if (b.hasAttribute("data-retry")) ask();
     else if (b.hasAttribute("data-again")) { i = 0; ask(); }
-    else if (b.dataset.see) { const t = $("l-" + b.dataset.see); t.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); t.focus({ preventScroll: true }); }
+    else if (b.dataset.see) { const t = $("l-" + b.dataset.see); if (b.dataset.see === "what" && $("l-what-more")) $("l-what-more").open = true; t.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); t.focus({ preventScroll: true }); }
   });
   ask();
 }

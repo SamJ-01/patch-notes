@@ -5,6 +5,8 @@
 import { HW, hw } from "./hw.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
+const gl = (t, n = 3, seen) => (globalThis.PN_gloss ? globalThis.PN_gloss(t, n, seen) : esc(t));
 export const MAX_NODES = 5;
 
 // Problems with a diagram's data, as readable messages (empty when it's fine).
@@ -70,7 +72,7 @@ export function mount(el, d) {
   }
   const box = el.querySelector(".flow-step");
   const caption = k => { const t = describe(d, k); return `<div class="eyebrow">Step ${k + 1} of ${d.steps.length} · ${esc(t.who)}</div>
-      <p class="flow-msg ${t.tone}">${esc(t.msg)}</p><p>${esc(t.text)}</p>${t.stop ? `<p class="flow-stop"><b>How it's stopped here:</b> ${esc(t.stop)}</p>` : ""}`; };
+      <p class="flow-msg ${t.tone}">${esc(t.msg)}</p><p>${gl(t.text, 2)}</p>${t.stop ? `<p class="flow-stop"><b>How it's stopped here:</b> ${esc(t.stop)}</p>` : ""}`; };
   // Reserve room for the longest step so the buttons and page below never jump between steps.
   function reserve() {
     box.style.minHeight = "";

@@ -68,7 +68,7 @@
      "label": "Confidentiality",
      "icon": "lock",
      "text": "Only the right people can see the data. Built with encryption, authentication and least-privilege access.",
-     "example": "A leaked customer database breaks confidentiality — outsiders can now read private data."
+     "example": "A leaked customer database breaks confidentiality: outsiders can now read private data."
     },
     {
      "label": "Integrity",
@@ -84,7 +84,24 @@
     }
    ]
   },
-  "tip": "Say it as a question — \"Can I Access?\": Confidentiality (kept secret), Integrity (kept correct), Availability (kept reachable). Every control and every attack targets one of the three."
+  "tip": "Say it as a question, \"Can I Access?\": Confidentiality (kept secret), Integrity (kept correct), Availability (kept reachable). Every control and every attack targets one of the three.",
+  "keys": [
+   {
+    "icon": "shield",
+    "label": "Every control",
+    "text": "Almost every security control protects one of the three."
+   },
+   {
+    "icon": "gauge",
+    "label": "A balancing act",
+    "text": "Locking data down tightly can make it harder to reach."
+   },
+   {
+    "icon": "alert",
+    "label": "Every attack",
+    "text": "Each breaks at least one: a leak, a change or an outage."
+   }
+  ]
  },
  {
   "id": "frameworks",
@@ -97,7 +114,7 @@
   "example": {
    "title": "The NIST CSF in practice",
    "year": "Everyday",
-   "text": "When a company says it is 'mapping to the NIST CSF', it means checking each function: do we know what we have (Identify)? Can we stop attacks (Protect) and spot them (Detect)? Do we have a plan to Respond and Recover? The newest version added Govern to put risk ownership at the centre.",
+   "text": "'Mapping to the NIST CSF' means asking, function by function: do we know what we have, can we stop and spot attacks, and can we respond and recover? Govern puts someone in charge of the risk.",
    "source": {
     "label": "NIST Cybersecurity Framework",
     "url": "https://www.nist.gov/cyberframework"
@@ -158,7 +175,7 @@
     {
      "label": "NIST CSF",
      "icon": "cycle",
-     "text": "Six functions — Govern, Identify, Protect, Detect, Respond, Recover — to organise a whole security programme."
+     "text": "Six functions (Govern, Identify, Protect, Detect, Respond, Recover) to organise a whole security programme."
     },
     {
      "label": "ISO 27001",
@@ -177,7 +194,24 @@
     }
    ]
   },
-  "tip": "The five NIST CSF functions in order — Identify, Protect, Detect, Respond, Recover — spell the hook \"I Previously Detected Real Risk.\" The newer Govern function wraps around all five."
+  "tip": "The five NIST CSF functions in order (Identify, Protect, Detect, Respond, Recover) spell the hook \"I Previously Detected Real Risk.\" The newer Govern function wraps around all five.",
+  "keys": [
+   {
+    "icon": "doc",
+    "label": "Don't start from scratch",
+    "text": "Tested good practice to build a security programme on."
+   },
+   {
+    "icon": "users",
+    "label": "Governance",
+    "text": "Policies, risk decisions and checking rules are followed."
+   },
+   {
+    "icon": "alert",
+    "label": "Compliant isn't secure",
+    "text": "Meeting GDPR or PCI DSS rules doesn't make you safe."
+   }
+  ]
  },
  {
   "id": "phishing",
@@ -301,7 +335,24 @@
      "stop": "Phishing-resistant MFA (passkeys) blocks this step: the password alone isn't enough."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "mail",
+    "label": "The bait",
+    "text": "A message pretending to be someone you trust."
+   },
+   {
+    "icon": "clock",
+    "label": "The pressure",
+    "text": "Urgency, authority and fear make people skip checks."
+   },
+   {
+    "icon": "key",
+    "label": "The prize",
+    "text": "A click, a file opened, a password or a payment."
+   }
+  ]
  },
  {
   "id": "ransomware",
@@ -434,7 +485,24 @@
      "stop": "EDR that spots mass file changes can stop encryption early."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "lock",
+    "label": "Encrypt",
+    "text": "Files are scrambled until a ransom is paid."
+   },
+   {
+    "icon": "db",
+    "label": "Steal first",
+    "text": "A copy is taken and leaked if you don't pay."
+   },
+   {
+    "icon": "users",
+    "label": "A business",
+    "text": "Developers rent it to affiliates who break in."
+   }
+  ]
  },
  {
   "id": "malware",
@@ -546,7 +614,24 @@
      "text": "A remote-access trojan gives the attacker a hands-on backdoor into the machine."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "bug",
+    "label": "Trojans and worms",
+    "text": "One pretends to be useful; one spreads by itself."
+   },
+   {
+    "icon": "key",
+    "label": "Infostealers",
+    "text": "Grab saved passwords, cookies and crypto wallets."
+   },
+   {
+    "icon": "attacker",
+    "label": "RATs and botnets",
+    "text": "Remote control of one machine, or of thousands."
+   }
+  ]
  },
  {
   "id": "zero-day",
@@ -620,7 +705,7 @@
     {
      "label": "Zero-day",
      "icon": "alert",
-     "text": "A flaw the vendor doesn't know about yet — zero days to fix it. No patch exists."
+     "text": "A flaw the vendor doesn't know about yet: zero days to fix it. No patch exists."
     },
     {
      "label": "In the wild",
@@ -638,7 +723,24 @@
      "text": "After disclosure the flaw is public; unpatched systems are easy targets for everyone."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "bug",
+    "label": "No patch yet",
+    "text": "Attackers know about the bug before the vendor does."
+   },
+   {
+    "icon": "coin",
+    "label": "Rare and valuable",
+    "text": "Often used by nation-states and spyware vendors."
+   },
+   {
+    "icon": "clock",
+    "label": "Then a race",
+    "text": "Once patched, attackers and defenders both rush."
+   }
+  ]
  },
  {
   "id": "vuln-management",
@@ -717,7 +819,7 @@
     {
      "label": "Prioritise",
      "icon": "gauge",
-     "text": "Rank by real risk — what's exploited now (KEV), exposed, and critical — not just raw severity."
+     "text": "Rank by real risk (what's exploited now (KEV), exposed, and critical) not just raw severity."
     },
     {
      "label": "Remediate",
@@ -730,7 +832,24 @@
      "text": "Re-scan to confirm the fix took, and feed what you learned back into the next round."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "doc",
+    "label": "CVE",
+    "text": "An ID for every public security bug."
+   },
+   {
+    "icon": "gauge",
+    "label": "CVSS and EPSS",
+    "text": "How bad it could be, and how likely it's exploited."
+   },
+   {
+    "icon": "alert",
+    "label": "KEV",
+    "text": "Bugs confirmed as being exploited right now. Fix these first."
+   }
+  ]
  },
  {
   "id": "supply-chain",
@@ -822,7 +941,24 @@
      "text": "A supplier or MSP with a login into your network becomes the way in."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "server",
+    "label": "Hit the supplier",
+    "text": "Compromise one vendor, update or package that many trust."
+   },
+   {
+    "icon": "users",
+    "label": "Reach everyone",
+    "text": "Every customer installs the attacker's code themselves."
+   },
+   {
+    "icon": "chip",
+    "label": "Packages",
+    "text": "Malicious and typosquatted npm and PyPI packages are constant."
+   }
+  ]
  },
  {
   "id": "data-breach",
@@ -896,7 +1032,7 @@
     {
      "label": "Stolen credentials",
      "icon": "key",
-     "text": "Reused or phished passwords let attackers log in as a real user — the most common route."
+     "text": "Reused or phished passwords let attackers log in as a real user. It's the most common route."
     },
     {
      "label": "Misconfiguration",
@@ -919,7 +1055,24 @@
      "text": "A careless or malicious employee leaks or takes data they can already reach."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "db",
+    "label": "Data gets out",
+    "text": "Through a hack, an open database or an insider."
+   },
+   {
+    "icon": "coin",
+    "label": "Then it's used",
+    "text": "Sold, leaked or used for the next attack."
+   },
+   {
+    "icon": "key",
+    "label": "Reused passwords",
+    "text": "One breach's passwords get tried everywhere else."
+   }
+  ]
  },
  {
   "id": "nation-state",
@@ -1011,7 +1164,24 @@
      "text": "Espionage, sabotage or influence against specific governments, firms or infrastructure."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "globe",
+    "label": "Government-backed",
+    "text": "Groups called APTs, with time and money."
+   },
+   {
+    "icon": "eye",
+    "label": "After secrets",
+    "text": "Spying, stealing ideas and hiding inside infrastructure."
+   },
+   {
+    "icon": "search",
+    "label": "Hard to spot",
+    "text": "They use built-in admin tools to blend in."
+   }
+  ]
  },
  {
   "id": "ddos",
@@ -1085,7 +1255,7 @@
     {
      "label": "Volumetric",
      "icon": "globe",
-     "text": "Raw bandwidth — fill the pipe with so much traffic nothing else gets through."
+     "text": "Raw bandwidth: fill the pipe with so much traffic nothing else gets through."
     },
     {
      "label": "Protocol",
@@ -1103,7 +1273,24 @@
      "text": "Bounce small spoofed requests off open servers so huge replies hit the victim."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "attacker",
+    "label": "Many machines",
+    "text": "Botnets of hacked computers, routers and cameras."
+   },
+   {
+    "icon": "server",
+    "label": "One target",
+    "text": "So much traffic that real users can't get through."
+   },
+   {
+    "icon": "alert",
+    "label": "Why",
+    "text": "Extortion, protest, or a distraction from another attack."
+   }
+  ]
  },
  {
   "id": "ai-security",
@@ -1195,7 +1382,24 @@
      "text": "The other side: models that spot anomalies and triage alerts faster than people can."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "attacker",
+    "label": "Attackers use it",
+    "text": "Convincing phishing, cloned voices, faster bug hunting."
+   },
+   {
+    "icon": "chip",
+    "label": "AI can be tricked",
+    "text": "Hidden instructions make it do what its user didn't want."
+   },
+   {
+    "icon": "shield",
+    "label": "Defenders use it",
+    "text": "Sorting alerts and spotting anomalies faster."
+   }
+  ]
  },
  {
   "id": "cloud",
@@ -1274,7 +1478,7 @@
     {
      "label": "Misconfiguration",
      "icon": "cloud",
-     "text": "The number-one cloud risk — a setting left open, not a provider being hacked."
+     "text": "The number-one cloud risk: a setting left open, not a provider being hacked."
     },
     {
      "label": "Exposed storage",
@@ -1287,7 +1491,24 @@
      "text": "Leaked API keys and over-permissive roles let one mistake reach everything."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "cloud",
+    "label": "Their part, your part",
+    "text": "The provider runs the platform; you configure what's on it."
+   },
+   {
+    "icon": "chip",
+    "label": "Everything is an API",
+    "text": "One stolen key can do as much as a stolen server room."
+   },
+   {
+    "icon": "key",
+    "label": "Least privilege",
+    "text": "Fewer permissions per identity means less damage when one leaks."
+   }
+  ]
  },
  {
   "id": "identity",
@@ -1406,7 +1627,24 @@
     }
    ]
   },
-  "tip": "MFA = something you know (password) + something you have (phone or key) + something you are (fingerprint). A passkey swaps the password for a private key your device keeps, so there's nothing to phish."
+  "tip": "MFA = something you know (password) + something you have (phone or key) + something you are (fingerprint). A passkey swaps the password for a private key your device keeps, so there's nothing to phish.",
+  "keys": [
+   {
+    "icon": "key",
+    "label": "Log in, not break in",
+    "text": "Passwords are phished, guessed, reused and leaked."
+   },
+   {
+    "icon": "phone",
+    "label": "MFA helps",
+    "text": "A second proof, though some kinds can be tricked."
+   },
+   {
+    "icon": "shield",
+    "label": "Passkeys",
+    "text": "Phishing-resistant: they only work on the real site."
+   }
+  ]
  },
  {
   "id": "iot-ot",
@@ -1498,7 +1736,24 @@
      "text": "In OT, a breach can stop a production line or endanger safety, not just data."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "ap",
+    "label": "IoT",
+    "text": "Cameras, routers, smart TVs: online and rarely patched."
+   },
+   {
+    "icon": "chip",
+    "label": "OT and ICS",
+    "text": "The systems running power, water and factories."
+   },
+   {
+    "icon": "alert",
+    "label": "Physical harm",
+    "text": "Attacks here can damage things, not just data."
+   }
+  ]
  },
  {
   "id": "web-sqli",
@@ -1616,7 +1871,24 @@
      "tone": "bad"
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "db",
+    "label": "SQL queries",
+    "text": "Websites ask their database for data in SQL."
+   },
+   {
+    "icon": "bug",
+    "label": "Input becomes code",
+    "text": "Pasting input into a query lets attackers rewrite it."
+   },
+   {
+    "icon": "shield",
+    "label": "The fix",
+    "text": "Parameterised queries keep input as data."
+   }
+  ]
  },
  {
   "id": "web-xss",
@@ -1735,7 +2007,24 @@
      "tone": "bad"
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "attacker",
+    "label": "Attacker's script",
+    "text": "Hidden in a comment, a profile or a link."
+   },
+   {
+    "icon": "pc",
+    "label": "Runs for others",
+    "text": "The site shows it unsafely to other visitors."
+   },
+   {
+    "icon": "key",
+    "label": "On the real site",
+    "text": "So it can read pages and steal sessions."
+   }
+  ]
  },
  {
   "id": "web-access",
@@ -1825,7 +2114,24 @@
      "text": "A normal user finds a way to act as an admin and do more than they should."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "users",
+    "label": "Who can do what",
+    "text": "Access control decides what each user may see and do."
+   },
+   {
+    "icon": "link",
+    "label": "Change one number",
+    "text": "/invoice/1001 to 1002 shows someone else's invoice."
+   },
+   {
+    "icon": "shield",
+    "label": "Check every time",
+    "text": "The server must check ownership on every request."
+   }
+  ]
  },
  {
   "id": "networking",
@@ -1838,7 +2144,7 @@
   "example": {
    "title": "Exposed RDP",
    "year": "Ongoing",
-   "text": "Remote Desktop (port 3389) left open to the internet with weak passwords has for years been one of the most common ways ransomware gangs get in. Sophos found RDP abused in 90% of the attacks its incident responders handled in 2023. Scanners find exposed RDP within minutes of it going online.",
+   "text": "Remote Desktop (port 3389) left open to the internet with weak passwords is one of ransomware gangs' favourite ways in. Sophos found RDP abused in 90% of the attacks it investigated in 2023.",
    "source": {
     "label": "Sophos: RDP abused in 90% of attacks (2024)",
     "url": "https://www.sophos.com/en-us/press/press-releases/2024/04/cybercriminals-abuse-remote-desktop-protocol-rdp-90-attacks-handled"
@@ -1944,7 +2250,24 @@
      "tone": "good"
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "pc",
+    "label": "IP address",
+    "text": "Every device's street address."
+   },
+   {
+    "icon": "firewall",
+    "label": "Ports",
+    "text": "Doors on that address, like 443 for HTTPS."
+   },
+   {
+    "icon": "globe",
+    "label": "DNS",
+    "text": "The phone book from names to IP addresses."
+   }
+  ]
  },
  {
   "id": "encryption",
@@ -2061,7 +2384,24 @@
     }
    ]
   },
-  "tip": "Encryption is two-way, hashing is one-way. You unlock an encrypted file with the key; you can't un-blend a hash back to the original — you can only check whether two things hash the same."
+  "tip": "Encryption is two-way, hashing is one-way. You unlock an encrypted file with the key; you can't un-blend a hash back to the original; you can only check whether two things hash the same.",
+  "keys": [
+   {
+    "icon": "key",
+    "label": "Symmetric",
+    "text": "One shared key locks and unlocks."
+   },
+   {
+    "icon": "lock",
+    "label": "Asymmetric",
+    "text": "A public key locks; only the private key unlocks."
+   },
+   {
+    "icon": "doc",
+    "label": "Hashing",
+    "text": "A one-way fingerprint, used to store passwords."
+   }
+  ]
  },
  {
   "id": "linux",
@@ -2154,7 +2494,24 @@
      "text": "ip and ifconfig (interfaces), ping (reach a host), ss (open ports)."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "server",
+    "label": "Runs the internet",
+    "text": "Most servers and security tools live on Linux."
+   },
+   {
+    "icon": "search",
+    "label": "A few commands",
+    "text": "ls, cd, cat, grep and find do most of the work."
+   },
+   {
+    "icon": "doc",
+    "label": "Logs",
+    "text": "Everything that happened is written in /var/log."
+   }
+  ]
  },
  {
   "id": "soc",
@@ -2269,7 +2626,24 @@
      "stop": "Playbooks make the response fast and consistent."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "eye",
+    "label": "Watch",
+    "text": "Logs flow into a SIEM, where rules raise alerts."
+   },
+   {
+    "icon": "search",
+    "label": "Triage",
+    "text": "Is it real, how bad is it, what's affected?"
+   },
+   {
+    "icon": "users",
+    "label": "Most are noise",
+    "text": "The skill is investigating quickly and calmly."
+   }
+  ]
  },
  {
   "id": "incident-response",
@@ -2353,7 +2727,7 @@
     {
      "label": "Contain",
      "icon": "lock",
-     "text": "Stop the bleeding — isolate affected systems so it can't spread."
+     "text": "Stop the bleeding: isolate affected systems so it can't spread."
     },
     {
      "label": "Eradicate",
@@ -2371,7 +2745,24 @@
      "text": "Write up what happened and fix the gaps so it doesn't recur. Feeds back into Prepare."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "alert",
+    "label": "Contain first",
+    "text": "Isolate the host and disable the account."
+   },
+   {
+    "icon": "search",
+    "label": "Keep evidence",
+    "text": "Wiping the machine first destroys the clues."
+   },
+   {
+    "icon": "cycle",
+    "label": "Recover and learn",
+    "text": "Fix the root cause, rebuild, then improve the plan."
+   }
+  ]
  },
  {
   "id": "osint",
@@ -2464,6 +2855,23 @@
      "text": "Company filings, certificates and job ads that reveal tech and structure."
     }
    ]
-  }
+  },
+  "keys": [
+   {
+    "icon": "globe",
+    "label": "Public sources",
+    "text": "Websites, social media, job ads, DNS and code."
+   },
+   {
+    "icon": "attacker",
+    "label": "Attackers plan with it",
+    "text": "Phishing targets and exposed systems."
+   },
+   {
+    "icon": "shield",
+    "label": "Defenders too",
+    "text": "See your organisation the way attackers do."
+   }
+  ]
  }
 ]

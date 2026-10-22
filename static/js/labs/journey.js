@@ -5,6 +5,8 @@
 import { hw } from "../hw.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
+const gl = (t, n = 3, seen) => (globalThis.PN_gloss ? globalThis.PN_gloss(t, n, seen) : esc(t));
 
 // ---------- 1. HTTP: a request and its response, as the bytes on the wire (HTTP/1.1, RFC 9112)
 export const REASON = { 200: "OK", 201: "Created", 301: "Moved Permanently", 304: "Not Modified", 401: "Unauthorized", 403: "Forbidden", 404: "Not Found", 500: "Internal Server Error", 502: "Bad Gateway", 503: "Service Unavailable" };
@@ -269,7 +271,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   };
   root.innerHTML = `<div class="journey stack">
     <div class="view-head"><a class="link-btn" href="#missions">← Missions</a>
-      <div class="eyebrow">Lab · ${lab.part ? `${esc(lab.series)}, part ${lab.part} of 2` : esc(lab.track)} · ${lab.minutes} min</div><h1>${esc(lab.title)}</h1><p>${esc(lab.intro)}</p>
+      <div class="eyebrow">Lab · ${lab.part ? `${esc(lab.series)}, part ${lab.part} of 2` : esc(lab.track)} · ${lab.minutes} min</div><h1>${esc(lab.title)}</h1><p>${gl(lab.intro)}</p>
       ${lab.prev ? `<p><a class="link-btn" href="#lab-${esc(lab.prev)}">← Part ${lab.part - 1}: finding the server first</a></p>` : ""}</div>
     <nav class="jr-stops" aria-label="Stops on the journey"><ol id="jr-stops" style="--n:${C.length}"></ol></nav>
     <section class="panel jr-chapter" id="jr-ch" aria-live="polite"></section>
@@ -283,11 +285,11 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   $("jr-stops").addEventListener("click", e => { const b = e.target.closest("[data-stop]"); if (b) { at = Number(b.dataset.stop); show(true); } });
   function show(focus) {
     stops();
-    const c = C[at];
-    $("jr-ch").innerHTML = `<div class="eyebrow">Stop ${at + 1} of ${C.length}</div><h2 tabindex="-1" id="jr-title">${esc(c.title)}</h2><p class="jr-idea">${esc(c.idea)}</p>
+    const c = C[at], seen = new Set();
+    $("jr-ch").innerHTML = `<div class="eyebrow">Stop ${at + 1} of ${C.length}</div><h2 tabindex="-1" id="jr-title">${esc(c.title)}</h2><p class="jr-idea">${gl(c.idea, 4, seen)}</p>
       <div id="jr-body"></div>
       <p class="jr-goal${done.has(c.id) ? " met" : ""}" id="jr-goal"><span class="jr-tick" aria-hidden="true"></span><b>Try it:</b> ${esc(c.goal)}</p>
-      <div class="jr-angle"><b>Security angle</b><p>${esc(c.security)}</p></div>
+      <div class="jr-angle"><b>Security angle</b><p>${gl(c.security, 3, seen)}</p></div>
       ${c.deeper ? `<p class="jr-small">Go deeper: <a href="${esc(c.deeper.href)}">${esc(c.deeper.label)}</a></p>` : ""}
       <div class="row jr-nav">${at > 0 ? `<button class="btn ghost" type="button" data-go="-1">‹ ${esc(C[at - 1].label)}</button>` : ""}${at < C.length - 1 ? `<button class="btn" type="button" data-go="1">Next: ${esc(C[at + 1].label)} ›</button>` : lab.next ? `<a class="btn" href="#lab-${esc(lab.next)}">Part ${lab.part + 1}: what happens once it's found ›</a>` : ""}</div>`;
     $("jr-ch").querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => { at += Number(b.dataset.go); show(true); }));

@@ -1,5 +1,5 @@
 // TCP handshake & SYN flood: a visual, clickable model of the three-way handshake and how a SYN flood
-// fills a server's half-open connection queue until real users can't get in — and how SYN cookies defend it.
+// fills a server's half-open connection queue until real users can't get in, and how SYN cookies defend it.
 // The model (createServer) is pure and tested in tests/labs.test.mjs; mount() is the on-page interactive.
 import { hw } from "../hw.js";
 
@@ -182,11 +182,11 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   $("hs-flood").addEventListener("click", launchFlood);
   $("hs-cookies").addEventListener("change", e => {
     srv.setCookies(e.target.checked);
-    if (e.target.checked) { srv.reset(); flooded = false; drawQueue(); markPart("defend"); status("<b class='ok'>SYN cookies on.</b> The server replies without reserving a slot, so the queue drains and can't be exhausted. Launch the flood again — the queue stays empty — then connect (button 3)."); }
+    if (e.target.checked) { srv.reset(); flooded = false; drawQueue(); markPart("defend"); status("<b class='ok'>SYN cookies on.</b> The server replies without reserving a slot, so the queue drains and can't be exhausted. Launch the flood again (the queue stays empty) then connect (button 3)."); }
     else { drawQueue(); status("SYN cookies off."); }
   });
   $("hs-reset").addEventListener("click", () => { flooded = false; hsStep = 0; srv.reset(); $("hs-cookies").checked = false; srv.setCookies(false); drawQueue(); updateConnectBtn(); onReset(); status("Reset. Start with button 1."); });
 
   drawParts(); drawQueue(); updateConnectBtn();
-  status("Start with button 1 and click to send each message — SYN, then SYN-ACK, then ACK — one step at a time.");
+  status("Start with button 1 and click to send each message (SYN, then SYN-ACK, then ACK) one step at a time.");
 }

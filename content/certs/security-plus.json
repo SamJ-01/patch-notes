@@ -7,7 +7,7 @@
   "url": "https://www.comptia.org/en-us/certifications/security/"
  },
  "reviewed": "2026-10-21",
- "note": "Mapped at the domain level: these are CompTIA's five published SY0-701 domains and weights. Each row lists the Patch Notes lessons and labs that cover that domain, with honest gaps. It's preparation, not a guarantee of passing. The practice questions are original, not real exam questions. The Foundations lessons here also line up with the early courses of the Google Cybersecurity Certificate.",
+ "note": "CompTIA's five SY0-701 domains and their weights, each with the lessons and labs that cover it, and honest gaps. The practice questions are original, not real exam questions.",
  "study": {
   "label": "Professor Messer's free SY0-701 course",
   "url": "https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/sy0-701-comptia-security-plus-course/"

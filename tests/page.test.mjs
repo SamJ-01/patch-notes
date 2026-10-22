@@ -63,7 +63,7 @@ test("CVSS 3.1 scores match the official calculator", () => {
 test("glossary matches whole words, prefers the longest alias", () => {
   assert.deepEqual(terms("Critical vulnerability in SMA 1000 appliances"), [["SMA 1000", "sonicwall-sma"], ["appliances", "appliance"]]);
   assert.deepEqual(terms("SonicWall SMA hit by SSRF"), [["SonicWall", "sonicwall"], ["SMA", "sonicwall-sma"], ["SSRF", "ssrf"]]);
-  assert.deepEqual(terms("Volt Typhoon targets routers"), [["Volt Typhoon", "volt-typhoon"]]);
+  assert.deepEqual(terms("Volt Typhoon targets routers"), [["Volt Typhoon", "volt-typhoon"], ["routers", "router"]]);
 });
 
 test("glossary respects case and word boundaries", () => {

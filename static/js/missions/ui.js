@@ -12,6 +12,8 @@ const NS = "http://www.w3.org/2000/svg";
 const { CARD } = layout;
 const MARGIN = 14;  // space around the stage, in diagram units
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
+const gl = (t, n = 3, seen) => (globalThis.PN_gloss ? globalThis.PN_gloss(t, n, seen) : esc(t));
 const KIND_LABEL = { Investigate: "Investigate", Test: "Test", Fix: "Fix" };
 // A mode with tools is a challenge (investigate and fix); one with a sequence plays messages in order.
 const isToolMode = m => Array.isArray(m.tools);
@@ -244,7 +246,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     const msg = scenario.messages[id];
     const fields = msg.fields.filter(f => details || f.level === 1);
     $("m-inspect").innerHTML = `<div class="panel-title"><h2>${esc(msg.name)}</h2><label class="m-toggle"><input type="checkbox" id="m-details" ${details ? "checked" : ""}> Protocol details</label></div>
-      <p>${esc(msg.explain)}</p>
+      <p>${gl(msg.explain)}</p>
       <dl class="fields">${fields.map(f => `<div><dt>${esc(f.name)}</dt><dd><code>${esc(f.value)}</code><span>${esc(f.explain)}</span></dd></div>`).join("")}</dl>
       ${details ? wiresharkView(msg) : `<p class="muted" style="font-size:0.85rem">${msg.fields.length - fields.length} more technical fields${msg.wireshark ? ", and how this message looks in Wireshark" : ""}: tick “Protocol details”.</p>`}`;
     $("m-details").addEventListener("change", e => { details = e.target.checked; inspect(id); $("m-details").focus(); });
@@ -330,7 +332,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     if (!fb) return;
     if (ev.correct) {
       root.querySelectorAll("#m-task .opt").forEach(b => b.disabled = true);
-      fb.innerHTML = `<div class="feedback"><b class="ok">Correct.</b> ${esc(ev.why)}</div>${ev.id === "rootCause" ? "" : `<button class="btn brand" id="m-cont">Show me ›</button>`}`;
+      fb.innerHTML = `<div class="feedback"><b class="ok">Correct.</b> ${gl(ev.why)}</div>${ev.id === "rootCause" ? "" : `<button class="btn brand" id="m-cont">Show me ›</button>`}`;
       root.querySelector("#m-cont")?.addEventListener("click", () => { taskIdle(); stepOnce(); });
       root.querySelector("#m-cont")?.focus();
     } else {
@@ -341,7 +343,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     const m = scenario.modes[state.mode];
     $("m-task").innerHTML = m.checkpoints
       ? `<div class="eyebrow">${esc(m.label)}</div><p>Press <strong>Step</strong> or <strong>Play</strong>. Before each message you'll predict what happens.</p>`
-      : `<div class="eyebrow">${esc(m.label)}</div><p>${esc(m.intro)}</p><p class="muted" style="font-size:0.88rem">Steps: ${m.sequence.map(id => esc(scenario.messages[id].short || scenario.messages[id].name)).join(" → ")}</p>`;
+      : `<div class="eyebrow">${esc(m.label)}</div><p>${gl(m.intro)}</p><p class="muted" style="font-size:0.88rem">Steps: ${m.sequence.map(id => esc(scenario.messages[id].short || scenario.messages[id].name)).join(" → ")}</p>`;
   }
 
   // ---------- challenge
@@ -424,7 +426,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     const box = root.querySelector("#m-findings");
     if (box) box.innerHTML = state.evidence.length ? `<h3 class="eyebrow">Evidence so far</h3><ul class="findings">${state.evidence.map(e => `<li>${esc(e.finding)}</li>`).join("")}</ul>` : "";
   }
-  function showHint(ev) { $("m-hinttext").innerHTML = `<div class="feedback">${esc(ev.text)}</div>`; }
+  function showHint(ev) { $("m-hinttext").innerHTML = `<div class="feedback">${gl(ev.text)}</div>`; }
   function showRootCause(q) {
     $("m-rc").innerHTML = `<div class="rc"><div class="eyebrow">It works. Now justify it</div><p class="q">${esc(q.q)}</p>
       <div class="opts">${q.options.map((o, i) => `<button class="opt" data-rc="${i}">${esc(o)}</button>`).join("")}</div><div id="m-fb" aria-live="polite"></div></div>`;
@@ -455,7 +457,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
       const verdict = r.ok
         ? (r.supports ? (r.selected ? "Supports it." : "Supports it, but optional.") : "Right to leave out.")
         : (r.supports ? "Missed: this is key evidence." : "Not evidence for this.");
-      why.innerHTML = `<b>${verdict}</b> ${esc(r.why)}`;
+      why.innerHTML = `<b>${verdict}</b> ${gl(r.why)}`;
       why.hidden = false;
     }
     const wrong = ev.items.filter(r => !r.ok).length;
@@ -470,7 +472,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     playing = false;
     const d = $("m-debrief");
     d.hidden = false;
-    d.innerHTML = `<div class="eyebrow">Debrief</div><h2 tabindex="-1" id="m-debrief-title">${esc(scenario.modes[state.mode].label)} mode complete</h2><p>${esc(ev.debrief)}</p>
+    d.innerHTML = `<div class="eyebrow">Debrief</div><h2 tabindex="-1" id="m-debrief-title">${esc(scenario.modes[state.mode].label)} mode complete</h2><p>${gl(ev.debrief, 4)}</p>
       ${isToolMode(scenario.modes[state.mode]) ? `<p class="muted">Tools used: ${state.toolsUsed.length} · hints: ${state.hintsUsed} · wrong answers: ${state.mistakes}${state.evidenceTries ? ` · reasoning checked ${state.evidenceTries === 1 ? "first time" : `in ${state.evidenceTries} tries`}` : ""}</p>` : ""}
       <div class="row">${next ? `<a class="btn brand" href="#mission-${esc(next.id)}">Next mission: ${esc(next.title)}</a>` : ""}${modes.filter(([k]) => k !== state.mode).map(([k, m]) => `<button class="btn" data-goto="${k}">Try ${esc(m.label)} mode</button>`).join("")}<a class="btn ghost" href="#lesson-${esc(scenario.lesson)}">Related lesson</a></div>`;
     d.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => setMode(b.dataset.goto)));
@@ -491,7 +493,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     state = engine.start(scenario, k);
     const m = scenario.modes[k];
     root.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === k));
-    $("m-intro").textContent = m.intro;
+    $("m-intro").innerHTML = gl(m.intro);
     $("m-log").innerHTML = ""; $("m-debrief").hidden = true;
     inspectIdle();
     svg.querySelectorAll(".m-pkt").forEach(p => p.remove()); clearBubbles();

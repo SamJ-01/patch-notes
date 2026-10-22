@@ -1,6 +1,6 @@
 {
  "id": "dns",
- "title": "The internet's down — or is it just DNS?",
+ "title": "The internet's down, or is it just DNS?",
  "topic": "Networking · DNS",
  "minutes": 15,
  "lesson": "networking",
@@ -101,9 +101,9 @@
     "gateway"
    ],
    "say": "What's the IP for shop.example.com?",
-   "explain": "Your PC asks its configured DNS resolver — here, the gateway — to turn the name shop.example.com into an IP address. DNS queries normally go out over UDP port 53.",
+   "explain": "Your PC asks its configured DNS resolver (here, the gateway) to turn the name shop.example.com into an IP address. DNS queries normally go out over UDP port 53.",
    "reactions": {
-    "gateway": "Not in my cache — let me go and find it."
+    "gateway": "Not in my cache. Let me go and find it."
    },
    "fields": [
     {
@@ -189,7 +189,7 @@
    "say": "Who's authoritative for shop.example.com?",
    "explain": "The resolver has no cached answer, so it looks the name up on your behalf. In reality this walks the root and TLD servers first; this simulation collapses that into a single hop to the authoritative server.",
    "reactions": {
-    "web": "That's me — one moment."
+    "web": "That's me. One moment."
    },
    "fields": [
     {
@@ -267,7 +267,7 @@
    "say": "shop.example.com is 203.0.113.20.",
    "explain": "The authoritative server returns the A record: the IPv4 address for the name, with a TTL saying how long it may be cached.",
    "reactions": {
-    "gateway": "Thanks — caching that."
+    "gateway": "Thanks, caching that."
    },
    "fields": [
     {
@@ -339,7 +339,7 @@
    "say": "shop.example.com is 203.0.113.20.",
    "explain": "The resolver returns the address to your PC, which caches it and can now open a connection straight to 203.0.113.20.",
    "reactions": {
-    "pc": "Got it — connecting to the site now."
+    "pc": "Got it. Connecting to the site now."
    },
    "fields": [
     {
@@ -419,13 +419,13 @@
     "badns"
    ],
    "say": "What's the IP for shop.example.com?",
-   "explain": "The PC sends its query to the DNS server it is configured to use — 10.0.0.9 — but that server never answers. With UDP there's no error back, so the lookup simply times out.",
+   "explain": "The PC sends its query to the DNS server it is configured to use (10.0.0.9), but that server never answers. With UDP there's no error back, so the lookup simply times out.",
    "reactions": {},
    "fields": [
     {
      "name": "Query",
      "value": "shop.example.com, type A",
-     "explain": "The same question — the PC just asks the wrong server.",
+     "explain": "The same question; the PC just asks the wrong server.",
      "level": 1
     },
     {
@@ -476,7 +476,7 @@
      },
      {
       "line": "Domain Name System (query)",
-      "note": "The query goes out to 10.0.0.9. No response row ever follows it — that silence is the symptom.",
+      "note": "The query goes out to 10.0.0.9. No response row ever follows it: that silence is the symptom.",
       "children": [
        "Transaction ID: 0x8f21",
        "Flags: 0x0100 Standard query",
@@ -505,7 +505,7 @@
   "practice": {
    "label": "Practice",
    "xp": 25,
-   "intro": "Same lookup — but predict each step before it happens.",
+   "intro": "Same lookup, but predict each step before it happens.",
    "sequence": [
     "query",
     "lookup",
@@ -533,7 +533,7 @@
       "It asks the gateway for permission"
      ],
      "answer": 0,
-     "why": "DNS only maps names to addresses. Once the PC has the IP, it opens its own connection to the server — DNS is done."
+     "why": "DNS only maps names to addresses. Once the PC has the IP, it opens its own connection to the server. DNS is done."
     }
    },
    "debrief": "You can now narrate a DNS lookup end to end. Next, put it to work: diagnose a real outage in Challenge mode."
@@ -541,7 +541,7 @@
   "challenge": {
    "label": "Challenge",
    "xp": 40,
-   "intro": "A user says \"the internet is down\" — but is it really? Investigate, fix it, then prove what the cause was.",
+   "intro": "A user says \"the internet is down\", but is it really? Investigate, fix it, then prove what the cause was.",
    "start": {
     "pc.dns": "10.0.0.9",
     "pc.state": "down",
@@ -550,14 +550,14 @@
    },
    "opening": {
     "device": "pc",
-    "say": "I can't open shop.example.com — the internet's down!",
+    "say": "I can't open shop.example.com. The internet's down!",
     "log": "Start: the PC can't load shop.example.com. Is the whole network down, or just name resolution?"
    },
    "hints": [
     "Don't trust \"the internet is down.\" Can the PC reach anything by IP address? Try pinging the server's IP directly.",
-    "If the IP works but the name doesn't, the problem is name resolution — DNS — not connectivity.",
+    "If the IP works but the name doesn't, the problem is name resolution (DNS) not connectivity.",
     "Check which DNS server the PC is using (ipconfig), and whether it actually answers (nslookup).",
-    "Point the PC at a resolver you know works — the gateway at 192.168.1.1 — then look the name up again."
+    "Point the PC at a resolver you know works (the gateway at 192.168.1.1), then look the name up again."
    ],
    "tools": [
     {
@@ -618,7 +618,7 @@
         "pc.state": "workaround"
        },
        "output": "Name:    shop.example.com\nAddress: 203.0.113.20\n(resolved from the hosts file, not DNS)",
-       "finding": "The name resolves — but from the hosts file, not DNS. Other names still fail."
+       "finding": "The name resolves, but from the hosts file, not DNS. Other names still fail."
       },
       {
        "when": {},
@@ -679,7 +679,7 @@
      "A firewall was blocking the website"
     ],
     "answer": 1,
-    "why": "Connectivity was fine all along — pinging the IP worked. Only name resolution failed, because the PC's configured DNS server (10.0.0.9) wasn't responding. Pointing it at a working resolver fixed it.",
+    "why": "Connectivity was fine all along: pinging the IP worked. Only name resolution failed, because the PC's configured DNS server (10.0.0.9) wasn't responding. Pointing it at a working resolver fixed it.",
     "evidenceQ": "Which findings support that diagnosis? Tick the evidence, leave out what isn't.",
     "evidence": [
      {
@@ -694,7 +694,7 @@
       "tool": "nslookup",
       "supports": true,
       "required": true,
-      "why": "The configured DNS server simply wasn't answering — the direct cause of the failed lookups."
+      "why": "The configured DNS server simply wasn't answering: the direct cause of the failed lookups."
      },
      {
       "text": "ipconfig showed the DNS server set to 10.0.0.9",
@@ -708,13 +708,13 @@
       "tool": "nslookup",
       "supports": true,
       "required": false,
-      "why": "Confirms the fix addressed the real cause — useful, but not essential to the diagnosis."
+      "why": "Confirms the fix addressed the real cause. Useful, but not essential to the diagnosis."
      },
      {
       "text": "The website returned a 500 server error",
       "supports": false,
       "required": false,
-      "why": "You never saw a server error. The browser couldn't even find the address — a different kind of failure."
+      "why": "You never saw a server error. The browser couldn't even find the address: a different kind of failure."
      },
      {
       "text": "The Wi-Fi signal was weak",
@@ -724,7 +724,7 @@
      }
     ]
    },
-   "debrief": "Textbook troubleshooting: you tested connectivity (ping by IP), isolated the fault to DNS, found the misconfigured resolver, fixed it properly rather than papering over it with a hosts entry, and backed your diagnosis with evidence. \"It's always DNS\" — but only after you've proved it."
+   "debrief": "Textbook troubleshooting: you tested connectivity (ping by IP), isolated the fault to DNS, found the misconfigured resolver, fixed it properly rather than papering over it with a hosts entry, and backed your diagnosis with evidence. \"It's always DNS\", but only after you've proved it."
   }
  },
  "wide": {
@@ -776,7 +776,7 @@
  "wireshark": {
   "filter": "dns",
   "filterNote": "Matches DNS queries and responses.",
-  "honesty": "An illustration of how Wireshark shows a DNS message, built from this scenario — not a real capture.",
+  "honesty": "An illustration of how Wireshark shows a DNS message, built from this scenario, not a real capture.",
   "tryIt": "On a network you're allowed to monitor, capture with the filter dns and watch a lookup. nslookup or dig shows the same answer on the command line."
  },
  "category": "Networking"

@@ -346,7 +346,8 @@
     "label": "Practise subnetting and ports with Professor Messer's free Network+ course",
     "url": "https://www.professormesser.com/"
    }
-  ]
+  ],
+  "card": "Seven layers, and how data is wrapped"
  },
  {
   "id": "topologies",
@@ -1249,7 +1250,8 @@
    }
   ],
   "passScore": 5,
-  "exploreGoal": 4
+  "exploreGoal": 4,
+  "card": "Break cables and devices; see what fails"
  },
  {
   "id": "ports-protocols",
@@ -1540,7 +1542,8 @@
   ],
   "flipGoal": 10,
   "drillLength": 12,
-  "passScore": 10
+  "passScore": 10,
+  "card": "Flip cards, then a quick-fire drill"
  },
  {
   "id": "subnetting",
@@ -1554,7 +1557,8 @@
   "intro": "A subnet mask splits an IP address into two parts: which network you're on, and which device you are. Drag the prefix and watch the bits move.",
   "exploreGoal": 4,
   "practiceLength": 8,
-  "passScore": 6
+  "passScore": 6,
+  "card": "Split networks in binary, step by step"
  },
  {
   "id": "net-detective",
@@ -1687,14 +1691,15 @@
    }
   ],
   "files": {
-   "notes.txt": "Ticket #4821 — 'internet down' on pc01\nFindings so far:\n- Local link OK (gateway 192.168.1.1 replies)\n- Internet OK (8.8.8.8 replies)\n- Names fail with the configured DNS server 192.168.1.10\n- Names resolve fine via 8.8.8.8\nConclusion: the DNS server 192.168.1.10 (dns01) is down. Fix: restore dns01 or point clients at a working resolver."
+   "notes.txt": "Ticket #4821: 'internet down' on pc01\nFindings so far:\n- Local link OK (gateway 192.168.1.1 replies)\n- Internet OK (8.8.8.8 replies)\n- Names fail with the configured DNS server 192.168.1.10\n- Names resolve fine via 8.8.8.8\nConclusion: the DNS server 192.168.1.10 (dns01) is down. Fix: restore dns01 or point clients at a working resolver."
   },
   "next": [
    {
     "label": "Try these commands for real on your own machine",
     "url": "https://www.comptia.org/en-us/certifications/network/"
    }
-  ]
+  ],
+  "card": "ping, traceroute, nslookup: find the fault"
  },
  {
   "id": "tcp-handshake",
@@ -1705,9 +1710,10 @@
   "lesson": "networking",
   "skill": "See the TCP three-way handshake, watch a SYN flood exhaust a server, and stop it with SYN cookies",
   "title": "TCP handshake & SYN flood",
-  "intro": "Every TCP connection opens with a three-way handshake. Watch one happen, then launch a SYN flood and see how it stops real users getting in — and how one setting defends against it.",
+  "intro": "Every TCP connection opens with a three-way handshake. Watch one happen, then launch a SYN flood and see how it stops real users getting in, and how one setting defends against it.",
   "slots": 8,
-  "holdTicks": 8
+  "holdTicks": 8,
+  "card": "The handshake, a SYN flood, and the fix"
  },
  {
   "id": "finding-the-server",
@@ -1721,7 +1727,7 @@
   "next": "one-request",
   "title": "How a request finds its server",
   "skill": "Follow one app's request from a name to a server: DNS and TTLs, ports and localhost, MAC addresses and ARP, routing and traceroute, NAT, and network tiers",
-  "intro": "Before Hopper (a made-up ride app) can ask anything, it has to find the server: turn a name into an address, find the right door on that machine, get out of your home network and across the internet, and get past the layers guarding the database. Six stops, one idea each.",
+  "intro": "Before the Hopper app (made up) can ask anything, it has to find the server. Six stops, one idea each.",
   "simplification": "Simplified for learning: the DNS chain is shown as root, TLD and the domain's own server, with no other caches in between; .example names are reserved, so these servers are illustrative. MAC addresses use the range set aside for documentation (00:00:5e:00:53:xx). Traceroute timings are made up but in a realistic range. The NAT table works like a home router's; real ones also time entries out. Security groups are modelled on cloud ones (allow rules only, sources as other groups).",
   "chapters": [
    {
@@ -1737,9 +1743,9 @@
      }
     },
     "movedIp": "203.0.113.20",
-    "idea": "The app knows a name, api.hopper.example, but the network needs an IP address. A resolver finds it by asking the root servers, then the .example servers, then Hopper's own name server, and then remembers the answer for its TTL (time to live) so the next lookup is instant.",
+    "idea": "The app knows a name; the network needs an IP address. A resolver asks the root, the .example servers and Hopper's own server, then caches the answer for its TTL.",
     "goal": "Look it up twice (the second answer comes from the cache), then let the TTL run out and look again.",
-    "security": "Because answers are cached, a wrong or poisoned record can linger until its TTL runs out, and every user of that resolver gets it. DNSSEC lets resolvers check that records really came from the domain's owner. Attackers use very short TTLs too, to move a malicious site between servers faster than blocklists can follow (fast flux).",
+    "security": "A bad or poisoned answer stays cached until its TTL runs out. DNSSEC lets resolvers check records are genuine.",
     "deeper": {
      "href": "#mission-dns",
      "label": "Mission: Why won't the intranet load? (a stale DNS record)"
@@ -1782,9 +1788,9 @@
       "public": false
      }
     ],
-    "idea": "One server, one IP address, several services. Each listens on its own port, like doors in one building. And each chooses which address to listen on: 0.0.0.0 means every address, so other machines can connect; 127.0.0.1 (localhost) means only programs on the same machine can. A service can be up but not reachable.",
+    "idea": "One server, several services, each on its own port. 0.0.0.0 means anyone can connect; 127.0.0.1 (localhost) means only the server itself. Up isn't the same as reachable.",
     "goal": "Lock it down: other machines reach only the website, while the database and cache still answer on the server itself.",
-    "security": "Databases and caches listening on every address are a classic mistake. Redis with no password exposed to the internet is scanned for constantly and taken over within minutes, often to mine cryptocurrency. Listen on localhost unless something else really needs to connect, and firewall it either way.",
+    "security": "Databases and caches open to everyone get found fast. Exposed Redis is often hijacked within minutes. Listen on localhost unless something else must connect.",
     "deeper": {
      "href": "#lab-ports-protocols",
      "label": "Lab: Ports and protocols"
@@ -1839,9 +1845,9 @@
       "ip": "192.168.1.99"
      }
     ],
-    "idea": "An IP address says where on the internet; a MAC address is burned into each network card and only matters on the local network, where frames are delivered by MAC. So before sending, a device asks everyone nearby \"who has this IP?\" (an ARP broadcast), and only the owner replies with its MAC.",
+    "idea": "On a local network, frames go to MAC addresses. To find one, a device asks everyone \"who has this IP?\" (ARP), and only the owner replies.",
     "goal": "Send to a device on your network and to the Hopper server, and see which address the phone actually asks for.",
-    "security": "ARP has no proof of identity: anyone on the network can reply \"that's me\". In ARP spoofing an attacker claims to be the router, so the phone sends them everything (a man-in-the-middle). Switches with Dynamic ARP Inspection, and encryption such as TLS, are the defences.",
+    "security": "Anyone can answer an ARP question, so an attacker can claim to be the router and see everything (ARP spoofing). Switch protections and TLS stop it.",
     "deeper": {
      "href": "#lab-vlans",
      "label": "Lab: VLANs, where broadcasts like ARP stop"
@@ -1887,10 +1893,10 @@
       "rtt": 48.3
      }
     ],
-    "idea": "Your phone only knows its first hop, the home router. Each router looks at the destination IP and passes the packet one hop closer. traceroute reveals the path with a trick: it sends probes that may only cross 1 router, then 2, then 3, and each router where a probe runs out sends back a message.",
+    "idea": "Your phone only knows its first hop. Each router passes the packet one hop closer. traceroute reveals each hop by letting probes run out one router further each time.",
     "goal": "Send probes until one reaches the Hopper server.",
     "ipmac": "The IP addresses (where it's going) stay the same the whole way, apart from your router's NAT (next stop). The MAC addresses change on every link: each router addresses the frame to the next router's MAC.",
-    "security": "Routers trust each other's announcements about which addresses they can reach (BGP). In 2018 attackers announced Amazon's DNS addresses as their own, redirected visitors of a cryptocurrency wallet site to a fake one, and stole funds. RPKI lets networks check who really owns an address range.",
+    "security": "Routers trust each other's route announcements (BGP). In 2018 attackers hijacked Amazon's DNS addresses this way to steal cryptocurrency. RPKI checks who owns an address range.",
     "deeper": {
      "href": "#lab-net-detective",
      "label": "Lab: Network detective (ping, traceroute, nslookup)"
@@ -1926,9 +1932,9 @@
       "to": "198.51.100.7:22"
      }
     ],
-    "idea": "Your devices have private addresses (192.168.x.x) that mean nothing on the internet. Your router rewrites each outgoing packet to come from its one public address, picks a port to tell them apart, and writes it in a table. Replies are matched against the table; anything else arriving is dropped. A cloud NAT gateway does the same for private servers.",
+    "idea": "Private addresses (192.168.x.x) don't work on the internet. Your router swaps them for its one public address, notes each pair in a table, and only lets replies back in.",
     "goal": "Send traffic out, let a reply back in, and see what happens to a stranger.",
-    "security": "NAT hides inside addresses and drops unexpected inbound traffic, but it isn't a firewall: port forwarding and UPnP open holes on purpose (often by apps, without asking), and outbound traffic is unrestricted, so malware inside can still call home freely.",
+    "security": "NAT blocks unexpected inbound traffic, but it isn't a firewall: port forwarding opens holes, and malware inside can still call out freely.",
     "deeper": {
      "href": "#lab-network-builder",
      "label": "Lab: Network builder"
@@ -2012,15 +2018,16 @@
       "expect": false
      }
     ],
-    "idea": "Hopper splits its network into tiers. Only the public subnet faces the internet; the app servers and the database sit in private subnets. On top of that, each tier's security group says who may connect: the app tier accepts only the load balancer, and the database should accept only the app tier. Two layers, so one mistake isn't fatal.",
+    "idea": "Only the public subnet faces the internet. App servers and the database sit in private subnets, and each tier's security group says who may connect.",
     "goal": "One rule is too loose. Fix the database's rule so every test comes out right.",
-    "security": "This is defence in depth: the internet can't reach the database even with the loose rule, because the data subnet is private. But the load balancer could, so anyone who took it over would have a path straight to the data. Rules that name the tier in front (not \"anywhere\") close that path.",
+    "security": "Two layers means one mistake isn't fatal. But a loose rule lets anyone who takes over the load balancer reach the data. Name the tier in front, not \"anywhere\".",
     "deeper": {
      "href": "#lab-one-request",
      "label": "Part 2: One request, start to finish"
     }
    }
-  ]
+  ],
+  "card": "DNS, ports, ARP, routing, NAT, tiers"
  },
  {
   "id": "one-request",
@@ -2031,7 +2038,7 @@
   "lesson": "networking",
   "title": "One request, start to finish",
   "skill": "Follow one app's request through HTTP, TCP and UDP, TLS, a load balancer, a reverse proxy, a firewall and WebSockets",
-  "intro": "Hopper is a (made-up) ride app. Every time a rider checks where their driver is, the same few ideas carry the request there and back. Seven stops, one idea each: play with each one, then see why it matters for security.",
+  "intro": "Hopper (a made-up ride app) asks where your driver is. Seven ideas carry that request there and back.",
   "simplification": "Simplified for learning: TCP segments are numbered 1 to 5 here (real TCP numbers every byte), every segment is acknowledged straight away, and there's no selective acknowledgement (SACK). The TLS capture is random-looking stand-in bytes in a real TLS 1.3 record layout, not real encryption. The load balancer runs its health check with every request (real ones check on a timer, often every 2 seconds). Sign-in tokens are shortened. Hopper and its domains are made up, using the reserved .example name.",
   "chapters": [
    {
@@ -2039,9 +2046,9 @@
     "label": "HTTP",
     "title": "Ask, then answer",
     "host": "api.hopper.example",
-    "idea": "The app asks for something (a request) and the server answers (a response). Both are plain text: a first line, headers, a blank line, then the body. The first line of the answer is a status code that says how it went.",
+    "idea": "The app asks (a request) and the server answers (a response). Both are plain text. The answer starts with a status code saying how it went.",
     "goal": "Send all four requests and compare the status codes.",
-    "security": "Status codes tell a story in logs: a burst of 401s from one address is someone guessing sign-in tokens, and lots of 404s for paths like /wp-login.php is a scanner looking for weak spots. The token in the Authorization header is as good as a password: whoever holds it is you.",
+    "security": "Status codes tell a story in logs: lots of 401s means someone guessing; lots of 404s means a scanner. A sign-in token is as good as a password.",
     "exchanges": [
      {
       "label": "Where's my driver?",
@@ -2166,17 +2173,17 @@
     "id": "tcp",
     "label": "TCP and UDP",
     "title": "Nothing goes missing (unless you'd rather it did)",
-    "idea": "Data is cut into segments. TCP numbers them, the receiver acknowledges what it has, and anything lost is sent again, so the app gets everything in order. UDP just sends: no numbers, no acknowledgements, no waiting. Lose a segment each way and compare.",
+    "idea": "TCP numbers each segment, the receiver acknowledges it, and anything lost is resent. UDP just sends. Lose a segment each way and compare.",
     "goal": "Lose at least one segment over TCP, then over UDP.",
-    "headerNote": "TCP spends 12 more bytes on every segment: a sequence number (ordering), an acknowledgment number (delivery), flags such as SYN, ACK and FIN, and a window (how much more the receiver can take). UDP carries only ports, a length and a checksum. Options can stretch a TCP header to 60 bytes. Web pages, email and SSH use TCP; DNS lookups, video calls and games usually use UDP, and so does HTTP/3 (over QUIC, which adds its own resending).",
-    "security": "UDP has no handshake, so the sender's address can be faked. Attackers send small UDP questions (to DNS or NTP servers) with a victim's address as the sender, and the much bigger answers flood the victim: an amplification DDoS. TCP's handshake makes that kind of forgery far harder."
+    "headerNote": "TCP's extra 12 bytes number, acknowledge and pace the data. Web, email and SSH use TCP; DNS, video calls and games usually use UDP.",
+    "security": "UDP has no handshake, so senders can be faked. Attackers send small questions \"from\" a victim, and the big answers flood them (amplification DDoS)."
    },
    {
     "id": "tls",
     "label": "HTTPS",
     "title": "Anyone on the path can read it, unless it's encrypted",
     "host": "api.hopper.example",
-    "idea": "On café Wi-Fi, anyone on the same network can capture your traffic. Without encryption they read it all. TLS (the S in HTTPS) encrypts it in transit, and the server's certificate proves you're talking to the real api.hopper.example.",
+    "idea": "On café Wi-Fi, anyone nearby can capture your traffic. TLS (the S in HTTPS) encrypts it, and a certificate proves the server is really api.hopper.example.",
     "goal": "Turn on TLS, then find a certificate the app must refuse.",
     "payload": "POST /rides HTTP/1.1\nHost: api.hopper.example\nAuthorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyaWRlci03In0.w9Lq\nContent-Type: application/json\n\n{\"pickup\":\"Euston Square\",\"lat\":51.5257,\"lng\":-0.1357}",
     "certIntro": "When TLS starts, the server shows a certificate. The app checks three things: is it for this name, is it signed by an authority the phone trusts, and is it in date? Try each one.",
@@ -2227,13 +2234,13 @@
       "story": "Expired certificates are usually a forgotten renewal, not an attack, but the app can't tell the difference, so it refuses."
      }
     ],
-    "security": "HTTPS hides what you said, not who you talked to: the server's name and the DNS lookup can still show where you went. And the padlock means encrypted, not trustworthy: phishing sites have certificates too."
+    "security": "HTTPS hides what you said, not who you talked to. A padlock means encrypted, not honest: phishing sites have certificates too."
    },
    {
     "id": "lb",
     "label": "Load balancer",
     "title": "One server isn't enough",
-    "idea": "Thousands of riders at once would overload one server. A load balancer sits in front of several identical servers and shares the requests out. It also checks each server's health, and stops sending to one that isn't answering.",
+    "idea": "One server can't take everyone. A load balancer shares requests across several, and stops sending to any that fail their health checks.",
     "goal": "Crash a server, keep sending, and watch the load balancer route around it.",
     "servers": [
      "app-1",
@@ -2252,14 +2259,14 @@
      1,
      1
     ],
-    "security": "Spreading load also helps absorb floods of traffic, and health checks keep a broken server from serving errors. But every server behind it must be patched and configured the same: an attacker only needs one weak one."
+    "security": "Load balancers help absorb floods of traffic, but every server behind one must be patched: attackers only need one weak one."
    },
    {
     "id": "proxy",
     "label": "Reverse proxy",
     "title": "One front door for many services",
     "host": "api.hopper.example",
-    "idea": "Behind api.hopper.example are separate services for rides, drivers and payments. A reverse proxy is the single front door: it ends the HTTPS connection, reads the path, and passes each request to the right service inside. The longest matching rule wins.",
+    "idea": "One front door for many services. The reverse proxy ends HTTPS, reads the path, and passes each request to the right service inside. The longest matching rule wins.",
     "goal": "Send requests to all three services, and one that matches nothing.",
     "locations": [
      {
@@ -2290,13 +2297,13 @@
      "/pay/admin/refunds",
      "/wp-login.php"
     ],
-    "security": "Only the proxy faces the internet, so the services behind it stay hidden, and dangerous paths (like /pay/admin/) can be blocked in one place. It's also where a web application firewall (WAF) usually sits, checking requests for attacks before they reach the app."
+    "security": "Only the proxy faces the internet, so services stay hidden and risky paths can be blocked in one place. Web application firewalls (WAFs) usually sit here."
    },
    {
     "id": "fw",
     "label": "Firewall",
     "title": "Who's allowed in?",
-    "idea": "A firewall checks every new connection against its rules, top to bottom. The first rule that matches decides, and anything no rule matches is denied. Two of Hopper's rules are wrong. Fix them so every test passes.",
+    "idea": "Rules are read top to bottom; the first match decides, and anything unmatched is denied. Two of Hopper's rules are wrong.",
     "goal": "Make every test traffic line come out right.",
     "hosts": {
      "rider": {
@@ -2376,14 +2383,14 @@
       "expect": "deny"
      }
     ],
-    "solvedNote": "Only the API can reach the database, and SSH isn't open to the internet. Notice the attacker can still reach the public API on 443: a firewall can't tell them from a rider, so the app itself has to be secure too. Cloud security groups do the same job, but only with allow rules: anything not listed is blocked.",
-    "security": "Open only what's needed, only to who needs it (least privilege). Databases and SSH left open to the internet are among the most common ways attackers get in, and scanners find them within minutes."
+    "solvedNote": "Only the API reaches the database, and SSH is closed to the internet. The attacker can still reach the public site: the app itself must be secure too.",
+    "security": "Open only what's needed, only to who needs it. Databases and SSH open to the internet are among the most common ways in."
    },
    {
     "id": "ws",
     "label": "WebSockets",
     "title": "Live updates without asking again and again",
-    "idea": "To show the driver moving, the app could ask every couple of seconds (polling), mostly to hear nothing has changed. A WebSocket upgrades one HTTP request into a connection that stays open, so the server can push each update the moment it happens.",
+    "idea": "Polling asks every few seconds, mostly to hear nothing new. A WebSocket keeps one connection open, so the server can push each update straight away.",
     "goal": "Watch the same ride with polling, then with a WebSocket.",
     "seconds": 30,
     "interval": 2,
@@ -2396,12 +2403,13 @@
      "request": "GET /rides/42/live HTTP/1.1\nHost: api.hopper.example\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\nSec-WebSocket-Version: 13\nOrigin: https://app.hopper.example",
      "response": "HTTP/1.1 101 Switching Protocols\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo="
     },
-    "security": "The upgrade is an ordinary HTTP request, so it needs the same sign-in checks as any other. The server should also check the Origin header, or another website could open a socket using the rider's signed-in session (cross-site WebSocket hijacking)."
+    "security": "The upgrade is a normal HTTP request, so it needs normal sign-in checks. Servers should check the Origin header too, or other sites can hijack the socket."
    }
   ],
   "series": "How an app talks to the internet",
   "part": 2,
-  "prev": "finding-the-server"
+  "prev": "finding-the-server",
+  "card": "HTTP, TCP, TLS, load balancers, firewalls"
  },
  {
   "id": "telnet-ssh",
@@ -2412,7 +2420,8 @@
   "lesson": "encryption",
   "skill": "See why Telnet is unsafe and SSH is secure by watching what an eavesdropper captures",
   "title": "Telnet vs SSH: what a sniffer sees",
-  "intro": "Old protocols like Telnet send your password across the network in plain text. Send a login over Telnet and then SSH, and watch exactly what someone listening on the wire captures."
+  "intro": "Old protocols like Telnet send your password across the network in plain text. Send a login over Telnet and then SSH, and watch exactly what someone listening on the wire captures.",
+  "card": "What an eavesdropper sees: Telnet vs SSH"
  },
  {
   "id": "cable-wiring",
@@ -2423,7 +2432,8 @@
   "lesson": "networking",
   "skill": "Wire an RJ45 connector to T568A/T568B and tell a straight-through cable from a crossover",
   "title": "Build an Ethernet cable",
-  "intro": "Ever wondered what's inside the clear plug on a network cable? Eight tiny wires in a set order. Arrange them correctly, learn the two standards, and see what makes a cable straight-through or crossover."
+  "intro": "Ever wondered what's inside the clear plug on a network cable? Eight tiny wires in a set order. Arrange them correctly, learn the two standards, and see what makes a cable straight-through or crossover.",
+  "card": "Wire an RJ45 plug, T568A or B"
  },
  {
   "id": "vlans",
@@ -2434,7 +2444,7 @@
   "lesson": "networking",
   "title": "VLANs: one network, kept apart",
   "skill": "Create VLANs, assign access and voice ports, and trunk them between Cisco switches",
-  "intro": "Harbourside College has three Cisco switches and one flat network: staff, students and guests all share VLAN 1. Split them into VLANs from the switch command line, find out why that breaks things between switches, and fix it with trunks.",
+  "intro": "Harbourside College puts staff, students and guests on one flat network. Split them with VLANs on three Cisco switches.",
   "simplification": "Simplified simulation of Cisco Catalyst 2960 switches running IOS 15: only the commands this lab needs are modelled, and some long outputs are shortened (marked [Simulator]). VLAN changes apply at once (real IOS applies them when you leave VLAN mode). Spanning tree, VTP and CDP are not modelled, except the CDP native VLAN mismatch warning. On a real 2960, mls qos trust cos only takes effect once QoS is enabled with the global command mls qos. PCs are Windows and have no default gateway; ping output follows Windows. Addresses are private (10.10.x.x) and the college is fictional.",
   "vlans": {
    "10": "Staff",
@@ -2792,7 +2802,8 @@
     "label": "Cisco Packet Tracer: build this for real (free with a Networking Academy account)",
     "url": "https://www.netacad.com/cisco-packet-tracer"
    }
-  ]
+  ],
+  "card": "Build VLANs and trunks on Cisco switches"
  },
  {
   "id": "network-builder",
@@ -2803,7 +2814,7 @@
   "lesson": "networking",
   "title": "Network builder: see who can talk to whom",
   "skill": "Build networks with switches, VLANs, trunks and a router, and see every broadcast domain light up as you change it",
-  "intro": "A sandbox in the spirit of Packet Tracer, built so you can see the structure. Add PCs, switches and routers, cable them, and set addresses and VLANs with forms or the command line. Every broadcast domain gets its own colour, cables show which networks they carry, and picking a PC shows who it can reach and why not.",
+  "intro": "Add PCs, switches and routers, cable them up, and set IPs and VLANs. Every broadcast domain gets its own colour, live.",
   "simplification": "Simplified for learning: switches model Cisco Catalyst 2960 VLANs, trunks and DTP; routers only know the networks they have an address on (no static or dynamic routing); PCs are Windows with one network card and a fixed address. Spanning tree, MAC address tables, ARP caches and DHCP aren't modelled. Switch commands follow IOS 15 and ping output follows Windows. Your network is saved in this browser only.",
   "goals": [
    {
@@ -3228,7 +3239,8 @@
     "label": "Cisco Packet Tracer: build this for real (free with a Networking Academy account)",
     "url": "https://www.netacad.com/cisco-packet-tracer"
    }
-  ]
+  ],
+  "card": "Build a network; watch each LAN light up"
  },
  {
   "id": "linux-terminal",
@@ -3467,7 +3479,8 @@
     "label": "Install Ubuntu in a free VirtualBox VM",
     "url": "https://ubuntu.com/tutorials/how-to-run-ubuntu-desktop-on-a-virtual-machine-using-virtualbox"
    }
-  ]
+  ],
+  "card": "Move, read and search from the command line"
  },
  {
   "id": "permissions",
@@ -3478,7 +3491,7 @@
   "lesson": "linux",
   "title": "Who can read this file? Linux permissions",
   "skill": "Read ls -l, fix over-shared files with chmod and chown, and predict exactly who can read, change or run a file",
-  "intro": "Marlow Garden Centre's file server has the whole staff's pay in a file anyone can read. Find out who can see what, fix it with chmod and chown (or by clicking), and watch every person's access change as you go.",
+  "intro": "Everyone's pay is in a file anyone on the server can read. Work out who can see what, then fix it.",
   "simplification": "Simplified: one server, a few files and four people. Access is worked out the way the Linux kernel does it (one class applies: owner, else group, else others; root skips read and write checks; you need x on every folder in the path), but ACLs, setuid, setgid and sticky bits, umask and SELinux or AppArmor aren't modelled. ls -l output follows GNU coreutils. The people and the company are fictional.",
   "host": "marlow-fs",
   "cwd": "/srv/payroll",
@@ -3779,7 +3792,8 @@
     "label": "OverTheWire: Bandit (free, real SSH wargame)",
     "url": "https://overthewire.org/wargames/bandit/"
    }
-  ]
+  ],
+  "card": "Who can read this file? Fix it"
  },
  {
   "id": "hashing",
@@ -3831,25 +3845,25 @@
    }
   ],
   "text": {
-   "fingerprint": "A hash function turns any input, a word or a whole film, into a fixed-length fingerprint. The same input always gives the same hash, and you can't work backwards from the hash to the input. Type below: all three are computed live in your browser.",
+   "fingerprint": "A hash turns any input into a fixed-length fingerprint. Same input, same hash, and there's no way back. Type below: all three are computed live.",
    "avalanche": "Good hash functions scramble completely: change one character and about half the bits flip, so similar inputs give unrelated hashes. Edit either box.",
-   "integrity": "Software sites often publish a file's SHA-256 so you can check what you downloaded. Two mirrors offer the same small file. Hash each and pick the one that matches. A published hash only helps if you get it from somewhere an attacker can't change, such as the official site over HTTPS.",
+   "integrity": "Sites publish a file's SHA-256 so you can check your download. Two mirrors offer the same file: hash each and pick the match. Get the published hash from the official site, over HTTPS.",
    "retired": [
-    "A hash is only safe as a fingerprint if nobody can find two different inputs with the same hash (a collision). For MD5 that became practical in 2004, and the Flame malware (2012) used an MD5 collision to forge a Microsoft code-signing certificate.",
-    "SHA-1 followed. In 2017 researchers from CWI Amsterdam and Google published two different PDF files with the same SHA-1 hash, 38762cf7f55934b34d179ae6a4c80cadccbb7f0a (the SHAttered attack); their SHA-256 hashes differ. Major browsers stopped trusting SHA-1 certificates that year, and NIST plans to retire SHA-1 completely by the end of 2030.",
-    "Use SHA-256 or stronger (the SHA-2 or SHA-3 families) for fingerprints and signatures. MD5 and SHA-1 still turn up as quick checks against accidental corruption, but not where an attacker could be involved."
+    "MD5 is broken: two different inputs with the same hash (a collision) became easy in 2004. In 2012 the Flame malware used one to fake a Microsoft signature.",
+    "SHA-1 fell in 2017: Google and CWI Amsterdam made two different PDFs with the same SHA-1, 38762cf7f55934b34d179ae6a4c80cadccbb7f0a (SHAttered). NIST retires it by the end of 2030.",
+    "Use SHA-256 or stronger for fingerprints and signatures. MD5 and SHA-1 are only fit for spotting accidental damage."
    ],
-   "speed": "For fingerprints, fast is good. For passwords it's a problem: if a password table leaks, attackers test guesses by hashing them, and a fast hash lets them try enormous numbers. Password storage uses deliberately slow functions instead. This measures both in your browser.",
-   "speedResult": "In your browser the slow function makes each guess about {ratio} times more expensive. Attackers use graphics cards that are far faster than a browser at both, but the ratio holds: slow hashing turns a quick job into a very long one. OWASP recommends 600,000 rounds for PBKDF2-HMAC-SHA256.",
-   "unsalted": "Marlow Garden Centre (a fictional shop) stored customer passwords as plain SHA-1 hashes with no salt, as LinkedIn did before its 2012 breach. This is the leaked table: made-up accounts, real hashes.",
+   "speed": "Fast is good for fingerprints, bad for passwords: a leaked table lets attackers hash guesses at enormous speed. Password storage uses deliberately slow functions. Measure both:",
+   "speedResult": "Here, the slow function makes each guess about {ratio} times more expensive. Attackers' hardware is faster at both, but the ratio holds. OWASP recommends 600,000 rounds of PBKDF2-HMAC-SHA256.",
+   "unsalted": "Marlow Garden Centre (fictional) stored passwords as unsalted SHA-1, as LinkedIn did before its 2012 breach. Made-up accounts, real hashes:",
    "sharedRight": "Identical hashes mean identical passwords. Whoever works out one has both, and nobody had to guess anything to know they match.",
-   "guess": "Attackers don't reverse hashes: they hash guesses and look for matches, starting with the passwords people choose most. Here are 20 of the most common, as they appear in published lists of leaked passwords.",
+   "guess": "Attackers don't reverse hashes: they hash likely guesses and look for matches. Here are 20 of the commonest leaked passwords.",
    "unsaltedResult": "Each guess was hashed once and compared with every account at the same time.",
-   "salted": "The same passwords stored with a salt: each account has its own random value, added to the password before hashing. The two accounts that shared a password no longer share a hash.",
-   "saltedResult": "Each guess had to be hashed again for every account, and tables of precomputed hashes are useless. But the weak passwords still fell: a salt slows attackers down, it doesn't save a password from the top of the list. Only a long, unique password does that.",
+   "salted": "Now with a salt: a random value per account, added before hashing. The two matching passwords no longer share a hash.",
+   "saltedResult": "Every guess now had to be hashed once per account, and precomputed tables are useless. But weak passwords still fell: only a long, unique password survives.",
    "defend": [
-    "Store passwords with a slow, salted password-hashing function. OWASP recommends Argon2id first, then scrypt, then bcrypt for older systems, or PBKDF2 where FIPS-140 approved algorithms are required.",
-    "For people: long passphrases beat short complicated ones, a password manager makes every password unique, and multi-factor authentication protects the account even if a password leaks. NIST's guidance favours length and checking new passwords against known-breached ones over forced complexity rules."
+    "Store passwords with a slow, salted function: OWASP recommends Argon2id, then scrypt, then bcrypt (or PBKDF2 where FIPS-140 is required).",
+    "For people: long passphrases, a password manager so each one is unique, and MFA in case one leaks. NIST favours length and breach checks over complexity rules."
    ]
   },
   "download": {
@@ -3998,7 +4012,8 @@
     "label": "SHAttered: the first SHA-1 collision",
     "url": "https://shattered.io/"
    }
-  ]
+  ],
+  "card": "MD5, SHA-1, salts and slow hashes"
  },
  {
   "id": "log-detective",
@@ -4006,7 +4021,7 @@
   "track": "SOC",
   "minutes": 8,
   "skill": "Reading Linux authentication logs, the bread and butter of SOC work",
-  "intro": "It's 9am. An alert says server web-01 had a burst of failed SSH logins overnight. Here's an extract of /var/log/auth.log. Your job: work out who attacked, whether they got in, and what to do. Use the filter box like grep to narrow down lines.",
+  "intro": "It's 9am. Overnight, web-01 logged a burst of failed SSH logins. Search the log and work out what happened.",
   "lesson": "soc",
   "artifact": {
    "kind": "log",
@@ -4065,7 +4080,8 @@
     "explain": "Contain first: stop the attacker's access and spread, but keep the evidence. 198.51.100.7 was just a user mistyping a password before logging in normally."
    }
   ],
-  "category": "Security operations"
+  "category": "Security operations",
+  "card": "Find the attack in a Linux auth log"
  },
  {
   "id": "header-inspector",
@@ -4132,7 +4148,8 @@
     "explain": "DMARC failing means the message didn't prove it came from northvalebank.com. Combined with urgency and a mismatched Reply-To, it's phishing."
    }
   ],
-  "category": "Security operations"
+  "category": "Security operations",
+  "card": "Spot a spoofed email from its headers"
  },
  {
   "id": "cvss-builder",
@@ -4160,7 +4177,8 @@
     "target": "AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
    }
   ],
-  "category": "Security operations"
+  "category": "Security operations",
+  "card": "Turn a bug report into a CVSS score"
  },
  {
   "id": "recon-basics",
@@ -4288,7 +4306,7 @@
    }
   ],
   "files": {
-   "scope.txt": "RULES OF ENGAGEMENT — Lab exercise\nClient: Acme Lab (fictional)\nAuthorised scope: 10.10.10.0/24 ONLY\nOut of scope: everything else, including 10.10.20.0/24\nWindow: this session\nSigned off by: the lab\n\nTesting anything outside the authorised scope is not permitted and, in the real world, may be illegal. When in doubt, stop and ask."
+   "scope.txt": "RULES OF ENGAGEMENT: Lab exercise\nClient: Acme Lab (fictional)\nAuthorised scope: 10.10.10.0/24 ONLY\nOut of scope: everything else, including 10.10.20.0/24\nWindow: this session\nSigned off by: the lab\n\nTesting anything outside the authorised scope is not permitted and, in the real world, may be illegal. When in doubt, stop and ask."
   },
   "next": [
    {
@@ -4299,6 +4317,7 @@
     "label": "OverTheWire Bandit (free SSH wargame)",
     "url": "https://overthewire.org/wargames/bandit/"
    }
-  ]
+  ],
+  "card": "Find hosts and ports, inside the scope"
  }
 ]

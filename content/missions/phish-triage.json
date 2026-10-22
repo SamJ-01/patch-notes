@@ -6,6 +6,7 @@
  "lesson": "phishing",
  "category": "Security operations",
  "summary": "Three reported emails, one real attack: read the headers, search the mail and proxy logs, find who clicked, contain it and prove how it got through.",
+ "card": "Three reported emails, one real attack",
  "simplification": "Simplified simulation: headers are trimmed to the ones an analyst reads, and the logs to the lines that matter. Log lines follow Ubuntu 22.04's Postfix, Dovecot 2.3, OpenDKIM, OpenDMARC and policyd-spf formats, and Squid's native access log sent to syslog; every server keeps UTC. doveadm's column spacing is approximate. Domains use the reserved .example name (so the whois record is illustrative: .example names can't really be registered) and IP addresses are documentation ranges.",
  "devices": {
   "attacker": {

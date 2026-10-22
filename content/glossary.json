@@ -3005,5 +3005,617 @@
   ],
   "short": "A Windows and Microsoft Edge feature that warns you before you open websites, downloads or apps known or suspected to be malicious.",
   "lesson": "malware"
+ },
+ {
+  "id": "tcp",
+  "term": "TCP",
+  "kind": "Technology",
+  "aliases": [
+   "TCP"
+  ],
+  "short": "Transmission Control Protocol: numbers and acknowledges data so it arrives complete and in order, resending anything lost.",
+  "lesson": "networking",
+  "see": [
+   "udp",
+   "handshake",
+   "port"
+  ]
+ },
+ {
+  "id": "udp",
+  "term": "UDP",
+  "kind": "Technology",
+  "aliases": [
+   "UDP"
+  ],
+  "short": "User Datagram Protocol: sends data without a connection or acknowledgements. Fast, but lost data stays lost. Used by DNS, video calls and games.",
+  "lesson": "networking",
+  "see": [
+   "tcp",
+   "port"
+  ]
+ },
+ {
+  "id": "handshake",
+  "term": "Three-way handshake",
+  "kind": "Concept",
+  "aliases": [
+   "three-way handshake",
+   "TCP handshake"
+  ],
+  "short": "How TCP opens a connection: SYN, SYN-ACK, ACK. Both sides agree starting numbers before any data flows.",
+  "lesson": "networking",
+  "see": [
+   "tcp"
+  ]
+ },
+ {
+  "id": "icmp",
+  "term": "ICMP",
+  "kind": "Technology",
+  "aliases": [
+   "ICMP"
+  ],
+  "short": "Internet Control Message Protocol: the network's error and test messages, used by ping and traceroute.",
+  "lesson": "networking",
+  "see": [
+   "traceroute"
+  ]
+ },
+ {
+  "id": "traceroute",
+  "term": "traceroute",
+  "kind": "Technology",
+  "aliases": [
+   "traceroute",
+   "tracert"
+  ],
+  "short": "A tool that lists each router on the path to a host, by sending probes that may cross one more router each time.",
+  "lesson": "networking",
+  "see": [
+   "icmp",
+   "router"
+  ]
+ },
+ {
+  "id": "router",
+  "term": "Router",
+  "kind": "Technology",
+  "aliases": [
+   "router",
+   "routers"
+  ],
+  "short": "A device that connects different networks and passes each packet one hop closer to its destination, using IP addresses.",
+  "lesson": "networking",
+  "see": [
+   "default-gateway",
+   "switch"
+  ]
+ },
+ {
+  "id": "switch",
+  "term": "Network switch",
+  "kind": "Technology",
+  "aliases": [
+   "network switch",
+   "network switches"
+  ],
+  "short": "Connects devices on one local network and delivers each frame only to the port its destination MAC address is on.",
+  "lesson": "networking",
+  "see": [
+   "mac-address",
+   "vlan"
+  ]
+ },
+ {
+  "id": "default-gateway",
+  "term": "Default gateway",
+  "kind": "Concept",
+  "aliases": [
+   "default gateway"
+  ],
+  "short": "The router a device sends traffic to when the destination isn't on its own network.",
+  "lesson": "networking",
+  "see": [
+   "router"
+  ]
+ },
+ {
+  "id": "subnet",
+  "term": "Subnet",
+  "kind": "Concept",
+  "aliases": [
+   "subnet",
+   "subnets",
+   "subnetting"
+  ],
+  "short": "A slice of a network. The subnet mask says which part of an IP address is the network and which part is the device.",
+  "lesson": "networking",
+  "see": [
+   "subnet-mask",
+   "cidr"
+  ]
+ },
+ {
+  "id": "subnet-mask",
+  "term": "Subnet mask",
+  "kind": "Concept",
+  "aliases": [
+   "subnet mask"
+  ],
+  "short": "A number like 255.255.255.0 that marks how much of an IP address names the network.",
+  "lesson": "networking",
+  "see": [
+   "subnet",
+   "cidr"
+  ]
+ },
+ {
+  "id": "cidr",
+  "term": "CIDR",
+  "kind": "Concept",
+  "aliases": [
+   "CIDR"
+  ],
+  "short": "Writing a network as an address and prefix length, like 192.168.1.0/24: the first 24 bits are the network.",
+  "lesson": "networking",
+  "see": [
+   "subnet"
+  ]
+ },
+ {
+  "id": "mac-address",
+  "term": "MAC address",
+  "kind": "Concept",
+  "aliases": [
+   "MAC address",
+   "MAC addresses"
+  ],
+  "short": "A hardware address built into each network card, like 00:00:5e:00:53:24. It only matters on the local network.",
+  "lesson": "networking",
+  "see": [
+   "arp",
+   "ip-address"
+  ]
+ },
+ {
+  "id": "arp",
+  "term": "ARP",
+  "kind": "Technology",
+  "aliases": [
+   "ARP"
+  ],
+  "short": "Address Resolution Protocol: a device asks everyone nearby \"who has this IP?\" and the owner replies with its MAC address.",
+  "lesson": "networking",
+  "see": [
+   "mac-address",
+   "arp-spoofing"
+  ]
+ },
+ {
+  "id": "arp-spoofing",
+  "term": "ARP spoofing",
+  "kind": "Attack",
+  "aliases": [
+   "ARP spoofing",
+   "ARP poisoning"
+  ],
+  "short": "Answering ARP questions falsely, usually claiming to be the router, so a victim's traffic goes through the attacker.",
+  "lesson": "networking",
+  "see": [
+   "arp",
+   "aitm"
+  ]
+ },
+ {
+  "id": "nat",
+  "term": "NAT",
+  "kind": "Technology",
+  "aliases": [
+   "NAT",
+   "NAT gateway"
+  ],
+  "short": "Network Address Translation: a router swaps private addresses for its one public address, and only lets replies back in.",
+  "lesson": "networking",
+  "see": [
+   "ip-address",
+   "router"
+  ]
+ },
+ {
+  "id": "dhcp",
+  "term": "DHCP",
+  "kind": "Technology",
+  "aliases": [
+   "DHCP"
+  ],
+  "short": "Dynamic Host Configuration Protocol: hands devices an IP address, gateway and DNS server automatically when they join a network.",
+  "lesson": "networking",
+  "see": [
+   "ip-address",
+   "default-gateway"
+  ]
+ },
+ {
+  "id": "ttl",
+  "term": "TTL",
+  "kind": "Concept",
+  "aliases": [
+   "TTL"
+  ],
+  "short": "Time to live. For DNS, how long an answer may be cached. For packets, how many routers they may cross before being dropped.",
+  "lesson": "networking",
+  "see": [
+   "dns",
+   "traceroute"
+  ]
+ },
+ {
+  "id": "resolver",
+  "term": "DNS resolver",
+  "kind": "Technology",
+  "aliases": [
+   "resolver",
+   "DNS resolver"
+  ],
+  "short": "The server that looks up names for you, asking other DNS servers in turn and caching the answers.",
+  "lesson": "networking",
+  "see": [
+   "dns",
+   "ttl"
+  ]
+ },
+ {
+  "id": "dnssec",
+  "term": "DNSSEC",
+  "kind": "Defence",
+  "aliases": [
+   "DNSSEC"
+  ],
+  "short": "Signatures on DNS records, so resolvers can check an answer really came from the domain's owner.",
+  "lesson": "networking",
+  "see": [
+   "dns"
+  ]
+ },
+ {
+  "id": "vlan",
+  "term": "VLAN",
+  "kind": "Technology",
+  "aliases": [
+   "VLAN",
+   "VLANs"
+  ],
+  "short": "A virtual LAN: one switch split into separate networks, so devices only hear broadcasts from their own VLAN.",
+  "lesson": "networking",
+  "see": [
+   "trunk",
+   "switch"
+  ]
+ },
+ {
+  "id": "trunk",
+  "term": "Trunk link",
+  "kind": "Technology",
+  "aliases": [
+   "trunk",
+   "trunks",
+   "802.1Q"
+  ],
+  "short": "A link between switches that carries several VLANs at once, each frame tagged with its VLAN number (802.1Q).",
+  "lesson": "networking",
+  "see": [
+   "vlan"
+  ]
+ },
+ {
+  "id": "broadcast",
+  "term": "Broadcast",
+  "kind": "Concept",
+  "aliases": [
+   "broadcast",
+   "broadcasts",
+   "broadcast domain"
+  ],
+  "short": "A message sent to every device on the local network, such as an ARP question. Routers don't pass broadcasts on.",
+  "lesson": "networking",
+  "see": [
+   "arp",
+   "vlan"
+  ]
+ },
+ {
+  "id": "packet",
+  "term": "Packet",
+  "kind": "Concept",
+  "aliases": [
+   "packet",
+   "packets"
+  ],
+  "short": "One chunk of data on its way across a network, with addresses saying where it's from and where it's going.",
+  "lesson": "networking",
+  "see": [
+   "ip-address"
+  ]
+ },
+ {
+  "id": "osi",
+  "term": "OSI model",
+  "kind": "Concept",
+  "aliases": [
+   "OSI",
+   "OSI model"
+  ],
+  "short": "Seven layers describing how networks work, from cables (layer 1) to applications (layer 7). Used to pinpoint where problems are.",
+  "lesson": "networking",
+  "see": [
+   "tcp"
+  ]
+ },
+ {
+  "id": "bgp",
+  "term": "BGP",
+  "kind": "Technology",
+  "aliases": [
+   "BGP"
+  ],
+  "short": "Border Gateway Protocol: how networks across the internet tell each other which addresses they can reach.",
+  "lesson": "networking",
+  "see": [
+   "rpki",
+   "router"
+  ]
+ },
+ {
+  "id": "rpki",
+  "term": "RPKI",
+  "kind": "Defence",
+  "aliases": [
+   "RPKI"
+  ],
+  "short": "Signed records of who owns which address ranges, so networks can reject false BGP announcements.",
+  "lesson": "networking",
+  "see": [
+   "bgp"
+  ]
+ },
+ {
+  "id": "localhost",
+  "term": "Localhost",
+  "kind": "Concept",
+  "aliases": [
+   "localhost",
+   "127.0.0.1"
+  ],
+  "short": "The machine itself. A service listening on 127.0.0.1 can only be reached by programs on the same machine.",
+  "lesson": "networking",
+  "see": [
+   "port"
+  ]
+ },
+ {
+  "id": "load-balancer",
+  "term": "Load balancer",
+  "kind": "Technology",
+  "aliases": [
+   "load balancer",
+   "load balancers"
+  ],
+  "short": "Shares incoming requests across several servers, and stops sending to any that fail their health checks.",
+  "lesson": "cloud",
+  "see": [
+   "reverse-proxy"
+  ]
+ },
+ {
+  "id": "reverse-proxy",
+  "term": "Reverse proxy",
+  "kind": "Technology",
+  "aliases": [
+   "reverse proxy",
+   "reverse proxies"
+  ],
+  "short": "A single front door for many services: it receives every request and passes each to the right server inside.",
+  "lesson": "cloud",
+  "see": [
+   "load-balancer",
+   "waf"
+  ]
+ },
+ {
+  "id": "security-group",
+  "term": "Security group",
+  "kind": "Defence",
+  "aliases": [
+   "security group",
+   "security groups"
+  ],
+  "short": "A cloud firewall attached to servers. It only has allow rules: anything not listed is blocked.",
+  "lesson": "cloud",
+  "see": [
+   "firewall"
+  ]
+ },
+ {
+  "id": "websocket",
+  "term": "WebSocket",
+  "kind": "Technology",
+  "aliases": [
+   "WebSocket",
+   "WebSockets"
+  ],
+  "short": "A connection that stays open after one HTTP request, so the server can push updates as they happen.",
+  "lesson": "networking",
+  "see": [
+   "tcp"
+  ]
+ },
+ {
+  "id": "status-code",
+  "term": "HTTP status code",
+  "kind": "Concept",
+  "aliases": [
+   "status code",
+   "status codes"
+  ],
+  "short": "The number at the start of a web server's reply: 200 OK, 404 Not Found, 401 not signed in, 500 server error.",
+  "lesson": "web-access",
+  "see": []
+ },
+ {
+  "id": "salt",
+  "term": "Salt",
+  "kind": "Defence",
+  "aliases": [
+   "salt",
+   "salts",
+   "salted"
+  ],
+  "short": "A random value added to each password before hashing, so identical passwords get different hashes.",
+  "lesson": "encryption",
+  "see": [
+   "hash",
+   "slow-hash"
+  ]
+ },
+ {
+  "id": "slow-hash",
+  "term": "Slow password hash",
+  "kind": "Defence",
+  "aliases": [
+   "Argon2",
+   "Argon2id",
+   "bcrypt",
+   "scrypt",
+   "PBKDF2"
+  ],
+  "short": "Hash functions built to be slow, so each password guess costs an attacker real time.",
+  "lesson": "encryption",
+  "see": [
+   "hash",
+   "salt"
+  ]
+ },
+ {
+  "id": "sha1",
+  "term": "SHA-1",
+  "kind": "Technology",
+  "aliases": [
+   "SHA-1"
+  ],
+  "short": "An old hash function, broken in 2017 (SHAttered). Replace with SHA-256 or stronger.",
+  "lesson": "encryption",
+  "see": [
+   "hash"
+  ]
+ },
+ {
+  "id": "plaintext",
+  "term": "Plaintext",
+  "kind": "Concept",
+  "aliases": [
+   "plaintext",
+   "plain text"
+  ],
+  "short": "Readable data, before encryption or without it. Anything sent in plaintext can be read by whoever captures it.",
+  "lesson": "encryption",
+  "see": [
+   "encryption"
+  ]
+ },
+ {
+  "id": "telnet",
+  "term": "Telnet",
+  "kind": "Technology",
+  "aliases": [
+   "Telnet"
+  ],
+  "short": "An old remote login protocol that sends everything, passwords included, in plaintext. SSH replaced it.",
+  "lesson": "networking",
+  "see": [
+   "ssh",
+   "plaintext"
+  ]
+ },
+ {
+  "id": "imap",
+  "term": "IMAP",
+  "kind": "Technology",
+  "aliases": [
+   "IMAP"
+  ],
+  "short": "The protocol mail apps use to read a mailbox on a server.",
+  "lesson": "phishing",
+  "see": []
+ },
+ {
+  "id": "grep",
+  "term": "grep",
+  "kind": "Technology",
+  "aliases": [
+   "grep"
+  ],
+  "short": "A Linux command that prints every line containing what you search for. The analyst's favourite tool for logs.",
+  "lesson": "linux",
+  "see": [
+   "linux"
+  ]
+ },
+ {
+  "id": "sudo",
+  "term": "sudo",
+  "kind": "Technology",
+  "aliases": [
+   "sudo"
+  ],
+  "short": "A Linux command that runs one command as an administrator (root), and logs that it did.",
+  "lesson": "linux",
+  "see": [
+   "linux"
+  ]
+ },
+ {
+  "id": "chmod",
+  "term": "chmod",
+  "kind": "Technology",
+  "aliases": [
+   "chmod",
+   "chown"
+  ],
+  "short": "Linux commands that change who may read, write or run a file (chmod) and who owns it (chown).",
+  "lesson": "linux",
+  "see": [
+   "linux",
+   "least-privilege"
+  ]
+ },
+ {
+  "id": "amplification",
+  "term": "Amplification attack",
+  "kind": "Attack",
+  "aliases": [
+   "amplification",
+   "amplification attack"
+  ],
+  "short": "A DDoS trick: small requests \"from\" the victim make servers send them much bigger replies.",
+  "lesson": "ddos",
+  "see": [
+   "ddos",
+   "udp"
+  ]
+ },
+ {
+  "id": "fast-flux",
+  "term": "Fast flux",
+  "kind": "Attack",
+  "aliases": [
+   "fast flux"
+  ],
+  "short": "Changing a malicious domain's IP addresses every few minutes, using short DNS TTLs, to dodge blocklists.",
+  "lesson": "ddos",
+  "see": [
+   "dns",
+   "ttl"
+  ]
  }
 ]

@@ -549,6 +549,19 @@ class ContentIntegrity(unittest.TestCase):
         covered = {q["objective"] for q in bank["questions"]}
         self.assertEqual(covered, objectives, "every objective has practice questions")
 
+    def test_lesson_key_ideas(self):
+        """Each lesson opens with three short key ideas, each with a picture, that don't just repeat its diagram."""
+        js = (ROOT / "src" / "app" / "07-labs.js").read_text() + (ROOT / "static" / "js" / "hw.js").read_text()
+        for l in self.lessons.values():
+            self.assertEqual(len(l["keys"]), 3, l["id"])
+            labels = {k["label"] for k in l["keys"]}
+            for k in l["keys"]:
+                self.assertLessEqual(len(k["text"].split()), 12, (l["id"], k["text"]))
+                self.assertRegex(js, rf"\b{k['icon']}:", (l["id"], k["icon"]))
+                self.assertNotIn("—", k["text"])
+            parts = {i.get("label") for i in (l.get("concept") or {}).get("items", [])}
+            self.assertLess(len(labels & parts), 2, f"{l['id']}: key ideas repeat the diagram")
+
     def test_glossary_ids_unique_and_links_valid(self):
         ids = [g["id"] for g in self.glossary]
         self.assertEqual(len(ids), len(set(ids)))

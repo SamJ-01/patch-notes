@@ -12,6 +12,13 @@ const GLYPH = {  // extras drawn next to devices, centred on (0,0)
   chip: '<rect x="-8" y="-8" width="16" height="16" rx="2"/><path d="M-4-12v4M0-12v4M4-12v4M-4 8v4M0 8v4M4 8v4M-12-4h4M-12 0h4M-12 4h4M8-4h4M8 0h4M8 4h4"/>',
   eye: '<path d="M-12 0c4-7 20-7 24 0c-4 7-20 7-24 0z"/><circle cx="0" cy="0" r="3.5"/>',
   gauge: '<path d="M-14 6a14 14 0 1 1 28 0"/><path class="needle" d="M0 6l-9-7"/><circle cx="0" cy="6" r="2"/>',
+  users: '<circle cx="-5" cy="-4" r="4.5"/><circle cx="6" cy="-3" r="3.5"/><path d="M-13 10a8 8 0 0 1 16 0M2 10a6 6 0 0 1 11-3"/>',
+  doc: '<path d="M-8-11h10l6 6v16h-16z"/><path d="M2-11v6h6M-4 1h8M-4 5h8M-4-3h3"/>',
+  clock: '<circle cx="0" cy="0" r="11"/><path d="M0-6v6l4 3"/>',
+  coin: '<circle cx="0" cy="0" r="11"/><path d="M3-5c-1-2-7-2-7 1s7 2 7 5-6 3-7 1M0-8v16"/>',
+  globe: '<circle cx="0" cy="0" r="11"/><path d="M-11 0h22M0-11c-5 6-5 16 0 22c5-6 5-16 0-22"/>',
+  link: '<path d="M-2 3l5-5M-4-1l-3 3a4 4 0 0 0 6 6l3-3M4 1l3-3a4 4 0 0 0-6-6l-3 3"/>',
+  cycle: '<path d="M9-4a10 10 0 1 0 1 7"/><path d="M10-10v6h-6"/>',
 };
 const glyph = (k, x, y, sc = 1, cls = "") => `<g class="gl ${cls}" transform="translate(${x},${y}) scale(${sc})">${GLYPH[k]}</g>`;
 const ctag = (t, x, y, cls = "") => `<g class="ctag ${cls}" transform="translate(${x},${y})"><rect x="${-(t.length * 3.1 + 7)}" y="-8.5" width="${t.length * 6.2 + 14}" height="17" rx="8.5"/><text y="3.2" text-anchor="middle">${esc(t)}</text></g>`;
@@ -177,13 +184,13 @@ function calcView(h) {
 }
 function labCard(l) {
   return `<a class="lcard art-card" href="#lab-${esc(l.id)}">${cardArt(l.id)}${P.labs[l.id] ? '<span class="done">DONE</span>' : ""}
-    <span class="eyebrow">Lab</span><h3>${esc(l.title)}</h3><p>${esc(l.skill)}</p><span class="lmeta"><span>${l.minutes} min</span><span>+${LAB_XP} XP</span></span></a>`;
+    <span class="eyebrow">Lab</span><h3>${esc(l.title)}</h3><p>${esc(l.card || l.skill)}</p><span class="lmeta"><span>${l.minutes} min</span><span>+${LAB_XP} XP</span></span></a>`;
 }
 function missionCard(m) {
   const done = Object.keys((P.missions || {})[m.id] || {});
   const all = Object.keys(m.modes);
   return `<a class="lcard mission-card art-card" href="#mission-${esc(m.id)}">${cardArt(m.id)}${done.length === all.length ? '<span class="done">DONE</span>' : ""}
-    <span class="eyebrow">Mission · ${esc(m.topic)}</span><h3>${esc(m.title)}</h3><p>${esc(m.summary)}</p>
+    <span class="eyebrow">Mission</span><h3>${esc(m.title)}</h3><p>${esc(m.card || m.summary)}</p>
     <span class="lmeta"><span>${m.minutes} min</span>${all.map(k => `<span>${done.includes(k) ? "✓ " : ""}${esc(m.modes[k].label)}</span>`).join("")}</span></a>`;
 }
 const MISSION = id => DATA.missions.find(x => x.id === id);
@@ -191,7 +198,7 @@ const SHIFT = id => (DATA.agency || []).find(x => x.id === id);
 function shiftCard(sh) {
   const rec = (P.agency || {})[sh.id];
   return `<a class="lcard mission-card art-card" href="#agency">${cardArt("agency")}${rec ? '<span class="done">DONE</span>' : ""}
-    <span class="eyebrow">PATCH//AGENCY · Pilot</span><h3>${esc(sh.title)}</h3><p>${esc(sh.summary)}</p>
+    <span class="eyebrow">PATCH//AGENCY</span><h3>${esc(sh.title)}</h3><p>${esc(sh.card || sh.summary)}</p>
     <span class="lmeta"><span>${sh.minutes} min</span><span>${rec ? `Best: ${rec.best} of ${rec.total} checks` : `+${sh.xp} XP`}</span></span></a>`;
 }
 // The Agency's own section: the agency, your staff badge, the time clock and the rota. Clocking in opens a shift.
@@ -216,7 +223,7 @@ VIEWS.agency = () => {
       <section class="ag-tc ag-tc-hub" aria-labelledby="ag-next-h">
         <div class="ag-tc-screen" aria-hidden="true"><span>${esc(day(next.date))}</span><b>${esc(next.startsAt)}</b><span>${rec(next.id) ? "WORKED BEFORE" : "NEXT SHIFT"}</span></div>
         <h2 id="ag-next-h">${esc(next.title)}</h2>
-        <p>${esc(next.summary)}</p>
+        <p>${esc(next.card || next.summary)}</p>
         <a class="btn brand ag-clockin" href="#agency-${esc(next.id)}">Clock in</a>
         <p class="muted">About ${next.minutes} minutes. The clock only moves when you act, so take your time reading.</p>
       </section>

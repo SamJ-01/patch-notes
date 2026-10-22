@@ -4,6 +4,8 @@
 // leaves MD5 out on purpose). The pure functions are tested in tests/hashing.test.mjs.
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
+const gl = (t, n = 3, seen) => (globalThis.PN_gloss ? globalThis.PN_gloss(t, n, seen) : esc(t));
 const enc = new TextEncoder();
 const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
 
@@ -100,7 +102,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     <div class="row pchips" id="h-parts"></div>
     <details class="tbl simplification"><summary>How this lab differs from real systems</summary><p>${esc(lab.simplification)}</p></details>
 
-    <section class="panel"><h2>1. A fingerprint for any data</h2><p>${esc(lab.text.fingerprint)}</p>
+    <section class="panel"><h2>1. A fingerprint for any data</h2><p>${gl(lab.text.fingerprint)}</p>
       <label class="hl-label" for="h-in">Type anything</label><textarea id="h-in" rows="2" spellcheck="false">Patch Notes</textarea>
       <dl class="fields hl-out">${hashRows("h1")}</dl><p class="muted" id="h-len"></p></section>
 
@@ -108,19 +110,23 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
       <div class="hl-two"><label>First<input id="h-a" value="Patch Notes" spellcheck="false"></label><label>Second<input id="h-b" value="Patch notes" spellcheck="false"></label></div>
       <dl class="fields hl-out" id="h-diff"></dl></section>
 
-    <section class="panel"><h2>3. Check a download</h2><p>${esc(lab.text.integrity)}</p>
+    <section class="panel"><h2>3. Check a download</h2><p>${gl(lab.text.integrity)}</p>
       <p class="feedback"><b>${esc(lab.download.name)}</b><br>Published SHA-256: <span class="mono hl-hash">${esc(lab.download.sha256)}</span></p>
       <div class="hl-mirrors">${lab.download.mirrors.map((m, i) => `<div class="ev-item"><b>${esc(m.label)}</b><pre class="console hl-file">${esc(m.content)}</pre>
         <div class="row"><button class="btn ghost" type="button" data-mirror="${i}">Hash this file</button><button class="btn" type="button" data-pick="${i}">This one matches</button></div><p class="mono hl-hash" id="h-m${i}"></p></div>`).join("")}</div>
       <div class="hl-fb" id="h-dlfb" aria-live="polite"></div></section>
 
-    <section class="panel"><h2>4. Why MD5 and SHA-1 are retired</h2>${lab.text.retired.map(p => `<p>${esc(p)}</p>`).join("")}
+    <section class="panel"><h2>4. Why MD5 and SHA-1 are retired</h2>
+      <ol class="hl-time" aria-label="Hash functions, from broken to recommended">
+        <li class="bad"><b>MD5</b><span class="hl-year">Broken 2004</span>${gl(lab.text.retired[0], 2)}</li>
+        <li class="bad"><b>SHA-1</b><span class="hl-year">Broken 2017</span>${gl(lab.text.retired[1], 2)}</li>
+        <li class="ok"><b>SHA-256+</b><span class="hl-year">Use this</span>${gl(lab.text.retired[2], 2)}</li></ol>
       ${q("q-retired", lab.questions.retired)}</section>
 
-    <section class="panel"><h2>5. Fast is bad for passwords</h2><p>${esc(lab.text.speed)}</p>
+    <section class="panel"><h2>5. Fast is bad for passwords</h2><p>${gl(lab.text.speed)}</p>
       <div class="row"><button class="btn brand" type="button" id="h-bench">Measure it in your browser</button></div><div id="h-benchout" aria-live="polite"></div></section>
 
-    <section class="panel"><h2>6. A leaked table with no salt</h2><p>${esc(lab.text.unsalted)}</p>
+    <section class="panel"><h2>6. A leaked table with no salt</h2><p>${gl(lab.text.unsalted)}</p>
       ${table("h-t1", lab.unsalted, false)}
       <fieldset class="ev-set" id="q-shared"><legend class="q">Without guessing anything: which accounts share a password?</legend>
         ${lab.unsalted.map(r => `<div class="ev-item"><label><input type="checkbox" value="${esc(r.user)}"><span>${esc(r.user)}</span></label></div>`).join("")}
@@ -128,11 +134,11 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
       <p>${esc(lab.text.guess)}</p><p class="muted mono hl-guesses">${lab.guesses.map(esc).join(" · ")}</p>
       <div class="row"><button class="btn brand" type="button" id="h-try1">Try the list against this table</button></div><div class="hl-fb" id="h-try1out" aria-live="polite"></div></section>
 
-    <section class="panel"><h2>7. The same passwords, salted</h2><p>${esc(lab.text.salted)}</p>
+    <section class="panel"><h2>7. The same passwords, salted</h2><p>${gl(lab.text.salted)}</p>
       ${table("h-t2", lab.salted, true)}
       <div class="row"><button class="btn brand" type="button" id="h-try2">Try the same list again</button></div><div class="hl-fb" id="h-try2out" aria-live="polite"></div></section>
 
-    <section class="panel"><h2>8. Storing passwords properly</h2>${lab.text.defend.map(p => `<p>${esc(p)}</p>`).join("")}
+    <section class="panel"><h2>8. Storing passwords properly</h2>${lab.text.defend.map(p => `<p>${gl(p)}</p>`).join("")}
       ${q("q-defend", lab.questions.defend)}</section>
     ${lab.next ? `<section class="panel" id="h-next" hidden><h2>Take it further</h2><ul>${lab.next.map(n => `<li><a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.label)} ↗</a></li>`).join("")}</ul></section>` : ""}
     <div class="row"><button class="btn ghost" type="button" id="h-reset">↺ Reset lab</button></div>

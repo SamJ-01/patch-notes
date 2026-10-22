@@ -41,6 +41,8 @@ function gloss(text, max = 4, seen = new Set()) {
   }
   return html + esc(text.slice(pos));
 }
+// Lab, mission and Agency modules underline their text through this hook (they fall back to plain text without it).
+globalThis.PN_gloss = gloss;
 
 const pop = $("pop");
 let popAnchor = null, popPinned = false, popTimer = null;

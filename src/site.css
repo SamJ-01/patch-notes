@@ -1679,3 +1679,22 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
   .ag-rota li > .muted { grid-column: 1 / -1; }
 }
 @media (prefers-reduced-motion: reduce) { .ag-tc-card { transition: none; } .ag-dots i { animation: none; opacity: 0.7; } }
+/* Lessons: the key ideas as pictures first; the full explanation is one tap away */
+.keys { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 12px; }
+.keys li { display: grid; justify-items: start; gap: 4px; padding: 14px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); }
+.keys b { font-size: 1rem; }
+.keys span { font-size: 0.92rem; color: var(--muted); }
+.key-ic { width: 64px; height: 52px; padding: 4px; border-radius: 12px; background: var(--brand-soft); overflow: visible; }
+.key-ic .gl { stroke-width: 2.2; }
+.more-what { margin-top: 12px; }
+.more-what summary { cursor: pointer; color: var(--brand); font-weight: 600; }
+.more-what p { margin: 10px 0 0; }
+.news-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.news-lines li { display: grid; gap: 2px; }
+.news-lines .muted { font-size: 0.8rem; }
+.hl-time { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 12px; }
+.hl-time li { display: grid; gap: 4px; align-content: start; padding: 12px 14px; border-radius: var(--radius); border: 1px solid var(--line); border-top: 5px solid var(--bad); font-size: 0.88rem; overflow-wrap: anywhere; min-width: 0; }
+.hl-time li.ok { border-top-color: var(--good); }
+.hl-time b { font: 800 1.2rem var(--font-mono); }
+.hl-year { font: 700 0.72rem var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--bad); }
+.hl-time li.ok .hl-year { color: var(--good); }

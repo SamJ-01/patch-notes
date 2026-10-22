@@ -43,10 +43,10 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     </section>
     <section class="panel tap-sniff">
       <div class="panel-title"><h2>What the eavesdropper captured</h2><span class="eyebrow" id="tap-verdict"></span></div>
-      <pre class="tap-capture" id="tap-capture" aria-live="polite" tabindex="0">(nothing yet — send a login)</pre>
+      <pre class="tap-capture" id="tap-capture" aria-live="polite" tabindex="0">(nothing yet: send a login)</pre>
     </section>
     <details class="panel"><summary>Why this matters</summary>
-      <p class="muted" style="max-width:72ch">Telnet and FTP send everything, including your password, as readable text. Anyone who can see the traffic — on the same Wi-Fi, a compromised switch, or a tapped cable — reads it straight off the wire. SSH (and SFTP, and HTTPS) encrypt the session, so a sniffer sees only ciphertext. This is why Telnet should never be used across a network, and why the exam always prefers the encrypted option.</p></details>
+      <p class="muted" style="max-width:72ch">Telnet and FTP send everything, including your password, as readable text. Anyone who can see the traffic (on the same Wi-Fi, a compromised switch, or a tapped cable) reads it straight off the wire. SSH (and SFTP, and HTTPS) encrypt the session, so a sniffer sees only ciphertext. This is why Telnet should never be used across a network, and why the exam always prefers the encrypted option.</p></details>
   </div>`;
   const $ = id => root.querySelector("#" + id);
   const svg = $("tap-svg");
@@ -82,7 +82,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   }
   function resetCapture() {
     tapStep = 0; tapLines.length = 0; tapSeed = (Date.now() % 100000) + 1;
-    $("tap-capture").textContent = protocol === "ssh" ? "(SSH encrypts the session — send a line to see)" : "(Telnet sends clear text — send a line to see)";
+    $("tap-capture").textContent = protocol === "ssh" ? "(SSH encrypts the session: send a line to see)" : "(Telnet sends clear text: send a line to see)";
     $("tap-verdict").textContent = ""; updateGoBtn();
   }
   async function sendStep() {

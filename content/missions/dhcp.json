@@ -5,6 +5,7 @@
  "minutes": 15,
  "lesson": "networking",
  "summary": "Watch a PC get its IP address with DHCP, inspect every message, then fix a network where it's gone wrong.",
+ "card": "How a PC gets an address, and a broken one",
  "simplification": "Simplified simulation: real DHCP messages carry more fields, and clients differ in small details (for example, some ask the server to reply directly instead of by broadcast). The four-step exchange, ports, addresses and options shown here are accurate.",
  "devices": {
   "pc": {
