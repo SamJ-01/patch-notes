@@ -33,6 +33,9 @@ const SCENE = {
   hashing: { d: [["laptop", 40, 52, 0.5]], g: [["key", 160, 50, 1.4]], l: [[60, 52, 140, 50]], t: [["a1f3…9c", 100, 26], ["sha256", 100, 80]], p: ["M40 52L160 50"] },
   permissions: { d: [["server", 100, 46, 0.62]], t: [["-rw-r-----", 100, 16], ["alice ✓  dave ✗", 100, 84]] },
   "network-builder": { d: [["switch", 100, 30, 0.6], ["pc", 40, 72, 0.38], ["pc", 160, 72, 0.38], ["router", 100, 76, 0.4]], l: [[88, 36, 48, 62], [112, 36, 152, 62]], raw: `<line x1="86" y1="37" x2="46" y2="63" stroke="var(--seg0)" stroke-width="3"/><line x1="114" y1="37" x2="154" y2="63" stroke="var(--seg1)" stroke-width="3"/>` },
+  "scope-roe": { g: [["doc", 62, 46, 2], ["lock", 140, 46, 1.6, "good"]], l: [[84, 46, 120, 46]], t: [["IN SCOPE", 140, 82, "good"]] },
+  "nmap-read": { d: [["laptop", 40, 54, 0.55], ["server", 156, 50, 0.6]], g: [["search", 98, 30, 1.2]], l: [[60, 52, 138, 50]], t: [["22 · 80 · 443", 156, 88]], p: ["M40 54L156 50"] },
+  "validate-findings": { g: [["alert", 48, 46, 1.6, "bad"], ["search", 100, 46, 1.6], ["shield", 152, 46, 1.6, "good"]], l: [[66, 46, 82, 46], [118, 46, 134, 46]], t: [["false positive?", 100, 84]] },
   intervlan: { d: [["router", 100, 14, 0.62], ["switch", 100, 50, 0.7], ["pc", 36, 82, 0.4], ["pc", 164, 82, 0.4]], l: [[100, 24, 100, 42], [84, 56, 46, 74], [116, 56, 154, 74]], g: [["lock", 140, 14, 1.1, "good"]], t: [["VLAN 10", 36, 104], ["VLAN 20", 164, 104]], p: ["M36 82L100 50L100 14L100 50L164 82"] },
   vlans: { d: [["switch", 100, 24, 0.75], ["pc", 36, 66, 0.42], ["pc", 100, 70, 0.42], ["pc", 164, 66, 0.42]], l: [[84, 30, 46, 56], [100, 32, 100, 58], [116, 30, 154, 56]], t: [["VLAN 10", 36, 94], ["20", 100, 96], ["30", 164, 94]] },
   "telnet-ssh": { d: [["laptop", 36, 50, 0.5], ["server", 166, 50, 0.56], ["attacker", 100, 20, 0.0001]], g: [["eye", 100, 24, 0.9, "bad"]], l: [[52, 50, 150, 50]], t: [["admin / ••••", 100, 78, "bad"]], p: ["M36 50L166 50"], tone: "bad" },
@@ -381,7 +384,7 @@ function labView(id) {
       ${l.primer.results ? `<p class="muted" style="margin:10px 0 4px">What each result means:</p><ul class="results">${l.primer.results.map(([w, m, tone]) => `<li class="${esc(tone)}"><b class="mono">${esc(w)}</b>${esc(m)}</li>`).join("")}</ul>` : ""}</section>` : ""}
     ${l.artifact.kind === "headers" ? `<section class="panel"><div class="panel-title"><h2>The email</h2><span class="sim-tag">Simulated email</span></div>
       ${MAIL.card({ headers: l.artifact.text, body: l.artifact.body, links: l.artifact.links }, { id: "lab-mail", views: ["message", "original"] })}</section>` : `<section class="panel"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
-      ${l.artifact.kind === "log" ? `<div class="row"><label class="sr" for="lab-f">Filter lines</label><span class="mono" style="color:var(--sun)">grep</span><input id="lab-f" type="search" placeholder="e.g. Failed password" autocomplete="off" spellcheck="false"></div>` : ""}
+      ${l.artifact.kind === "log" ? `<div class="row"><label class="sr" for="lab-f">Filter lines</label><span class="mono" style="color:var(--sun)">grep</span><input id="lab-f" type="search" placeholder="${esc(l.artifact.placeholder || "e.g. Failed password")}" autocomplete="off" spellcheck="false"></div>` : ""}
       <pre class="evidence" id="lab-pre" tabindex="0" aria-label="Evidence"></pre></section>`}
     <section class="stack" id="lab-steps">${l.steps.map((st, i) => `<div class="panel lab-step ${solved.has(i) ? "got" : ""}" data-i="${i}">
       <div class="panel-title"><h2>Question ${i + 1}</h2>${solved.has(i) ? '<span class="eyebrow" style="color:var(--good)">Solved</span>' : ""}</div>
@@ -414,6 +417,8 @@ function labView(id) {
     const needle = l.steps[i].where;
     if ($("lab-mail")) { MAIL.highlight($("lab-mail"), needle); $("lab-mail").scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); $("lab-mail").querySelector(".em-raw")?.focus({ preventScroll: true }); }
     else if ($("lab-f")) { $("lab-f").value = needle; drawLog(); $("lab-pre").scrollIntoView({ block: "start" }); $("lab-pre").focus({ preventScroll: true }); }
+    // A document (no grep box): keep every line, mark the ones that matter.
+    else if ($("lab-pre")) { $("lab-pre").innerHTML = lines.map(x => markText(x, [needle.toLowerCase()])).join("\n"); $("lab-pre").scrollIntoView({ block: "start" }); $("lab-pre").focus({ preventScroll: true }); }
   };
   $("lab-steps").addEventListener("click", e => {
     const w = e.target.closest("[data-where]"); if (w) return showWhere(Number(w.dataset.where));

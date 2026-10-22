@@ -4794,5 +4794,354 @@
    }
   ],
   "card": "Find hosts and ports, inside the scope"
+ },
+ {
+  "id": "scope-roe",
+  "kind": "doc",
+  "category": "Ethical hacking",
+  "track": "Ethical hacking",
+  "minutes": 10,
+  "lesson": "osint",
+  "title": "Scope it: the rules of engagement",
+  "skill": "Read a penetration test's rules of engagement and stay inside them",
+  "card": "What you may test, when, and who to call",
+  "intro": "Every test starts with a signed scope. Read Brackenford's rules of engagement, then decide what you're allowed to do when real situations come up.",
+  "artifact": {
+   "kind": "doc",
+   "name": "Rules of engagement",
+   "text": "RULES OF ENGAGEMENT: external penetration test\nClient: Brackenford Housing Association (fictional)\nTester: Patch Notes Security Testing (fictional)\nAuthorised by: Dr Helen Marsh, Director of IT, signed 26 Oct 2026\n\nIN SCOPE\n  203.0.113.0/26 (hosts 203.0.113.1 to 203.0.113.62)\n  https://portal.brackenford.example (the tenants' portal)\n\nOUT OF SCOPE\n  203.0.113.64/26: managed by Kestrel Hosting, not owned by the client\n  198.51.100.0/24: the client's email provider\n  Anything not listed above\n\nWHEN\n  Mon 2 Nov 2026 to Fri 6 Nov 2026, 19:00 to 07:00 UK time only\n\nHOW\n  All testing traffic comes from our source address 192.0.2.44\n  No denial of service and no social engineering\n  No password attacks on staff accounts: use the test accounts portal-test-01 and portal-test-02\n  Personal data: take screenshots as evidence, never copy or download it\n\nIF SOMETHING GOES WRONG\n  Stop testing, then call the emergency contact: Ade Okafor, IT Operations, 07700 900461\n  Report any critical finding, or signs of a real attacker, by phone straight away\n  Changes to scope must be agreed in writing by the Director of IT"
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "A scan turns up 203.0.113.70, which looks badly out of date. Can you test it?",
+    "options": [
+     "Yes: it's in the same 203.0.113 range",
+     "No: 203.0.113.64/26 belongs to Kestrel Hosting and is out of scope",
+     "Only between 19:00 and 07:00",
+     "Only with a passive scan"
+    ],
+    "answer": 1,
+    "explain": "203.0.113.64/26 covers .64 to .127, and it's listed as out of scope: the client doesn't own it, so they can't authorise it. Tell your contact; don't touch it.",
+    "where": "203.0.113.64/26"
+   },
+   {
+    "type": "text",
+    "q": "Your laptop's VPN drops and your traffic starts leaving from a different address. Which source address does the scope say testing must come from?",
+    "answers": [
+     "192.0.2.44"
+    ],
+    "hint": "Look under HOW.",
+    "explain": "Clients often let a known source address through their monitoring and blocking. Traffic from anywhere else looks like a real attack. Stop until you're back on 192.0.2.44.",
+    "where": "192.0.2.44"
+   },
+   {
+    "type": "choice",
+    "q": "It's Tuesday at 15:00 and you have a free afternoon. Can you carry on testing?",
+    "options": [
+     "Yes, the test runs Monday to Friday",
+     "No: testing is allowed only from 19:00 to 07:00",
+     "Yes, if you only test the portal",
+     "Yes, if you tell the emergency contact"
+    ],
+    "answer": 1,
+    "explain": "The window is evenings and nights only, probably to keep the tenants' portal running smoothly during the day. Outside it, testing isn't authorised.",
+    "where": "19:00 to 07:00"
+   },
+   {
+    "type": "choice",
+    "q": "The portal's login page looks weak. Can you try common passwords against staff accounts?",
+    "options": [
+     "Yes, password spraying is a normal test",
+     "Yes, but only a few guesses per account",
+     "No: use the test accounts provided, not staff accounts",
+     "No: the portal is out of scope"
+    ],
+    "answer": 2,
+    "explain": "Guessing staff passwords could lock real people out and touch their data. The rules give you portal-test-01 and portal-test-02 to test logins safely.",
+    "where": "test accounts"
+   },
+   {
+    "type": "choice",
+    "q": "On a server, you find a spreadsheet of tenants' names and bank details that anyone can open. What may you take as evidence?",
+    "options": [
+     "A copy of the file, encrypted",
+     "A screenshot showing it can be opened",
+     "The first ten rows only",
+     "Nothing: just mention it"
+    ],
+    "answer": 1,
+    "explain": "A screenshot proves the problem without taking personal data away. Copying it would make you a data breach. This is also critical enough to phone in straight away.",
+    "where": "screenshots"
+   },
+   {
+    "type": "text",
+    "q": "You spot a web shell you didn't upload: someone else is already in. Who do you call? (Name)",
+    "answers": [
+     "Ade Okafor",
+     "Ade"
+    ],
+    "hint": "Look under IF SOMETHING GOES WRONG.",
+    "explain": "Signs of a real attacker are reported by phone at once, not saved for the report. The client may need to start incident response.",
+    "where": "Ade Okafor"
+   },
+   {
+    "type": "choice",
+    "q": "A Brackenford manager emails asking you to also test their email provider's servers while you're at it. What do you do?",
+    "options": [
+     "Add 198.51.100.0/24 and carry on",
+     "Decline: the provider owns those servers, and scope changes need the Director of IT in writing",
+     "Test it quietly over the weekend",
+     "Ask the manager to reply with \"approved\""
+    ],
+    "answer": 1,
+    "explain": "The client can't authorise testing of systems it doesn't own, and only the person named in the rules can change the scope, in writing. An email from someone else isn't authorisation.",
+    "where": "in writing"
+   }
+  ],
+  "next": [
+   {
+    "label": "PTES: the Penetration Testing Execution Standard (pre-engagement)",
+    "url": "http://www.pentest-standard.org/index.php/Pre-engagement"
+   }
+  ]
+ },
+ {
+  "id": "nmap-read",
+  "kind": "log",
+  "category": "Ethical hacking",
+  "track": "Ethical hacking",
+  "minutes": 12,
+  "lesson": "osint",
+  "title": "Read the scan: nmap results",
+  "skill": "Read nmap service-scan output and decide what matters",
+  "card": "Open, filtered or ignored: what the scan says",
+  "intro": "An authorised nmap scan of three Brackenford hosts. The output is real Nmap 7.94 format. Read it the way a tester would: what's exposed, what's old, what's hidden.",
+  "artifact": {
+   "kind": "log",
+   "name": "nmap -sV output",
+   "text": "$ nmap -sV -Pn 203.0.113.10-12\nStarting Nmap 7.94 ( https://nmap.org ) at 2026-11-02 19:14 GMT\nNmap scan report for www.brackenford.example (203.0.113.10)\nHost is up (0.018s latency).\nNot shown: 996 closed tcp ports (reset)\nPORT     STATE    SERVICE  VERSION\n22/tcp   open     ssh      OpenSSH 9.6p1 Ubuntu 3ubuntu13.5 (Ubuntu Linux; protocol 2.0)\n80/tcp   open     http     nginx 1.24.0 (Ubuntu)\n443/tcp  open     ssl/http nginx 1.24.0 (Ubuntu)\n3306/tcp filtered mysql\nService Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel\n\nNmap scan report for files.brackenford.example (203.0.113.11)\nHost is up (0.021s latency).\nNot shown: 997 filtered tcp ports (no-response)\nPORT    STATE SERVICE     VERSION\n21/tcp  open  ftp         vsftpd 3.0.3\n22/tcp  open  ssh         OpenSSH 7.4p1 Debian 10+deb9u7 (protocol 2.0)\n445/tcp open  netbios-ssn Samba smbd 4.6.2\nService Info: OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel\n\nNmap scan report for 203.0.113.12\nHost is up.\nAll 1000 scanned ports on 203.0.113.12 are in ignored states.\nNot shown: 1000 filtered tcp ports (no-response)\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 3 IP addresses (3 hosts up) scanned in 31.27 seconds",
+   "placeholder": "e.g. open"
+  },
+  "primer": {
+   "title": "Before you start: reading nmap",
+   "keys": [
+    {
+     "icon": "server",
+     "label": "Port",
+     "text": "Number and protocol: 443/tcp is HTTPS on TCP."
+    },
+    {
+     "icon": "search",
+     "label": "Service",
+     "text": "-sV asks each open port what it's running."
+    },
+    {
+     "icon": "shield",
+     "label": "State",
+     "text": "Whether the port answered, and how."
+    }
+   ],
+   "results": [
+    [
+     "open",
+     "something is listening and answered",
+     "bad"
+    ],
+    [
+     "closed",
+     "the host answered: nothing listening",
+     "ok"
+    ],
+    [
+     "filtered",
+     "no clear answer, usually a firewall",
+     "warn"
+    ]
+   ]
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "What does -Pn do in this scan?",
+    "options": [
+     "Scans every port",
+     "Skips host discovery and treats every address as up",
+     "Runs the scan without root",
+     "Pings each host first"
+    ],
+    "answer": 1,
+    "explain": "-Pn skips the \"is it up?\" check, useful when hosts ignore pings. That's why 203.0.113.12 shows as up even though nothing answered.",
+    "where": "-Pn"
+   },
+   {
+    "type": "text",
+    "q": "Which host has a database port that a firewall is filtering? (IP address)",
+    "answers": [
+     "203.0.113.10",
+     "www.brackenford.example"
+    ],
+    "hint": "Look for mysql.",
+    "explain": "3306/tcp (MySQL) is filtered on 203.0.113.10: something is dropping the probes. Good: databases shouldn't face the internet.",
+    "where": "3306/tcp"
+   },
+   {
+    "type": "choice",
+    "q": "On files.brackenford.example, which open service sends logins across the network in clear text?",
+    "options": [
+     "ssh on 22",
+     "ftp on 21",
+     "netbios-ssn on 445",
+     "none of them"
+    ],
+    "answer": 1,
+    "explain": "Plain FTP sends the username and password unencrypted. SFTP (over SSH) or FTPS would protect them.",
+    "where": "21/tcp"
+   },
+   {
+    "type": "choice",
+    "q": "Which open port is the most worrying to find facing the internet?",
+    "options": [
+     "443 on www (HTTPS)",
+     "22 on www (SSH)",
+     "445 on files (SMB file sharing)",
+     "80 on www (HTTP)"
+    ],
+    "answer": 2,
+    "explain": "SMB is for file sharing inside a network. Exposed to the internet it invites password guessing and has a history of wormable flaws: WannaCry spread through SMB in 2017.",
+    "where": "445/tcp"
+   },
+   {
+    "type": "text",
+    "q": "Which host's SSH version is years older than the other's? (IP address)",
+    "answers": [
+     "203.0.113.11",
+     "files.brackenford.example"
+    ],
+    "hint": "Compare the two OpenSSH lines.",
+    "explain": "OpenSSH 7.4 (2016) on files, against 9.6 on www. Old isn't the same as vulnerable, though: Debian backports security fixes, so check before you report it.",
+    "where": "OpenSSH"
+   },
+   {
+    "type": "choice",
+    "q": "What does \"All 1000 scanned ports ... are in ignored states\" tell you about 203.0.113.12?",
+    "options": [
+     "The host is switched off",
+     "Every port it tried was filtered: something answered nothing, so it may sit behind a firewall",
+     "Every port is open",
+     "The scan crashed"
+    ],
+    "answer": 1,
+    "explain": "The 1000 most common ports gave no response at all. That doesn't prove nothing runs there: a firewall may only allow certain sources, or the service may use an uncommon port.",
+    "where": "ignored states"
+   }
+  ],
+  "next": [
+   {
+    "label": "Nmap reference guide: port scanning basics",
+    "url": "https://nmap.org/book/man-port-scanning-basics.html"
+   }
+  ]
+ },
+ {
+  "id": "validate-findings",
+  "kind": "log",
+  "category": "Ethical hacking",
+  "track": "Ethical hacking",
+  "minutes": 10,
+  "lesson": "vuln-management",
+  "title": "Is it real? Validating scanner findings",
+  "skill": "Separate real findings from false positives, then decide what to fix first",
+  "card": "False positives out, real risks first",
+  "intro": "A scanner's results from the Brackenford test, with the tester's follow-up checks. Decide which findings are real, which aren't, and which matters most.",
+  "artifact": {
+   "kind": "log",
+   "name": "Scanner export and notes",
+   "text": "Simulated scanner export with the tester's notes. Brackenford Housing Association (fictional), 3 Nov 2026.\n\nFINDING 1  203.0.113.10:443  Medium  TLS 1.0 supported\n  note: manual check with openssl s_client -tls1 was refused. The scanner matched an old response.\nFINDING 2  203.0.113.11:445  High  SMB file sharing reachable from the internet (Samba)\n  note: confirmed from our test source 192.0.2.44. Listing shares asks for a password.\nFINDING 3  203.0.113.11:21  Medium  FTP accepts clear-text logins\n  note: confirmed with test account portal-test-01: USER and PASS cross the network unencrypted.\nFINDING 4  203.0.113.11:22  High  OpenSSH 7.4: this version has known vulnerabilities\n  note: version number only. The package comes from Debian's security updates (7.4p1 Debian 10+deb9u7), which backport fixes.\nFINDING 5  203.0.113.10:80  Low  Apache default page found\n  note: the server is nginx 1.24.0 and the page is the client's own home page. Apache isn't installed.",
+   "placeholder": "e.g. FINDING 2"
+  },
+  "steps": [
+   {
+    "type": "text",
+    "q": "Which finding is a false positive because the scanner matched the wrong product? (number)",
+    "answers": [
+     "5",
+     "finding 5"
+    ],
+    "hint": "Compare what the scanner says with what's installed.",
+    "explain": "The scanner saw a page and guessed Apache, but the server is nginx and Apache isn't installed. Report it as a false positive (or leave it out), with the reason.",
+    "where": "FINDING 5"
+   },
+   {
+    "type": "choice",
+    "q": "Finding 1 says TLS 1.0 is supported, but your manual check was refused. What goes in the report?",
+    "options": [
+     "Report it as Medium anyway: the scanner said so",
+     "Mark it as a false positive and note how you checked",
+     "Raise it to High to be safe",
+     "Delete it without a note"
+    ],
+    "answer": 1,
+    "explain": "Validating findings is part of the job. Saying how you checked lets the client trust the rest of the report.",
+    "where": "FINDING 1"
+   },
+   {
+    "type": "choice",
+    "q": "Finding 4 is based only on the OpenSSH version number. What should you do before reporting it?",
+    "options": [
+     "Report it: old versions are always vulnerable",
+     "Check each listed issue against Debian's security tracker, since Debian backports fixes without changing the main version",
+     "Upgrade OpenSSH for the client",
+     "Remove it: version findings are never useful"
+    ],
+    "answer": 1,
+    "explain": "7.4p1 Debian 10+deb9u7 may already include fixes for some of the issues. Report what is still open, and if the release is past its support life, say that instead.",
+    "where": "backport"
+   },
+   {
+    "type": "choice",
+    "q": "Of the confirmed findings, which should Brackenford fix first?",
+    "options": [
+     "Finding 3: clear-text FTP",
+     "Finding 2: SMB reachable from the internet",
+     "Finding 5: the default page",
+     "They're all equal"
+    ],
+    "answer": 1,
+    "explain": "SMB facing the internet is reachable by anyone, invites password guessing and has a history of wormable flaws. Clear-text FTP matters too, but needs someone in a position to watch the traffic.",
+    "where": "FINDING 2"
+   },
+   {
+    "type": "choice",
+    "q": "What's the right fix for finding 3?",
+    "options": [
+     "Use a longer FTP password",
+     "Move to SFTP or FTPS and turn plain FTP off",
+     "Change the FTP port to 2121",
+     "Block FTP on Fridays"
+    ],
+    "answer": 1,
+    "explain": "Encrypting the connection protects the login. A different port or a longer password still crosses the network in clear text.",
+    "where": "FINDING 3"
+   },
+   {
+    "type": "choice",
+    "q": "What should each confirmed finding in the report include?",
+    "options": [
+     "The scanner's text, copied as it is",
+     "Evidence (what you saw and how to reproduce it safely), the business impact and a recommended fix",
+     "Only the CVSS score",
+     "The tester's name"
+    ],
+    "answer": 1,
+    "explain": "The client's admins need to see it, understand why it matters and know what to do. A pasted scanner line rarely does that."
+   }
+  ],
+  "next": [
+   {
+    "label": "Debian security tracker",
+    "url": "https://security-tracker.debian.org/tracker/"
+   }
+  ]
  }
 ]

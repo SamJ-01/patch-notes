@@ -4121,5 +4121,46 @@
   "auto": false,
   "short": "Filling a switch's MAC address table with fake entries so it floods traffic out of every port, where an attacker can capture it.",
   "lesson": "networking"
+ },
+ {
+  "id": "ftp",
+  "term": "FTP / SFTP",
+  "kind": "Technology",
+  "aliases": [
+   "FTP",
+   "SFTP",
+   "FTPS"
+  ],
+  "auto": false,
+  "short": "FTP moves files but sends logins and data unencrypted. SFTP (over SSH) and FTPS (over TLS) encrypt them.",
+  "lesson": "networking"
+ },
+ {
+  "id": "backport",
+  "term": "Backported fix",
+  "kind": "Concept",
+  "aliases": [
+   "backport",
+   "backports",
+   "backported",
+   "backporting"
+  ],
+  "auto": false,
+  "short": "A security fix copied into an older version without changing its main version number, so a version check alone can wrongly flag it.",
+  "lesson": "vuln-management",
+  "see": [
+   "false-positive"
+  ]
+ },
+ {
+  "id": "wannacry",
+  "term": "WannaCry",
+  "kind": "Malware",
+  "aliases": [
+   "WannaCry"
+  ],
+  "auto": false,
+  "short": "Ransomware that spread worldwide in 2017 through a Windows SMB flaw, hitting hundreds of thousands of computers including NHS trusts.",
+  "lesson": "ransomware"
  }
 ]

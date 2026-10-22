@@ -197,6 +197,10 @@
      "coverage": "strong",
      "activities": [
       {
+       "type": "lab",
+       "id": "validate-findings"
+      },
+      {
        "type": "lesson",
        "id": "soc"
       },
@@ -271,6 +275,10 @@
      "title": "Security program management & oversight",
      "coverage": "partial",
      "activities": [
+      {
+       "type": "lab",
+       "id": "scope-roe"
+      },
       {
        "type": "lesson",
        "id": "frameworks"

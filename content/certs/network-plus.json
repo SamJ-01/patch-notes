@@ -476,6 +476,10 @@
      "coverage": "partial",
      "activities": [
       {
+       "type": "lab",
+       "id": "nmap-read"
+      },
+      {
        "type": "mission",
        "id": "dhcp"
       },
