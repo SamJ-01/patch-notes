@@ -8,7 +8,7 @@
   <g id="van">
     <path d="M0 40 L0 104 L226 104 L226 66 C226 56 220 50 210 48 L178 18 C174 14 168 12 162 12 L150 12 L150 0 L8 0 C3 0 0 4 0 9 Z" fill="#f7f8fa"/>
     <path d="M156 20 L186 50 L156 50 Z" fill="#9fc6dd"/><rect x="0" y="62" width="226" height="10" fill="#e2733a"/>
-    <use href="#finch" transform="translate(28 22) scale(1.1)"/><text x="68" y="44" font-family="system-ui, sans-serif" font-size="14.5" font-weight="800" fill="#2b3442">PELLOW &amp; FINCH</text>
+    <use href="#finch" transform="translate(70 18) scale(1.6)"/>
     <rect x="214" y="78" width="12" height="8" rx="2" fill="#f2c94c"/>
     <circle cx="48" cy="106" r="17" fill="#252a33"/><circle cx="48" cy="106" r="7" fill="#9aa5b4"/><circle cx="180" cy="106" r="17" fill="#252a33"/><circle cx="180" cy="106" r="7" fill="#9aa5b4"/>
   </g>
