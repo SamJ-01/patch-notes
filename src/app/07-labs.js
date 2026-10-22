@@ -103,7 +103,8 @@ SCENE.play = HEAD_SCENE.play;  // the games card on the practise page
 const headArt = k => `<span class="head-art card-art" aria-hidden="true">${sceneSvg(HEAD_SCENE[k])}</span>`;
 // Card pictures: an illustration where one exists (img/cards/<id>.webp, 2:1, one style, made in batches of six),
 // otherwise the drawn scene. Photos fade in once loaded, in space that's already reserved.
-const CARD_PHOTOS = new Set(["dhcp", "dns", "phish-triage", "ssh-brute", "hashing", "permissions"]);
+const CARD_PHOTOS = new Set(["dhcp", "dns", "phish-triage", "ssh-brute", "hashing", "permissions",
+  "osi-model", "topologies", "ports-protocols", "subnetting", "tcp-handshake", "cable-wiring"]);
 const cardPhoto = (src, w = 506, h = 253) => `<span class="card-art photo"><img class="card-img" src="${esc(src)}" alt="" width="${w}" height="${h}" loading="lazy" decoding="async"></span>`;
 const cardArt = id => (CARD_PHOTOS.has(id) ? cardPhoto(`img/cards/${id}.webp`) : `<span class="card-art">${sceneSvg(SCENE[id] || SCENE.networking)}</span>`);
 // Hovering a card sends its packets across the scene.

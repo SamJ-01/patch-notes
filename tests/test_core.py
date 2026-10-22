@@ -659,7 +659,7 @@ class CardPhotos(unittest.TestCase):
 
     def test_card_photos_exist(self):
         js = (Path(__file__).resolve().parent.parent / "src" / "app" / "07-labs.js").read_text()
-        ids = re.findall(r'"([\w-]+)"', re.search(r"const CARD_PHOTOS = new Set\(\[(.*?)\]\)", js).group(1))
+        ids = re.findall(r'"([\w-]+)"', re.search(r"const CARD_PHOTOS = new Set\(\[(.*?)\]\)", js, re.S).group(1))
         self.assertGreaterEqual(len(ids), 6)
         for i in ids:
             f = Path(__file__).resolve().parent.parent / "static" / "img" / "cards" / f"{i}.webp"
