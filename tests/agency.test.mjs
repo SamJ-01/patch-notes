@@ -373,3 +373,13 @@ test("emails: opening one costs time once, records its findings, and only once i
   assert.deepEqual(A.search(s2, r.state, "inbox", "bank").events, [], "a mailbox is opened, not grepped");
   assert.deepEqual(A.openEmail(s2, r.state, "inbox", "nope").events, []);
 });
+
+test("progress: what's open, what's on its way, and when it's time to hand over", () => {
+  let s = A.start(shift).state;
+  assert.deepEqual(A.progress(shift, s), { open: 4, arrived: 4, total: 5, due: 0, handover: false });
+  s = A.ask(shift, s, "identity:lock-svcbackup2").state;
+  assert.equal(A.progress(shift, s).due, 1, "a request waiting for its reply");
+  const { s: done } = play(perfect);
+  const p = A.progress(shift, done);
+  assert.equal(p.open, 0); assert.equal(p.arrived, 5); assert.equal(p.handover, true);
+});

@@ -211,6 +211,13 @@ export const modelHandover = shift => ({
   summary: Object.fromEntries(shift.alerts.map(a => [a.id, a.answer.summary])),
 });
 
+// Where the shift stands, for the bar's "what next" line: alerts still open, replies on their way, handover ready.
+export function progress(shift, state) {
+  const open = state.arrived.filter(id => !(id in state.closed)).length;
+  const due = state.requests.filter(r => r.status === "pending").length;
+  return { open, arrived: state.arrived.length, total: shift.alerts.length, due, handover: canHandOver(shift, state) };
+}
+
 export const canHandOver = (shift, state) => open(state) && shift.alerts.every(a => state.arrived.includes(a.id) && a.id in state.closed);
 
 // End the shift: for each alert a status and the summary chosen from the written options, plus an

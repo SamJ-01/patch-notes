@@ -54,6 +54,8 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   (`guide.hints`, free, counted), suggested searches (`guide.searches` [[source, query]], tested to find lines in the
   alert's own logs), "Show me the answer" (`A.modelClose`), feedback as each alert closes (`A.feedback`) and a handover
   fill-in. Progress saves `own` (done on your own at least once). Per shift: `handover.links` (missed-link line), `next` link.
+  At 900 px and below the desk shows one part at a time (Queue, Alert, Chat tabs in the sticky bar; opens on the Queue;
+  Chat counts unread replies). The bar's "what next" line comes from `A.progress()` (open, replies due, handover ready).
 - Emails anywhere on the site use `static/js/mail.js` (`MAIL.card`/`MAIL.wire`; inlined into the page like hw.js): a mail
   app look, links that reveal where they go, Details/Original views from raw headers, clues pinned with `{ at, text }`.
 - Tickets and staff messages anywhere on the site use `static/js/desk.js` (`DESK.ticket`/`DESK.message`/`DESK.channel`; inlined

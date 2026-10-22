@@ -8,7 +8,7 @@ import { MAIL } from "../mail.js";
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 // Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
 const gl = (t, n = 3, seen) => (globalThis.PN_gloss ? globalThis.PN_gloss(t, n, seen) : esc(t));
-const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+const plural = (n, w, many = w + "s") => `${n} ${n === 1 ? w : many}`;
 const STATUS_WORDS = { pending: "waiting for a reply", asks: "they asked for a reason", done: "done", refused: "refused" };
 // Ticket numbers: alerts carry their own (ref in the shift file); requests are numbered in the order you raise them.
 const reqNo = (state, ref) => { const i = state.requests.map(r => r.ref).lastIndexOf(ref); return i < 0 ? "" : `REQ-${5301 + i}`; };
@@ -57,8 +57,13 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         <span class="ag-count" id="ag-count"></span>
         <span class="ag-lead">${DESK.avatar(leadName, shift.leadPhoto, "dk-av ag-lead-av")}${esc(shift.lead)}</span>
         <button class="btn ghost" type="button" id="ag-wait">Wait ${shift.costs.wait} min</button>
+        <div class="ag-tabs" role="group" aria-label="Show part of the desk">
+          <button type="button" class="ag-tab" data-tab="queue" aria-pressed="true">Queue</button>
+          <button type="button" class="ag-tab" data-tab="alert" aria-pressed="false">Alert</button>
+          <button type="button" class="ag-tab" data-tab="chat" aria-pressed="false">Chat <span class="ag-unread" id="ag-unread" hidden></span></button>
+        </div>
       </div>
-      <div class="ag-grid">
+      <div class="ag-grid" id="ag-grid" data-tab="queue">
         <nav class="panel ag-queue" aria-labelledby="ag-q-h"><h2 id="ag-q-h">Alert queue</h2><ol id="ag-queue"></ol></nav>
         <section class="panel ag-alert" id="ag-alert"></section>
         <section class="panel ag-comms" aria-labelledby="ag-c-h" tabindex="0"><h2 id="ag-c-h">Team chat</h2>${DESK.channel(`${shift.client.split(/\s+/)[0].toLowerCase()}-soc`, "you, your lead and the teams you ask", 'id="ag-inbox" aria-live="polite"')}</section>
@@ -100,13 +105,32 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     // Scroll the chat panel, never the page: on a phone the chat is far below what you're working on.
     const box = $("ag-inbox").closest(".ag-comms");
     if (box) box.scrollTop = box.scrollHeight;
+    // On a phone the chat is its own tab: count what arrives while you're elsewhere.
+    if (narrow() && tab !== "chat" && !m.me) { unread++; showUnread(); }
+  }
+  // ---------- phones and tablets: one part of the desk at a time (Queue, Alert, Chat), chosen in the sticky bar
+  let tab = "queue", unread = 0;  // the desk opens on the queue: first, see what's waiting
+  const narrow = () => typeof matchMedia === "function" && matchMedia("(max-width: 900px)").matches;
+  const showUnread = () => { const u = $("ag-unread"); u.hidden = !unread; u.textContent = unread; u.setAttribute("aria-label", `${unread} new`); };
+  function showTab(t, { scroll = true } = {}) {
+    tab = t;
+    $("ag-grid").dataset.tab = t;
+    root.querySelectorAll(".ag-tab").forEach(b => b.setAttribute("aria-pressed", b.dataset.tab === t));
+    if (t === "chat") { unread = 0; showUnread(); }
+    if (scroll && narrow()) {
+      const top = $("ag-desk").getBoundingClientRect().top + scrollY - 8;
+      if (scrollY > top) scrollTo({ top, behavior: reduced ? "auto" : "smooth" });
+    }
   }
 
   // ---------- queue and clock
   function renderAll(structural) {
     $("ag-clock").textContent = clockAt(state.clock);
-    const open = state.arrived.filter(id => !(id in state.closed)).length;
-    $("ag-count").textContent = `${plural(state.arrived.length, "alert")} in the queue, ${open} open`;
+    // The "what next" line: what's left, what's on its way, and when it's time to hand over.
+    const pr = A.progress(shift, state);
+    $("ag-count").innerHTML = pr.handover ? `<b>All closed:</b> <a href="#ag-hand" data-hand>hand over ↓</a>`
+      : `<b>${pr.open} of ${plural(pr.arrived, "alert")} open</b>${pr.due ? ` · ${plural(pr.due, "reply", "replies")} on the way` : ""}${pr.arrived < pr.total ? " · more may come in" : ""}`;
+    $("ag-count").querySelector("[data-hand]")?.addEventListener("click", e => { e.preventDefault(); $("ag-hand-h")?.focus({ preventScroll: true }); $("ag-hand").scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" }); });
     $("ag-queue").innerHTML = state.arrived.map(id => {
       const a = A.alertById(shift, id), closed = id in state.closed;
       return `<li><button type="button" class="ag-qitem p-${esc(a.severity)}${closed ? " closed" : ""}" data-alert="${id}" ${id === selected ? 'aria-current="true"' : ""}>
@@ -114,7 +138,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         <span class="ag-qtitle">${esc(a.title)}</span>
         <span class="ag-qmeta"><span class="tag sev-${esc(a.severity)}">${esc(a.severity)}</span> ${a.time ? `raised ${esc(a.time)}` : "new this shift"}</span></button></li>`;
     }).join("");
-    $("ag-queue").querySelectorAll("[data-alert]").forEach(b => b.addEventListener("click", () => select(b.dataset.alert, true)));
+    $("ag-queue").querySelectorAll("[data-alert]").forEach(b => b.addEventListener("click", () => { select(b.dataset.alert, true); showTab("alert"); }));
     if (selected) {
       renderGuide();
       const pill = $("ag-tk-st"), now = DESK.pill(selected in state.closed ? "closed" : "open", "ag-tk-st");
@@ -387,6 +411,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     $("ag-dossier").hidden = false;
     $("ag-desk-go").focus();
   });
+  root.querySelectorAll(".ag-tab").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
   $("ag-desk-go").addEventListener("click", () => {
     begin(root.querySelector('[name="ag-level"]:checked')?.value || "standard");
     $("ag-in").hidden = true; $("ag-desk").hidden = false;

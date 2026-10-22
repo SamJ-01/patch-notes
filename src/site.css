@@ -1877,3 +1877,23 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
   .view-head.with-art:has(.head-art.photo) { padding-right: 0; min-height: 0; }
   .head-art.photo { display: block; position: static; transform: none; width: 100%; height: auto; aspect-ratio: 3 / 1; order: -1; }
 }
+/* Agency desk on phones and tablets: tabs in the sticky bar show one part at a time; desktops keep three columns. */
+.ag-tabs { display: none; }
+.ag-count b { color: var(--ink); }
+.ag-count a { font-weight: 600; }
+@media (max-width: 900px) {
+  .ag-tabs { display: flex; flex-basis: 100%; gap: 6px; }
+  .ag-tab { flex: 1; display: inline-flex; justify-content: center; align-items: center; gap: 6px; padding: 8px 6px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--muted); font: 600 0.82rem var(--font-mono); cursor: pointer; }
+  .ag-tab[aria-pressed="true"] { background: var(--brand-soft); border-color: var(--brand); color: var(--ink); }
+  .ag-unread { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--sun); color: var(--sun-ink); font-size: 0.7rem; }
+  .ag-unread[hidden] { display: none; }
+  .ag-grid[data-tab="queue"] > :not(.ag-queue), .ag-grid[data-tab="alert"] > :not(.ag-alert), .ag-grid[data-tab="chat"] > :not(.ag-comms) { display: none; }
+  .ag-grid[data-tab="chat"] .ag-comms { max-height: none; }
+  .ag-lead { display: none; }
+}
+@media (max-width: 900px) {
+  .ag-bar { gap: 6px 12px; padding: 8px 10px; }
+  .ag-bar .ag-logo, .ag-clock .eyebrow { display: none; }
+  .ag-bar .btn { padding: 6px 10px; font-size: 0.72rem; }
+  .ag-count { flex: 1; min-width: 0; font-size: 0.8rem; }
+}
