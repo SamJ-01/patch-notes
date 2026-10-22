@@ -115,6 +115,9 @@ const CARD_PHOTOS = new Set(["dhcp", "dns", "phish-triage", "ssh-brute", "hashin
 // Tools reuse the picture of the lab they belong with.
 const PHOTO_ALIAS = { "subnet-calc": "subnetting" };
 const cardPhoto = (src, w = 506, h = 253) => `<span class="card-art photo"><img class="card-img" src="${esc(src)}" alt="" width="${w}" height="${h}" loading="lazy" decoding="async"></span>`;
+// The card's picture as a slim banner at the top of its lesson, lab or mission page (a decorative ::before, so it
+// shows while a module loads and whatever the module draws). Nothing when the card has no photo.
+const bannerAttr = id => { const p = PHOTO_ALIAS[id] || id; return CARD_PHOTOS.has(p) ? ` data-banner style="--banner: url('img/cards/${p}.webp')"` : ""; };
 const cardArt = id => { const p = PHOTO_ALIAS[id] || id; return CARD_PHOTOS.has(p) ? cardPhoto(`img/cards/${p}.webp`) : `<span class="card-art">${sceneSvg(SCENE[id] || SCENE.networking)}</span>`; };
 // Hovering a card sends its packets across the scene.
 document.addEventListener("mouseover", e => {
@@ -317,7 +320,7 @@ const LEAVE_SHIFT = "Leave this shift? It isn't saved part-way, so you'll start 
 addEventListener("beforeunload", e => { if (agencyShift?.inProgress && main.contains($("agency-root"))) e.preventDefault(); });
 function missionView(id) {
   const m = MISSION(id); if (!m) return VIEWS.missions();
-  main.innerHTML = `<div class="view" id="mission-root"><div class="empty">Loading mission…</div></div>`;
+  main.innerHTML = `<div class="view" id="mission-root"${bannerAttr(id)}><div class="empty">Loading mission…</div></div>`;
   import("./js/missions/ui.js").then(ui => {
     if (parseRoute().path !== "missions/" + id) return;  // the learner navigated away while it loaded
     const next = m.next && MISSION(m.next);
@@ -338,7 +341,7 @@ function missionView(id) {
 }
 const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring", "wiretap", "vlan", "hashing", "netbuilder", "perms", "journey"];  // labs with their own module in static/js/labs/<kind>.js
 function moduleLab(l) {
-  main.innerHTML = `<div class="view" id="lab-root"><div class="empty">Loading lab…</div></div>`;
+  main.innerHTML = `<div class="view" id="lab-root"${bannerAttr(l.id)}><div class="empty">Loading lab…</div></div>`;
   import(`./js/labs/${l.kind}.js`).then(mod => {
     if (parseRoute().path !== "missions/" + l.id) return;
     mod.mount($("lab-root"), l, {
@@ -362,7 +365,7 @@ function labView(id) {
   if (l.kind === "cvss") return cvssLab(l);
   if (MODULE_LABS.includes(l.kind)) return moduleLab(l);
   const solved = new Set(P.labSteps[id] || []);
-  main.innerHTML = `<div class="view"><article class="article" style="max-width:900px">
+  main.innerHTML = `<div class="view"${bannerAttr(id)}><article class="article" style="max-width:900px">
     <a class="link-btn" href="#missions">← Missions</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${l.minutes} min · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${gloss(l.intro, 4)}</p></div>
     ${l.primer ? `<section class="panel"><h2>${esc(l.primer.title)}</h2><ul class="keys">${l.primer.keys.map(k => `<li>${keyIcon(k.icon)}<b>${gloss(k.label, 1)}</b><span>${esc(k.text)}</span></li>`).join("")}</ul>
@@ -510,7 +513,7 @@ function cvssLab(l) {
   const pick = { AV: "N", AC: "L", PR: "N", UI: "N", S: "U", C: "N", I: "N", A: "N" };
   const draw = () => {
     const sc = l.scenarios[cur], score = cvss31(pick), vec = CVSS_METRICS.map(([k]) => `${k}:${pick[k]}`).join("/");
-    main.innerHTML = `<div class="view"><article class="article" style="max-width:900px">
+    main.innerHTML = `<div class="view"${bannerAttr(l.id)}><article class="article" style="max-width:900px">
       <a class="link-btn" href="#missions">← Missions</a>
       <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${done.size}/${l.scenarios.length} scenarios · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.intro)}</p></div>
       <div class="row">${l.scenarios.map((x, i) => `<button class="chip" data-sc="${i}" aria-pressed="${i === cur}">${done.has(i) ? "✓ " : ""}${esc(x.title)}</button>`).join("")}</div>

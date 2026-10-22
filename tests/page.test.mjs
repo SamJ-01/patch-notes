@@ -187,3 +187,12 @@ test("numbered steps never swap their number for a tick", async () => {
     ...["labs/journey.js"].map(f => new URL(`../static/js/${f}`, import.meta.url))];
   for (const f of files) assert.doesNotMatch(rf(f, "utf8"), /\? "✓" : (i \+ 1|"\d")/, String(f));
 });
+
+// The calmer first-visit home page is only for people who haven't started.
+test("home: a newcomer is someone with no XP and nothing finished", () => {
+  const src = template.match(/const isNewcomer = \(\) => .*\n/)[0];
+  const check = P => { const ctx = { count: o => Object.keys(o || {}).length }; vm.createContext(ctx); return vm.runInContext(`var P = ${JSON.stringify(P)}; ${src}; isNewcomer()`, ctx); };
+  assert.equal(check({ xp: 0, done: {}, labs: {}, missions: {}, agency: {} }), true);
+  assert.equal(check({ xp: 20, done: {}, labs: {}, missions: {}, agency: {} }), false, "a daily question answered counts as started");
+  assert.equal(check({ xp: 0, done: {}, labs: {}, missions: {}, agency: { "shift-01": { best: 3 } } }), false);
+});

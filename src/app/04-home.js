@@ -62,7 +62,7 @@ function drawRoute() {
   const reached = next === -1 ? [L.start, ...L.stops, L.finish] : [L.start, ...L.stops.slice(0, next + 1)];
   const short = t => t.replace(/^Path to /, "");
   box.innerHTML = `<div class="route-top"><h2 id="route-h">Your route: ${esc(short(p.title))}</h2><span class="muted">${done} of ${steps.length} stops · finish for +${PATH_XP} XP</span></div>
-    <div class="row route-paths" role="group" aria-label="Choose a route">${DATA.paths.map(x => `<button type="button" class="chip" data-route="${esc(x.id)}" aria-pressed="${x.id === p.id}">${esc(short(x.title))}</button>`).join("")}</div>
+    ${isNewcomer() ? "" : `<div class="row route-paths" role="group" aria-label="Choose a route">${DATA.paths.map(x => `<button type="button" class="chip" data-route="${esc(x.id)}" aria-pressed="${x.id === p.id}">${esc(short(x.title))}</button>`).join("")}</div>`}
     <svg class="route-map" viewBox="0 0 ${W} ${L.height}" role="group" aria-label="${esc(`${p.title}: ${steps.length} stops, ${done} done.`)}">
       <path class="route-road" d="${routePath([L.start, ...L.stops, L.finish], L.R)}"/>
       <path class="route-road done" d="${routePath(reached, L.R)}"/>
@@ -76,7 +76,7 @@ function drawRoute() {
       <g class="route-finish${next === -1 ? " done" : ""}" transform="translate(${L.finish.x},${L.finish.y})" aria-hidden="true"><rect x="-26" y="-22" width="52" height="44" rx="10"/><text y="5" text-anchor="middle">${next === -1 ? "★" : "FINISH"}</text></g>
     </svg>
     <div class="row route-next">${next === -1 ? `<span><b>Route complete.</b> Pick another route above.</span>` : `<span>Next stop: <b>${esc(steps[next].label)}</b> <span class="muted">(${esc(KIND_WORD[steps[next].kind] || steps[next].kind)})</span></span><a class="btn brand" href="${steps[next].href}">${done ? "Continue" : "Start"} →</a>`}
-      <a class="link-btn" href="#path-${esc(p.id)}">Route details</a><a class="link-btn" href="#news">Just here for the news?</a></div>`;
+      <a class="link-btn" href="#path-${esc(p.id)}">Route details</a>${isNewcomer() ? "" : '<a class="link-btn" href="#news">Just here for the news?</a>'}</div>`;
   box.querySelectorAll("[data-route]").forEach(b => b.addEventListener("click", () => {
     routeId = b.dataset.route; try { localStorage.setItem("pn-route", routeId); } catch (e) {}
     drawRoute(); box.querySelector(`[data-route="${routeId}"]`)?.focus();
@@ -87,6 +87,20 @@ let routeWidth = 0, routeTimer = null;
 addEventListener("resize", () => { clearTimeout(routeTimer); routeTimer = setTimeout(() => { const b = $("route"); if (b && Math.abs(b.clientWidth - routeWidth) > 8) drawRoute(); }, 120); });
 
 /* TODAY */
+// Someone who hasn't done anything yet gets a calmer home page: three ways in, their route, a beginner question,
+// and the news as one line. Once they've earned any XP or finished anything, the full page returns.
+const isNewcomer = () => !P.xp && !count(P.done) && !count(P.labs) && !count(P.missions) && !count(P.agency);
+function startCards(news, kev) {
+  const basics = pathSteps(DATA.paths.find(p => p.id === "awareness") || DATA.paths[0])[0];
+  const shift = (DATA.agency || [])[0];
+  const card = (href, pic, eyebrow, title, text, cta) => `<a class="lcard art-card start-card" href="${href}">${pic}
+    <span class="eyebrow">${eyebrow}</span><h3>${title}</h3><p>${text}</p><span class="start-cta">${cta} →</span></a>`;
+  return `<section class="start" aria-labelledby="start-h"><h2 id="start-h">Where do you want to start?</h2><div class="start-grid">
+    ${card(esc(basics?.href || "#learn"), cardArt("cia-triad"), "New to security", "Learn the basics", "Short lessons with pictures, then a game. No experience needed.", "Start the basics")}
+    ${shift?.clientImage ? card("#agency", cardPhoto(shift.clientImage.small || shift.clientImage.src, 800, Math.round(800 * shift.clientImage.height / shift.clientImage.width)), "PATCH//AGENCY", "Work a SOC shift", "Clock in at a security operations centre. Guided, with hints from your shift lead.", "Clock in") : ""}
+    ${card("#news", cardArt("nation-state"), "Just the news", "This week, explained", `${news.length} stories in plain English, and ${kev.length} ${kev.length === 1 ? "bug" : "bugs"} being exploited right now.`, "Read the news")}
+  </div></section>`;
+}
 VIEWS.today = () => {
   const news = DATA.news, m = DATA.meta;
   const kev = DATA.kev.slice().sort((a, b) => b.kev.added.localeCompare(a.kev.added));
@@ -97,9 +111,18 @@ VIEWS.today = () => {
   const top = trend[0];
   const featured = news.filter(n => n.topics.length);
 
-  main.innerHTML = `<div class="view">
-    <div class="view-head home-head"><h1>Learn it. Break it. <em class="accent">Understand it.</em></h1>
-      <p>Hands-on cyber security and IT: see how attacks work, learn how to defend against them, and understand the news behind every headline. Free, visual, and built for real exams.</p></div>
+  const head = `<div class="view-head home-head"><h1>Learn it. Break it. <em class="accent">Understand it.</em></h1>
+      <p>Hands-on cyber security and IT: see how attacks work, learn how to defend against them, and understand the news behind every headline. Free, visual, and built for real exams.</p></div>`;
+  if (isNewcomer()) {
+    main.innerHTML = `<div class="view">${head}${startCards(news, kev)}
+      <section class="panel route-panel" aria-labelledby="route-h"><div id="route"></div></section>
+      <div class="split"><section class="panel" id="daily"></section>
+        <aside class="panel news-line"><div class="eyebrow">This week</div><p><b>${news.length} stories</b> from ${sources} outlets, each linked to a lesson that explains it.</p><a class="btn ghost" href="#news">Read the news →</a></aside></div>
+    </div>`;
+    renderDaily(); drawRoute();
+    return;
+  }
+  main.innerHTML = `<div class="view">${head}
     <section class="panel route-panel" aria-labelledby="route-h"><div id="route"></div></section>
     <div class="split">
       <div class="stack" style="gap:18px">
@@ -185,7 +208,12 @@ VIEWS.stack = () => {
 
 function renderDaily() {
   const box = $("daily"); if (!box) return;
-  const q = mixOptions(DATA.quiz[dayNumber() % DATA.quiz.length], seededRand(dayNumber() + 7));
+  // Until a few lessons are done, the daily question comes from the everyday-security route's topics
+  // (phishing, passwords, breaches...), not technical ones like CVSS.
+  const basics = new Set((DATA.paths.find(p => p.id === "awareness")?.steps || []).filter(st => st.type === "lesson").map(st => st.id));
+  const easy = DATA.quiz.filter(x => basics.has(x.topic));
+  const pool = count(P.done) < 3 && easy.length ? easy : DATA.quiz;
+  const q = mixOptions(pool[dayNumber() % pool.length], seededRand(dayNumber() + 7));
   const today = todayStr();
   const answered = P.daily && P.daily.date === today ? P.daily.choice : null;
   box.innerHTML = `<div class="panel-title"><div class="eyebrow">Daily challenge</div><span class="eyebrow">Days practised: ${count(P.days)}</span></div>`;

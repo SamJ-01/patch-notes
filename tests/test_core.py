@@ -408,7 +408,7 @@ class QuizFairness(unittest.TestCase):
     def test_answer_position_is_shuffled_everywhere(self):
         """Most authored answers are option 2, so every quiz must mix its options before showing them."""
         page = build.assemble_template()
-        for use in ("mixOptions(DATA.quiz[", "map(q => mixOptions(q))", "quizBlock(mixOptions(q)"):
+        for use in ("mixOptions(pool[", "map(q => mixOptions(q))", "quizBlock(mixOptions(q)"):  # the daily question picks from a pool, then mixes
             self.assertIn(use, page)
 
 

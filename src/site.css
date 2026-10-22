@@ -1840,3 +1840,15 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 /* Every card picture has the same shape, drawn or photo, so rows line up while photos arrive batch by batch. */
 .card-art { height: auto; aspect-ratio: 2 / 1; }
 .card-art svg { max-height: 80%; }
+/* The card's picture carried onto its page: a slim banner, at most 640 px wide so it stays sharp, fading at the bottom. */
+.view[data-banner]::before { content: ""; display: block; width: min(100%, 640px); height: clamp(104px, 24vw, 160px); margin-bottom: -10px; border-radius: var(--radius); background: var(--banner) center / cover no-repeat, var(--surface-2); -webkit-mask-image: linear-gradient(#000 55%, transparent); mask-image: linear-gradient(#000 55%, transparent); }
+/* First visit: three ways in, with pictures */
+.start { display: grid; gap: 14px; }
+.start h2 { margin: 0; }
+.start-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.start-card h3 { font-size: 1.15rem; }
+.start-cta { margin-top: auto; font: 700 0.85rem var(--font-mono); color: var(--brand); letter-spacing: 0.04em; }
+.news-line { display: grid; gap: 8px; align-content: start; }
+.news-line p { margin: 0; }
+.news-line .btn { justify-self: start; }
+@media (max-width: 800px) { .start-grid { grid-template-columns: 1fr; } }

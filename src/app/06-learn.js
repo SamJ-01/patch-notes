@@ -297,7 +297,7 @@ function lessonView(id) {
   const practice = [...DATA.missions.filter(m => m.lesson === id).map(m => ({ kind: "Mission", href: "#mission-" + m.id, title: m.title, sub: m.card || m.summary, min: m.minutes, done: count((P.missions || {})[m.id]) > 0 })),
     ...DATA.labs.filter(x => x.lesson === id).map(x => ({ kind: "Lab", href: "#lab-" + x.id, title: x.title, sub: x.card || x.skill, min: x.minutes, done: !!P.labs[x.id] }))];
   const lseen = new Set([id]);
-  main.innerHTML = `<div class="view"><article class="article lesson">
+  main.innerHTML = `<div class="view"${bannerAttr(id)}><article class="article lesson">
     <a class="link-btn" href="#learn">← All lessons</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">${esc(l.track)} · ${esc(l.level)} · ${l.minutes} min</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.hook)}</p>
       ${lessonObjectives(id).length ? `<p class="muted obj-links">Exam objectives: ${lessonObjectives(id).map(({ c, o }) => `<a href="#cert-${esc(c.id)}">${esc(c.name.replace("CompTIA ", ""))} ${esc(o.id)}</a>`).join(" · ")}</p>` : ""}</div>
