@@ -118,6 +118,7 @@ const PS = { track: "All", open: {} };  // the chosen filter and which tracks ar
 function practiseItems() {
   return [
     ...(DATA.agency || []).map(sh => ({ key: `agency:${sh.id}`, cat: "Security operations", done: !!(P.agency || {})[sh.id], html: shiftCard(sh) })),
+    { key: "tool:headers-check", cat: "Security operations", done: false, html: headerToolCard() },
     ...DATA.missions.map(m => ({ key: `mission:${m.id}`, cat: m.category || "Networking", done: Object.keys((P.missions || {})[m.id] || {}).length === Object.keys(m.modes).length, html: missionCard(m) })),
     ...DATA.labs.map(l => ({ key: `lab:${l.id}`, cat: l.category || "Security operations", done: !!P.labs[l.id], html: labCard(l) })),
     { key: "tool:subnet-calc", cat: "Networking", done: false, html: toolCard() },
@@ -164,6 +165,18 @@ function gamesCard() {
 function toolCard() {
   return `<a class="lcard art-card" href="#subnet-calc">${cardArt("subnet-calc")}
     <span class="eyebrow">Tool</span><h3>Subnet calculator</h3><p>Type any address and watch the network change: class, CIDR, mask, hosts, ranges and a live diagram</p><span class="lmeta"><span>Use any time</span><span>Shareable links</span></span></a>`;
+}
+function headerToolCard() {
+  return `<a class="lcard art-card" href="#headers-check">${cardArt("header-inspector")}
+    <span class="eyebrow">Tool · your own evidence</span><h3>Email header checker</h3><p>Paste a real email's headers and see who sent it</p><span class="lmeta"><span>Use any time</span><span>Stays on your device</span></span></a>`;
+}
+// "Bring your own evidence": paste real email headers and get them explained (static/js/tools/headers.js).
+function headersToolView() {
+  main.innerHTML = `<div class="view"><div class="view-head"><a class="link-btn" href="#missions">← Practise</a><div class="eyebrow">Tool · Security operations</div><h1>Email header checker</h1>
+    <p>Paste the headers of a real email you're unsure about. See who really sent it, the route it took and whether it passed ${gloss("SPF, DKIM and DMARC", 3)}.</p></div>
+    <div id="hc-root"><div class="empty">Loading…</div></div></div>`;
+  import("./js/tools/headers.js").then(mod => { if (parseRoute().path === "tools/headers-check") mod.mount($("hc-root"), { samples: DATA.tools?.headerSamples || [] }); })
+    .catch(() => { $("hc-root").innerHTML = `<div class="empty">Couldn't load the checker. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
 }
 // The subnet calculator on its own page. The address lives in the URL (#subnet-calc/10.0.0.0/22) so it can be shared.
 function calcView(h) {

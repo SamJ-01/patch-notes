@@ -373,6 +373,7 @@ def main():
         "stack": load("stack.json"),
         "quiz": load("quiz.json"),
         "phish": load("phish.json"),
+        "tools": load("tools.json"),
         "careers": load("careers.json"),
         "cwe": cwe,
         "glossary": load("glossary.json"),

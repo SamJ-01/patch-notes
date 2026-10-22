@@ -23,15 +23,29 @@ export const MAIL = (() => {
     const one = n => fields.find(([k]) => k === n)?.[1] || "";
     // Received headers are added on top, so the first one is the last hop: reverse them to read in order.
     const received = fields.filter(([k]) => k === "received").map(([, v]) => {
-      const m = v.match(/^from\s+(\S+)\s+\(([^)]*?)\[([\d.:a-fA-F]+)\]\)\s+by\s+([^\s;]+)/);
-      return m ? { helo: m[1], rdns: m[2].trim(), ip: m[3], by: m[4] } : { helo: (v.match(/^from\s+(\S+)/) || [])[1] || "", rdns: "", ip: (v.match(/\[([\d.:a-fA-F]+)\]/) || [])[1] || "", by: (v.match(/by\s+([^\s;]+)/) || [])[1] || "" };
+      // "from HOST (RDNS [IP])" (Postfix, Gmail) or "from HOST (IP)" (Microsoft 365); "by HOST" names the receiver.
+      const m = v.match(/^from\s+(\S+)\s+\(([^)]*)\)/), paren = m ? m[2] : "";
+      const ip = (paren.match(/\[([\d.:a-fA-F]+)\]/) || paren.trim().match(/^((?:\d{1,3}\.){3}\d{1,3}|[0-9a-fA-F:]*:[0-9a-fA-F:]+)$/) || [])[1] || "";
+      return { helo: m ? m[1] : (v.match(/^from\s+(\S+)/) || [])[1] || "", rdns: paren.replace(/\[[^\]]*\]/, "").replace(/^[\d.:a-fA-F]+$/, "").trim().replace(/\.$/, ""), ip, by: (v.match(/\bby\s+([^\s;]+)/) || [])[1] || "" };
     }).reverse();
-    const results = fields.filter(([k]) => k === "authentication-results").map(([, v]) => v).join("; ");
-    const verdict = k => { const m = results.match(new RegExp(`\\b${k}=(\\w+)([^;]*)`)); return m ? { result: m[1].toLowerCase(), detail: m[2].trim() } : { result: "none", detail: "" }; };
+    // Authentication-Results (RFC 8601), top first. Only the receiving server's own verdicts count: anyone can add
+    // a fake "pass" header further down. So trust the topmost header and others from the same server (its
+    // authserv-id, the part before the first ";"; Microsoft 365 leaves it out), and list the rest as ignored.
+    const ar = fields.filter(([k]) => k === "authentication-results").map(([, v]) => { const first = v.split(";")[0].trim(); return { id: /=/.test(first) ? "" : first.toLowerCase(), raw: v }; });
+    const trustedId = ar.length ? ar[0].id : null, trusted = ar.filter(a => a.id === trustedId), ignored = ar.filter(a => a.id !== trustedId);
+    const results = trusted.map(a => a.raw).join("; ");
+    const spfHeader = one("received-spf");
+    const verdict = k => {
+      const m = results.match(new RegExp(`\\b${k}=(\\w+)([^;]*)`));
+      if (m) return { result: m[1].toLowerCase(), detail: m[2].trim() };
+      if (k === "spf" && spfHeader) return { result: spfHeader.split(/[\s(]/)[0].toLowerCase(), detail: "(from Received-SPF)" };
+      return { result: "none", detail: "" };
+    };
     return {
       from: addr(one("from")), replyTo: one("reply-to") ? addr(one("reply-to")) : null, returnPath: addr(one("return-path")),
       to: one("to"), subject: one("subject"), date: one("date"), messageId: one("message-id"),
       received, auth: { spf: verdict("spf"), dkim: verdict("dkim"), dmarc: verdict("dmarc") },
+      authBy: trustedId, authIgnored: ignored.map(a => a.id || "(no server named)"),
     };
   }
   // Where a link really goes: the host in its href, against any address its text shows.

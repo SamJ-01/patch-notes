@@ -49,6 +49,10 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   Design and decisions: `docs/agency-pilot.md`. Logs are searched with `engine.searchLines`.
 - Emails anywhere on the site use `static/js/mail.js` (`MAIL.card`/`MAIL.wire`; inlined into the page like hw.js): a mail
   app look, links that reveal where they go, Details/Original views from raw headers, clues pinned with `{ at, text }`.
+- Email header checker ("bring your own evidence"): `#headers-check`, `static/js/tools/headers.js` (pure `analyse()` + page;
+  tests `tests/headers-tool.test.mjs`), examples in `content/tools.json` (`DATA.tools`). Runs in the browser only; never
+  says "safe". `MAIL.parseHeaders` trusts only the topmost Authentication-Results (and others from the same server) and
+  reads Gmail and Microsoft 365 formats. Next tools: log search, CVSS decoder.
 - "How an app talks to the internet", two labs on `static/js/labs/journey.js` (tests `tests/journey.test.mjs`), content in `labs.json` `chapters`:
   part 1 `#lab-finding-the-server` (DNS, ports, ARP, routing, NAT, tiers), part 2 `#lab-one-request` (HTTP, TCP/UDP, HTTPS, load balancer,
   reverse proxy, firewall, WebSockets). Each stop is a pure model plus a scene keyed by chapter id; animated handlers use `guard()`.
