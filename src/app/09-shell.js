@@ -277,6 +277,9 @@ document.addEventListener("click", e => {
   if (nt) { NS.topic = nt.dataset.newsTopic; NS.q = ""; NS.source = "all"; location.hash = "news"; }
 });
 window.addEventListener("hashchange", route);
+// Card photos fade in when they've loaded (load doesn't bubble, so listen while it's on its way down).
+document.addEventListener("load", e => { if (e.target.classList?.contains("card-img")) e.target.classList.add("in"); }, true);
+document.addEventListener("error", e => { if (e.target.classList?.contains("card-img")) e.target.closest(".card-art")?.classList.add("missing"); }, true);
 
 // Scroll boxes (terminals, logs, raw headers, wide tables) move along one axis per gesture, never diagonally.
 // Wheel and trackpad: only the stronger axis moves the box; once the box can't go further that way, the page

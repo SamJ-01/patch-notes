@@ -101,7 +101,11 @@ const HEAD_SCENE = {
 };
 SCENE.play = HEAD_SCENE.play;  // the games card on the practise page
 const headArt = k => `<span class="head-art card-art" aria-hidden="true">${sceneSvg(HEAD_SCENE[k])}</span>`;
-const cardArt = id => `<span class="card-art">${sceneSvg(SCENE[id] || SCENE.networking)}</span>`;
+// Card pictures: an illustration where one exists (img/cards/<id>.webp, 2:1, one style, made in batches of six),
+// otherwise the drawn scene. Photos fade in once loaded, in space that's already reserved.
+const CARD_PHOTOS = new Set(["dhcp", "dns", "phish-triage", "ssh-brute", "hashing", "permissions"]);
+const cardPhoto = (src, w = 506, h = 253) => `<span class="card-art photo"><img class="card-img" src="${esc(src)}" alt="" width="${w}" height="${h}" loading="lazy" decoding="async"></span>`;
+const cardArt = id => (CARD_PHOTOS.has(id) ? cardPhoto(`img/cards/${id}.webp`) : `<span class="card-art">${sceneSvg(SCENE[id] || SCENE.networking)}</span>`);
 // Hovering a card sends its packets across the scene.
 document.addEventListener("mouseover", e => {
   const card = e.target.closest?.(".art-card"); if (!card || card.dataset.playing || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -228,7 +232,8 @@ const MISSION = id => DATA.missions.find(x => x.id === id);
 const SHIFT = id => (DATA.agency || []).find(x => x.id === id);
 function shiftCard(sh) {
   const rec = (P.agency || {})[sh.id];
-  return `<a class="lcard mission-card art-card" href="#agency">${cardArt("agency")}${rec ? '<span class="done">DONE</span>' : ""}
+  const pic = sh.clientImage ? cardPhoto(sh.clientImage.small || sh.clientImage.src, 800, Math.round(800 * sh.clientImage.height / sh.clientImage.width)) : cardArt("agency");
+  return `<a class="lcard mission-card art-card" href="#agency-${esc(sh.id)}">${pic}${rec ? '<span class="done">DONE</span>' : ""}
     <span class="eyebrow">PATCH//AGENCY</span><h3>${esc(sh.title)}</h3><p>${esc(sh.card || sh.summary)}</p>
     <span class="lmeta"><span>${sh.minutes} min</span><span>${rec ? `Best: ${rec.best} of ${rec.total} checks` : `+${sh.xp} XP`}</span></span></a>`;
 }

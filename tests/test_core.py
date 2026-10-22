@@ -652,3 +652,17 @@ class ContentIntegrity(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CardPhotos(unittest.TestCase):
+    """Every card photo the page asks for is in static/img/cards, in the card shape (2:1)."""
+
+    def test_card_photos_exist(self):
+        js = (Path(__file__).resolve().parent.parent / "src" / "app" / "07-labs.js").read_text()
+        ids = re.findall(r'"([\w-]+)"', re.search(r"const CARD_PHOTOS = new Set\(\[(.*?)\]\)", js).group(1))
+        self.assertGreaterEqual(len(ids), 6)
+        for i in ids:
+            f = Path(__file__).resolve().parent.parent / "static" / "img" / "cards" / f"{i}.webp"
+            self.assertTrue(f.exists(), i)
+            data = f.read_bytes()
+            self.assertEqual(data[:4], b"RIFF"); self.assertEqual(data[8:12], b"WEBP")
