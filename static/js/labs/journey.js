@@ -139,9 +139,21 @@ export function lbRequest(state, algo, dur = 1) {
 export const lbOpen = (state, id) => { const sv = state.servers.find(x => x.id === id); return sv ? openConns(sv, state.tick) : 0; };
 
 // ---------- 5. Reverse proxy: nginx-style prefix locations; the longest matching prefix wins
-export function routePath(locations, path) {
-  const p = String(path || "").split("?")[0];
+// Like nginx, the path is cleaned before matching: %-codes decoded, repeated slashes merged (merge_slashes) and
+// ./ and ../ resolved. So /pay//admin/ or /rides/../pay/admin/ can't slip past the /pay/admin/ rule.
+export function normalisePath(path) {
+  let p = String(path || "").split("?")[0];
+  try { p = decodeURIComponent(p); } catch { /* keep it as typed */ }
   if (!p.startsWith("/")) return null;
+  const out = [];
+  for (const seg of p.replace(/\/{2,}/g, "/").split("/").slice(1)) {
+    if (seg === "..") out.pop(); else if (seg !== ".") out.push(seg);
+  }
+  return "/" + out.join("/");
+}
+export function routePath(locations, path) {
+  const p = normalisePath(path);
+  if (p === null) return null;
   return locations.filter(l => p.startsWith(l.prefix)).sort((a, b) => b.prefix.length - a.prefix.length)[0] || null;
 }
 
@@ -372,11 +384,18 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
         el.querySelector("#jr-ss").innerHTML = code("ss -tlnp (what's listening, and where)", ssLines(sv));
         el.querySelectorAll("[data-bind]").forEach(k => k.addEventListener("change", () => { sv[Number(k.dataset.bind)].bind = k.value; draw(); el.querySelector(`[data-bind="${k.dataset.bind}"]`).focus(); }));
       };
+      // What the outside test shows when it isn't locked down: private services exposed, the public one hidden, or both.
+      const remoteNote = () => {
+        const open = sv.filter(x => !x.public && x.bind === "0.0.0.0"), hidden = sv.filter(x => x.public && x.bind !== "0.0.0.0"), notes = [];
+        if (open.length) notes.push(`${open.map(x => esc(x.name)).join(" and ")} answer${open.length === 1 ? "s" : ""} from outside. Should ${open.length === 1 ? "it" : "they"}?`);
+        if (hidden.length) notes.push(`${hidden.map(x => esc(x.name)).join(" and ")} ${hidden.length === 1 ? "is" : "are"} only on localhost now, so customers can't reach ${hidden.length === 1 ? "it" : "them"}.`);
+        return notes.join(" ");
+      };
       el.querySelectorAll("[data-from]").forEach(b => b.addEventListener("click", () => {
         const from = b.dataset.from, host = from === "local" ? "127.0.0.1" : c.host;
         const out = sv.map(x => nc(sv, from, host, x.port).out).join("\n");
         el.querySelector("#jr-nc").innerHTML = `${code(`${from === "local" ? "On the server" : "From another machine"}: nc -zv ${host} ${sv.map(x => x.port).join(" ")}`, out)}
-          <p class="jr-note">${ok() && from === "remote" ? `<b class="ok">Locked down.</b> Only the website answers from outside; the database and cache still work for the website on the same machine.` : from === "local" ? "On the server itself, everything answers: localhost reaches every service." : `${sv.filter(x => !x.public && x.bind === "0.0.0.0").map(x => esc(x.name)).join(" and ")} answer${sv.filter(x => !x.public && x.bind === "0.0.0.0").length === 1 ? "s" : ""} from outside. Should ${sv.filter(x => !x.public && x.bind === "0.0.0.0").length === 1 ? "it" : "they"}?`}</p>`;
+          <p class="jr-note">${ok() && from === "remote" ? `<b class="ok">Locked down.</b> Only the website answers from outside; the database and cache still work for the website on the same machine.` : from === "local" ? "On the server itself, everything answers: localhost reaches every service." : remoteNote()}</p>`;
         if (ok() && from === "remote") met();
       }));
       draw();
@@ -685,14 +704,15 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
         <div class="jr-pair">${code("nginx.conf (the routing rules)", c.locations.map(l => `location ${l.prefix} { ${l.to ? `proxy_pass http://${l.to}:8080;` : "return 404;"} }`).join("\n"))}<div id="jr-route" aria-live="polite"></div></div>`;
       const svg = el.querySelector("svg"), pre = el.querySelector(".jr-code pre");
       const go = guard(async path => {
-        const loc = routePath(c.locations, path);
+        const loc = routePath(c.locations, path), clean = normalisePath(path);
+        const shown = clean && clean !== path.split("?")[0] ? `<b>${esc(path)}</b> (cleaned up to <span class="mono">${esc(clean)}</span>, as nginx does)` : `<b>${esc(path)}</b>`;
         pre.innerHTML = c.locations.map(l => { const t = esc(`location ${l.prefix} { ${l.to ? `proxy_pass http://${l.to}:8080;` : "return 404;"} }`); return l === loc ? `<mark>${t}</mark>` : t; }).join("\n");
         svg.querySelectorAll("[data-svc]").forEach(g => g.classList.toggle("on", !!loc && g.dataset.svc === loc.to));
         await fly(svg, [100, 110], [270, 110]);
         if (loc?.to) await fly(svg, [340, 110], [490, Y[svcs.indexOf(loc.to)]]);
         el.querySelector("#jr-route").innerHTML = !path.startsWith("/") ? `<p class="jr-note">A path starts with /.</p>` : loc?.to
-          ? `<p class="jr-note"><b>${esc(path)}</b> matched <span class="mono">location ${esc(loc.prefix)}</span>, the longest prefix that fits, so it goes to <b>${esc(loc.to)}</b>. The proxy ended the HTTPS connection and passed the request on over the internal network, adding <span class="mono">X-Forwarded-For</span> with the phone's address.</p>`
-          : `<p class="jr-note"><b>${esc(path)}</b> only matched <span class="mono">location /</span>, so the proxy answered <b>404 Not Found</b> itself. Nothing inside was ever reached.</p>`;
+          ? `<p class="jr-note">${shown} matched <span class="mono">location ${esc(loc.prefix)}</span>, the longest prefix that fits, so it goes to <b>${esc(loc.to)}</b>. The proxy ended the HTTPS connection and passed the request on over the internal network, adding <span class="mono">X-Forwarded-For</span> with the phone's address.</p>`
+          : `<p class="jr-note">${shown} matched <span class="mono">location ${esc(loc ? loc.prefix : "/")}</span>, which returns 404, so the proxy answered <b>404 Not Found</b> itself. Nothing inside was ever reached.</p>`;
         if (path.startsWith("/")) { if (loc?.to) tried.add(loc.to); else miss = true; }
         if (tried.size >= 3 && miss) met();
       });

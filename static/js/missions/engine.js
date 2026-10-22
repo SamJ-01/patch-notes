@@ -231,3 +231,20 @@ export function inspectEmail(scenario, state, id) {
   if (!s.toolsUsed.includes("email")) s.toolsUsed.push("email");
   return { state: s, events: [{ type: "email", email, parsed: parseHeaders(email.headers), links: (email.links || []).map(linkFacts), found }] };
 }
+
+// Highlight search terms in a line: find matches in the raw text (any case), merge overlaps, then escape each
+// piece. (Matching inside already-escaped HTML could split an entity like &quot; or land inside a <mark>.)
+export function markText(text, terms) {
+  const e = x => String(x).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const s = String(text ?? ""), low = s.toLowerCase(), hits = [];
+  for (const t of terms) {
+    const w = String(t || "").toLowerCase(); if (!w) continue;
+    for (let i = low.indexOf(w); i >= 0; i = low.indexOf(w, i + w.length)) hits.push([i, i + w.length]);
+  }
+  hits.sort((a, b) => a[0] - b[0]);
+  const spans = [];
+  for (const h of hits) { const last = spans.at(-1); if (last && h[0] <= last[1]) last[1] = Math.max(last[1], h[1]); else spans.push([...h]); }
+  let out = "", pos = 0;
+  for (const [a, b] of spans) { out += e(s.slice(pos, a)) + `<mark>${e(s.slice(a, b))}</mark>`; pos = b; }
+  return out + e(s.slice(pos));
+}

@@ -3719,8 +3719,7 @@
   "kind": "Concept",
   "aliases": [
    "email headers",
-   "email header",
-   "headers"
+   "email header"
   ],
   "short": "The hidden lines at the top of an email recording who sent it, the servers it passed through and the checks it passed. In most mail apps: Show original.",
   "lesson": "phishing",

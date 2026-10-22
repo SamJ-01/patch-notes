@@ -229,3 +229,13 @@ test("part 1 content is consistent and links to part 2", () => {
   for (const c of lab1.chapters) assert.ok(c.label && c.title && c.idea && c.goal && c.security && c.deeper?.href, c.id);
   assert.ok(!JSON.stringify(lab1).includes("—"), "no em dashes");
 });
+
+test("found in review: the proxy cleans paths like nginx, so the admin block can't be dodged", () => {
+  const L = ch("proxy").locations, to = p => J.routePath(L, p)?.prefix;
+  assert.equal(J.normalisePath("/pay//admin/refunds"), "/pay/admin/refunds");
+  assert.equal(J.normalisePath("/rides/../pay/admin/x"), "/pay/admin/x");
+  assert.equal(J.normalisePath("/pay/%2e%2e/pay/admin/"), "/pay/admin/");
+  for (const p of ["/pay//admin/refunds", "/rides/../pay/admin/refunds", "/pay/./admin/refunds", "/pay/%61dmin/refunds"]) assert.equal(to(p), "/pay/admin/", p);
+  assert.equal(J.normalisePath("pay"), null);
+  assert.equal(J.normalisePath("/../.."), "/", "can't climb above the root");
+});

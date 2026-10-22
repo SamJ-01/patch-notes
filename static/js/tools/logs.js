@@ -2,26 +2,31 @@
 // would build first. Linux sign-in logs (auth.log / secure) and web server access logs (nginx and Apache "combined")
 // are recognised; anything else can still be searched. Runs in the browser only: nothing is uploaded or stored.
 // The analysis functions are pure and tested (tests/logs-tool.test.mjs); mount() draws the page.
-import { searchLines } from "../missions/engine.js";
+import { searchLines, markText } from "../missions/engine.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 // Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
 const gl = (t, n = 3, seen) => (globalThis.PN_gloss ? globalThis.PN_gloss(t, n, seen) : esc(t));
 export const MAX_BYTES = 5 * 1024 * 1024;  // a quick look, not a log platform
 
-// OpenSSH and sudo messages, wherever the timestamp and host come from (classic syslog or RFC 3339).
+// OpenSSH and sudo messages, wherever the timestamp and host come from (classic syslog or RFC 3339). OpenSSH 9.8+
+// logs as sshd-session; rsyslog folds repeats into "message repeated N times: [ ... ]", which counts N times.
+const SSHD = /sshd(?:-session)?\[\d+\]: (?:message repeated (\d+) times: \[ )?(.*?)\s*\]?$/;
 const AUTH = {
-  failed: /sshd\[\d+\]: Failed (\S+) for (invalid user )?(\S+) from (\S+) port \d+/,
-  accepted: /sshd\[\d+\]: Accepted (\S+) for (\S+) from (\S+) port \d+/,
-  invalid: /sshd\[\d+\]: Invalid user (\S*) from (\S+)/,
-  sudo: /sudo(?:\[\d+\])?:\s+(\S+) : .*?COMMAND=(.*)$/,
+  failed: /^Failed (\S+) for (invalid user )?(\S+) from (\S+) port \d+/,
+  accepted: /^Accepted (\S+) for (\S+) from (\S+) port \d+/,
+  invalid: /^Invalid user (\S*) from (\S+)/,
+  sudo: /sudo(?:\[\d+\])?:\s+(\S+) : (.*?)COMMAND=(.*)$/,
+  refused: /NOT in sudoers|incorrect password attempt|command not allowed/,
 };
-// "combined" format: IP - user [time] "METHOD path HTTP/x" status bytes "referrer" "user agent"
-const COMBINED = /^(\S+) \S+ (\S+) \[([^\]]+)\] "(\S+) (\S+)(?: [^"]*)?" (\d{3}) (\d+|-)(?: "([^"]*)" "([^"]*)")?/;
+// "combined" format: IP - user [time] "request" status bytes "referrer" "user agent". Quoted fields can hold
+// escaped quotes (\"), and the request can be "-" or binary junk, so it's taken whole and split afterwards.
+const Q = '"((?:[^"\\\\]|\\\\.)*)"';
+const COMBINED = new RegExp(`^(\\S+) \\S+ (\\S+) \\[([^\\]]+)\\] ${Q} (\\d{3}) (\\d+|-)(?: ${Q} ${Q})?`);
 // Requests that look like attacks, by what they ask for. Common scanner and exploit patterns, not a full rule set.
 const PROBES = [
   [/\.\.\/|%2e%2e%2f|%2e%2e\//i, "path traversal (../)"],
-  [/union(\s|\+|%20)+select|'\s*or\s*'?1'?\s*=\s*'?1|%27/i, "SQL injection"],
+  [/union(\s|\+|%20)+select|['"]\s*or\s*['"]?1['"]?\s*=\s*['"]?1|%27/i, "SQL injection"],
   [/<script|%3cscript|javascript:/i, "cross-site scripting"],
   [/\/\.env|\/\.git\/|\/\.aws\/|wp-config|\.bak$|backup\.(zip|tar|sql)/i, "hunting for secret files"],
   [/wp-login\.php|xmlrpc\.php|\/phpmyadmin/i, "login page scanning"],
@@ -29,7 +34,7 @@ const PROBES = [
 
 export function detect(lines) {
   const sample = lines.slice(0, 200);
-  const auth = sample.filter(l => /sshd\[\d+\]:|sudo(\[\d+\])?:|pam_unix|CRON\[\d+\]/.test(l)).length;
+  const auth = sample.filter(l => /sshd(-session)?\[\d+\]:|sudo(\[\d+\])?:|pam_unix|CRON\[\d+\]/.test(l)).length;
   const web = sample.filter(l => COMBINED.test(l)).length;
   if (web && web >= auth) return "web";
   if (auth) return "auth";
@@ -39,13 +44,18 @@ const tally = (list, key) => { const m = new Map(); for (const x of list) { cons
 
 // What an analyst works out first from a sign-in log.
 export function summariseAuth(lines) {
-  const failed = [], accepted = [], invalid = [], sudo = [];
+  const failed = [], accepted = [], invalid = [], sudo = [], refused = [];
   for (const l of lines) {
     let m;
-    if ((m = l.match(AUTH.failed))) failed.push({ method: m[1], invalid: !!m[2], user: m[3], ip: m[4] });
-    else if ((m = l.match(AUTH.accepted))) accepted.push({ method: m[1], user: m[2], ip: m[3], line: l });
-    else if ((m = l.match(AUTH.invalid))) invalid.push({ user: m[1], ip: m[2] });
-    else if ((m = l.match(AUTH.sudo))) sudo.push({ user: m[1], command: m[2].trim() });
+    const sshd = l.match(SSHD);
+    if (sshd) {
+      const n = Number(sshd[1] || 1), msg = sshd[2];
+      for (let k = 0; k < n; k++) {
+        if ((m = msg.match(AUTH.failed))) failed.push({ method: m[1], invalid: !!m[2], user: m[3], ip: m[4] });
+        else if ((m = msg.match(AUTH.accepted))) accepted.push({ method: m[1], user: m[2], ip: m[3], line: l });
+        else if ((m = msg.match(AUTH.invalid))) invalid.push({ user: m[1], ip: m[2] });
+      }
+    } else if ((m = l.match(AUTH.sudo))) (AUTH.refused.test(m[2]) ? refused : sudo).push({ user: m[1], command: m[3].trim(), why: m[2].split(";")[0].trim() });
   }
   const failIps = new Set(failed.map(f => f.ip));
   const flags = [];
@@ -53,6 +63,7 @@ export function summariseAuth(lines) {
   for (const a of accepted) if (failIps.has(a.ip) && a.method === "password") flags.push({ level: "bad", text: `${a.user} logged in with a password from ${a.ip}, the same address that was guessing.`, search: `Accepted ${a.user}` });
   const users = new Set(invalid.map(i => i.user));
   if (users.size >= 3) flags.push({ level: "warn", text: `Logins tried for ${users.size} usernames that don't exist (${[...users].slice(0, 4).join(", ")}${users.size > 4 ? "…" : ""}): a username list.`, search: "Invalid user" });
+  for (const [user, n] of tally(refused, r => r.user)) flags.push({ level: "warn", text: `${user} was refused sudo ${n} time${n === 1 ? "" : "s"}: trying to become an administrator without permission.`, search: `${user} COMMAND` });
   const root = accepted.filter(a => a.user === "root");
   if (root.length) flags.push({ level: "warn", text: `root logged in directly over SSH ${root.length} time${root.length === 1 ? "" : "s"}. Most servers turn that off.`, search: "Accepted root" });
   return {
@@ -62,8 +73,9 @@ export function summariseAuth(lines) {
       { title: "Failed logins by username", cols: ["Username", "Failed"], rows: tally(failed, f => f.user + (f.invalid ? " (doesn't exist)" : "")).slice(0, 10) },
       { title: "Successful logins", cols: ["User", "From", "How"], rows: accepted.slice(0, 20).map(a => [a.user, a.ip, a.method]) },
       { title: "Commands run with sudo", cols: ["User", "Command"], rows: sudo.slice(0, 20).map(s => [s.user, s.command]) },
+      { title: "Refused sudo attempts", cols: ["User", "Why", "Command"], rows: refused.slice(0, 20).map(s => [s.user, s.why, s.command]) },
     ],
-    counts: { failed: failed.length, accepted: accepted.length, invalid: invalid.length, sudo: sudo.length },
+    counts: { failed: failed.length, accepted: accepted.length, invalid: invalid.length, sudo: sudo.length, refused: refused.length },
   };
 }
 
@@ -72,7 +84,11 @@ export function summariseWeb(lines) {
   const reqs = [];
   for (const l of lines) {
     const m = l.match(COMBINED);
-    if (m) reqs.push({ ip: m[1], method: m[4], path: m[5], status: Number(m[6]), agent: m[9] || "" });
+    if (!m) continue;
+    const req = m[4].replace(/\\"/g, '"'), sp = req.indexOf(" ");
+    // "GET /path HTTP/1.1" normally; "-" or junk (a TLS hello sent to a plain HTTP port) when it isn't a request at all.
+    const [method, path] = sp > 0 && /^[A-Z]+$/.test(req.slice(0, sp)) ? [req.slice(0, sp), req.slice(sp + 1).replace(/ HTTP\/[\d.]+$/, "")] : ["-", req];
+    reqs.push({ ip: m[1], method, path, status: Number(m[5]), agent: (m[8] || "").replace(/\\"/g, '"') });
   }
   const flags = [], probes = [];
   for (const r of reqs) { const p = PROBES.find(([re]) => re.test(decodeURIComponentSafe(r.path))); if (p) probes.push({ ...r, kind: p[1] }); }
@@ -83,7 +99,7 @@ export function summariseWeb(lines) {
   }
   for (const [ip, n] of tally(reqs.filter(r => r.status === 401 || r.status === 403), r => r.ip)) if (n >= 10) flags.push({ level: "warn", text: `${n} refused (401/403) requests from ${ip}: someone trying to get past a login.`, search: ip });
   const tools = tally(reqs.filter(r => /sqlmap|nikto|nmap|masscan|zgrab|gobuster|dirbuster|wpscan|nuclei/i.test(r.agent)), r => r.agent.match(/sqlmap|nikto|nmap|masscan|zgrab|gobuster|dirbuster|wpscan|nuclei/i)[0].toLowerCase());
-  for (const [tool, n] of tools) flags.push({ level: "warn", text: `${n} request${n === 1 ? "" : "s"} name the scanning tool ${tool} as their user agent.`, search: tool });
+  for (const [tool, n] of tools) flags.push({ level: "warn", text: `${n} request${n === 1 ? " names" : "s name"} the scanning tool ${tool} as ${n === 1 ? "its" : "their"} user agent.`, search: tool });
   const band = s => `${String(s)[0]}xx`;
   return {
     kind: "web", flags,
@@ -119,7 +135,7 @@ export function mount(root, { samples = [] } = {}) {
       <p class="muted hc-small">Files are read by your browser, never uploaded. Up to ${MAX_BYTES / 1024 / 1024} MB.</p></section>
     <div id="lg-out" aria-live="polite"></div></div>`;
   const $ = id => root.querySelector("#" + id);
-  const mark = (line, terms) => { let h = esc(line); for (const t of terms) h = h.replace(new RegExp(esc(t).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), m => `<mark>${m}</mark>`); return h; };
+  const mark = markText;
   const SHOW = 500;
   function search(q) {
     const r = searchLines({ lines: log.lines, findings: [] }, q), terms = r.query ? r.query.split(" ") : [];
@@ -149,13 +165,15 @@ export function mount(root, { samples = [] } = {}) {
     $("lg-out").querySelectorAll("[data-lg-q]").forEach(b => b.addEventListener("click", () => jump(b.dataset.lgQ)));
     $("lg-h").focus();
   }
-  $("lg-go").addEventListener("click", () => read($("lg-raw").value));
+  // A file opened from disk is read whole; the box only shows its start. Re-reading uses the whole file unless the box was edited.
+  let fileText = "", fileShown = null;
+  $("lg-go").addEventListener("click", () => read(fileShown !== null && $("lg-raw").value === fileShown ? fileText : $("lg-raw").value));
   $("lg-file").addEventListener("change", e => {
     const file = e.target.files[0]; if (!file) return;
     if (file.size > MAX_BYTES) return tooBig();
     const fr = new FileReader();
-    fr.onload = () => { $("lg-raw").value = String(fr.result).slice(0, 20000) + (fr.result.length > 20000 ? "\n…" : ""); read(String(fr.result)); };
+    fr.onload = () => { fileText = String(fr.result); $("lg-raw").value = fileText.slice(0, 20000) + (fileText.length > 20000 ? "\n…" : ""); fileShown = $("lg-raw").value; read(fileText); };
     fr.readAsText(file);
   });
-  root.querySelectorAll("[data-sample]").forEach(b => b.addEventListener("click", () => { const x = samples[Number(b.dataset.sample)]; $("lg-raw").value = x.lines.join("\n"); read($("lg-raw").value); }));
+  root.querySelectorAll("[data-sample]").forEach(b => b.addEventListener("click", () => { const x = samples[Number(b.dataset.sample)]; fileShown = null; $("lg-raw").value = x.lines.join("\n"); read($("lg-raw").value); }));
 }

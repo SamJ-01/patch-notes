@@ -9,10 +9,21 @@ export const MAIL = (() => {
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   // ---------- reading headers (RFC 5322, with RFC 8601 Authentication-Results)
+  // Names and subjects outside plain ASCII arrive MIME-encoded (RFC 2047): =?UTF-8?B?...?= (base64) or ?Q? (quoted).
+  // Decode them so the reader sees what the mail app shows, and the checks can look inside.
+  function decodeWords(v) {
+    return String(v || "").replace(/=\?([\w-]+)\?([BQ])\?([^?]*)\?=(\s+(?==\?))?/gi, (all, cs, enc, data) => {
+      try {
+        const bytes = enc.toUpperCase() === "B" ? Uint8Array.from(atob(data), c => c.charCodeAt(0))
+          : Uint8Array.from(data.replace(/_/g, " ").replace(/=([0-9A-F]{2})/gi, (_, h) => String.fromCharCode(parseInt(h, 16))), c => c.charCodeAt(0));
+        return new TextDecoder(cs.toLowerCase() === "utf8" ? "utf-8" : cs).decode(bytes);
+      } catch { return all; }
+    });
+  }
   const addr = v => {
     const m = String(v || "").match(/^\s*(?:"?([^"<]*?)"?\s*)?<([^>]+)>\s*$/) || [null, "", String(v || "").trim()];
     const address = m[2].trim();
-    return { name: (m[1] || "").trim(), address, domain: address.includes("@") ? address.split("@").pop().toLowerCase() : "" };
+    return { name: decodeWords((m[1] || "").trim()), address, domain: address.includes("@") ? address.split("@").pop().toLowerCase() : "" };
   };
   function parseHeaders(raw) {
     const fields = [];
@@ -26,7 +37,7 @@ export const MAIL = (() => {
       // "from HOST (RDNS [IP])" (Postfix, Gmail) or "from HOST (IP)" (Microsoft 365); "by HOST" names the receiver.
       const m = v.match(/^from\s+(\S+)\s+\(([^)]*)\)/), paren = m ? m[2] : "";
       const ip = (paren.match(/\[([\d.:a-fA-F]+)\]/) || paren.trim().match(/^((?:\d{1,3}\.){3}\d{1,3}|[0-9a-fA-F:]*:[0-9a-fA-F:]+)$/) || [])[1] || "";
-      return { helo: m ? m[1] : (v.match(/^from\s+(\S+)/) || [])[1] || "", rdns: paren.replace(/\[[^\]]*\]/, "").replace(/^[\d.:a-fA-F]+$/, "").trim().replace(/\.$/, ""), ip, by: (v.match(/\bby\s+([^\s;]+)/) || [])[1] || "" };
+      return { helo: m ? m[1] : (v.match(/^from\s+(\S+)/) || [])[1] || "", rdns: paren.replace(/\[[^\]]*\]/, "").replace(/\bhelo=\S+/i, "").replace(/^[\d.:a-fA-F]+$/, "").trim().replace(/\.$/, ""), ip, by: (v.match(/\bby\s+([^\s;]+)/) || [])[1] || "" };
     }).reverse();
     // Authentication-Results (RFC 8601), top first. Only the receiving server's own verdicts count: anyone can add
     // a fake "pass" header further down. So trust the topmost header and others from the same server (its
@@ -43,15 +54,20 @@ export const MAIL = (() => {
     };
     return {
       from: addr(one("from")), replyTo: one("reply-to") ? addr(one("reply-to")) : null, returnPath: addr(one("return-path")),
-      to: one("to"), subject: one("subject"), date: one("date"), messageId: one("message-id"),
+      to: one("to"), subject: decodeWords(one("subject")), date: one("date"), messageId: one("message-id"),
       received, auth: { spf: verdict("spf"), dkim: verdict("dkim"), dmarc: verdict("dmarc") },
       authBy: trustedId, authIgnored: ignored.map(a => a.id || "(no server named)"),
     };
   }
-  // Where a link really goes: the host in its href, against any address its text shows.
+  // Where a link really goes: the host in its href, against any address its text shows. The browser's own URL
+  // parser decides the host, so tricks like https://bank.example:443@evil.example (everything before @ is just a
+  // "username") are read the way a browser follows them.
+  const urlHost = s => { try { return new URL(String(s).trim()).hostname.toLowerCase().replace(/\.$/, ""); } catch { return ""; } };
   function linkFacts({ text, href }) {
-    const host = s => (String(s).match(/^[a-z][\w+.-]*:\/\/([^/:?#]+)/i) || [])[1]?.toLowerCase() || "";
-    const real = host(href), shown = host(text);
+    const t = String(text || "").trim();
+    // Text "shows an address" when it's a URL or looks like one (paypal.com/signin), not when it's words like "Sign in".
+    const shown = /^[a-z][\w+.-]*:\/\//i.test(t) ? urlHost(t) : /^(www\.)?([a-z0-9-]+\.)+[a-z]{2,}(\/\S*)?$/i.test(t) ? urlHost("https://" + t) : "";
+    const real = urlHost(href);
     return { text, href, real, shown, mismatch: !!shown && shown !== real };
   }
 
@@ -145,16 +161,18 @@ export const MAIL = (() => {
     if (!raw || !tab) return 0;
     tab.click();
     const lines = raw.textContent.split("\n"), want = String(needle).toLowerCase();
+    // A bare header name (Reply-To, From:) only matches at the start of a line, so In-Reply-To isn't marked too.
+    const name = /^[\w-]+:?$/.test(want), has = l => (name ? l.toLowerCase().startsWith(want.endsWith(":") ? want : want + ":") : l.toLowerCase().includes(want));
     let hits = 0, inHit = false;
     raw.innerHTML = lines.map(l => {
       const start = !/^[ \t]/.test(l);
-      if (start) inHit = l.toLowerCase().includes(want) || false;
-      const hit = inHit || l.toLowerCase().includes(want);
+      if (start) inHit = has(l);
+      const hit = inHit || (!name && has(l));
       if (hit) hits++;
       return hit ? `<mark>${esc(l)}</mark>` : esc(l);
     }).join("\n");
     raw.querySelector("mark")?.scrollIntoView?.({ block: "nearest" });
     return hits;
   }
-  return { card, wire, parseHeaders, linkFacts, highlight };
+  return { card, wire, parseHeaders, linkFacts, highlight, decodeWords };
 })();

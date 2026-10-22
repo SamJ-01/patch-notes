@@ -55,3 +55,28 @@ test("every flag's search really finds lines, and quiet logs aren't flagged", ()
   assert.equal(analyse("").lines.length, 0);
   assert.equal(analyse("a\r\nb\r\n").lines.length, 2);
 });
+
+test("found in review: OpenSSH 9.8 sshd-session, repeated messages, refused sudo, escaped quotes and junk requests", () => {
+  const newer = analyse([
+    "2026-10-21T03:04:09.123456+00:00 web01 sshd-session[2205]: Failed password for root from 203.0.113.45 port 51122 ssh2",
+    "Oct 21 03:04:12 web01 sshd[2205]: message repeated 5 times: [ Failed password for root from 203.0.113.45 port 51122 ssh2]",
+    "Oct 21 03:12:47 web01 sshd-session[2390]: Accepted password for deploy from 203.0.113.45 port 52018 ssh2",
+    "Oct 21 03:20:01 web01 sudo:      bob : user NOT in sudoers ; TTY=pts/0 ; PWD=/home/bob ; USER=root ; COMMAND=/bin/bash",
+    "Oct 21 03:21:09 web01 sudo:      bob : 3 incorrect password attempts ; TTY=pts/0 ; PWD=/home/bob ; USER=root ; COMMAND=/usr/bin/cat /etc/shadow",
+    "Oct 21 03:22:00 web01 sudo:   deploy : TTY=pts/0 ; PWD=/home/deploy ; USER=root ; COMMAND=/usr/bin/crontab -l",
+  ].join("\n"));
+  assert.equal(newer.kind, "auth");
+  assert.equal(newer.counts.failed, 6, "one line plus five repeats");
+  assert.equal(newer.counts.accepted, 1);
+  assert.equal(newer.counts.sudo, 1, "only the command that actually ran");
+  assert.equal(newer.counts.refused, 2);
+  assert.ok(newer.flags.some(f => /bob was refused sudo 2 times/.test(f.text)));
+  const web = analyse([
+    '203.0.113.9 - - [21/Oct/2026:03:13:02 +0000] "GET /search?q=1\\" OR \\"1\\"=\\"1 HTTP/1.1" 200 812 "-" "sqlmap/1.8.4#stable (https://sqlmap.org)"',
+    '203.0.113.9 - - [21/Oct/2026:03:13:03 +0000] "-" 400 0 "-" "-"',
+    '203.0.113.9 - - [21/Oct/2026:03:13:04 +0000] "\\x16\\x03\\x01\\x00\\xfc\\x01" 400 157 "-" "-"',
+  ].join("\n"));
+  assert.equal(web.counts.requests, 3, "no line is dropped");
+  assert.ok(web.flags.some(f => /SQL injection, and 1 got a success code/.test(f.text)));
+  assert.ok(web.flags.some(f => /sqlmap/.test(f.text)));
+});

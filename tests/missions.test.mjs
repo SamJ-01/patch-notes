@@ -489,3 +489,10 @@ test("phish-triage: guided and practice play through", () => {
   }
   assert.ok(s.complete);
 });
+
+test("markText: matches the raw text, merges overlaps, and escapes once (found in review)", () => {
+  assert.equal(engine.markText('"GET /t" <b>', ["GET", "t"]), '&quot;<mark>GET</mark> /<mark>t</mark>&quot; &lt;b&gt;');
+  assert.equal(engine.markText("abcabc", ["bca", "ab"]), "<mark>abcab</mark>c", "overlapping hits (0-2, 1-4, 3-5) become one mark; the last c is not a match");
+  assert.equal(engine.markText("Quote&amp", ["amp"]), "Quote&amp;<mark>amp</mark>");
+  assert.equal(engine.markText("x", ["", null]), "x");
+});

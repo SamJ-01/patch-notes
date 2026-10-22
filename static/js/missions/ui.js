@@ -372,11 +372,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     for (const p of ev.played) { logLine(describe(p.msg, ev.noReply), p.id); await animateMessage(p.id, p.msg, { noReply: ev.noReply }); updateDevices(); }
   }
   // ---------- log viewer (challenge modes of scenarios with a log): search it like grep
-  const markTerms = (line, terms) => {
-    let html = esc(line);
-    for (const t of terms) html = html.replace(new RegExp(esc(t).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), m => `<mark>${m}</mark>`);
-    return html;
-  };
+  const markTerms = engine.markText;
   function drawLog(lines, terms = []) {
     $("m-logout").innerHTML = lines.length ? lines.map(l => markTerms(l, terms)).join("\n") : "No lines match. Check the spelling, or try fewer words.";
   }

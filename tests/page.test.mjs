@@ -42,9 +42,10 @@ vm.runInContext([
   template.match(/const CVSS_METRICS = \[[\s\S]*?\n\];\n/)[0],
   template.match(/const CVSS4_METRICS = \[[\s\S]*?\n\];\n/)[0],
   extract("function readVector(str)"),
-  "this.api = { findTerms, cvss31, cvssSeverity, parseVector, decodeVector, readVector };",
+  extract("function markText(text, terms)"),
+  "this.api = { findTerms, cvss31, cvssSeverity, parseVector, decodeVector, readVector, markText };",
 ].join("\n"), ctx);
-const { findTerms, cvss31, cvssSeverity, parseVector, decodeVector, readVector } = ctx.api;
+const { findTerms, cvss31, cvssSeverity, parseVector, decodeVector, readVector, markText } = ctx.api;
 // Copy results out of the vm sandbox: its arrays have a different prototype, which strict deep-equal rejects.
 const terms = text => JSON.parse(JSON.stringify(findTerms(text).map(h => [text.substr(h.i, h.len), h.id])));
 
@@ -167,4 +168,9 @@ test("CVSS decoder: checks the vector, scores 3.0 and 3.1, decodes 4.0 without i
   assert.match(readVector("CVSS:3.1/AV:X/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H").error, /AV:X isn't a valid value/);
   assert.match(readVector("CVSS:3.1/AV:N/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H").error, /appears twice/);
   assert.equal(readVector("hello").ok, false);
+});
+
+test("the page's markText matches the engine's (one behaviour everywhere)", async () => {
+  const engine = await import("../static/js/missions/engine.js");
+  for (const [t, terms] of [['"GET /t" <b>', ["GET", "t"]], ["abcabc", ["bca", "ab"]], ["Failed password for root", ["failed password"]]]) assert.equal(markText(t, terms), engine.markText(t, terms));
 });

@@ -366,8 +366,7 @@ function labView(id) {
   const drawLog = () => {
     const f = ($("lab-f")?.value || "").trim().toLowerCase();
     const shown = f ? lines.filter(x => x.toLowerCase().includes(f)) : lines;
-    const hl = f ? new RegExp(reEsc(esc(f)), "gi") : null;  // match against the escaped text we display
-    $("lab-pre").innerHTML = shown.map(x => hl ? esc(x).replace(hl, m => `<mark>${m}</mark>`) : esc(x)).join("\n") || "(no matching lines)";
+    $("lab-pre").innerHTML = shown.map(x => markText(x, [f])).join("\n") || "(no matching lines)";
     $("lab-n").textContent = `${shown.length} of ${lines.length} lines`;
   };
   if ($("lab-pre")) drawLog(); else MAIL.wire($("lab-mail").parentElement);
@@ -459,7 +458,9 @@ function readVector(str) {
   return { ok: true, version: ver, metrics, defs, score, severity: cvssSeverity(score) };
 }
 function cvssToolView(h) {
-  const start = decodeURIComponent((h.match(/^cvss-decode\/(.+)$/) || [])[1] || "");
+  const raw = (h.match(/^cvss-decode\/(.+)$/) || [])[1] || "";
+  let start = raw;
+  try { start = decodeURIComponent(raw); } catch { /* a stray % in a shared link: show it as typed */ }
   const EX = [["Log4Shell (3.1)", "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"], ["A phishing-style bug (3.1)", "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N"], ["A local bug (4.0)", "CVSS:4.0/AV:L/AC:L/AT:N/PR:L/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N"]];
   main.innerHTML = `<div class="view"><div class="view-head"><a class="link-btn" href="#missions">← Practise</a><div class="eyebrow">Tool · your own evidence</div><h1>CVSS decoder</h1>
     <p>Paste a ${gloss("CVSS", 1)} vector from an advisory and see what each part means, with the score.</p></div>

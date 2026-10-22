@@ -81,3 +81,19 @@ test("'Show me where' points at the trusted result, not a fake one with the same
   assert.equal(r.findings.find(f => f.title === "SPF failed").where, "spf=fail", "the fake header says spf=pass");
   assert.equal(r.findings.find(f => f.title === "Some check results were ignored").where, "Authentication-Results: northvale-alerts.example");
 });
+
+test("found in review: link spoofs, typed domains, encoded names, Exim hops", async () => {
+  const { MAIL } = await import("../static/js/mail.js");
+  const { cleanDomain } = await import("../static/js/tools/headers.js");
+  // Everything before @ in a URL is a username: the browser goes to evil.example.
+  assert.deepEqual(({ ...MAIL.linkFacts({ text: "https://www.paypal.com/signin", href: "https://www.paypal.com:443@evil.example/signin" }) }).real, "evil.example");
+  assert.equal(MAIL.linkFacts({ text: "paypal.com/signin", href: "https://evil.example/" }).mismatch, true, "text without https:// still shows an address");
+  assert.equal(MAIL.linkFacts({ text: "Sign in", href: "https://bank.example/" }).mismatch, false);
+  for (const d of ["@example.com", "https://www.example.com/", " Example.COM ", "alice@example.com"]) assert.equal(cleanDomain(d), "example.com", d);
+  const own = analyse("Authentication-Results: mx.example.com; spf=pass smtp.mailfrom=example.com; dkim=pass header.d=example.com; dmarc=pass header.from=example.com\nFrom: Alice <alice@example.com>", { org: "@example.com" });
+  assert.equal(own.warnings, 0, "your own genuine mail isn't flagged when the domain is typed with @");
+  const enc = analyse('Authentication-Results: mx.example; spf=pass; dkim=pass; dmarc=pass\nFrom: =?UTF-8?B?c3VwcG9ydEBiYW5rLmV4YW1wbGU=?= <x@evil.example>');
+  assert.equal(enc.parsed.from.name, "support@bank.example", "MIME-encoded names are decoded");
+  assert.ok(enc.findings.some(f => f.title === "The name shows a different address"));
+  assert.equal(MAIL.parseHeaders("Received: from mail.example.net ([203.0.113.5] helo=mail.example.net)\n\tby mx.example.org with esmtp\nFrom: a@b.example").received[0].rdns, "", "Exim's helo= isn't a host name");
+});

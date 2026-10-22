@@ -1,6 +1,7 @@
 // PATCH//AGENCY shift UI: the alert queue, an alert's logs and actions, the department inbox, the
 // handover and the debrief. Rules live in shift.js; this only renders the events it returns.
 import * as A from "./shift.js";
+import { markText } from "../missions/engine.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 // Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
@@ -126,11 +127,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     renderAll(false);
     if (focus) $("ag-a-h").focus({ preventScroll: false });
   }
-  const markTerms = (line, terms) => {
-    let html = esc(line);
-    for (const t of terms) html = html.replace(new RegExp(esc(t).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), m => `<mark>${m}</mark>`);
-    return html;
-  };
+  const markTerms = markText;
   function renderLog() {
     const src = shift.sources[source];
     $("ag-log").innerHTML = `<div class="panel-title"><h3 class="mono">${esc(src.name)}</h3><span class="sim-tag">Simulated log</span></div>

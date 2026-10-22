@@ -37,8 +37,12 @@ export function lookalike(domain, yours) {
   return "";
 }
 
+// What people type as "your domain": @example.com, https://www.example.com/, Example.com. Keep just the domain.
+export const cleanDomain = d => String(d || "").trim().toLowerCase().replace(/^.*@/, "").replace(/^[a-z]+:\/\//, "").replace(/[/?#].*$/, "").replace(/^www\./, "").replace(/\.$/, "");
+
 // One finding: { level: "warn" | "info" | "ok", title, text, where (text to highlight in the headers), term (glossary id) }.
 export function analyse(raw, { org = "" } = {}) {
+  org = cleanDomain(org);
   const text = String(raw || "").replace(/\r\n?/g, "\n").trim();
   const h = MAIL.parseHeaders(text);
   if (!h.from.address && !h.received.length) return { ok: false, error: "These don't look like email headers. In your mail app, open the email and choose Show original (Gmail) or View message source (Outlook), then copy everything from the top down to the Subject and Date lines." };
@@ -89,17 +93,17 @@ export function mount(root, { samples = [] } = {}) {
       <p class="muted hc-small">Nothing you paste leaves this page: no upload, no saving. Even so, remove anything you'd rather not have on screen.</p></section>
     <div id="hc-out" aria-live="polite"></div></div>`;
   const $ = id => root.querySelector("#" + id);
+  MAIL.wire($("hc-out"));  // once: the results inside are redrawn, the listener on their container stays
   const run = () => {
-    const r = analyse($("hc-raw").value, { org: $("hc-org").value.trim() });
+    const org = cleanDomain($("hc-org").value), r = analyse($("hc-raw").value, { org });
     if (!r.ok) { $("hc-out").innerHTML = `<div class="feedback"><b class="no">Not quite.</b> ${esc(r.error)}</div>`; return; }
     const icon = { warn: "⚠", info: "ℹ", ok: "✓" };
     $("hc-out").innerHTML = `<section class="panel"><div class="panel-title"><h2>${r.warnings ? `${r.warnings} thing${r.warnings === 1 ? "" : "s"} worth a look` : "No warning signs in the headers"}</h2></div>
         ${r.warnings ? "" : `<p class="muted hc-small">That isn't the same as safe: a lookalike domain can pass every check. Look at the sender's domain and where links go.</p>`}
         <ul class="hc-find">${r.findings.map((x, i) => `<li class="${x.level}"><span class="hc-ic" aria-hidden="true">${icon[x.level]}</span><div><b>${gl(x.title, 1)}</b><p>${gl(x.text, 2)}</p>
           ${x.where && $("hc-raw").value.toLowerCase().includes(x.where.toLowerCase()) ? `<button type="button" class="link-btn" data-hc-where="${i}">Show me where</button>` : ""}</div></li>`).join("")}</ul></section>
-      <section class="panel"><h2>The email, explained</h2>${MAIL.card({ headers: $("hc-raw").value }, { id: "hc-mail", org: $("hc-org").value.trim().toLowerCase(), tab: "details", views: ["details", "original"] })}</section>
+      <section class="panel"><h2>The email, explained</h2>${MAIL.card({ headers: $("hc-raw").value }, { id: "hc-mail", org, tab: "details", views: ["details", "original"] })}</section>
       <p class="muted hc-small">Want to practise? Try the <a href="#lab-header-inspector">header inspector lab</a> or the <a href="#mission-phish-triage">phishing mission</a>.</p>`;
-    MAIL.wire($("hc-out"));
     $("hc-out").querySelectorAll("[data-hc-where]").forEach(b => b.addEventListener("click", () => {
       const em = $("hc-mail"); MAIL.highlight(em, r.findings[Number(b.dataset.hcWhere)].where);
       em.scrollIntoView({ block: "start" }); em.querySelector(".em-raw")?.focus({ preventScroll: true });
