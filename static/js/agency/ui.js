@@ -90,7 +90,9 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     t.innerHTML = DESK.message({ ...m, at: clockAt(m.at ?? (state ? state.clock : 0)) });
     const li = t.content.firstElementChild;
     $("ag-inbox").appendChild(li);
-    li.scrollIntoView?.({ block: "nearest" });
+    // Scroll the chat panel, never the page: on a phone the chat is far below what you're working on.
+    const box = $("ag-inbox").closest(".ag-comms");
+    if (box) box.scrollTop = box.scrollHeight;
   }
 
   // ---------- queue and clock
@@ -135,7 +137,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     $("ag-alert").querySelectorAll("[data-src]").forEach(b => b.addEventListener("click", () => {
       source = b.dataset.src;
       $("ag-alert").querySelectorAll("[data-src]").forEach(x => x.setAttribute("aria-pressed", x.dataset.src === source));
-      renderLog(); $("ag-q").focus();
+      renderLog(); $("ag-q").focus({ preventScroll: true });
     }));
     renderLog(); renderFound(); renderAsk(); renderClose();
     renderAll(false);

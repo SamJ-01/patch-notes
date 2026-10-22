@@ -78,7 +78,7 @@
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html { background: var(--bg); }
+html { background: var(--bg); scrollbar-gutter: stable; }  /* the page doesn't shift sideways when the scrollbar comes and goes */
 body {
   margin: 0; color: var(--ink); font: 16px/1.6 var(--font-body);
   background-color: var(--bg);
@@ -605,7 +605,7 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .m-logview { display: grid; gap: 10px; }
 .log-search { gap: 8px; }
 .log-count { margin: 0; font-size: 0.85rem; }
-.log-out { max-height: 360px; margin: 0; overflow: auto; white-space: pre; font-size: 0.8rem; }
+.log-out { height: min(360px, 55vh); margin: 0; overflow: auto;  /* fixed, so a search doesn't move everything below */ white-space: pre; font-size: 0.8rem; }
 .log-out mark { background: rgba(var(--brand-rgb), 0.28); color: inherit; border-radius: 2px; }
 .findings { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 0.88rem; }
 .rc { border-top: 1px dashed var(--line); padding-top: 10px; margin-top: 6px; display: grid; gap: 8px; }
@@ -1792,3 +1792,5 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .ag-lead .dk-av, .ag-lead-av { width: 26px; height: 26px; font-size: 0.66rem; }
 .dk-photo { display: block; object-fit: cover; background: var(--surface-2); }
 .dk-scene { display: block; width: 100%; max-width: 100%; min-width: 0; height: auto; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--surface-2); }
+/* Views that load a module first hold the space they'll fill, so the footer doesn't jump up and back down. */
+#mission-root > .empty:only-child, #lab-root > .empty:only-child, #agency-root > .empty:only-child, #hc-root > .empty:only-child, #lg-root > .empty:only-child { min-height: 70vh; }
