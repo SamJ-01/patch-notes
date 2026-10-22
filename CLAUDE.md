@@ -88,7 +88,11 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - Network model and picture: `static/js/net/model.js` (segments, carried VLANs, ping results with reasons, issues) and
   `net/view.js` (one colour per broadcast domain). Use them for any network diagram. Network builder: `#lab-network-builder`.
 - VLAN lab (`#lab-vlans`, `static/js/labs/vlan.js`, tests `tests/vlan.test.mjs`): simulated Cisco 2960 IOS + Windows PCs.
+- Inter-VLAN routing lab (`#lab-intervlan`, same `vlan.js` with `lab.routers` and a `lab.start` state; tests
+  `tests/intervlan.test.mjs`): a Cisco 2911 (IOS 15) router on a stick, `show ip route`/`show access-lists`, named extended
+  ACLs (ip/icmp, inbound) in the model (`topo.acls`, `aclCheck`; replies are filtered too). Blocked pings time out (as with
+  `no ip unreachables`, said in its simplification). Its card uses a drawn scene until it gets a picture.
 - Feedback: public GitHub issue form (`.github/ISSUE_TEMPLATE/feedback.yml`), linked from every done card, the Agency debrief
   and the footer (`DATA.site.feedback`). Read new `feedback` issues before planning.
-- Next: learner feedback on the shift and the new labs, inter-VLAN routing lab on the network model, more Security+
+- Next: learner feedback on the shift and the new labs, more Security+
   questions, more Agency shifts (one client and incident each; the people for a shift made in one image). No accounts/backend until real users need cross-device saves.

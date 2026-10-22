@@ -3860,5 +3860,73 @@
   "auto": false,
   "short": "What a control does: prevent, deter, detect, correct, direct, or compensate when the usual control can't be used.",
   "lesson": "security-controls"
+ },
+ {
+  "id": "subinterface",
+  "term": "Subinterface / router on a stick",
+  "kind": "Technology",
+  "aliases": [
+   "subinterface",
+   "subinterfaces",
+   "router on a stick",
+   "router-on-a-stick",
+   "inter-VLAN routing"
+  ],
+  "auto": false,
+  "short": "A virtual interface on one router cable, one per VLAN (G0/0.10 for VLAN 10), so a single trunk link routes between VLANs.",
+  "lesson": "networking",
+  "see": [
+   "vlan",
+   "trunk"
+  ]
+ },
+ {
+  "id": "acl",
+  "term": "ACL (access control list)",
+  "kind": "Defence",
+  "aliases": [
+   "ACL",
+   "ACLs",
+   "access control list",
+   "access control lists",
+   "access list",
+   "access lists",
+   "implicit deny"
+  ],
+  "auto": false,
+  "short": "An ordered list of permit and deny rules a router checks each packet against. First match wins; anything unmatched is denied.",
+  "lesson": "networking",
+  "see": [
+   "firewall"
+  ]
+ },
+ {
+  "id": "wildcard-mask",
+  "term": "Wildcard mask",
+  "kind": "Concept",
+  "aliases": [
+   "wildcard mask",
+   "wildcard masks"
+  ],
+  "auto": false,
+  "short": "The inverse of a subnet mask, used in Cisco ACLs: 0 bits must match, 1 bits can be anything (0.0.0.255 = any last octet).",
+  "lesson": "networking",
+  "see": [
+   "acl"
+  ]
+ },
+ {
+  "id": "routing-table",
+  "term": "Routing table",
+  "kind": "Concept",
+  "aliases": [
+   "routing table",
+   "routing tables",
+   "connected route",
+   "connected routes"
+  ],
+  "auto": false,
+  "short": "A router's list of networks it knows and which interface or next hop leads to each. Directly connected networks appear on their own.",
+  "lesson": "networking"
  }
 ]

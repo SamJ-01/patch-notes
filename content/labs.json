@@ -2806,6 +2806,431 @@
   "card": "Build VLANs and trunks on Cisco switches"
  },
  {
+  "id": "intervlan",
+  "kind": "vlan",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 25,
+  "lesson": "networking",
+  "title": "Inter-VLAN routing: letting VLANs talk",
+  "skill": "Route between VLANs with a router on a stick (802.1Q subinterfaces), then filter it with an extended ACL",
+  "card": "Route between VLANs with one router, then lock it down",
+  "intro": "Harbourside College's VLANs keep staff, students and guests apart. Now they need to reach each other: route between them with one router, then keep students out of staff.",
+  "simplification": "Simplified simulation of a Cisco 2911 router and Catalyst 2960 switches running IOS 15: only the commands this lab needs are modelled, and some long outputs are shortened (marked [Simulator]). Access lists: only named extended lists with ip and icmp entries, applied inbound. When an access list denies a packet, a real router answers with an ICMP \"administratively prohibited\" message unless no ip unreachables is set on the interface (security baselines ask for it); this lab behaves as if it is set, so a blocked ping times out. The switches start where the VLAN lab ends. PCs are Windows and only run ping and ipconfig. Addresses are private (10.10.x.x) and the college is fictional.",
+  "vlans": {
+   "10": "Staff",
+   "20": "Students",
+   "30": "Guest",
+   "99": "Management",
+   "150": "Voice"
+  },
+  "switches": {
+   "S1": {
+    "links": {
+     "Gi0/1": [
+      "S2",
+      "Gi0/1"
+     ],
+     "Gi0/2": [
+      "S3",
+      "Gi0/1"
+     ]
+    }
+   },
+   "S2": {
+    "links": {
+     "Gi0/1": [
+      "S1",
+      "Gi0/1"
+     ]
+    }
+   },
+   "S3": {
+    "links": {
+     "Gi0/1": [
+      "S1",
+      "Gi0/2"
+     ]
+    }
+   }
+  },
+  "routers": {
+   "R1": {
+    "links": {
+     "G0/0": [
+      "S1",
+      "Fa0/24"
+     ]
+    }
+   }
+  },
+  "start": {
+   "switches": {
+    "S1": {
+     "vlans": {
+      "10": "Staff",
+      "20": "Students",
+      "30": "Guest",
+      "99": "Management",
+      "150": "Voice"
+     },
+     "ports": {
+      "Gi0/1": {
+       "mode": "trunk",
+       "native": 99
+      },
+      "Gi0/2": {
+       "mode": "trunk",
+       "native": 99
+      }
+     }
+    },
+    "S2": {
+     "vlans": {
+      "10": "Staff",
+      "20": "Students",
+      "30": "Guest",
+      "99": "Management",
+      "150": "Voice"
+     },
+     "ports": {
+      "Gi0/1": {
+       "mode": "trunk",
+       "native": 99
+      },
+      "Fa0/11": {
+       "mode": "access",
+       "access": 10
+      },
+      "Fa0/18": {
+       "mode": "access",
+       "access": 20
+      },
+      "Fa0/6": {
+       "mode": "access",
+       "access": 30
+      }
+     }
+    },
+    "S3": {
+     "vlans": {
+      "10": "Staff",
+      "20": "Students",
+      "30": "Guest",
+      "99": "Management",
+      "150": "Voice"
+     },
+     "ports": {
+      "Gi0/1": {
+       "mode": "trunk",
+       "native": 99
+      },
+      "Fa0/11": {
+       "mode": "access",
+       "access": 10
+      },
+      "Fa0/18": {
+       "mode": "access",
+       "access": 20
+      },
+      "Fa0/6": {
+       "mode": "access",
+       "access": 30
+      }
+     }
+    }
+   }
+  },
+  "pcs": {
+   "PC1": {
+    "ip": "10.10.10.11",
+    "mask": "255.255.255.0",
+    "sw": "S2",
+    "port": "Fa0/11",
+    "vlan": 10,
+    "gw": "10.10.10.1"
+   },
+   "PC2": {
+    "ip": "10.10.20.12",
+    "mask": "255.255.255.0",
+    "sw": "S2",
+    "port": "Fa0/18",
+    "vlan": 20,
+    "gw": "10.10.20.1"
+   },
+   "PC3": {
+    "ip": "10.10.30.13",
+    "mask": "255.255.255.0",
+    "sw": "S2",
+    "port": "Fa0/6",
+    "vlan": 30,
+    "gw": "10.10.30.1"
+   },
+   "PC4": {
+    "ip": "10.10.10.14",
+    "mask": "255.255.255.0",
+    "sw": "S3",
+    "port": "Fa0/11",
+    "vlan": 10,
+    "gw": "10.10.10.1"
+   },
+   "PC5": {
+    "ip": "10.10.20.15",
+    "mask": "255.255.255.0",
+    "sw": "S3",
+    "port": "Fa0/18",
+    "vlan": 20,
+    "gw": "10.10.20.1"
+   },
+   "PC6": {
+    "ip": "10.10.30.16",
+    "mask": "255.255.255.0",
+    "sw": "S3",
+    "port": "Fa0/6",
+    "vlan": 30,
+    "gw": "10.10.30.1"
+   }
+  },
+  "layout": {
+   "S1": [
+    300,
+    40
+   ],
+   "S2": [
+    150,
+    135
+   ],
+   "S3": [
+    450,
+    135
+   ],
+   "PC1": [
+    60,
+    250
+   ],
+   "PC2": [
+    150,
+    250
+   ],
+   "PC3": [
+    240,
+    250
+   ],
+   "PC4": [
+    360,
+    250
+   ],
+   "PC5": [
+    450,
+    250
+   ],
+   "PC6": [
+    540,
+    250
+   ],
+   "R1": [
+    500,
+    48
+   ]
+  },
+  "tasks": [
+   {
+    "id": "stuck",
+    "text": "From PC1 (Staff), ping PC2 (Students) at 10.10.20.12. PC1's gateway is 10.10.10.1.",
+    "hint": "Choose PC1, then: ping 10.10.20.12",
+    "check": {
+     "pinged": {
+      "from": "PC1",
+      "to": "PC2",
+      "ok": false
+     }
+    },
+    "why": "PC2 is on another network, so PC1 sends the ping to its gateway, 10.10.10.1. Nothing answers for that address yet, so Windows reports \"Destination host unreachable\" from PC1's own address."
+   },
+   {
+    "id": "trunk",
+    "text": "On S1, make Fa0/24 (the cable to R1) an 802.1Q trunk.",
+    "hint": "On S1: enable, conf t, interface fa0/24, switchport mode trunk",
+    "check": {
+     "trunks": [
+      [
+       "S1",
+       "Fa0/24"
+      ]
+     ]
+    },
+    "why": "One cable will carry all three VLANs to the router, each frame tagged with its VLAN. A router doesn't negotiate trunks (DTP), so the switch end is set to trunk."
+   },
+   {
+    "id": "up",
+    "text": "On R1, bring up GigabitEthernet0/0. Router interfaces start shut down.",
+    "hint": "On R1: enable, conf t, interface g0/0, no shutdown",
+    "check": {
+     "routerUp": {
+      "device": "R1",
+      "port": "G0/0"
+     }
+    },
+    "why": "Unlike a switch port, a router interface is administratively down until you say no shutdown. The physical interface needs no address: the subinterfaces will carry them."
+   },
+   {
+    "id": "sub10",
+    "text": "On R1, create subinterface G0/0.10 for VLAN 10 with the address 10.10.10.1 255.255.255.0.",
+    "hint": "interface g0/0.10, encapsulation dot1Q 10, ip address 10.10.10.1 255.255.255.0",
+    "check": {
+     "subif": {
+      "device": "R1",
+      "port": "G0/0",
+      "tag": 10,
+      "ip": "10.10.10.1",
+      "mask": "255.255.255.0"
+     }
+    },
+    "why": "A subinterface is a virtual interface on one cable. encapsulation dot1Q 10 says which VLAN's tagged frames it handles; the address makes it VLAN 10's gateway. The tag has to come before the address."
+   },
+   {
+    "id": "subs",
+    "text": "Do the same for VLAN 20 (10.10.20.1) and VLAN 30 (10.10.30.1).",
+    "hint": "interface g0/0.20, encapsulation dot1Q 20, ip address 10.10.20.1 255.255.255.0, then the same for .30",
+    "check": {
+     "all": [
+      {
+       "subif": {
+        "device": "R1",
+        "port": "G0/0",
+        "tag": 20,
+        "ip": "10.10.20.1",
+        "mask": "255.255.255.0"
+       }
+      },
+      {
+       "subif": {
+        "device": "R1",
+        "port": "G0/0",
+        "tag": 30,
+        "ip": "10.10.30.1",
+        "mask": "255.255.255.0"
+       }
+      }
+     ]
+    },
+    "why": "Each VLAN gets its own subinterface and gateway address. The subinterface number (.20) is just a name; the dot1Q number is what must match the VLAN."
+   },
+   {
+    "id": "routed",
+    "text": "From PC1, ping PC2 again.",
+    "hint": "On PC1: ping 10.10.20.12",
+    "check": {
+     "pinged": {
+      "from": "PC1",
+      "to": "PC2",
+      "ok": true
+     }
+    },
+    "why": "PC1 sends to its gateway (R1 G0/0.10), R1 routes it out of G0/0.20, tagged VLAN 20, and PC2 replies through its own gateway. One cable in, the same cable out: a router on a stick."
+   },
+   {
+    "id": "table",
+    "text": "On R1, look at the routing table.",
+    "hint": "show ip route (from config mode: do show ip route)",
+    "check": {
+     "ran": {
+      "device": "R1",
+      "cmd": "show ip route"
+     }
+    },
+    "why": "Every network with an up interface appears as C (connected), with the router's own address as L (local, /32). R1 needs no static routes or routing protocol: it's directly connected to all three VLANs."
+   },
+   {
+    "id": "acl",
+    "text": "Students mustn't reach staff. On R1, create an extended ACL named STUDENTS that denies 10.10.20.0/24 to 10.10.10.0/24 and permits everything else. Apply it inbound on G0/0.20.",
+    "hint": "ip access-list extended STUDENTS, deny ip 10.10.20.0 0.0.0.255 10.10.10.0 0.0.0.255, permit ip any any, then interface g0/0.20, ip access-group STUDENTS in",
+    "check": {
+     "all": [
+      {
+       "aclRule": {
+        "name": "STUDENTS",
+        "deny": [
+         [
+          "10.10.20.12",
+          "10.10.10.11"
+         ]
+        ],
+        "permit": [
+         [
+          "10.10.20.12",
+          "10.10.30.13"
+         ],
+         [
+          "10.10.20.15",
+          "10.10.20.1"
+         ]
+        ]
+       }
+      },
+      {
+       "aclIn": {
+        "device": "R1",
+        "port": "G0/0",
+        "tag": 20,
+        "name": "STUDENTS"
+       }
+      }
+     ]
+    },
+    "why": "The wildcard 0.0.0.255 means \"any value in the last octet\". Order matters (first match wins), and every ACL ends with an invisible deny everything, so the permit line keeps students' other traffic working. Inbound on .20 filters traffic as it leaves the student VLAN, close to its source."
+   },
+   {
+    "id": "blocked",
+    "text": "From PC2 (Students), ping PC1 (Staff).",
+    "hint": "On PC2: ping 10.10.10.11",
+    "check": {
+     "pinged": {
+      "from": "PC2",
+      "to": "PC1",
+      "ok": false,
+      "blocked": true
+     }
+    },
+    "why": "The ping arrives on G0/0.20 and matches the deny line, so R1 drops it. show access-lists on R1 shows the matches."
+   },
+   {
+    "id": "guest",
+    "text": "From PC2, ping PC3 (Guest). It should still work.",
+    "hint": "On PC2: ping 10.10.30.13",
+    "check": {
+     "pinged": {
+      "from": "PC2",
+      "to": "PC3",
+      "ok": true,
+      "withAcl": true
+     }
+    },
+    "why": "It doesn't match the deny line, so it falls through to permit ip any any. Without that line, the implicit deny would have cut students off from everything."
+   },
+   {
+    "id": "twist",
+    "text": "From PC1 (Staff), ping PC2. The rule only blocks students, so why does this fail?",
+    "hint": "On PC1: ping 10.10.20.12, then on R1: show access-lists",
+    "check": {
+     "pinged": {
+      "from": "PC1",
+      "to": "PC2",
+      "ok": false,
+      "blocked": true
+     }
+    },
+    "why": "The ping gets to PC2, but its reply (10.10.20.12 to 10.10.10.11) comes in on G0/0.20 and matches the deny line. ACLs check each packet on its own, with no memory of what went out. Real networks let replies back with a stateful firewall, or the established keyword for TCP."
+   }
+  ],
+  "next": [
+   {
+    "label": "Cisco Packet Tracer: build this for real (free with a Networking Academy account)",
+    "url": "https://www.netacad.com/cisco-packet-tracer"
+   }
+  ]
+ },
+ {
   "id": "network-builder",
   "kind": "netbuilder",
   "category": "Networking",

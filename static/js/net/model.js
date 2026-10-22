@@ -6,8 +6,11 @@
 // Topology (plain JSON, so it can be saved, copied and tested):
 //   devices: { id: { kind: "switch", vlans: { 1: "default" }, ports: { "Fa0/1": port, ... } }
 //              { kind: "pc", ip, mask, gw }
-//              { kind: "router", ports: { "G0/0": { shutdown, subs: [{ tag: null | vlanId, ip, mask }] } } } }
+//              { kind: "router", ports: { "G0/0": { shutdown, subs: [{ tag: null | vlanId, ip, mask, sub, aclIn }] } } } }
 //   links: [{ a: [deviceId, port], b: [deviceId, port] }]       (a PC's only port is "NIC")
+//   acls: { NAME: [{ seq, action: "permit" | "deny", proto: "ip" | "icmp", src, dst }] }   (optional; src/dst are
+//         { ip, wild } or "any"). A router subinterface's aclIn filters packets arriving on it, as "ip access-group
+//         NAME in" does: first match wins, and an unmatched packet is dropped (the implicit deny at the end).
 // A switch port: { mode: "access" | "trunk" | "dynamic auto" | "dynamic desirable", access, voice, native,
 //                  allowed: null (all) | [vlanIds], shutdown }
 
@@ -171,19 +174,41 @@ export function vlanOf(topo, id) {
   return other && topo.devices[other[0]].kind === "switch" && isUp(topo, ...other) ? untaggedInto(topo, ...other) : null;
 }
 
+// ---------- access lists
+// Does an address match an ACL address spec? A wildcard's 1 bits are "don't care".
+export function aclMatch(spec, ip) {
+  if (spec === "any") return true;
+  const a = ipNum(ip), n = ipNum(spec.ip), w = ipNum(spec.wild);
+  return a != null && n != null && w != null && ((a & ~w) >>> 0) === ((n & ~w) >>> 0);
+}
+// Run a packet (src -> dst, a ping) through ACL `name`: { permit, seq } (seq null for the implicit deny).
+export function aclCheck(topo, name, src, dst) {
+  const list = topo.acls?.[name];
+  if (!list) return { permit: true, seq: null, missing: true };  // IOS lets everything through a missing ACL
+  const hit = list.find(e => aclMatch(e.src, src) && aclMatch(e.dst, dst));
+  return hit ? { permit: hit.action === "permit", seq: hit.seq } : { permit: false, seq: null };
+}
+// The inbound ACL on the router subinterface a packet arrives on, if any: { name, permit, seq, where }.
+function inbound(topo, r, src, dst) {
+  if (!r?.aclIn) return null;
+  return { name: r.aclIn, where: `${r.id} ${r.port}${r.tag != null ? "." + (r.sub ?? r.tag) : ""}`, ...aclCheck(topo, r.aclIn, src, dst) };
+}
+
 // ---------- layer 3: who answers an address, and can a PC reach it?
 export function owners(topo, ip) {
   const out = [];
   for (const [id, d] of Object.entries(topo.devices)) {
     if (d.kind === "pc" && d.ip === ip) out.push({ id, key: key.pc(id), ip: d.ip, mask: d.mask });
-    if (d.kind === "router") for (const [p, port] of Object.entries(d.ports)) if (!port.shutdown) for (const s of port.subs) if (s.ip === ip) out.push({ id, port, key: key.r(id, p, s.tag), ip: s.ip, mask: s.mask, router: true });
+    if (d.kind === "router") for (const [p, port] of Object.entries(d.ports)) if (!port.shutdown) for (const s of port.subs) if (s.ip === ip) out.push({ id, port: p, key: key.r(id, p, s.tag), ip: s.ip, mask: s.mask, router: true, tag: s.tag ?? null, sub: s.sub, aclIn: s.aclIn });
   }
   return out;
 }
 const label = (topo, seg, i) => (i == null ? "nothing" : seg.segments[i].name);
 // Ping from PC `from` to `ip`. Returns { result, reply, reason, via } where result is what Windows prints:
 //   "ok" (Reply from ip), "general" (PING: transmit failed. General failure.), "host" (Reply from <own ip>:
-//   Destination host unreachable), "net" (Reply from <router>: Destination net unreachable), "timeout".
+//   Destination host unreachable), "net" (Reply from <router>: Destination net unreachable), "timeout". When a
+//   router's ACL is involved, `acl` lists each check ({ name, permit, seq, where }) and `blocked` is the one that
+//   dropped the ping.
 export function ping(topo, from, ip, seg = segments(topo)) {
   const pc = topo.devices[from];
   if (ipNum(pc.ip) == null || prefixOf(pc.mask) == null) return { result: "general", reason: `${from} has no valid IP address and mask.` };
@@ -202,17 +227,25 @@ export function ping(topo, from, ip, seg = segments(topo)) {
   if (!sameNet(pc.gw, pc.ip, pc.mask)) return { result: "general", reason: `${from}'s gateway ${pc.gw} isn't on its own network (${network(pc.ip, pc.mask)}).` };
   const gw = owners(topo, pc.gw).find(o => o.router && seg.of[o.key] === here);
   if (!gw) return { result: "host", reason: `No router in ${from}'s broadcast domain answers for the gateway ${pc.gw}.` };
-  const router = topo.devices[gw.id];
+  const router = topo.devices[gw.id], acl = [];
+  // The ping arrives on the gateway subinterface: its inbound ACL sees it first. (A denied packet just times out
+  // here, as on a router with "no ip unreachables"; see the lab's simplification note.)
+  const into = inbound(topo, gw, pc.ip, ip);
+  if (into) { acl.push(into); if (!into.permit) return { result: "timeout", acl, blocked: into, reason: `${into.where}'s inbound access list ${into.name} ${into.seq == null ? "has no line matching" : `line ${into.seq} denies`} ${pc.ip} to ${ip}, so ${gw.id} drops the ping.`, via: [gw.id] }; }
   // Connected routes only: the router must have an address on the target's network.
   const outSub = Object.entries(router.ports).flatMap(([p, port]) => (port.shutdown ? [] : port.subs.map(s => ({ ...s, port: p, key: key.r(gw.id, p, s.tag) })))).find(s => sameNet(s.ip, ip, s.mask));
   if (!outSub) return { result: "net", reply: pc.gw, reason: `${gw.id} has no interface on ${ip}'s network, so it has no route there.` };
-  if (outSub.ip === ip) return { result: "ok", reason: `${ip} is ${gw.id}'s own address.`, via: [gw.id] };
+  if (outSub.ip === ip) return { result: "ok", acl, reason: `${ip} is ${gw.id}'s own address.`, via: [gw.id] };
   const t = target.find(o => seg.of[o.key] === seg.of[outSub.key]);
   if (!t) return { result: "timeout", reason: `${gw.id} forwards into ${label(topo, seg, seg.of[outSub.key])}, but nothing there has ${ip}.`, via: [gw.id] };
-  if (t.router) return { result: "ok", reason: `${ip} belongs to ${t.id}.`, via: [gw.id] };
-  const back = topo.devices[t.id];
-  if (!back.gw || owners(topo, back.gw).every(o => !o.router || seg.of[o.key] !== seg.of[t.key])) return { result: "timeout", reason: `${t.id} gets the ping through ${gw.id}, but has no working default gateway to send the reply back.`, via: [gw.id, t.id] };
-  return { result: "ok", reason: `Routed: ${from} → gateway ${gw.id} (${pc.gw}) → ${t.id} on ${network(outSub.ip, outSub.mask)}, and back through ${t.id}'s gateway.`, via: [gw.id, t.id] };
+  if (t.router) return { result: "ok", acl, reason: `${ip} belongs to ${t.id}.`, via: [gw.id] };
+  const back = topo.devices[t.id], backGw = back.gw && owners(topo, back.gw).find(o => o.router && seg.of[o.key] === seg.of[t.key]);
+  if (!backGw) return { result: "timeout", acl, reason: `${t.id} gets the ping through ${gw.id}, but has no working default gateway to send the reply back.`, via: [gw.id, t.id] };
+  // The reply comes back in through the target's gateway subinterface, and meets that ACL too: ACLs are
+  // stateless, so a rule written for one direction also catches replies.
+  const reply = inbound(topo, backGw, ip, pc.ip);
+  if (reply) { acl.push(reply); if (!reply.permit) return { result: "timeout", acl, blocked: reply, reason: `The ping reaches ${t.id}, but its reply (${ip} to ${pc.ip}) arrives on ${reply.where}, whose inbound access list ${reply.name} ${reply.seq == null ? "has no line matching it" : `denies it at line ${reply.seq}`}. ACLs check each packet on its own, so the reply is dropped.`, via: [gw.id, t.id] }; }
+  return { result: "ok", acl, reason: `Routed: ${from} → gateway ${gw.id} (${pc.gw}) → ${t.id} on ${network(outSub.ip, outSub.mask)}, and back through ${t.id}'s gateway.`, via: [gw.id, t.id] };
 }
 
 // ---------- problems worth pointing out, in plain words

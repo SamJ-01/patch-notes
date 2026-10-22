@@ -6,7 +6,7 @@
   "label": "CompTIA: Network+ certification",
   "url": "https://www.comptia.org/en-us/certifications/network/"
  },
- "reviewed": "2026-10-15",
+ "reviewed": "2026-10-22",
  "note": "Objective numbers and domain weights follow CompTIA's published outline for N10-009. Titles here are short summaries. Patch Notes isn't affiliated with CompTIA, uses no real exam questions, and practising here is preparation, not a guarantee of passing.",
  "domains": [
   {
@@ -139,6 +139,10 @@
      "coverage": "partial",
      "activities": [
       {
+       "type": "lab",
+       "id": "intervlan"
+      },
+      {
        "type": "lesson",
        "id": "networking"
       },
@@ -147,7 +151,7 @@
        "id": "topologies"
       }
      ],
-     "gap": "Static vs dynamic routing, OSPF/BGP/EIGRP, route selection and NAT details aren't covered yet."
+     "gap": "Connected routes and router-on-a-stick inter-VLAN routing are hands-on; static vs dynamic routing, OSPF/BGP/EIGRP, route selection and NAT details aren't covered yet."
     },
     {
      "id": "2.2",
@@ -157,6 +161,10 @@
       {
        "type": "lab",
        "id": "vlans"
+      },
+      {
+       "type": "lab",
+       "id": "intervlan"
       }
      ],
      "gap": "VLANs, 802.1Q trunks, native and voice VLANs are covered hands-on; spanning tree and MTU aren't yet."
@@ -318,6 +326,10 @@
      "coverage": "partial",
      "activities": [
       {
+       "type": "lab",
+       "id": "intervlan"
+      },
+      {
        "type": "lesson",
        "id": "iot-ot"
       },
@@ -330,7 +342,7 @@
        "id": "web-access"
       }
      ],
-     "gap": "Port security, NAC, ACLs and screened subnets aren't covered yet."
+     "gap": "Extended ACLs are hands-on (the inter-VLAN routing lab); port security, NAC and screened subnets aren't covered yet."
     }
    ]
   },
