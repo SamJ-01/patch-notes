@@ -58,7 +58,7 @@ I built this with Claude (Anthropic's AI assistant) as a pair programmer: it wro
 >
 > Built with Python (standard library only), GitHub Actions and GitHub Pages, with automated tests that block bad deploys. I used AI as a pair programmer and to draft the daily explanations.
 >
-> Try it: https://samj-01.github.io/patch-notes/
+> Try it: https://patchnoteslab.com/
 > Code: https://github.com/SamJ-01/patch-notes
 >
 > Feedback welcome, especially from people working in a SOC!

@@ -2,7 +2,7 @@
 
 **Learn it. Break it. Understand it.** A free site for people getting into cyber security and IT, covering both sides: how attacks work (offensive security) and how to stop them (defensive security). Hands-on labs, missions and games, plus the day's security news with every headline explained.
 
-**Live:** https://samj-01.github.io/patch-notes/
+**Live:** https://patchnoteslab.com/
 
 ![Home page: the animated network hero, suggested learning path and daily challenge](docs/screenshots/today.png)
 

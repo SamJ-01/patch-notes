@@ -1,6 +1,6 @@
 # Patch Notes: notes for Claude
 
-A static, free cyber security and IT learning site (GitHub Pages). Live: https://samj-01.github.io/patch-notes/
+A static, free cyber security and IT learning site (GitHub Pages). Live: https://patchnoteslab.com/
 Built by one person with AI help: keep changes small, tested and reusable. Read this instead of re-auditing the repo.
 
 ## Layout
