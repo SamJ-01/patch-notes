@@ -1863,7 +1863,8 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 /* First visit: three ways in, with pictures */
 .start { display: grid; gap: 14px; }
 .start h2 { margin: 0; }
-.start-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.start-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 1100px) { .start-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .start-card h3 { font-size: 1.15rem; }
 .start-cta { margin-top: auto; font: 700 0.85rem var(--font-mono); color: var(--brand); letter-spacing: 0.04em; }
 .news-line { display: grid; gap: 8px; align-content: start; }

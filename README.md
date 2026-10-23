@@ -8,21 +8,16 @@
 
 Most security news is written for people already in the industry, and most courses aren't connected to what's happening this week. Patch Notes joins the two, and teaches by letting you poke at things: break a network cable and see who loses connection, drag a subnet mask and watch the bits move, run real Linux commands against a log file.
 
-## Missions and labs
+## What's on it
 
-Everything runs in the browser. Nothing is installed and no real network traffic is sent.
+Everything runs in the browser. Nothing is installed and no real network traffic is sent. Tool output matches the real tool or OS it imitates (each lab says which), and anything simplified says so.
 
-| | What you do | Topic |
-|---|---|---|
-| **DHCP mission** | Watch a PC get its IP address packet by packet (Discover, Offer, Request, Acknowledge), inspect every message, then fix a broken network. Guided, Practice and Challenge modes | IP addressing, DHCP |
-| **The 3am logins** (mission) | Overnight SSH alerts on a Linux server: search `auth.log` like grep, find the one login that worked, contain the attacker (end the session, lock the account, switch to key-only SSH) and prove how they got in | Security operations, log analysis |
-| **The OSI model, layer by layer** | Follow one web request down all 7 layers and back up as headers are added and removed, then sort real things into the right layer | OSI model |
-| **Network topologies: break them** | Eight topologies (star, bus, ring, mesh, spine-and-leaf…). Click a cable or device to break it and see who's cut off; reveal the single points of failure | Topologies |
-| **Ports and protocols** | 24 flip cards for the exam port list, insecure-to-secure swaps, then a quick-fire drill | Ports and protocols |
-| **Subnetting trainer** | A live binary view of the network/host split, the block-size shortcut, and typed practice questions with worked answers | Subnetting |
-| **Subnet calculator** (tool) | Type an address, drag the prefix, enter a mask or a host count: a live network diagram grows and shrinks, with class, address type (private, APIPA, loopback…), CIDR, mask, wildcard, ranges, a map of where the subnet sits, the binary AND, and a splitter for dividing a network. Shareable links, and `subnet 10.0.0.0/22` in the command palette | Subnetting, IPv4 addressing |
-| **Linux terminal** | A simulated shell: navigate, read logs, `grep` with pipes (`\| wc -l`, `\| sort \| uniq -c`), fix a script's permissions | Linux CLI |
-| **Log detective, Header inspector, CVSS builder** | Investigate an SSH brute force, read a spoofed email's headers, score a vulnerability with CVSS 3.1 | Security operations |
+| | What you do |
+|---|---|
+| **26 labs** | Networking: the OSI model, topologies, ports, subnetting, cabling, Wi-Fi surveys, VLANs and inter-VLAN routing on a simulated Cisco CLI, a network builder, a slow network (ping, tracert, `show interfaces`) and reading IPv6. Security: Linux terminal and permissions, hashing, log and email-header investigations, CVSS scoring. Penetration testing: rules of engagement, reading nmap, validating scanner findings. Evidence labs have "Show me where" to point at the line that answers each question |
+| **4 missions** | DHCP and DNS faults to diagnose and fix, an overnight SSH brute force to investigate in `auth.log`, and a phishing triage across raw email headers. Guided, Practice and Challenge modes |
+| **PATCH//AGENCY** | Simulated SOC shifts for two fictional clients: work an alert queue, search the logs and mailboxes behind each alert, ask other teams to act, close with evidence and write the handover. Shadow your shift lead first, then work it Guided (hints, suggested searches) or on your own |
+| **3 tools** | Bring your own evidence: an email header checker, a log search for `auth.log` and web server logs, and a CVSS vector decoder. All run in the browser only |
 
 <table>
 <tr>
@@ -41,19 +36,18 @@ Everything runs in the browser. Nothing is installed and no real network traffic
 
 Wrong answers never end a lab: every quiz offers a retry of the questions you missed, and every lab has a reset button.
 
-## The rest of the site
+## Site sections
 
 | Section | What it does |
 |---|---|
-| **Home** | Your next learning step, a daily challenge, this week in security and the vulnerabilities to patch first |
+| **Home** | Four ways in (the basics, exam prep, a SOC shift, the news), your route, a daily challenge and the vulnerabilities to patch first |
+| **Learn** | 29 short lessons, each opening with three key ideas and a picture, a sourced real-world case and three checks; 4 learning paths and a glossary of 330+ terms |
+| **Practise** | The labs, missions and tools above, grouped by track |
+| **Agency** | The SOC shifts: a staff badge, the rota and your best reports |
+| **Exams** | CompTIA Network+ (N10-009, all 25 objectives), Security+ (SY0-701) and PenTest+ (PT0-003) mapped to what practises them, with honest coverage notes, 148 practice questions, timed mock exams and an "Am I ready?" check. Preparation, not a guarantee; no real exam questions |
 | **News** | Headlines from 12 outlets, auto-tagged by topic, linked to lessons and CVEs, with "What this means" explanations (AI-written, fact-checked against each article and official records) |
-| **CVE Radar** | Every new CVE, enriched with CISA KEV and FIRST EPSS, prioritised by real-world risk, with trend charts |
-| **Am I affected?** | Pick the tech you use (phone, browser, router, work apps) for personal alerts |
-| **Exam prep** | CompTIA Network+ (N10-009): all 25 objectives mapped to the lessons, labs and missions that practise them, with honest coverage (4 hands-on, 13 partial, 8 not yet), per-objective progress, and an **"Am I ready?"** check: readiness per domain from your practice and question results, a study plan of what to do next, and your latest mock score. Preparation, not a guarantee; no real exam questions |
-| **Learn** | 22 lessons with sourced real-world cases, 4 learning paths (e.g. Path to SOC Analyst) and a glossary of 250+ terms, including the common CWE bug types |
-| **Play** | "Phish or Legit?", a quick-fire quiz and a 3-flag CTF hunt hidden in the site itself |
-| **Careers** | Five entry paths with skills, certs and first job titles, plus a directory of free resources |
-| **Progress** | XP, access levels (guest → root), 17 badges and an XP history |
+| **CVE Radar** | Every new CVE, enriched with CISA KEV and FIRST EPSS, prioritised by real-world risk, with trend charts; "Am I affected?" for the tech you use |
+| **You** | XP, access levels (guest to root), 17 badges, games ("Phish or Legit?", a quiz, a 3-flag CTF hidden in the site) and career paths |
 
 Everywhere: jargon has a dotted underline (hover or tap for an explanation), a command palette (`/` or `Ctrl+K`) lets you navigate like a terminal, and there's a light and a dark theme.
 
@@ -94,7 +88,7 @@ python3 build.py                        # full refresh (a few minutes: NVD rate 
 python3 build.py --reuse-cves --serve   # refresh news only, then preview at http://localhost:8000
 python3 build.py --offline --serve      # rebuild from saved data (for editing content/design)
 python3 -m unittest discover -s tests   # Python tests
-node --test tests/page.test.mjs tests/missions.test.mjs tests/layout.test.mjs tests/labs.test.mjs tests/flow.test.mjs tests/exam.test.mjs   # page logic + Mission Engine tests
+node --test tests/*.test.mjs             # page logic, Mission Engine, labs, Agency and tools
 ```
 
 A free [NVD API key](https://nvd.nist.gov/developers/request-an-api-key) makes CVE fetching about 10× faster: `export NVD_API_KEY=...`
@@ -141,6 +135,7 @@ If the Mac is off, step 1 still runs: news and CVEs stay current, only new expla
 - Security awareness content design: phishing simulation, plain-language explanations
 - Networking: DHCP, the OSI model, topologies and failure analysis, ports and protocols, IPv4 subnetting maths
 - Linux: a simulated shell with pipes, permissions and log analysis
+- Simulation design: a SOC shift engine (pure rules, tested so every shift can be finished from its own content, with a shadow mode generated from those rules) and a simulated Cisco IOS command line with VLANs, trunks, router-on-a-stick and extended ACLs
 - Hands-on training design: log analysis, email header forensics, CVSS 3.1 scoring (implemented from the FIRST spec and tested)
 - Automated testing in CI: a failing test blocks the deploy
 - Accessibility: keyboard support, screen-reader labels, reduced motion, contrast-checked light and dark themes (no axe-core violations across every view, in both themes)

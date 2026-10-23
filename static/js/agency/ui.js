@@ -373,7 +373,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
       <h3 class="eyebrow">Handover notes</h3>
       <div class="ag-notes"><div><b>Yours</b><p>${rep.note ? esc(rep.note) : '<span class="muted">(none)</span>'}</p></div><div><b>A model handover</b><p>${esc(rep.modelNote)}</p></div></div>
       <div class="row"><button class="btn brand" type="button" id="ag-again">Work the shift again</button><button class="btn ghost" type="button" id="ag-watch">Watch ${esc(leadName)} work it</button>${shift.next ? `<a class="btn ghost" href="${esc(shift.next.href)}">${esc(shift.next.label)}</a>` : ""}</div>
-      ${feedback ? `<p class="muted">This is a pilot. <a href="${esc(feedback)}" target="_blank" rel="noopener">Tell us how the shift went ↗</a> (a public GitHub form; needs a free account).</p>` : ""}`;
+      ${feedback ? `<p class="muted">This is a pilot. <a href="${esc(feedback)}" target="_blank" rel="noopener">Tell us how the shift went ↗</a>${/^https:\/\/github\.com\//.test(feedback) ? " (a public GitHub form; needs a free account)" : ""}.</p>` : ""}`;
     $("ag-again").addEventListener("click", () => (onAgain ? onAgain() : mount(root, shift, { done: true, onComplete })));
     $("ag-watch").addEventListener("click", () => (onAgain ? onAgain({ shadow: true }) : mount(root, shift, { done: true, onComplete, shadow: true })));
     $("ag-d-h").focus();

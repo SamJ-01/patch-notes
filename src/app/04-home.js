@@ -87,7 +87,7 @@ let routeWidth = 0, routeTimer = null;
 addEventListener("resize", () => { clearTimeout(routeTimer); routeTimer = setTimeout(() => { const b = $("route"); if (b && Math.abs(b.clientWidth - routeWidth) > 8) drawRoute(); }, 120); });
 
 /* TODAY */
-// Someone who hasn't done anything yet gets a calmer home page: three ways in, their route, a beginner question,
+// Someone who hasn't done anything yet gets a calmer home page: four ways in, their route, a beginner question,
 // and the news as one line. Once they've earned any XP or finished anything, the full page returns.
 const isNewcomer = () => !P.xp && !count(P.done) && !count(P.labs) && !count(P.missions) && !count(P.agency);
 function startCards(news, kev) {
@@ -97,7 +97,8 @@ function startCards(news, kev) {
     <span class="eyebrow">${eyebrow}</span><h3>${title}</h3><p>${text}</p><span class="start-cta">${cta} →</span></a>`;
   return `<section class="start" aria-labelledby="start-h"><h2 id="start-h">Where do you want to start?</h2><div class="start-grid">
     ${card(esc(basics?.href || "#learn"), cardArt("cia-triad"), "New to security", "Learn the basics", "Short lessons with pictures, then a game. No experience needed.", "Start the basics")}
-    ${shift?.clientImage ? card("#agency", cardPhoto(shift.clientImage.small || shift.clientImage.src, 800, Math.round(800 * shift.clientImage.height / shift.clientImage.width)), "PATCH//AGENCY", "Work a SOC shift", "Clock in at a security operations centre. Guided, with hints from your shift lead.", "Clock in") : ""}
+    ${card("#exams", cardPhoto("img/heads/exams.webp", 494, 247), "Studying for an exam", "Network+, Security+ or PenTest+", "See what to practise for each objective, then take a mock exam.", "Open exam prep")}
+    ${shift?.clientImage ? card("#agency", cardPhoto(shift.clientImage.small || shift.clientImage.src, 800, Math.round(800 * shift.clientImage.height / shift.clientImage.width)), "PATCH//AGENCY", "Work a SOC shift", "Clock in at a security operations centre. Watch your shift lead work it first, then take the desk.", "Clock in") : ""}
     ${card("#news", cardArt("nation-state"), "Just the news", "This week, explained", `${news.length} stories in plain English, and ${kev.length} ${kev.length === 1 ? "bug" : "bugs"} being exploited right now.`, "Read the news")}
   </div></section>`;
 }

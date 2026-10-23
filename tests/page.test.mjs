@@ -210,3 +210,12 @@ test("next step: goes forward through a path, and only goes back for skipped ste
   steps[0].done = true;
   assert.equal(ctx.next(steps, "lesson", "b"), undefined, "nothing left");
 });
+
+test("feedback links: a GitHub issue form gets a title, any other form link is left as it is", () => {
+  const line = template.match(/const feedbackHref = .*\n/)[0];
+  const href = (feedback, what) => { const c = { DATA: { site: { feedback } } }; vm.createContext(c); vm.runInContext(line + "this.f = feedbackHref;", c); return c.f(what); };
+  assert.equal(href("https://github.com/SamJ-01/patch-notes/issues/new?template=feedback.yml", "Lab X"),
+    "https://github.com/SamJ-01/patch-notes/issues/new?template=feedback.yml&title=Feedback%3A%20Lab%20X");
+  assert.equal(href("https://forms.gle/AbCdEf123", "Lab X"), "https://forms.gle/AbCdEf123");
+  assert.equal(href("", "Lab X"), "");
+});

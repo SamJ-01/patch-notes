@@ -23,7 +23,8 @@ function markText(text, terms) {
   return out + esc(s.slice(pos));
 }
 // A link to the public feedback form (a GitHub issue form), titled with the page it came from.
-const feedbackHref = what => (DATA.site.feedback ? `${DATA.site.feedback}&title=${encodeURIComponent("Feedback: " + what)}` : "");
+// A GitHub issue form gets a title naming what the feedback is about; any other form link (Google, Microsoft) is used as it is.
+const feedbackHref = what => { const f = DATA.site.feedback || ""; return /^https:\/\/github\.com\//.test(f) ? `${f}&title=${encodeURIComponent("Feedback: " + what)}` : f; };
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 const pct = x => x == null ? "—" : (x * 100 < 1 ? (x * 100).toFixed(2) : (x * 100).toFixed(1)) + "%";

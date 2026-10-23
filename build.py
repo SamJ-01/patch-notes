@@ -177,7 +177,7 @@ def social_meta(site, title, description, path=""):
         f'<meta property="og:image" content="{e(base)}og.png">',
         '<meta property="og:image:width" content="1200">',
         '<meta property="og:image:height" content="630">',
-        '<meta property="og:image:alt" content="Patch Notes: cyber security news, explained">',
+        '<meta property="og:image:alt" content="Patch Notes: practise cyber security on realistic evidence">',
         '<meta name="twitter:card" content="summary_large_image">',
         '<meta name="theme-color" content="#070A10">',
     ])
@@ -388,7 +388,7 @@ def main():
     (SITE_DIR / "lessons").mkdir(exist_ok=True)
     (SITE_DIR / "data" / "cves.json").write_text(json.dumps(rows, ensure_ascii=False))
     out = SITE_DIR / "index.html"
-    meta = social_meta(site, "Patch Notes: cyber security news, explained", site.get("description", ""))
+    meta = social_meta(site, "Patch Notes: practise cyber security on realistic evidence", site.get("description", ""))
     # The device drawings live in one module (static/js/hw.js) shared by the labs; the page gets the same code inline.
     hw_js = re.sub(r"^export ", "", (STATIC / "js" / "hw.js").read_text(), flags=re.M)
     # The shared email component (static/js/mail.js) is inlined the same way.

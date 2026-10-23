@@ -38,7 +38,7 @@ try {
 /* ---------- command palette ---------- */
 const cmdk = $("cmdk"), cmdIn = $("cmdk-input"), cmdOut = $("cmdk-out");
 let cmdLog = [], cmdSel = 0, cmdItems = [], sudoTried = false;
-const SECTIONS = [["today", "Daily briefing"], ["news", "Security news, explained"], ["cves", "CVE Radar"], ["learn", "Lessons & paths"], ["exams", "Exam prep: Network+ and Security+"], ["glossary", "Glossary A–Z"], ["missions", "Missions & labs"], ["play", "Games & flag hunt"], ["careers", "Career paths & resources"], ["progress", "Your XP, badges & level"], ["stack", "Am I affected? (your tech)"]];
+const SECTIONS = [["today", "Daily briefing"], ["news", "Security news, explained"], ["cves", "CVE Radar"], ["learn", "Lessons & paths"], ["exams", "Exam prep: Network+, Security+ and PenTest+"], ["glossary", "Glossary A–Z"], ["missions", "Practise: missions & labs"], ["agency", "PATCH//AGENCY: SOC shifts"], ["play", "Games & flag hunt"], ["careers", "Career paths & resources"], ["progress", "Your XP, badges & level"], ["stack", "Am I affected? (your tech)"]];
 const HELP = [
   ["help", "show this list"], ["ls", "list sections"], ["cd <section>", "go to a section, e.g. cd news"],
   ["open <lesson>", "open a lesson, e.g. open ransomware"], ["define <term>", "explain a term, e.g. define rce"],
