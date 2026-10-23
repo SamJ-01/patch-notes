@@ -112,7 +112,11 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - Web and ransomware evidence labs (kind "log", Simplified notes in the evidence): `sqli-log` (nginx log, sqlmap probes,
   UNION, then an admin login), `xss-review` (stored XSS in a review steals an admin session; cookie lacks HttpOnly),
   `idor-log` (portal audit log, owner vs user) and `ransomware-timeline` (EDR timeline: service account RDP, rclone
-  exfiltration, vssadmin/bcdedit/wbadmin, renames). Defender's view only. No card photos yet.
+  exfiltration, vssadmin/bcdedit/wbadmin, renames), plus `malware-tree` (EDR process tree: .pdf.js, encoded PowerShell,
+  infostealer, scheduled task, beacon), `ddos-or-busy` (flash crowd vs NTP reflection), `open-bucket` (S3 policy Principal *,
+  CloudTrail), `cert-check` (OpenSSL 3.0 x509 output: SAN mismatch, expired, self-signed; Chrome error codes),
+  `signin-spray` (Entra sign-ins, AADSTS codes, a Conditional Access exclusion) and `typosquat-pr` (made-up package names,
+  postinstall, stolen CI secrets). Defender's view only. Drawn scenes in `SCENE` until they get card photos.
 - Hashing lab (`#lab-hashing`, `static/js/labs/hashing.js`, tests `tests/hashing.test.mjs`): MD5/SHA-1/SHA-256, salts, slow hashes.
 - Device drawings (`static/js/hw.js`, `HW`): a 3/4 view (`hwBox` adds a lit top and shaded side, which also carry
   `hw-body` so state colours reach them; `--hw-face-top/side` per theme). Keep detail readable at ~50 px.

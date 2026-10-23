@@ -61,6 +61,10 @@
       {
        "type": "lesson",
        "id": "cloud"
+      },
+      {
+       "type": "lab",
+       "id": "open-bucket"
       }
      ],
      "gap": "The lesson covers cloud security; VPCs, cloud gateways and connectivity options aren't covered yet."
@@ -392,9 +396,17 @@
       {
        "type": "lesson",
        "id": "wireless"
+      },
+      {
+       "type": "lab",
+       "id": "cert-check"
+      },
+      {
+       "type": "lab",
+       "id": "signin-spray"
       }
      ],
-     "gap": "The CIA triad, PKI details, RADIUS/TACACS+/LDAP and compliance aren't covered yet."
+     "gap": "Certificate names, dates and self-signed warnings are hands-on (Why the padlock broke); the CIA triad, RADIUS/TACACS+/LDAP and compliance aren't covered yet."
     },
     {
      "id": "4.2",
@@ -424,9 +436,17 @@
       {
        "type": "lab",
        "id": "wifi-survey"
+      },
+      {
+       "type": "lab",
+       "id": "ddos-or-busy"
+      },
+      {
+       "type": "lab",
+       "id": "malware-tree"
       }
      ],
-     "gap": "SYN floods, phishing triage and spotting an evil twin in a Wi-Fi scan are hands-on; VLAN hopping, MAC flooding, ARP and DNS poisoning are explained only in the glossary and practice questions."
+     "gap": "SYN floods, phishing triage, an evil twin in a Wi-Fi scan, a reflection DDoS and a malware process tree are hands-on; VLAN hopping, MAC flooding, ARP and DNS poisoning are explained only in the glossary and practice questions."
     },
     {
      "id": "4.3",

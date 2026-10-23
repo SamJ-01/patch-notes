@@ -86,6 +86,19 @@ SCENE["ssh-brute"] = SCENE["log-detective"];
 SCENE["phish-triage"] = { d: [["attacker", 34, 46, 0.58], ["laptop", 166, 48, 0.55]], g: [["mail", 100, 46, 1.1]], t: [["1 ≠ l", 100, 20, "bad"]], l: [[50, 46, 86, 46], [114, 46, 148, 48]], p: ["M34 46L166 48"], tone: "bad" };
 SCENE["one-request"] = { d: [["phone", 30, 48, 0.62], ["firewall", 100, 48, 0.5], ["server", 168, 46, 0.6]], l: [[42, 48, 84, 48], [116, 48, 154, 46]], t: [["GET 200", 64, 22], ["TLS", 136, 22]], p: ["M30 48L168 46", "M168 46L30 48"] };
 SCENE["finding-the-server"] = { d: [["phone", 30, 48, 0.62], ["router", 100, 50, 0.5], ["server", 168, 46, 0.6]], l: [[42, 48, 78, 50], [122, 50, 154, 46]], t: [["A?", 52, 20], ["TTL 300", 132, 20]], p: ["M30 48L168 46"] };
+// The evidence labs that fill topic steps (drawn until they get photos).
+Object.assign(SCENE, {
+  "sqli-log": { d: [["attacker", 36, 46, 0.6], ["server", 164, 46, 0.62]], l: [[52, 46, 150, 46]], t: [["id=12' UNION", 100, 20, "bad"]], g: [["search", 172, 64, 0.8]], p: ["M36 46L164 46"], tone: "bad" },
+  "xss-review": { d: [["laptop", 40, 52, 0.55], ["attacker", 164, 46, 0.58]], g: [["doc", 100, 44, 1.3]], t: [["<script>", 100, 82, "bad"]], l: [[60, 52, 86, 46], [114, 46, 148, 46]], p: ["M40 52L164 46"], tone: "bad" },
+  "idor-log": { d: [["laptop", 40, 52, 0.55]], g: [["doc", 110, 40, 1.1], ["doc", 140, 40, 1.1], ["doc", 170, 40, 1.1, "bad"]], t: [["20931 → 20930 → 20929", 120, 82, "bad"]] },
+  "ransomware-timeline": { d: [["server", 100, 46, 0.66]], g: [["lock", 158, 30, 1.2, "bad"], ["clock", 42, 30, 1.2]], t: [["01:12 → 03:53", 100, 86, "bad"]] },
+  "malware-tree": { d: [["laptop", 46, 52, 0.58], ["attacker", 164, 46, 0.56]], g: [["bug", 100, 30, 1.2, "bad"]], l: [[66, 52, 148, 46]], t: [["invoice.pdf.js", 70, 86, "bad"]], p: ["M46 52L164 46"], tone: "bad" },
+  "ddos-or-busy": { d: [["server", 164, 46, 0.62]], g: [["users", 40, 30, 1.2, "good"], ["alert", 40, 70, 1.2, "bad"]], l: [[58, 32, 150, 44], [58, 68, 150, 48]], p: ["M40 30L164 46", "M40 70L164 46"], tone: "bad" },
+  "open-bucket": { d: [["cloud", 100, 44, 0.7]], g: [["globe", 166, 46, 1.2, "bad"], ["doc", 40, 46, 1.2]], l: [[56, 46, 76, 46], [124, 46, 150, 46]], t: [["Principal: *", 100, 86, "bad"]] },
+  "cert-check": { d: [["laptop", 46, 52, 0.58], ["server", 158, 48, 0.6]], g: [["lock", 102, 32, 1.3, "bad"]], l: [[66, 52, 142, 48]], t: [["expired", 102, 80, "bad"]] },
+  "signin-spray": { d: [["attacker", 40, 46, 0.58]], g: [["users", 150, 46, 1.6], ["key", 104, 30, 1, "bad"]], l: [[56, 46, 128, 46]], t: [["50126 ×38", 104, 80, "bad"]], p: ["M40 46L150 46"], tone: "bad" },
+  "typosquat-pr": { g: [["doc", 60, 44, 1.6], ["bug", 140, 44, 1.6, "bad"]], l: [[80, 44, 120, 44]], t: [["axios → axioss", 100, 84, "bad"]] },
+});
 SCENE.agency = SCENE.soc;
 function sceneSvg(sc) {
   const pk = (sc.p || []).map((d, i) => `<circle class="cpkt ${sc.tone || ""}" r="4" opacity="0"><animateMotion begin="indefinite" dur="1.5s" path="${d}" fill="freeze"/><animate attributeName="opacity" begin="indefinite" dur="1.5s" values="0;1;1;0" keyTimes="0;0.1;0.85;1" fill="freeze"/></circle>`).join("");

@@ -4721,5 +4721,97 @@
   ],
   "short": "A backup copy that can't be changed or deleted for a set time, even by an admin, so ransomware can't destroy it.",
   "lesson": "ransomware"
+ },
+ {
+  "id": "reflection-attack",
+  "term": "Reflection attack",
+  "kind": "Attack",
+  "aliases": [
+   "reflection",
+   "reflected DDoS"
+  ],
+  "short": "A DDoS where requests are sent with the victim's address faked, so innocent servers send their replies to the victim.",
+  "lesson": "ddos"
+ },
+ {
+  "id": "flash-crowd",
+  "term": "Flash crowd",
+  "kind": "Concept",
+  "aliases": [
+   "flash crowd"
+  ],
+  "short": "A sudden rush of real visitors (a ticket release, a news story). It can look like a DDoS, but it's demand.",
+  "lesson": "ddos"
+ },
+ {
+  "id": "san",
+  "term": "Subject Alternative Name (SAN)",
+  "kind": "Technology",
+  "aliases": [
+   "Subject Alternative Name"
+  ],
+  "short": "The list of names a certificate is valid for. Browsers check the address you visited against it.",
+  "lesson": "certificates"
+ },
+ {
+  "id": "self-signed",
+  "term": "Self-signed certificate",
+  "kind": "Technology",
+  "aliases": [
+   "self-signed"
+  ],
+  "short": "A certificate that vouches for itself (issuer and subject are the same), so browsers can't trust it without help.",
+  "lesson": "certificates"
+ },
+ {
+  "id": "acme",
+  "term": "ACME",
+  "kind": "Technology",
+  "aliases": [
+   "ACME"
+  ],
+  "short": "The protocol Let's Encrypt and others use to issue and renew certificates automatically.",
+  "lesson": "certificates"
+ },
+ {
+  "id": "shared-responsibility",
+  "term": "Shared responsibility model",
+  "kind": "Concept",
+  "aliases": [
+   "shared responsibility"
+  ],
+  "short": "The cloud provider secures the platform; the customer secures what they put on it and who can reach it.",
+  "lesson": "cloud"
+ },
+ {
+  "id": "conditional-access",
+  "term": "Conditional Access",
+  "kind": "Defence",
+  "aliases": [
+   "Conditional Access"
+  ],
+  "short": "Microsoft Entra's rules for sign-ins, such as 'require MFA for everyone'. Exclusions are a common gap.",
+  "lesson": "identity"
+ },
+ {
+  "id": "postinstall",
+  "term": "Install script (postinstall)",
+  "kind": "Technology",
+  "aliases": [
+   "postinstall",
+   "install scripts"
+  ],
+  "short": "Code a package runs automatically when it's installed, before anyone uses it. A favourite trick of malicious packages.",
+  "lesson": "supply-chain"
+ },
+ {
+  "id": "presigned-url",
+  "term": "Pre-signed URL",
+  "kind": "Defence",
+  "aliases": [
+   "pre-signed URL"
+  ],
+  "short": "A link to one cloud file that works for a limited time, without making the storage public.",
+  "lesson": "cloud"
  }
 ]

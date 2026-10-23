@@ -82,6 +82,10 @@
       {
        "type": "lesson",
        "id": "certificates"
+      },
+      {
+       "type": "lab",
+       "id": "cert-check"
       }
      ]
     }
@@ -140,6 +144,10 @@
       {
        "type": "lesson",
        "id": "iot-ot"
+      },
+      {
+       "type": "lab",
+       "id": "typosquat-pr"
       }
      ]
     },
@@ -227,6 +235,14 @@
       {
        "type": "lab",
        "id": "sqli-log"
+      },
+      {
+       "type": "lab",
+       "id": "malware-tree"
+      },
+      {
+       "type": "lab",
+       "id": "ddos-or-busy"
       }
      ]
     },
@@ -280,6 +296,10 @@
       {
        "type": "lesson",
        "id": "network-modern"
+      },
+      {
+       "type": "lab",
+       "id": "open-bucket"
       }
      ],
      "gap": "Cloud responsibility, IoT/OT and software-defined networking are taught; containers, virtualisation and serverless aren't covered yet."
@@ -335,6 +355,10 @@
       {
        "type": "lesson",
        "id": "data-breach"
+      },
+      {
+       "type": "lab",
+       "id": "open-bucket"
       }
      ],
      "gap": "Encryption and the cost of breaches are taught; data classification, masking and tokenisation are only in questions."
@@ -439,6 +463,10 @@
       {
        "type": "lesson",
        "id": "soc"
+      },
+      {
+       "type": "lab",
+       "id": "signin-spray"
       }
      ]
     },
@@ -485,6 +513,10 @@
       {
        "type": "lesson",
        "id": "identity"
+      },
+      {
+       "type": "lab",
+       "id": "signin-spray"
       }
      ]
     },
@@ -519,6 +551,10 @@
       {
        "type": "lab",
        "id": "ransomware-timeline"
+      },
+      {
+       "type": "lab",
+       "id": "malware-tree"
       }
      ]
     },
@@ -570,6 +606,18 @@
       {
        "type": "lab",
        "id": "idor-log"
+      },
+      {
+       "type": "lab",
+       "id": "malware-tree"
+      },
+      {
+       "type": "lab",
+       "id": "signin-spray"
+      },
+      {
+       "type": "lab",
+       "id": "open-bucket"
       }
      ]
     }
@@ -616,9 +664,13 @@
       {
        "type": "lesson",
        "id": "supply-chain"
+      },
+      {
+       "type": "lab",
+       "id": "typosquat-pr"
       }
      ],
-     "gap": "Supply chain attacks are taught; vendor assessment and agreements are only in practice questions."
+     "gap": "Supply chain attacks are taught and a typosquatted dependency is caught in a lab; vendor assessment and agreements are only in practice questions."
     },
     {
      "id": "5.4",
