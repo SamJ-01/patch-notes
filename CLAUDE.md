@@ -21,6 +21,8 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   `node --test tests/*.test.mjs` (Node 22 needs the glob, not `tests/`). CI lists the Node files in `.github/workflows/daily.yml`: add new test files there.
 - Build without network: `python3 build.py --offline`. In a fresh cloud session `data/` is empty, so first create stubs:
   `mkdir -p data && echo '{"rows":[],"watchlist":[],"days":30}' > data/cves.json && echo '[]' > data/news.json`
+- Smoke test (runs in CI after the build, before deploy; ~45 s): `node tests/smoke.mjs` (key routes at desktop and phone,
+  an evidence lab, a shadowed shift, the route bar). Add a journey there when a new kind of activity ships.
 - Browser check (errors, overflow, axe, screenshots): `node tests/browser_check.mjs "#route" "#route|selector-to-click"`.
   For axe: `npm pack axe-core@4.10.2` in a scratch dir, untar, `AXE=.../package/axe.min.js`.
 - Deploy = push to `main` (GitHub Actions builds daily and on push; the full build takes ~8 min). Watch: `gh run watch <id> -R SamJ-01/patch-notes`.

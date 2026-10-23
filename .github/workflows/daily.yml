@@ -57,6 +57,13 @@ jobs:
             echo "::error title=Build site failed::$(tail -n 25 build.log | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')"
             exit 1
           }
+      # A small browser smoke test of the built site before it's published: key pages on a desktop and a phone,
+      # an evidence lab, a shadowed Agency shift and a route. Playwright is pinned to one version.
+      - name: Smoke test the built site
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+          node tests/smoke.mjs
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: site
