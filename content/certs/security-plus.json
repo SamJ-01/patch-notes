@@ -26,9 +26,13 @@
       {
        "type": "lesson",
        "id": "security-controls"
+      },
+      {
+       "type": "lab",
+       "id": "name-the-control"
       }
      ],
-     "gap": "Categories and types are taught with examples and practice questions; there's no hands-on lab."
+     "gap": "Categories and types are taught, and the 'Name that control' lab sorts a real register; practice questions cover the rest."
     },
     {
      "id": "1.2",
@@ -46,6 +50,10 @@
       {
        "type": "lesson",
        "id": "network-modern"
+      },
+      {
+       "type": "lab",
+       "id": "cia-incidents"
       }
      ],
      "gap": "The CIA triad, authentication and zero trust are taught; gap analysis, physical security and deception (honeypots) aren't covered yet."
@@ -112,9 +120,13 @@
       {
        "type": "lesson",
        "id": "data-breach"
+      },
+      {
+       "type": "lab",
+       "id": "advisory-hunt"
       }
      ],
-     "gap": "Nation-state and criminal actors are covered through real cases; hacktivists, insiders and shadow IT are only in questions."
+     "gap": "Nation-state and criminal actors are covered through real cases, and a lab turns a state-actor advisory into a log hunt; hacktivists, insiders and shadow IT are only in questions."
     },
     {
      "id": "2.2",
@@ -148,6 +160,14 @@
       {
        "type": "lab",
        "id": "typosquat-pr"
+      },
+      {
+       "type": "lab",
+       "id": "factory-scan"
+      },
+      {
+       "type": "lab",
+       "id": "prompt-injection"
       }
      ]
     },
@@ -191,6 +211,14 @@
       {
        "type": "lab",
        "id": "idor-log"
+      },
+      {
+       "type": "lab",
+       "id": "zero-day-advisory"
+      },
+      {
+       "type": "lab",
+       "id": "prompt-injection"
       }
      ],
      "gap": "Web, zero-day and AI-related flaws are taught, and three labs read the evidence SQL injection, XSS and IDOR leave behind; memory-safety bugs and hardware flaws aren't covered, and there's no hands-on exploitation (deliberately)."
@@ -243,6 +271,10 @@
       {
        "type": "lab",
        "id": "ddos-or-busy"
+      },
+      {
+       "type": "lab",
+       "id": "advisory-hunt"
       }
      ]
     },
@@ -270,6 +302,10 @@
       {
        "type": "lesson",
        "id": "ransomware"
+      },
+      {
+       "type": "lab",
+       "id": "name-the-control"
       }
      ]
     }
@@ -300,6 +336,10 @@
       {
        "type": "lab",
        "id": "open-bucket"
+      },
+      {
+       "type": "lab",
+       "id": "factory-scan"
       }
      ],
      "gap": "Cloud responsibility, IoT/OT and software-defined networking are taught; containers, virtualisation and serverless aren't covered yet."
@@ -359,6 +399,10 @@
       {
        "type": "lab",
        "id": "open-bucket"
+      },
+      {
+       "type": "lab",
+       "id": "breach-clock"
       }
      ],
      "gap": "Encryption and the cost of breaches are taught; data classification, masking and tokenisation are only in questions."
@@ -436,6 +480,10 @@
       {
        "type": "lesson",
        "id": "vuln-management"
+      },
+      {
+       "type": "lab",
+       "id": "zero-day-advisory"
       }
      ]
     },
@@ -555,6 +603,14 @@
       {
        "type": "lab",
        "id": "malware-tree"
+      },
+      {
+       "type": "lab",
+       "id": "map-the-attack"
+      },
+      {
+       "type": "lab",
+       "id": "advisory-hunt"
       }
      ]
     },
@@ -618,6 +674,10 @@
       {
        "type": "lab",
        "id": "open-bucket"
+      },
+      {
+       "type": "lab",
+       "id": "advisory-hunt"
       }
      ]
     }
@@ -636,9 +696,13 @@
       {
        "type": "lesson",
        "id": "frameworks"
+      },
+      {
+       "type": "lab",
+       "id": "map-the-attack"
       }
      ],
-     "gap": "Frameworks are introduced; policies, standards, procedures and roles are only in practice questions."
+     "gap": "Frameworks are introduced and NIST CSF 2.0 functions are practised in a lab; policies, standards, procedures and roles are only in practice questions."
     },
     {
      "id": "5.2",
@@ -680,9 +744,13 @@
       {
        "type": "lesson",
        "id": "data-breach"
+      },
+      {
+       "type": "lab",
+       "id": "breach-clock"
       }
      ],
-     "gap": "The consequences of breaches and UK GDPR reporting appear; compliance monitoring isn't covered."
+     "gap": "UK GDPR breach reporting (the 72-hour clock, telling people, logging every breach) is practised in a lab; compliance monitoring isn't covered."
     },
     {
      "id": "5.5",

@@ -98,6 +98,14 @@ Object.assign(SCENE, {
   "cert-check": { d: [["laptop", 46, 52, 0.58], ["server", 158, 48, 0.6]], g: [["lock", 102, 32, 1.3, "bad"]], l: [[66, 52, 142, 48]], t: [["expired", 102, 80, "bad"]] },
   "signin-spray": { d: [["attacker", 40, 46, 0.58]], g: [["users", 150, 46, 1.6], ["key", 104, 30, 1, "bad"]], l: [[56, 46, 128, 46]], t: [["50126 ×38", 104, 80, "bad"]], p: ["M40 46L150 46"], tone: "bad" },
   "typosquat-pr": { g: [["doc", 60, 44, 1.6], ["bug", 140, 44, 1.6, "bad"]], l: [[80, 44, 120, 44]], t: [["axios → axioss", 100, 84, "bad"]] },
+  "cia-incidents": { g: [["lock", 50, 40, 1.4], ["shield", 100, 40, 1.4, "good"], ["clock", 150, 40, 1.4, "bad"]], t: [["C", 50, 76], ["I", 100, 76], ["A", 150, 76]] },
+  "name-the-control": { g: [["key", 40, 44, 1.3], ["eye", 85, 44, 1.3], ["doc", 130, 44, 1.3], ["cycle", 172, 44, 1.3, "good"]], t: [["prevent · detect · correct", 104, 82]] },
+  "map-the-attack": { g: [["mail", 34, 44, 1.1], ["bug", 76, 44, 1.1, "bad"], ["clock", 118, 44, 1.1], ["key", 160, 44, 1.1, "bad"]], l: [[46, 44, 64, 44], [88, 44, 106, 44], [130, 44, 148, 44]], t: [["ATT&CK", 100, 82]] },
+  "zero-day-advisory": { d: [["firewall", 100, 46, 0.6]], g: [["alert", 40, 40, 1.4, "bad"], ["clock", 160, 40, 1.3]], t: [["no patch yet", 100, 84, "bad"]] },
+  "breach-clock": { d: [["laptop", 52, 50, 0.58]], g: [["clock", 140, 42, 1.8, "bad"]], t: [["72 h", 140, 84, "bad"]] },
+  "advisory-hunt": { d: [["server", 150, 46, 0.6]], g: [["doc", 46, 44, 1.4], ["search", 98, 44, 1.3]], l: [[62, 44, 84, 44], [112, 44, 136, 46]], t: [["ntdsutil", 100, 84, "bad"]] },
+  "prompt-injection": { d: [["server", 156, 46, 0.6]], g: [["mail", 44, 44, 1.4, "bad"], ["chip", 100, 44, 1.4]], l: [[60, 44, 86, 44], [114, 44, 142, 46]], t: [["hidden text", 64, 82, "bad"]] },
+  "factory-scan": { d: [["pc", 36, 50, 0.5], ["switch", 100, 50, 0.5], ["server", 164, 46, 0.58]], g: [["gauge", 164, 16, 0.9]], l: [[50, 50, 84, 50], [116, 50, 150, 46]], t: [["502 open", 132, 84, "bad"]] },
 });
 SCENE.agency = SCENE.soc;
 function sceneSvg(sc) {

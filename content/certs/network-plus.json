@@ -49,6 +49,10 @@
       {
        "type": "lab",
        "id": "one-request"
+      },
+      {
+       "type": "lab",
+       "id": "factory-scan"
       }
      ],
      "gap": "Load balancers, reverse proxies and firewalls are shown in the one-request lab; IDS/IPS, NAS/SAN, CDN and QoS aren't covered in depth yet."
@@ -404,9 +408,13 @@
       {
        "type": "lab",
        "id": "signin-spray"
+      },
+      {
+       "type": "lab",
+       "id": "cia-incidents"
       }
      ],
-     "gap": "Certificate names, dates and self-signed warnings are hands-on (Why the padlock broke); the CIA triad, RADIUS/TACACS+/LDAP and compliance aren't covered yet."
+     "gap": "The CIA triad and certificate names, dates and self-signed warnings are hands-on; RADIUS/TACACS+/LDAP and compliance aren't covered yet."
     },
     {
      "id": "4.2",
@@ -468,9 +476,13 @@
       {
        "type": "lesson",
        "id": "web-access"
+      },
+      {
+       "type": "lab",
+       "id": "factory-scan"
       }
      ],
-     "gap": "Extended ACLs are hands-on (the inter-VLAN routing lab); port security, NAC and screened subnets aren't covered yet."
+     "gap": "Extended ACLs are hands-on (the inter-VLAN routing lab), and a factory scan shows why OT needs its own zone; port security, NAC and screened subnets aren't covered yet."
     }
    ]
   },

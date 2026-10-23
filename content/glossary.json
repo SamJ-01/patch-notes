@@ -4813,5 +4813,26 @@
   ],
   "short": "A link to one cloud file that works for a limited time, without making the storage public.",
   "lesson": "cloud"
+ },
+ {
+  "id": "modbus",
+  "term": "Modbus",
+  "kind": "Technology",
+  "aliases": [
+   "Modbus"
+  ],
+  "short": "An old industrial protocol (port 502) for talking to PLCs. It has no login, so reaching it is enough to control it.",
+  "lesson": "iot-ot"
+ },
+ {
+  "id": "nist-csf",
+  "term": "NIST Cybersecurity Framework (CSF)",
+  "kind": "Concept",
+  "aliases": [
+   "NIST CSF",
+   "CSF 2.0"
+  ],
+  "short": "A widely used framework with six functions: Govern, Identify, Protect, Detect, Respond, Recover.",
+  "lesson": "frameworks"
  }
 ]
