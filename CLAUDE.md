@@ -54,7 +54,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   and tag questions per objective (not per domain), every objective has a question, and each domain holds at least twice
   its share of a 20-question mock (tested). When CompTIA publishes a new exam version, add a new map file; keep the old one. Lessons `certificates` and
   `security-controls` back 1.0.
-- PATCH//AGENCY: its own nav tab and hub (`#agency`, `VIEWS.agency` in 07-labs: badge, time clock, rota). Three shifts:
+- PATCH//AGENCY: its own nav tab and hub (`#agency`, `VIEWS.agency` in 07-labs: badge, time clock, rota). Four shifts:
   shift-01 (Pellow & Finch: VPN spray, new sudo account), shift-02 (Fernhollow Vets: MFA fatigue, hidden inbox rule,
   lookalike-supplier bank change; mailbox sources `{ kind: "email", emails }` opened with `A.openEmail` and shown with MAIL)
   and shift-03 (Halstead & Rowe: a .pdf.js infostealer on a workstation, stolen logins used to RDP into FS01 as the
@@ -62,7 +62,11 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   two noise alerts, a cleaned AV quarantine and an oversized but scheduled Veeam backup. The Diagnose step for `malware`,
   `ransomware` and `data-breach`, mapped to Security+ 4.8). shift-03 has no client scene or client-contact portrait yet
   (the SOC team reuses the agency's own portraits; the client contact falls back to initials, and the card/dossier fall
-  back to the drawn `agency` scene until an image is made).
+  back to the drawn `agency` scene until an image is made). shift-04 (Wrenfield & Co, an online shop: SQL injection
+  reading the users table overnight, stored XSS stealing an admin session, that session walking order IDs (IDOR) and
+  leaking a cloud storage key, then a customer-exports bucket downloaded with it; two noise alerts, an approved scanner
+  and the scheduled analytics export. The Diagnose step for `web-sqli`, `web-xss`, `web-access` and `cloud`, mapped to
+  Security+ 4.8; same no-image state as shift-03).
   A shift (`content/agency/*.json`, `static/js/agency/`, route `#agency-<id>`, tests `tests/agency.test.mjs`: every shift
   must be finishable with every check passed from its own content, logs visible at the start mustn't postdate it) opens with
   clocking in (badge tap, the lead's briefing as chat, the client file), then the desk (queue, alert, messages), then clock out.
@@ -128,7 +132,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   `prompt-injection` (hidden text, image-URL exfiltration) and `factory-scan` (Nmap 7.94 -sT, Modbus/mbap 502). Every
   lesson now has an Experiment step. Defender's view only. All have card photos (made as three 3 x 2 grids). Diagnose
   (missions and shifts) now covers phishing, networking, SOC, incident response, identity, malware, ransomware and
-  data-breach; the rest still have no Diagnose step.
+  data-breach, and (shift-04) the web attacks and cloud; the rest still have no Diagnose step.
 - Hashing lab (`#lab-hashing`, `static/js/labs/hashing.js`, tests `tests/hashing.test.mjs`): MD5/SHA-1/SHA-256, salts, slow hashes.
 - Device drawings (`static/js/hw.js`, `HW`): a 3/4 view (`hwBox` adds a lit top and shaded side, which also carry
   `hw-body` so state colours reach them; `--hw-face-top/side` per theme). Keep detail readable at ~50 px.

