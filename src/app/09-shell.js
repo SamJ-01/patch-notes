@@ -191,13 +191,14 @@ document.addEventListener("keydown", e => {
   if (e.key === "/") { e.preventDefault(); openCmd(); }
   else if (e.key === "?") { e.preventDefault(); openCmd("help", true); }
   else if (/^[1-8]$/.test(e.key)) { const tabs = ["today", "learn", "missions", "agency", "exams", "progress", "news", "cves"]; location.hash = tabs[Number(e.key) - 1]; }
+  else if (e.key === "9") location.hash = "feedback";
 });
 
 /* ---------- router ---------- */
 // Which tab each route lives under, and what draws it.
 const CVE_VIEWS = ["cves", "today/stack"];
 // Sections without their own nav tab, and the tab that's highlighted for them.
-const NAV_PARENT = { play: "missions", careers: "progress", feedback: "today" };
+const NAV_PARENT = { play: "missions", careers: "progress" };
 function parseRoute() {
   const h = (location.hash || "#today").slice(1);
   if (h.startsWith("lesson-")) return { tab: "learn", path: "learn/" + h.slice(7), draw: () => lessonView(h.slice(7)) };

@@ -1668,8 +1668,11 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .ag-steps span { font-size: 0.88rem; color: var(--muted); }
 @media (max-width: 760px) {
   .ag-hubgrid, .ag-in-grid { grid-template-columns: minmax(0, 1fr); }
-  .ag-rota li { grid-template-columns: minmax(0, 1fr) auto; }
-  .ag-rota li > .muted { grid-column: 1 / -1; }
+  /* Stack each rota row and give it one full-width Clock in button, so every card looks the same and the
+     button is an easy tap. */
+  .ag-rota li { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+  .ag-rota li b { font-size: 1.02rem; }
+  .ag-rota li .btn { width: 100%; justify-content: center; }
 }
 @media (prefers-reduced-motion: reduce) { .ag-tc-card { transition: none; } .dk-dots i { animation: none; opacity: 0.7; } }
 /* Lessons: the key ideas as pictures first; the full explanation is one tap away */

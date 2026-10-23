@@ -7,7 +7,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - The page: `site_template.html` (HTML skeleton, ~5 KB) + `src/site.css` + `src/app/*.js`, joined by `build.assemble_template()`.
   The app files share one scope and run in name order: 01-core (DATA, helpers), 02-glossary, 03-progress, 04-home,
   05-news-cves, 06-learn (lessons, certs, loop), 07-labs (missions, labs, Agency), 08-you (progress, play, careers),
-  09-shell (status bar, palette, router). Nav tabs (keys 1-8): home, learn, practise, agency, exams, you, news, cve-radar. Views are `VIEWS.x` / `xxxView()` functions; routes in `parseRoute()`.
+  09-shell (status bar, palette, router). Nav tabs (keys 1-8, plus feedback on key 9): home, learn, practise, agency, exams, you, feedback, news, cve-radar. Views are `VIEWS.x` / `xxxView()` functions; routes in `parseRoute()`.
 - `static/js/`: ES modules loaded on demand. `missions/engine.js` (pure rules, no DOM), `missions/ui.js`, `missions/layout.js`,
   `exam.js` (cert practice + `readiness()`), `labs/*.js`, `hw.js` (device drawings), `flow.js`, `concept.js`.
 - `content/`: all content as JSON. Missions in `content/missions/*.json` and Agency shifts in `content/agency/*.json` (picked up automatically), certs in `content/certs/`,
@@ -157,7 +157,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - Feedback: an on-site form at `#feedback` (`VIEWS.feedback` in 08-you) that posts with `fetch` to a form-to-email relay
   (`DATA.site.feedbackPost`, FormSubmit) and emails the owner; no account, stays on the page, nothing saved. A honeypot
   (`_honey`) guards it, and the CSP `connect-src` allows `https://formsubmit.co` (build.py `csp_meta`). `DATA.site.feedback`
-  is `#feedback`, linked from every done card, the Agency debrief and the footer; `feedbackHref`/consumers drop `target=_blank`
+  is `#feedback`, linked from a nav tab (key 9, in the "You" group), every done card, the Agency debrief and the footer; `feedbackHref`/consumers drop `target=_blank`
   and the GitHub note for a hash link. To switch back to the GitHub issue form (`.github/ISSUE_TEMPLATE/feedback.yml`), set
   `feedback` to its URL. Tested: `tests/test_core.py` FeedbackForm (accepts either config).
 - Next: learner feedback on the shift and the new labs, more Security+
