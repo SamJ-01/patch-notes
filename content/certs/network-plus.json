@@ -142,9 +142,18 @@
     {
      "id": "1.8",
      "title": "Modern network environments",
-     "coverage": "none",
-     "activities": [],
-     "gap": "SDN, SD-WAN, VXLAN, zero trust, SASE, infrastructure as code and IPv6 aren't covered yet."
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "network-modern"
+      },
+      {
+       "type": "lab",
+       "id": "ipv6-read"
+      }
+     ],
+     "gap": "SDN, SD-WAN, VXLAN, zero trust, SASE and infrastructure as code are explained in Modern networks, and reading IPv6 addresses is hands-on; there's no hands-on SDN or IaC."
     }
    ]
   },
@@ -320,9 +329,13 @@
       {
        "type": "lab",
        "id": "finding-the-server"
+      },
+      {
+       "type": "lab",
+       "id": "ipv6-read"
       }
      ],
-     "gap": "DHCP and DNS basics are covered; NTP, SLAAC and DNS record types aren't yet."
+     "gap": "DHCP and DNS basics are covered, and SLAAC is explained in Modern networks; NTP and DNS record types aren't yet."
     },
     {
      "id": "3.5",

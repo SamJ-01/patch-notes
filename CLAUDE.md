@@ -93,6 +93,8 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   an overlapping channel). Network+ 2.3 is now partly covered.
 - Lesson `network-ops` ("Running a network": racks and power, change management, SNMP and baselines, RPO/RTO, MTBF/MTTR,
   hot/warm/cold sites; real case BA 2017) backs Network+ 2.4, 3.1-3.3. The slow network lab is its practice.
+- Lesson `network-modern` (IPv6, SDN, SD-WAN, VXLAN, zero trust, SASE, IaC; real case BeyondCorp) backs Network+ 1.8, with
+  lab `ipv6-read` (Windows 10 `ipconfig`: global, temporary and link-local addresses, zone IDs, shortening, dual stack).
 - Slow network lab (`#lab-slow-network`, evidence lab): Windows 10 ping/tracert and Cisco IOS 15 `show interfaces` for a
   congested upload (txload, output drops), a jittery Wi-Fi laptop and a change log; walks the troubleshooting method
   (Network+ 5.1, 5.4, 5.5, 3.1, 3.2). Windows ping summaries in any lab must agree with their reply lines (tested).

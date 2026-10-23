@@ -203,9 +203,9 @@ input[type="search"] { flex: 1 1 240px; }
 .bars { display: grid; gap: 8px; }
 
 /* Quiz blocks */
-.q { font-weight: 700; font-size: 1.02rem; }
+.q { font-weight: 700; font-size: 1.02rem; overflow-wrap: anywhere; }  /* long addresses (IPv6, hashes) have no spaces to break at */
 .opts { display: grid; gap: 8px; }
-.opt { text-align: left; cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.95rem; }
+.opt { overflow-wrap: anywhere; text-align: left; cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.95rem; }
 .opt:hover:not([disabled]) { border-color: var(--brand); }
 .opt[disabled] { cursor: default; }
 .opt.right { background: var(--good-tint); border-color: var(--good); }

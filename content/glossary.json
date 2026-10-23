@@ -4544,5 +4544,126 @@
   ],
   "short": "A practice run of an incident or disaster plan, talked through around a table, to find gaps before they matter.",
   "lesson": "network-ops"
+ },
+ {
+  "id": "sdn",
+  "term": "SDN",
+  "kind": "Technology",
+  "aliases": [
+   "SDN",
+   "software-defined networking",
+   "control plane",
+   "data plane"
+  ],
+  "short": "Software-defined networking: a central controller decides where traffic goes (the control plane) and network devices just forward it (the data plane).",
+  "lesson": "network-modern",
+  "see": [
+   "sd-wan"
+  ]
+ },
+ {
+  "id": "sd-wan",
+  "term": "SD-WAN",
+  "kind": "Technology",
+  "aliases": [
+   "SD-WAN"
+  ],
+  "short": "Software-defined WAN: links between sites managed centrally, sending each application over the best of several connections.",
+  "lesson": "network-modern",
+  "see": [
+   "sdn",
+   "sase"
+  ]
+ },
+ {
+  "id": "vxlan",
+  "term": "VXLAN",
+  "kind": "Technology",
+  "aliases": [
+   "VXLAN"
+  ],
+  "short": "Carries layer 2 networks over a layer 3 network, with about 16 million segment IDs instead of 4,094 VLANs. Common in data centres.",
+  "lesson": "network-modern"
+ },
+ {
+  "id": "sase",
+  "term": "SASE",
+  "kind": "Technology",
+  "aliases": [
+   "SASE",
+   "SSE"
+  ],
+  "short": "Secure access service edge: networking and security (web filtering, CASB, zero trust access, firewall) delivered as a cloud service close to each user.",
+  "lesson": "network-modern",
+  "see": [
+   "zero-trust",
+   "sd-wan"
+  ]
+ },
+ {
+  "id": "iac",
+  "term": "Infrastructure as code",
+  "kind": "Concept",
+  "aliases": [
+   "infrastructure as code",
+   "IaC"
+  ],
+  "short": "Keeping server, network and cloud settings as files in version control, so changes are reviewed, repeatable and can be rolled back.",
+  "lesson": "network-modern",
+  "see": [
+   "change-management"
+  ]
+ },
+ {
+  "id": "link-local",
+  "term": "Link-local address",
+  "kind": "Concept",
+  "aliases": [
+   "link-local",
+   "link-local address",
+   "fe80"
+  ],
+  "short": "An IPv6 address starting fe80 that every interface makes for itself. It only works on its own network segment and is never routed.",
+  "lesson": "network-modern"
+ },
+ {
+  "id": "slaac",
+  "term": "SLAAC",
+  "kind": "Technology",
+  "aliases": [
+   "SLAAC"
+  ],
+  "short": "Stateless address autoconfiguration: an IPv6 device builds its own global address from the prefix its router advertises, no DHCP needed.",
+  "lesson": "network-modern",
+  "see": [
+   "link-local"
+  ]
+ },
+ {
+  "id": "dual-stack",
+  "term": "Dual stack",
+  "kind": "Concept",
+  "aliases": [
+   "dual stack",
+   "dual-stack"
+  ],
+  "short": "Running IPv4 and IPv6 side by side on the same devices and network, the usual way to move to IPv6.",
+  "lesson": "network-modern",
+  "see": [
+   "nat64"
+  ]
+ },
+ {
+  "id": "nat64",
+  "term": "NAT64",
+  "kind": "Technology",
+  "aliases": [
+   "NAT64"
+  ],
+  "short": "Translates between IPv6 and IPv4, so IPv6-only devices can reach IPv4-only servers.",
+  "lesson": "network-modern",
+  "see": [
+   "dual-stack"
+  ]
  }
 ]

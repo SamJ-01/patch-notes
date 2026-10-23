@@ -1874,6 +1874,152 @@
   ]
  },
  {
+  "id": "ipv6-read",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 10,
+  "lesson": "network-modern",
+  "title": "IPv6: read a PC's addresses",
+  "skill": "Read IPv6 addresses: global, temporary and link-local, shortening, and dual stack",
+  "card": "Three addresses, one network card",
+  "intro": "A student PC on a college network (fictional) shows more addresses than you might expect. Read its ipconfig output and work out what each one is for.",
+  "artifact": {
+   "kind": "log",
+   "name": "ipconfig (Windows 10)",
+   "placeholder": "e.g. fe80",
+   "text": "C:\\Users\\student>ipconfig\n\nWindows IP Configuration\n\n\nEthernet adapter Ethernet:\n\n   Connection-specific DNS Suffix  . : lab.example\n   IPv6 Address. . . . . . . . . . . : 2001:db8:4a1:10::25\n   Temporary IPv6 Address. . . . . . : 2001:db8:4a1:10:8d2c:51f0:9e3a:7b14\n   Link-local IPv6 Address . . . . . : fe80::1c4a:9f2e:6b3d:12a8%12\n   IPv4 Address. . . . . . . . . . . : 10.40.0.25\n   Subnet Mask . . . . . . . . . . . : 255.255.255.0\n   Default Gateway . . . . . . . . . : fe80::1%12\n                                       10.40.0.1\n\nWireless LAN adapter Wi-Fi:\n\n   Media State . . . . . . . . . . . : Media disconnected\n   Connection-specific DNS Suffix  . :"
+  },
+  "primer": {
+   "title": "Before you start: reading IPv6",
+   "keys": [
+    {
+     "icon": "globe",
+     "label": "128 bits",
+     "text": "Eight groups of four hex digits, separated by colons."
+    },
+    {
+     "icon": "doc",
+     "label": "Shortening",
+     "text": "Drop leading zeros; :: replaces one run of zero groups."
+    },
+    {
+     "icon": "router",
+     "label": "fe80::",
+     "text": "Link-local: works on this segment only, never routed."
+    }
+   ],
+   "results": [
+    [
+     "2001:…",
+     "a global address: routable across networks",
+     "ok"
+    ],
+    [
+     "Temporary",
+     "changes often, for privacy",
+     "ok"
+    ],
+    [
+     "fe80::…",
+     "link-local: this segment only",
+     "warn"
+    ]
+   ]
+  },
+  "steps": [
+   {
+    "type": "text",
+    "q": "Which address only works on this PC's own network segment? (Copy it without the %12.)",
+    "answers": [
+     "fe80::1c4a:9f2e:6b3d:12a8"
+    ],
+    "hint": "Look for the address starting fe80.",
+    "explain": "Every IPv6 interface makes a link-local address in fe80::/10 by itself. Routers never forward it, so it's only for talking to neighbours on the same segment, such as the router.",
+    "where": "Link-local IPv6 Address"
+   },
+   {
+    "type": "choice",
+    "q": "What does %12 at the end of the link-local address mean?",
+    "options": [
+     "The subnet's size",
+     "The interface it belongs to (a zone ID): link-local addresses repeat on every segment, so Windows notes which card to use",
+     "A port number",
+     "That it's the 12th address"
+    ],
+    "answer": 1,
+    "explain": "Every network card has its own fe80 address, and the same fe80 address could exist on two segments. The zone ID (here interface 12) says which card to send through.",
+    "where": "%12"
+   },
+   {
+    "type": "choice",
+    "q": "The default gateway is fe80::1%12. Is that a mistake?",
+    "options": [
+     "Yes: a gateway needs a global address",
+     "No: routers advertise their link-local address as the IPv6 gateway, which is normal",
+     "Yes: fe80 is only for printers",
+     "No: it's an IPv4 address"
+    ],
+    "answer": 1,
+    "explain": "The PC only needs to reach the router on its own segment, so a link-local gateway is standard. The second line, 10.40.0.1, is the IPv4 gateway.",
+    "where": "Default Gateway . . . . . . . . . : fe80::1%12"
+   },
+   {
+    "type": "text",
+    "q": "Write 2001:0db8:04a1:0010:0000:0000:0000:0025 in its shortest form (it's this PC's address).",
+    "answers": [
+     "2001:db8:4a1:10::25"
+    ],
+    "hint": "Drop leading zeros from each group, then replace the run of 0000 groups with ::.",
+    "explain": "Leading zeros go (0db8 becomes db8, 04a1 becomes 4a1) and the three zero groups become ::. 2001:db8:: is the range set aside for examples and documentation, like 192.0.2.0 for IPv4.",
+    "where": "2001:db8:4a1:10::25"
+   },
+   {
+    "type": "choice",
+    "q": "Why is there a Temporary IPv6 Address as well?",
+    "options": [
+     "It's left over from DHCP",
+     "For privacy: it changes regularly and is used for outgoing connections, so websites can't track the PC by one fixed address",
+     "It's the Wi-Fi address",
+     "It's for IPv4 traffic"
+    ],
+    "answer": 1,
+    "explain": "A fixed address can follow a laptop around the internet. Windows uses a temporary address for connections it starts, and keeps the stable one for things that connect in.",
+    "where": "Temporary IPv6 Address"
+   },
+   {
+    "type": "choice",
+    "q": "This PC has an IPv4 address and IPv6 addresses on the same card. What's that called?",
+    "options": [
+     "Tunnelling",
+     "Dual stack",
+     "NAT64",
+     "Link aggregation"
+    ],
+    "answer": 1,
+    "explain": "Dual stack runs both versions side by side, the usual approach while the internet moves to IPv6. Tunnelling wraps one inside the other, and NAT64 translates between them.",
+    "where": "IPv4 Address"
+   },
+   {
+    "type": "choice",
+    "q": "With IPv6, every device can have a global address and there's no NAT. What should the network still have?",
+    "options": [
+     "Nothing: no NAT means no risk",
+     "A firewall that blocks unrequested incoming traffic, as NAT happened to for IPv4",
+     "A second NAT",
+     "Only IPv4"
+    ],
+    "answer": 1,
+    "explain": "NAT hid devices as a side effect, but it was never a security control. With IPv6, a stateful firewall does that job on purpose."
+   }
+  ],
+  "next": [
+   {
+    "label": "RFC 5952: how to write IPv6 addresses",
+    "url": "https://www.rfc-editor.org/rfc/rfc5952"
+   }
+  ]
+ },
+ {
   "id": "tcp-handshake",
   "kind": "handshake",
   "category": "Networking",

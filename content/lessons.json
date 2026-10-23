@@ -2617,6 +2617,120 @@
   ]
  },
  {
+  "id": "network-modern",
+  "title": "Modern networks: IPv6, SDN and zero trust",
+  "track": "Foundations",
+  "level": "Beginner",
+  "minutes": 7,
+  "hook": "IPv6, software-defined networks, zero trust and SASE, without the buzzwords.",
+  "what": "IPv4 has about 4.3 billion addresses, which ran out; NAT stretched them. IPv6 addresses are 128 bits, written as eight groups of four hex digits, such as 2001:db8:4a1:10::25. Leading zeros can be dropped, and :: replaces one run of all-zero groups. Every IPv6 interface has a link-local address starting fe80, which only works on its own segment, and most get a global address too, often set up automatically with SLAAC. There are so many addresses that NAT isn't needed, though a firewall still decides what gets in. While both versions are in use, devices run dual stack (IPv4 and IPv6 side by side), and tunnelling or NAT64 joins IPv6-only and IPv4-only networks. Software-defined networking (SDN) splits the control plane (deciding where traffic goes) from the data plane (forwarding it), so one controller programs many devices. SD-WAN applies that to links between sites, choosing the best of several internet connections for each application. VXLAN carries layer 2 networks over layer 3, with about 16 million segment IDs instead of 4,094 VLANs. Zero trust drops the idea of a trusted inside network: every request is checked (who, which device, is it healthy) and given the least access needed. SASE delivers networking and security (secure web gateway, cloud access security broker, zero trust network access, firewall) as a cloud service close to the user. Infrastructure as code (IaC) keeps device and cloud settings as version-controlled files, so changes are reviewed and repeatable.",
+  "example": {
+   "title": "Google's BeyondCorp",
+   "year": "2014",
+   "text": "Google moved its staff off a privileged internal network: instead of trusting anyone on the office network, every request to an internal app is checked against who the user is and the state of their device, wherever they are. Its 2014 paper said perimeter firewalls fail once an attacker is inside, and that mobile and cloud work makes a perimeter hard to hold. It became a model for zero trust.",
+   "source": {
+    "label": "Google Research: BeyondCorp, a new approach to enterprise security",
+    "url": "https://research.google/pubs/beyondcorp-a-new-approach-to-enterprise-security/"
+   }
+  },
+  "defend": [
+   "Give every user and device its own identity, and check it on every request, not just at the edge",
+   "Grant the least access needed, to each application rather than the whole network",
+   "Firewall IPv6 as carefully as IPv4: no NAT doesn't mean no filtering",
+   "Keep network and cloud settings as code, so every change is reviewed and can be rolled back"
+  ],
+  "practice": {
+   "label": "Read a PC's IPv6 addresses in the IPv6 lab",
+   "url": "#lab-ipv6-read"
+  },
+  "checks": [
+   {
+    "q": "Which is the shortest correct way to write 2001:0db8:0000:0000:0000:0000:0000:0001?",
+    "options": [
+     "2001:db8::1",
+     "2001:db8:0:1",
+     "2001::db8::1",
+     "21:db8::1"
+    ],
+    "answer": 0,
+    "why": "Drop leading zeros in each group and replace the one run of zero groups with ::. :: can only appear once, and you can't drop zeros from the end of a group.",
+    "see": "what"
+   },
+   {
+    "q": "What does SDN separate?",
+    "options": [
+     "IPv4 from IPv6",
+     "The control plane (deciding where traffic goes) from the data plane (forwarding it)",
+     "Guests from staff",
+     "Wired from wireless"
+    ],
+    "answer": 1,
+    "why": "With the decisions made centrally by a controller, many switches and routers can be programmed at once.",
+    "see": "concept"
+   },
+   {
+    "q": "Why did Google move away from trusting its internal network?",
+    "options": [
+     "It ran out of IPv4 addresses",
+     "Once an attacker is inside a perimeter, they can reach a lot; and mobile and cloud work make a perimeter hard to hold",
+     "Its firewalls were too slow",
+     "It moved everything to SD-WAN"
+    ],
+    "answer": 1,
+    "why": "Zero trust checks each request on its own merits, so being on the network grants nothing.",
+    "see": "example"
+   }
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "The new names, in one line each",
+   "items": [
+    {
+     "label": "SDN",
+     "icon": "chip",
+     "text": "A controller decides where traffic goes; switches just forward it."
+    },
+    {
+     "label": "SD-WAN",
+     "icon": "globe",
+     "text": "Links between sites, routed per application over the best connection."
+    },
+    {
+     "label": "VXLAN",
+     "icon": "server",
+     "text": "Layer 2 networks carried over layer 3, with 16 million segments."
+    },
+    {
+     "label": "SASE",
+     "icon": "cloud",
+     "text": "Networking and security delivered as a cloud service, close to each user."
+    },
+    {
+     "label": "Infrastructure as code",
+     "icon": "doc",
+     "text": "Settings kept as files: reviewed, versioned and repeatable."
+    }
+   ]
+  },
+  "keys": [
+   {
+    "icon": "globe",
+    "label": "IPv6",
+    "text": "128-bit addresses: enough for everything, so no NAT needed."
+   },
+   {
+    "icon": "router",
+    "label": "Software-defined",
+    "text": "Central software decides; network devices just forward."
+   },
+   {
+    "icon": "lock",
+    "label": "Zero trust",
+    "text": "No trusted inside: every request is checked and limited."
+   }
+  ]
+ },
+ {
   "id": "encryption",
   "title": "Encryption & hashing",
   "track": "Foundations",

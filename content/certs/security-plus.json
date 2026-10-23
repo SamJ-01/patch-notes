@@ -50,9 +50,17 @@
       {
        "type": "lesson",
        "id": "frameworks"
+      },
+      {
+       "type": "lesson",
+       "id": "network-modern"
+      },
+      {
+       "type": "lesson",
+       "id": "network-ops"
       }
      ],
-     "gap": "The CIA triad, control categories and types, encryption, hashing (hands-on), certificates and PKI and authentication are covered. Zero trust is only in the practice questions so far, and physical security and change management aren't covered yet."
+     "gap": "The CIA triad, control categories and types, encryption, hashing (hands-on), certificates and PKI and authentication are covered. Zero trust is explained in Modern networks and change management in Running a network; physical security isn't covered in depth yet."
     }
    ]
   },
@@ -188,9 +196,13 @@
       {
        "type": "lesson",
        "id": "network-ops"
+      },
+      {
+       "type": "lesson",
+       "id": "network-modern"
       }
      ],
-     "gap": "Network design, segmentation (VLANs, routing and ACLs, hands-on), cloud and IoT/OT are covered, and resilience basics (UPS, generators, hot, warm and cold sites, RPO and RTO) are taught in Running a network. Zero-trust architecture in depth and data protection design aren't yet."
+     "gap": "Network design, segmentation (VLANs, routing and ACLs, hands-on), cloud and IoT/OT are covered, resilience basics (UPS, generators, hot, warm and cold sites, RPO and RTO) are taught in Running a network, and zero trust, SDN and SASE in Modern networks. Data protection design isn't covered in depth yet."
     }
    ]
   },
