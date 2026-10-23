@@ -818,7 +818,8 @@
    "name": "Marcus Bell (Halstead & Rowe IT)",
    "contact": {
     "name": "Marcus Bell",
-    "role": "Client: Halstead & Rowe IT"
+    "role": "Client: Halstead & Rowe IT",
+    "photo": "img/agency/marcus.webp"
    },
    "requests": [
     {
@@ -853,5 +854,12 @@
  "handover": {
   "links": "Three alerts were one attack: the malware on HAL-PC-07 stole j.doyle's saved logins, which were used to RDP into FS01 as svc-backup, copy client data out, then delete the backups ready to encrypt. Seeing them as one incident is the whole job.",
   "model": "Real incident, caught before encryption: j.doyle opened Statement_Nov.pdf.js on HAL-PC-07, which ran an infostealer (winupd.exe, beaconing to 203.0.113.45) that took her saved logins. At 22:40 those logins were used to RDP into FS01 as svc-backup; rclone copied D:\\Clients to 198.51.100.77 (sync.fileshare.example), 23.4 GB, a data breach; then at 23:36 shadow copies and the backup catalogue were deleted and recovery turned off, the step before encryption. HAL-PC-07 and FS01 isolated (powered on), j.doyle reset and svc-backup disabled, C2 and exfil addresses blocked, Marcus told so the firm can run its incident plan and assess the breach. BACKUP02 (off-domain, immutable) is intact. Noise: the RECEPTION-PC antivirus quarantine (already cleaned) and the oversized but scheduled Veeam backup (CHG-4120). Next shift: look for the stolen logins used elsewhere, check other servers for rclone and svc-backup logons, and confirm nothing was encrypted."
+ },
+ "clientImage": {
+  "src": "img/agency/halstead-rowe-office.webp",
+  "small": "img/agency/halstead-rowe-office-800.webp",
+  "width": 1536,
+  "height": 427,
+  "alt": "Halstead & Rowe, a small accountancy office at night: a two-storey brick building with one lit upstairs window, a brass nameplate by the door, a quiet rainy high street and parked cars"
  }
 }

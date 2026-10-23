@@ -60,13 +60,12 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   and shift-03 (Halstead & Rowe: a .pdf.js infostealer on a workstation, stolen logins used to RDP into FS01 as the
   svc-backup account, rclone exfiltration of client data, then shadow-copy/catalogue deletion caught before encryption;
   two noise alerts, a cleaned AV quarantine and an oversized but scheduled Veeam backup. The Diagnose step for `malware`,
-  `ransomware` and `data-breach`, mapped to Security+ 4.8). shift-03 has no client scene or client-contact portrait yet
-  (the SOC team reuses the agency's own portraits; the client contact falls back to initials, and the card/dossier fall
-  back to the drawn `agency` scene until an image is made). shift-04 (Wrenfield & Co, an online shop: SQL injection
+  `ransomware` and `data-breach`, mapped to Security+ 4.8). shift-03 has a client scene (Halstead & Rowe office at night) and a
+  client-contact portrait (Marcus Bell); the SOC team reuses the agency's own portraits. shift-04 (Wrenfield & Co, an online shop: SQL injection
   reading the users table overnight, stored XSS stealing an admin session, that session walking order IDs (IDOR) and
   leaking a cloud storage key, then a customer-exports bucket downloaded with it; two noise alerts, an approved scanner
   and the scheduled analytics export. The Diagnose step for `web-sqli`, `web-xss`, `web-access` and `cloud`, mapped to
-  Security+ 4.8; same no-image state as shift-03).
+  Security+ 4.8; client scene Wrenfield & Co shopfront, client contact Nadia Shah).
   A shift (`content/agency/*.json`, `static/js/agency/`, route `#agency-<id>`, tests `tests/agency.test.mjs`: every shift
   must be finishable with every check passed from its own content, logs visible at the start mustn't postdate it) opens with
   clocking in (badge tap, the lead's briefing as chat, the client file), then the desk (queue, alert, messages), then clock out.

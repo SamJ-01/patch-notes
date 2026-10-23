@@ -790,7 +790,8 @@
    "name": "Nadia Shah (Wrenfield IT)",
    "contact": {
     "name": "Nadia Shah",
-    "role": "Client: Wrenfield IT"
+    "role": "Client: Wrenfield IT",
+    "photo": "img/agency/nadia.webp"
    },
    "requests": [
     {
@@ -840,5 +841,12 @@
  "handover": {
   "links": "Three alerts were one attack from 203.0.113.90: SQL injection read the users table overnight, stored XSS stole an admin's session this morning, and that session handed over a cloud key used to download the customer bucket. Seeing them as one incident is the job.",
   "model": "Real incident, one attacker (203.0.113.90). Overnight, SQL injection against /products ran a UNION that read email and password_hash from the users table (the WAF only logged it). This morning, a stored XSS script in review REV-8842 stole admin s.okafor's session cookie when she opened the review queue; the attacker reused it from 203.0.113.90, read customer orders by walking IDs (broken access control), and opened Integrations, where the app's storage key is shown. At 09:41 that key (AKIA-WRENFIELD-APP) was used from 203.0.113.90 to download 4.8 GB of customer exports from wrenfield-exports: the breach. Contained: WAF rule added for the injection, review removed, s.okafor reset with sessions ended, 203.0.113.90 blocked, the storage key revoked and rotated and the bucket locked to the app server, Nadia told to run the breach process. Noise: the approved overnight scan (CHG-5210) and the scheduled analytics export (svc-analytics). Next shift: get dev to ship parameterised queries, output encoding and order ownership checks, move the app to short-lived cloud credentials, and treat the exposed customer data and password hashes as breached (forced resets, ICO assessment)."
+ },
+ "clientImage": {
+  "src": "img/agency/wrenfield-shop.webp",
+  "small": "img/agency/wrenfield-shop-800.webp",
+  "width": 1536,
+  "height": 429,
+  "alt": "Wrenfield & Co, a homeware and lighting shop at dusk: a warmly lit shopfront full of lamps and vases, a painted fascia sign, a tidy pavement and street lamps against a teal evening sky"
  }
 }
