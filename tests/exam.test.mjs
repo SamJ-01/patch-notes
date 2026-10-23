@@ -87,10 +87,13 @@ test("the study plan mixes hands-on steps in, even with many wrong answers", () 
   assert.ok(r.plan.some(p => p.kind === "activity"));
 });
 
-test("every cert: each domain can fill its share of a mock, and a mock follows the domain weights", () => {
-  for (const id of ["security-plus", "pentest-plus"]) {
+test("every cert: each domain has twice its share of a mock (so a second mock isn't mostly repeats), and a mock follows the weights", () => {
+  for (const id of ["network-plus", "security-plus", "pentest-plus"]) {
     const c = read(`../content/certs/${id}.json`), bank = read(`../content/certs/${id}-questions.json`).questions;
-    for (const d of c.domains) assert.ok(bank.filter(q => q.objective === d.id).length >= Math.ceil((d.weight / 100) * ex.MOCK_SIZE), `${id} domain ${d.id} can fill its share of a mock`);
+    for (const d of c.domains) {
+      const have = bank.filter(q => q.objective.split(".")[0] === d.id.split(".")[0]).length, share = Math.ceil((d.weight / 100) * ex.MOCK_SIZE);
+      assert.ok(have >= 2 * share, `${id} domain ${d.id}: ${have} questions, a mock draws up to ${share}`);
+    }
     const mock = ex.buildMock(bank, c.domains, ex.MOCK_SIZE, seeded(7));
     assert.equal(mock.length, ex.MOCK_SIZE);
     assert.equal(new Set(mock.map(q => q.id)).size, ex.MOCK_SIZE, "no repeats");

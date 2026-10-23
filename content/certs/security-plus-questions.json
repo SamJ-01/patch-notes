@@ -1,12 +1,12 @@
 {
  "cert": "security-plus",
  "exam": "SY0-701",
- "reviewed": "2026-10-22",
+ "reviewed": "2026-10-23",
  "note": "Original practice questions written for Patch Notes. They are not real exam questions.",
  "questions": [
   {
    "id": "sp-1.0-1",
-   "objective": "1.0",
+   "objective": "1.2",
    "stem": "Ransomware encrypts a hospital's patient records so staff can't open them. Which part of the CIA triad is hit most directly?",
    "options": [
     {
@@ -33,7 +33,7 @@
   },
   {
    "id": "sp-1.0-2",
-   "objective": "1.0",
+   "objective": "1.4",
    "stem": "A vendor publishes a file and its SHA-256 hash on the same web page. What does a matching hash prove to someone who downloads it?",
    "options": [
     {
@@ -60,7 +60,7 @@
   },
   {
    "id": "sp-1.0-3",
-   "objective": "1.0",
+   "objective": "1.4",
    "stem": "Which proves that a software update came from its vendor and wasn't changed on the way?",
    "options": [
     {
@@ -87,7 +87,7 @@
   },
   {
    "id": "sp-1.0-4",
-   "objective": "1.0",
+   "objective": "1.4",
    "stem": "Why does each stored password get its own random salt?",
    "options": [
     {
@@ -114,7 +114,7 @@
   },
   {
    "id": "sp-1.0-5",
-   "objective": "1.0",
+   "objective": "1.4",
    "stem": "Which statement about symmetric encryption, such as AES, is true?",
    "options": [
     {
@@ -141,7 +141,7 @@
   },
   {
    "id": "sp-1.0-6",
-   "objective": "1.0",
+   "objective": "1.4",
    "stem": "Why should a new system not use SHA-1 to sign documents or certificates?",
    "options": [
     {
@@ -168,7 +168,7 @@
   },
   {
    "id": "sp-1.0-7",
-   "objective": "1.0",
+   "objective": "1.1",
    "stem": "A sign at a site entrance says the area is watched by CCTV. What type of control is the sign mainly?",
    "options": [
     {
@@ -195,7 +195,7 @@
   },
   {
    "id": "sp-1.0-8",
-   "objective": "1.0",
+   "objective": "1.2",
    "stem": "What is the core idea of zero trust?",
    "options": [
     {
@@ -222,7 +222,7 @@
   },
   {
    "id": "sp-1.0-9",
-   "objective": "1.0",
+   "objective": "1.2",
    "stem": "Which gives non-repudiation for an email?",
    "options": [
     {
@@ -249,7 +249,7 @@
   },
   {
    "id": "sp-1.0-10",
-   "objective": "1.0",
+   "objective": "1.4",
    "stem": "Your browser trusts the certificate for shop.example.com. Who vouched that the public key in it belongs to that site?",
    "options": [
     {
@@ -276,7 +276,7 @@
   },
   {
    "id": "sp-1.0-11",
-   "objective": "1.0",
+   "objective": "1.4",
    "stem": "A web server's private key has been stolen. What should happen to its certificate?",
    "options": [
     {
@@ -303,7 +303,7 @@
   },
   {
    "id": "sp-1.0-12",
-   "objective": "1.0",
+   "objective": "1.4",
    "stem": "Which protocol lets a client ask about the revocation status of one certificate, instead of downloading a whole list?",
    "options": [
     {
@@ -330,7 +330,7 @@
   },
   {
    "id": "sp-1.0-13",
-   "objective": "1.0",
+   "objective": "1.4",
    "stem": "An administrator needs a certificate for a new web server. What do they send to the certificate authority?",
    "options": [
     {
@@ -357,7 +357,7 @@
   },
   {
    "id": "sp-1.0-14",
-   "objective": "1.0",
+   "objective": "1.4",
    "stem": "A company buys a wildcard certificate for *.example.com. Which name does it cover?",
    "options": [
     {
@@ -384,7 +384,7 @@
   },
   {
    "id": "sp-1.0-15",
-   "objective": "1.0",
+   "objective": "1.4",
    "stem": "Why do certificate authorities sign website certificates with an intermediate CA instead of their root CA?",
    "options": [
     {
@@ -411,7 +411,7 @@
   },
   {
    "id": "sp-1.0-16",
-   "objective": "1.0",
+   "objective": "1.1",
    "stem": "A firewall rule blocks inbound RDP from the internet. Which control category and type is it?",
    "options": [
     {
@@ -438,7 +438,7 @@
   },
   {
    "id": "sp-1.0-17",
-   "objective": "1.0",
+   "objective": "1.1",
    "stem": "An intrusion detection system (IDS) raises an alert when it sees a known attack pattern, but lets the traffic through. What type of control is it?",
    "options": [
     {
@@ -465,7 +465,7 @@
   },
   {
    "id": "sp-1.0-18",
-   "objective": "1.0",
+   "objective": "1.1",
    "stem": "An old machine can't run the company's endpoint protection, so it's moved to an isolated network segment with strict firewall rules and extra monitoring. What type of control is this?",
    "options": [
     {
@@ -492,7 +492,7 @@
   },
   {
    "id": "sp-1.0-19",
-   "objective": "1.0",
+   "objective": "1.1",
    "stem": "Every new member of staff must read and sign an acceptable use policy. Which control category and type is it?",
    "options": [
     {
@@ -519,7 +519,7 @@
   },
   {
    "id": "sp-1.0-20",
-   "objective": "1.0",
+   "objective": "1.1",
    "stem": "Which two are technical controls? (Choose two.)",
    "options": [
     {
@@ -546,7 +546,7 @@
   },
   {
    "id": "sp-2.0-1",
-   "objective": "2.0",
+   "objective": "2.2",
    "stem": "Someone phones the finance team pretending to be the managing director and demands an urgent payment. What is this?",
    "options": [
     {
@@ -573,7 +573,7 @@
   },
   {
    "id": "sp-2.0-2",
-   "objective": "2.0",
+   "objective": "2.4",
    "stem": "Sign-in logs show one address trying a single common password against hundreds of different accounts, slowly. What is this?",
    "options": [
     {
@@ -600,7 +600,7 @@
   },
   {
    "id": "sp-2.0-3",
-   "objective": "2.0",
+   "objective": "2.3",
    "stem": "Typing a single quote (') into a website's login form returns a database error. What does this most suggest?",
    "options": [
     {
@@ -627,7 +627,7 @@
   },
   {
    "id": "sp-2.0-4",
-   "objective": "2.0",
+   "objective": "2.3",
    "stem": "A forum lets someone post a comment containing a script that then runs in every visitor's browser. What is this?",
    "options": [
     {
@@ -654,7 +654,7 @@
   },
   {
    "id": "sp-2.0-5",
-   "objective": "2.0",
+   "objective": "2.5",
    "stem": "What best limits the damage of a ransomware attack?",
    "options": [
     {
@@ -681,7 +681,7 @@
   },
   {
    "id": "sp-2.0-6",
-   "objective": "2.0",
+   "objective": "2.3",
    "stem": "What is a zero-day vulnerability?",
    "options": [
     {
@@ -708,7 +708,7 @@
   },
   {
    "id": "sp-2.0-7",
-   "objective": "2.0",
+   "objective": "2.2",
    "stem": "Attackers compromise a widely used software library's update, so every application that installs it gets malware. What is this?",
    "options": [
     {
@@ -735,7 +735,7 @@
   },
   {
    "id": "sp-2.0-8",
-   "objective": "2.0",
+   "objective": "2.4",
    "stem": "Which is the strongest sign that an account has been taken over?",
    "options": [
     {
@@ -762,7 +762,7 @@
   },
   {
    "id": "sp-3.0-1",
-   "objective": "3.0",
+   "objective": "3.2",
    "stem": "Why put guest Wi-Fi in its own VLAN, with firewall rules between it and the office network?",
    "options": [
     {
@@ -789,7 +789,7 @@
   },
   {
    "id": "sp-3.0-2",
-   "objective": "3.0",
+   "objective": "3.2",
    "stem": "Where should a public web server be placed?",
    "options": [
     {
@@ -816,7 +816,7 @@
   },
   {
    "id": "sp-3.0-3",
-   "objective": "3.0",
+   "objective": "3.1",
    "stem": "A company rents virtual machines from a cloud provider (IaaS). Who patches the operating system inside those VMs?",
    "options": [
     {
@@ -843,7 +843,7 @@
   },
   {
    "id": "sp-3.0-4",
-   "objective": "3.0",
+   "objective": "3.3",
    "stem": "A laptop has full-disk encryption. When does this protect the data?",
    "options": [
     {
@@ -870,7 +870,7 @@
   },
   {
    "id": "sp-3.0-5",
-   "objective": "3.0",
+   "objective": "3.4",
    "stem": "A business runs two firewalls as an active-passive pair. Which security goal does this mainly support?",
    "options": [
     {
@@ -897,7 +897,7 @@
   },
   {
    "id": "sp-3.0-6",
-   "objective": "3.0",
+   "objective": "3.1",
    "stem": "Factory control systems (OT) often can't be patched quickly. What is the usual way to protect them in the meantime?",
    "options": [
     {
@@ -924,7 +924,7 @@
   },
   {
    "id": "sp-3.0-7",
-   "objective": "3.0",
+   "objective": "4.5",
    "stem": "An administrator manages switches with Telnet. What should replace it?",
    "options": [
     {
@@ -951,7 +951,7 @@
   },
   {
    "id": "sp-3.0-8",
-   "objective": "3.0",
+   "objective": "4.6",
    "stem": "What does the principle of least privilege mean?",
    "options": [
     {
@@ -978,7 +978,7 @@
   },
   {
    "id": "sp-4.0-1",
-   "objective": "4.0",
+   "objective": "4.9",
    "stem": "Which line from a Linux server's /var/log/auth.log shows that an attacker got in?",
    "options": [
     {
@@ -1005,7 +1005,7 @@
   },
   {
    "id": "sp-4.0-2",
-   "objective": "4.0",
+   "objective": "4.8",
    "stem": "You confirm that an attacker is logged in to a server. Which incident response step comes before removing their tools?",
    "options": [
     {
@@ -1032,7 +1032,7 @@
   },
   {
    "id": "sp-4.0-3",
-   "objective": "4.0",
+   "objective": "4.4",
    "stem": "What does a SIEM mainly do?",
    "options": [
     {
@@ -1059,7 +1059,7 @@
   },
   {
    "id": "sp-4.0-4",
-   "objective": "4.0",
+   "objective": "4.9",
    "stem": "An 'impossible travel' alert fires because a user appears in two countries 17 minutes apart. The company's VPN exit recently moved abroad. What is the alert?",
    "options": [
     {
@@ -1086,7 +1086,7 @@
   },
   {
    "id": "sp-4.0-5",
-   "objective": "4.0",
+   "objective": "4.8",
    "stem": "An attacker guessed a user's VPN password and then created their own admin account on a server. Which containment is most complete?",
    "options": [
     {
@@ -1113,7 +1113,7 @@
   },
   {
    "id": "sp-4.0-6",
-   "objective": "4.0",
+   "objective": "4.5",
    "stem": "An email appears to come from your bank, but its headers show SPF fail and DKIM fail. What should you do?",
    "options": [
     {
@@ -1140,7 +1140,7 @@
   },
   {
    "id": "sp-4.0-7",
-   "objective": "4.0",
+   "objective": "4.3",
    "stem": "Which should be patched first?",
    "options": [
     {
@@ -1167,7 +1167,7 @@
   },
   {
    "id": "sp-4.0-8",
-   "objective": "4.0",
+   "objective": "4.6",
    "stem": "Which kind of multi-factor authentication best resists phishing?",
    "options": [
     {
@@ -1194,7 +1194,7 @@
   },
   {
    "id": "sp-4.0-9",
-   "objective": "4.0",
+   "objective": "4.1",
    "stem": "Which change does most to stop SSH password guessing from succeeding?",
    "options": [
     {
@@ -1221,7 +1221,7 @@
   },
   {
    "id": "sp-5.0-1",
-   "objective": "5.0",
+   "objective": "5.2",
    "stem": "A company buys cyber insurance. Which risk response is this?",
    "options": [
     {
@@ -1248,7 +1248,7 @@
   },
   {
    "id": "sp-5.0-2",
-   "objective": "5.0",
+   "objective": "5.2",
    "stem": "Leadership decides that a small risk in a legacy app costs more to fix than to live with, and records the decision. Which risk response is this?",
    "options": [
     {
@@ -1275,7 +1275,7 @@
   },
   {
    "id": "sp-5.0-3",
-   "objective": "5.0",
+   "objective": "5.1",
    "stem": "What is the difference between a policy and a procedure?",
    "options": [
     {
@@ -1302,7 +1302,7 @@
   },
   {
    "id": "sp-5.0-4",
-   "objective": "5.0",
+   "objective": "5.2",
    "stem": "What does a recovery time objective (RTO) set?",
    "options": [
     {
@@ -1329,7 +1329,7 @@
   },
   {
    "id": "sp-5.0-5",
-   "objective": "5.0",
+   "objective": "5.2",
    "stem": "A system has a recovery point objective (RPO) of one hour. Which backup approach meets it?",
    "options": [
     {
@@ -1356,7 +1356,7 @@
   },
   {
    "id": "sp-5.0-6",
-   "objective": "5.0",
+   "objective": "5.3",
    "stem": "Before a supplier is given access to customer data, what matters most?",
    "options": [
     {
@@ -1383,7 +1383,7 @@
   },
   {
    "id": "sp-5.0-7",
-   "objective": "5.0",
+   "objective": "5.4",
    "stem": "Under UK GDPR, a personal data breach that's likely to put people's rights at risk must be reported to the ICO how quickly?",
    "options": [
     {
@@ -1410,7 +1410,7 @@
   },
   {
    "id": "sp-5.0-8",
-   "objective": "5.0",
+   "objective": "5.6",
    "stem": "Which security awareness approach works best against phishing?",
    "options": [
     {
@@ -1432,6 +1432,654 @@
      "text": "Banning external email",
      "correct": false,
      "why": "Usually impossible for a business, and phishing also arrives by text and phone."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.3-1",
+   "objective": "1.3",
+   "stem": "A firewall change is approved for Saturday night. What should be written down before it starts, in case it goes wrong?",
+   "options": [
+    {
+     "text": "A backout plan: the exact steps to put the old configuration back",
+     "correct": true,
+     "why": "If the change breaks something, a tested way back limits the outage."
+    },
+    {
+     "text": "The names of everyone who uses the network",
+     "correct": false,
+     "why": "That isn't what makes a change safe to undo."
+    },
+    {
+     "text": "A new password for the firewall",
+     "correct": false,
+     "why": "Unrelated to undoing a change."
+    },
+    {
+     "text": "Nothing: changes can be undone from memory",
+     "correct": false,
+     "why": "Under pressure at night, memory fails. Change management writes it down first."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.3-2",
+   "objective": "1.3",
+   "stem": "Why does a change advisory board review a change before it's made?",
+   "options": [
+    {
+     "text": "To check its impact, risk and timing, and that the right people know about it",
+     "correct": true,
+     "why": "Approval is about understanding what could break and planning around it, such as a maintenance window."
+    },
+    {
+     "text": "To make changes slower on purpose",
+     "correct": false,
+     "why": "Delay isn't the goal; avoiding unplanned outages and security gaps is."
+    },
+    {
+     "text": "Because only the board can type the commands",
+     "correct": false,
+     "why": "Technical staff make the change; the board approves it."
+    },
+    {
+     "text": "To replace testing",
+     "correct": false,
+     "why": "Review complements testing; it doesn't replace it."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.1-1",
+   "objective": "2.1",
+   "stem": "A group defaces a company's website with a political message after the company announced a controversial decision. Which threat actor fits best?",
+   "options": [
+    {
+     "text": "Hacktivists",
+     "correct": true,
+     "why": "Their motive is a cause or a message, not money."
+    },
+    {
+     "text": "An organised crime group",
+     "correct": false,
+     "why": "Criminal groups are usually after money, such as ransoms or fraud."
+    },
+    {
+     "text": "A nation-state",
+     "correct": false,
+     "why": "Nation-states usually want long-term, quiet access for espionage, not public defacement."
+    },
+    {
+     "text": "Shadow IT",
+     "correct": false,
+     "why": "Shadow IT is staff using unapproved technology, not an attack."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.1-2",
+   "objective": "2.1",
+   "stem": "A departing employee copies the customer list to a personal cloud account the day before leaving. What is this?",
+   "options": [
+    {
+     "text": "An insider threat",
+     "correct": true,
+     "why": "Someone with legitimate access misusing it. Monitoring data movement and removing access promptly both help."
+    },
+    {
+     "text": "A supply chain attack",
+     "correct": false,
+     "why": "That compromises a supplier to reach its customers."
+    },
+    {
+     "text": "A zero-day exploit",
+     "correct": false,
+     "why": "No software flaw was used: the access was already theirs."
+    },
+    {
+     "text": "A denial of service attack",
+     "correct": false,
+     "why": "Nothing was made unavailable."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.2-3",
+   "objective": "2.2",
+   "stem": "A new smart camera is put on the office network with its default admin password unchanged. Why is this a risk?",
+   "options": [
+    {
+     "text": "Default passwords are published online, so anyone who can reach the camera can log in",
+     "correct": true,
+     "why": "Default credentials are one of the most common ways into IoT devices. Change them before connecting."
+    },
+    {
+     "text": "It makes the camera's video blurry",
+     "correct": false,
+     "why": "Passwords don't affect image quality."
+    },
+    {
+     "text": "Cameras can't use passwords at all",
+     "correct": false,
+     "why": "They can, and they should have strong unique ones."
+    },
+    {
+     "text": "It's only a risk if the camera is outdoors",
+     "correct": false,
+     "why": "Where it's mounted doesn't matter: what matters is who can reach it on the network."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.4-3",
+   "objective": "2.4",
+   "stem": "A server that normally talks only to the office starts contacting an unknown internet address every 60 seconds, exactly. What does this most suggest?",
+   "options": [
+    {
+     "text": "Malware beaconing to a command-and-control server",
+     "correct": true,
+     "why": "Regular, automatic check-ins to an unknown address are a classic sign of command and control."
+    },
+    {
+     "text": "A scheduled backup",
+     "correct": false,
+     "why": "Backups go to known destinations on a schedule, not every minute to an unknown address."
+    },
+    {
+     "text": "Someone browsing the web from the server",
+     "correct": false,
+     "why": "People don't connect at precise 60-second intervals."
+    },
+    {
+     "text": "Normal time synchronisation",
+     "correct": false,
+     "why": "NTP talks to known time servers, and not this often."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.5-1",
+   "objective": "2.5",
+   "stem": "Which control stops unknown programs, including new malware, from running at all on a kiosk PC?",
+   "options": [
+    {
+     "text": "Application allow listing",
+     "correct": true,
+     "why": "Only approved programs can run, so anything new is blocked by default."
+    },
+    {
+     "text": "Antivirus signatures alone",
+     "correct": false,
+     "why": "Signatures only catch malware that's already known."
+    },
+    {
+     "text": "A longer password policy",
+     "correct": false,
+     "why": "Passwords don't control which programs run."
+    },
+    {
+     "text": "A bigger hard drive",
+     "correct": false,
+     "why": "Storage has nothing to do with it."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.5-2",
+   "objective": "2.5",
+   "stem": "A laptop is confirmed to have ransomware. What should happen first?",
+   "options": [
+    {
+     "text": "Isolate it from the network",
+     "correct": true,
+     "why": "Isolation stops the ransomware spreading to shares and other machines while you investigate."
+    },
+    {
+     "text": "Pay the ransom quickly",
+     "correct": false,
+     "why": "Paying funds crime and doesn't guarantee recovery; containment comes first."
+    },
+    {
+     "text": "Reformat it immediately",
+     "correct": false,
+     "why": "That destroys evidence you may need, and doesn't stop spread that's already started."
+    },
+    {
+     "text": "Email everyone a warning from the infected laptop",
+     "correct": false,
+     "why": "Using the infected machine risks spreading the infection."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.3-1",
+   "objective": "3.3",
+   "stem": "A test database needs realistic data, but must not contain real customers' card numbers. Which technique fits?",
+   "options": [
+    {
+     "text": "Data masking: replace the real values with realistic fake ones",
+     "correct": true,
+     "why": "Testers get data that looks right, with nothing real to leak."
+    },
+    {
+     "text": "Full-disk encryption on the test server",
+     "correct": false,
+     "why": "Encryption protects data at rest, but anyone using the system still sees the real numbers."
+    },
+    {
+     "text": "Hashing the whole database file",
+     "correct": false,
+     "why": "A hash proves integrity; it doesn't hide the values from users."
+    },
+    {
+     "text": "Moving the database to a faster server",
+     "correct": false,
+     "why": "Speed doesn't protect data."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.4-1",
+   "objective": "3.4",
+   "stem": "Why should at least one copy of backups be offline or immutable?",
+   "options": [
+    {
+     "text": "So ransomware, or an attacker with admin access, can't encrypt or delete it",
+     "correct": true,
+     "why": "Attackers target backups first. A copy they can't reach or change is what lets you recover."
+    },
+    {
+     "text": "Because offline backups are faster to restore",
+     "correct": false,
+     "why": "They're often slower; their value is that they survive the attack."
+    },
+    {
+     "text": "To save electricity",
+     "correct": false,
+     "why": "That isn't the security reason."
+    },
+    {
+     "text": "Because online backups can't be encrypted",
+     "correct": false,
+     "why": "They can; the point is that attackers can't reach the offline copy."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.1-1",
+   "objective": "4.1",
+   "stem": "Staff use company phones for email. Which tool lets IT enforce a screen lock, encryption and remote wipe on them?",
+   "options": [
+    {
+     "text": "Mobile device management (MDM)",
+     "correct": true,
+     "why": "MDM applies and enforces security settings on enrolled devices, and can wipe a lost one."
+    },
+    {
+     "text": "A VPN",
+     "correct": false,
+     "why": "A VPN protects traffic, not the device's settings."
+    },
+    {
+     "text": "A SIEM",
+     "correct": false,
+     "why": "A SIEM collects and correlates logs; it doesn't configure phones."
+    },
+    {
+     "text": "A load balancer",
+     "correct": false,
+     "why": "That spreads web traffic across servers."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.2-1",
+   "objective": "4.2",
+   "stem": "Why does a vulnerability management programme start with an accurate asset inventory?",
+   "options": [
+    {
+     "text": "You can't patch or protect devices and software you don't know you have",
+     "correct": true,
+     "why": "Unknown assets go unscanned and unpatched, which is how many breaches start."
+    },
+    {
+     "text": "Because auditors like spreadsheets",
+     "correct": false,
+     "why": "The value is security, not paperwork."
+    },
+    {
+     "text": "It replaces the need for scanning",
+     "correct": false,
+     "why": "The inventory tells you what to scan; it doesn't replace scanning."
+    },
+    {
+     "text": "It makes devices faster",
+     "correct": false,
+     "why": "An inventory doesn't change performance."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.2-2",
+   "objective": "4.2",
+   "stem": "Old laptops are being given to a charity. What must happen to their drives first?",
+   "options": [
+    {
+     "text": "Securely sanitise or destroy them, and keep a record (certificate) that it was done",
+     "correct": true,
+     "why": "Deleting files or reformatting can leave data recoverable. Sanitisation and a record prove it's gone."
+    },
+    {
+     "text": "Delete the user's files and empty the recycle bin",
+     "correct": false,
+     "why": "Deleted files can often be recovered."
+    },
+    {
+     "text": "Nothing, as long as the passwords are changed",
+     "correct": false,
+     "why": "Passwords don't stop someone reading the drive directly."
+    },
+    {
+     "text": "A quick format",
+     "correct": false,
+     "why": "A quick format leaves the data on the disk."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.3-1",
+   "objective": "4.3",
+   "stem": "Why do credentialed vulnerability scans find more than non-credentialed ones?",
+   "options": [
+    {
+     "text": "They log in and check installed software and settings from inside, not just what's visible over the network",
+     "correct": true,
+     "why": "An outside view misses missing patches and weak settings that only show up once logged in."
+    },
+    {
+     "text": "They scan faster",
+     "correct": false,
+     "why": "Speed isn't the reason; depth is."
+    },
+    {
+     "text": "They're allowed to exploit the vulnerabilities",
+     "correct": false,
+     "why": "Scanning, with or without credentials, checks for weaknesses; it doesn't exploit them."
+    },
+    {
+     "text": "They don't need the system to be switched on",
+     "correct": false,
+     "why": "The system must be running either way."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.4-1",
+   "objective": "4.4",
+   "stem": "Analysts are ignoring a SIEM rule because it fires hundreds of times a day on normal activity. What's the right fix?",
+   "options": [
+    {
+     "text": "Tune the rule to cut false positives, so its alerts mean something again",
+     "correct": true,
+     "why": "Alert fatigue makes real attacks easy to miss. Tuning keeps detection useful."
+    },
+    {
+     "text": "Delete every alerting rule",
+     "correct": false,
+     "why": "That removes detection altogether."
+    },
+    {
+     "text": "Hire more analysts to read every alert",
+     "correct": false,
+     "why": "That treats the symptom, not the noisy rule."
+    },
+    {
+     "text": "Turn off logging on the servers",
+     "correct": false,
+     "why": "Then there's nothing to investigate."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.5-1",
+   "objective": "4.5",
+   "stem": "Which control stops staff browsers reaching known malicious websites, whatever device they're on?",
+   "options": [
+    {
+     "text": "DNS filtering or a secure web gateway",
+     "correct": true,
+     "why": "It blocks lookups or requests for known bad sites before a connection is made."
+    },
+    {
+     "text": "Full-disk encryption",
+     "correct": false,
+     "why": "That protects stored data, not browsing."
+    },
+    {
+     "text": "A stronger Wi-Fi password",
+     "correct": false,
+     "why": "That controls who joins the Wi-Fi, not where they browse."
+    },
+    {
+     "text": "Disk defragmentation",
+     "correct": false,
+     "why": "Unrelated to security."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.6-1",
+   "objective": "4.6",
+   "stem": "Staff sign in once and get into email, HR and expenses without signing in again. What is this?",
+   "options": [
+    {
+     "text": "Single sign-on (SSO), often using SAML or OpenID Connect",
+     "correct": true,
+     "why": "One trusted sign-in is shared with the other apps, so there are fewer passwords to steal."
+    },
+    {
+     "text": "Password reuse",
+     "correct": false,
+     "why": "Reuse is the same password typed into many sites; SSO is one sign-in that apps trust."
+    },
+    {
+     "text": "Multi-factor authentication",
+     "correct": false,
+     "why": "MFA is about how many factors you prove, not how many apps you reach."
+    },
+    {
+     "text": "A VPN",
+     "correct": false,
+     "why": "A VPN connects networks; it doesn't sign you in to apps."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.7-1",
+   "objective": "4.7",
+   "stem": "What is a main security benefit of automating routine tasks such as disabling a leaver's accounts?",
+   "options": [
+    {
+     "text": "It happens the same way every time, quickly, without being forgotten",
+     "correct": true,
+     "why": "Consistency and speed reduce mistakes, like an account left active for weeks."
+    },
+    {
+     "text": "It removes the need for any security team",
+     "correct": false,
+     "why": "People still design, check and handle exceptions."
+    },
+    {
+     "text": "It makes every system immune to attack",
+     "correct": false,
+     "why": "Automation reduces errors; it doesn't remove all risk."
+    },
+    {
+     "text": "It hides activity from the logs",
+     "correct": false,
+     "why": "Good automation is logged like anything else."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.7-2",
+   "objective": "4.7",
+   "stem": "A SOC tool automatically isolates a laptop and opens a ticket when malware is confirmed. What is this?",
+   "options": [
+    {
+     "text": "A SOAR playbook (security orchestration, automation and response)",
+     "correct": true,
+     "why": "SOAR runs agreed response steps automatically, so analysts start from a contained situation."
+    },
+    {
+     "text": "A honeypot",
+     "correct": false,
+     "why": "A honeypot is a decoy to attract attackers."
+    },
+    {
+     "text": "Data loss prevention",
+     "correct": false,
+     "why": "DLP watches for sensitive data leaving."
+    },
+    {
+     "text": "A vulnerability scan",
+     "correct": false,
+     "why": "Scanning finds weaknesses; it doesn't respond to incidents."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.8-1",
+   "objective": "4.8",
+   "stem": "Why is a chain of custody kept for evidence from an incident?",
+   "options": [
+    {
+     "text": "To show who handled it and when, so it can be trusted and used in court",
+     "correct": true,
+     "why": "Gaps in custody let others argue the evidence was altered."
+    },
+    {
+     "text": "To speed up the investigation",
+     "correct": false,
+     "why": "It's about trust in the evidence, not speed."
+    },
+    {
+     "text": "Because evidence must be deleted after a week",
+     "correct": false,
+     "why": "Evidence is kept as long as it's needed."
+    },
+    {
+     "text": "To decide the severity of the incident",
+     "correct": false,
+     "why": "Severity is assessed separately."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.9-1",
+   "objective": "4.9",
+   "stem": "You need to know which program started on a laptop just before suspicious traffic began. Which data source shows it?",
+   "options": [
+    {
+     "text": "Endpoint logs or EDR (process start events)",
+     "correct": true,
+     "why": "Endpoint telemetry records processes as they launch, with their parent and command line."
+    },
+    {
+     "text": "Firewall logs",
+     "correct": false,
+     "why": "These show connections, not which program on the laptop made them."
+    },
+    {
+     "text": "The DHCP server's leases",
+     "correct": false,
+     "why": "That shows which address the laptop had, not what ran on it."
+    },
+    {
+     "text": "The building's door access logs",
+     "correct": false,
+     "why": "They show who entered, not what ran on a computer."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.1-1",
+   "objective": "5.1",
+   "stem": "Who decides how sensitive a set of business data is and who may access it?",
+   "options": [
+    {
+     "text": "The data owner, usually a senior business manager",
+     "correct": true,
+     "why": "The owner is accountable for the data and decides its classification and access."
+    },
+    {
+     "text": "The data custodian (IT)",
+     "correct": false,
+     "why": "Custodians look after the data day to day, following the owner's decisions."
+    },
+    {
+     "text": "Any member of staff who uses it",
+     "correct": false,
+     "why": "Users follow the rules; they don't set them."
+    },
+    {
+     "text": "The cloud provider",
+     "correct": false,
+     "why": "The provider hosts it; the organisation remains responsible."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.5-1",
+   "objective": "5.5",
+   "stem": "A tester is given network diagrams and admin credentials before a test. What kind of test is this?",
+   "options": [
+    {
+     "text": "A known-environment test (white box)",
+     "correct": true,
+     "why": "Full information lets testers go deep quickly. Unknown-environment (black box) testers start with nothing."
+    },
+    {
+     "text": "An unknown-environment test (black box)",
+     "correct": false,
+     "why": "In black box testing the tester isn't given internal details."
+    },
+    {
+     "text": "A vulnerability scan",
+     "correct": false,
+     "why": "A scan is automated; this is a test with insider knowledge."
+    },
+    {
+     "text": "An external audit",
+     "correct": false,
+     "why": "An audit checks compliance against a standard, not by testing attacks."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.5-2",
+   "objective": "5.5",
+   "stem": "What is the main difference between an internal audit and an external audit?",
+   "options": [
+    {
+     "text": "Who does it: the organisation's own staff, or an independent outside party",
+     "correct": true,
+     "why": "External audits give independent assurance, often required by regulators or customers."
+    },
+    {
+     "text": "Internal audits only check the network inside the office",
+     "correct": false,
+     "why": "Internal refers to who audits, not where."
+    },
+    {
+     "text": "External audits only check websites",
+     "correct": false,
+     "why": "They can cover anything in scope."
+    },
+    {
+     "text": "There's no difference",
+     "correct": false,
+     "why": "Independence is the difference, and it matters."
     }
    ]
   }

@@ -48,9 +48,11 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   phishing triage ("Which email was it?", `phish-triage.json`: the email inspector, `scenario.emails` with raw headers parsed by
   `engine.parseHeaders`; findings come from `engine.inspectEmail`). Keep its headers, log lines and findings in step: tests check they agree.
 - Exam prep has its own tab (`#exams`, `VIEWS.exams` in 06-learn; cert pages `#cert-<id>` sit under it), so lessons stay free of
-  exam clutter (a lesson only shows its "Prove it" stage). Network+ N10-009 (25 objectives, 60 questions, "Am I ready?" panel), Security+ map (5 domains, 53 questions incl. PKI and control types, mock exams). PenTest+ PT0-003 map (5 domains, 35 questions;
+  exam clutter (a lesson only shows its "Prove it" stage). Network+ N10-009 (25 objectives, 60 questions, "Am I ready?" panel), Security+ SY0-701 (28 objectives, 77 questions, mock exams). PenTest+ PT0-003 (26 objectives, 47 questions;
   mostly defender-side coverage, said in its note), with three evidence labs for it:
-  `scope-roe` (rules of engagement, kind "doc"), `nmap-read` (Nmap 7.94 -sV output) and `validate-findings` (false positives, backports). `build.load_certs()` orders them Network+, Security+, PenTest+ (tested). Lessons `certificates` and
+  `scope-roe` (rules of engagement, kind "doc"), `nmap-read` (Nmap 7.94 -sV output) and `validate-findings` (false positives, backports). `build.load_certs()` orders them Network+, Security+, PenTest+ (tested). All three map
+  and tag questions per objective (not per domain), every objective has a question, and each domain holds at least twice
+  its share of a 20-question mock (tested). When CompTIA publishes a new exam version, add a new map file; keep the old one. Lessons `certificates` and
   `security-controls` back 1.0.
 - PATCH//AGENCY: its own nav tab and hub (`#agency`, `VIEWS.agency` in 07-labs: badge, time clock, rota). Two shifts:
   shift-01 (Pellow & Finch: VPN spray, new sudo account) and shift-02 (Fernhollow Vets: MFA fatigue, hidden inbox rule,

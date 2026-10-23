@@ -6,8 +6,8 @@
   "label": "CompTIA: Security+ certification",
   "url": "https://www.comptia.org/en-us/certifications/security/"
  },
- "reviewed": "2026-10-22",
- "note": "CompTIA's five SY0-701 domains and their weights, each with the lessons and labs that cover it, and honest gaps. It's preparation, not a guarantee of passing, and the practice questions are original, not real exam questions.",
+ "reviewed": "2026-10-23",
+ "note": "CompTIA's 28 SY0-701 objectives in five weighted domains, each with the lessons and labs that practise it, and honest gaps. Titles are short summaries. It's preparation, not a guarantee of passing, and the practice questions are original, not real exam questions.",
  "study": {
   "label": "Professor Messer's free SY0-701 course",
   "url": "https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/sy0-701-comptia-security-plus-course/"
@@ -19,8 +19,20 @@
    "weight": 12,
    "objectives": [
     {
-     "id": "1.0",
-     "title": "General security concepts",
+     "id": "1.1",
+     "title": "Types of security controls",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "security-controls"
+      }
+     ],
+     "gap": "Categories and types are taught with examples and practice questions; there's no hands-on lab."
+    },
+    {
+     "id": "1.2",
+     "title": "Fundamental security concepts",
      "coverage": "partial",
      "activities": [
       {
@@ -29,7 +41,39 @@
       },
       {
        "type": "lesson",
-       "id": "security-controls"
+       "id": "identity"
+      },
+      {
+       "type": "lesson",
+       "id": "network-modern"
+      }
+     ],
+     "gap": "The CIA triad, authentication and zero trust are taught; gap analysis, physical security and deception (honeypots) aren't covered yet."
+    },
+    {
+     "id": "1.3",
+     "title": "Change management",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "network-ops"
+      },
+      {
+       "type": "lab",
+       "id": "slow-network"
+      }
+     ],
+     "gap": "Change management is taught, and a change record is the clue in the slow network lab; approval processes are only in questions."
+    },
+    {
+     "id": "1.4",
+     "title": "Cryptographic solutions",
+     "coverage": "strong",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "hashing"
       },
       {
        "type": "lesson",
@@ -38,29 +82,8 @@
       {
        "type": "lesson",
        "id": "certificates"
-      },
-      {
-       "type": "lab",
-       "id": "hashing"
-      },
-      {
-       "type": "lesson",
-       "id": "identity"
-      },
-      {
-       "type": "lesson",
-       "id": "frameworks"
-      },
-      {
-       "type": "lesson",
-       "id": "network-modern"
-      },
-      {
-       "type": "lesson",
-       "id": "network-ops"
       }
-     ],
-     "gap": "The CIA triad, control categories and types, encryption, hashing (hands-on), certificates and PKI and authentication are covered. Zero trust is explained in Modern networks and change management in Running a network; physical security isn't covered in depth yet."
+     ]
     }
    ]
   },
@@ -70,17 +93,13 @@
    "weight": 22,
    "objectives": [
     {
-     "id": "2.0",
-     "title": "Threats, vulnerabilities & mitigations",
-     "coverage": "strong",
+     "id": "2.1",
+     "title": "Threat actors and motivations",
+     "coverage": "partial",
      "activities": [
       {
        "type": "lesson",
-       "id": "phishing"
-      },
-      {
-       "type": "lesson",
-       "id": "malware"
+       "id": "nation-state"
       },
       {
        "type": "lesson",
@@ -88,16 +107,47 @@
       },
       {
        "type": "lesson",
-       "id": "ddos"
+       "id": "data-breach"
+      }
+     ],
+     "gap": "Nation-state and criminal actors are covered through real cases; hacktivists, insiders and shadow IT are only in questions."
+    },
+    {
+     "id": "2.2",
+     "title": "Threat vectors and attack surfaces",
+     "coverage": "strong",
+     "activities": [
+      {
+       "type": "mission",
+       "id": "phish-triage"
       },
       {
        "type": "lab",
-       "id": "tcp-handshake"
+       "id": "header-inspector"
+      },
+      {
+       "type": "lesson",
+       "id": "phishing"
       },
       {
        "type": "lesson",
        "id": "supply-chain"
       },
+      {
+       "type": "lab",
+       "id": "wifi-survey"
+      },
+      {
+       "type": "lesson",
+       "id": "iot-ot"
+      }
+     ]
+    },
+    {
+     "id": "2.3",
+     "title": "Types of vulnerabilities",
+     "coverage": "partial",
+     "activities": [
       {
        "type": "lesson",
        "id": "web-sqli"
@@ -121,18 +171,22 @@
       {
        "type": "lesson",
        "id": "ai-security"
-      },
-      {
-       "type": "mission",
-       "id": "phish-triage"
-      },
+      }
+     ],
+     "gap": "Web, zero-day and AI-related flaws are taught; memory-safety bugs and hardware flaws aren't, and there's no hands-on exploitation (deliberately)."
+    },
+    {
+     "id": "2.4",
+     "title": "Indicators of malicious activity",
+     "coverage": "strong",
+     "activities": [
       {
        "type": "mission",
        "id": "ssh-brute"
       },
       {
-       "type": "lab",
-       "id": "header-inspector"
+       "type": "agency",
+       "id": "shift-01"
       },
       {
        "type": "agency",
@@ -140,10 +194,48 @@
       },
       {
        "type": "lab",
-       "id": "wifi-survey"
+       "id": "log-detective"
+      },
+      {
+       "type": "lab",
+       "id": "tcp-handshake"
+      },
+      {
+       "type": "lesson",
+       "id": "malware"
+      },
+      {
+       "type": "lesson",
+       "id": "ddos"
       }
-     ],
-     "gap": "Social engineering, malware, web and network attacks (including a hands-on SYN flood) and patching are well covered. A few specific indicators and mitigation techniques aren't."
+     ]
+    },
+    {
+     "id": "2.5",
+     "title": "Mitigation techniques",
+     "coverage": "strong",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "vlans"
+      },
+      {
+       "type": "lab",
+       "id": "intervlan"
+      },
+      {
+       "type": "lab",
+       "id": "permissions"
+      },
+      {
+       "type": "lesson",
+       "id": "security-controls"
+      },
+      {
+       "type": "lesson",
+       "id": "ransomware"
+      }
+     ]
     }
    ]
   },
@@ -153,22 +245,10 @@
    "weight": 18,
    "objectives": [
     {
-     "id": "3.0",
-     "title": "Security architecture",
+     "id": "3.1",
+     "title": "Security of architecture models",
      "coverage": "partial",
      "activities": [
-      {
-       "type": "lesson",
-       "id": "networking"
-      },
-      {
-       "type": "lab",
-       "id": "topologies"
-      },
-      {
-       "type": "lab",
-       "id": "subnetting"
-      },
       {
        "type": "lesson",
        "id": "cloud"
@@ -176,6 +256,22 @@
       {
        "type": "lesson",
        "id": "iot-ot"
+      },
+      {
+       "type": "lesson",
+       "id": "network-modern"
+      }
+     ],
+     "gap": "Cloud responsibility, IoT/OT and software-defined networking are taught; containers, virtualisation and serverless aren't covered yet."
+    },
+    {
+     "id": "3.2",
+     "title": "Securing enterprise infrastructure",
+     "coverage": "strong",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "network-builder"
       },
       {
        "type": "lab",
@@ -187,7 +283,11 @@
       },
       {
        "type": "lab",
-       "id": "network-builder"
+       "id": "topologies"
+      },
+      {
+       "type": "lab",
+       "id": "subnetting"
       },
       {
        "type": "lab",
@@ -195,14 +295,41 @@
       },
       {
        "type": "lesson",
-       "id": "network-ops"
+       "id": "networking"
       },
       {
        "type": "lesson",
-       "id": "network-modern"
+       "id": "wireless"
+      }
+     ]
+    },
+    {
+     "id": "3.3",
+     "title": "Protecting data",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "encryption"
+      },
+      {
+       "type": "lesson",
+       "id": "data-breach"
       }
      ],
-     "gap": "Network design, segmentation (VLANs, routing and ACLs, hands-on), cloud and IoT/OT are covered, resilience basics (UPS, generators, hot, warm and cold sites, RPO and RTO) are taught in Running a network, and zero trust, SDN and SASE in Modern networks. Data protection design isn't covered in depth yet."
+     "gap": "Encryption and the cost of breaches are taught; data classification, masking and tokenisation are only in questions."
+    },
+    {
+     "id": "3.4",
+     "title": "Resilience and recovery",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "network-ops"
+      }
+     ],
+     "gap": "High availability, site types, backups and RPO/RTO are taught; there's no hands-on recovery."
     }
    ]
   },
@@ -212,8 +339,42 @@
    "weight": 28,
    "objectives": [
     {
-     "id": "4.0",
-     "title": "Security operations",
+     "id": "4.1",
+     "title": "Security techniques for computing resources",
+     "coverage": "strong",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "permissions"
+      },
+      {
+       "type": "mission",
+       "id": "ssh-brute"
+      },
+      {
+       "type": "lab",
+       "id": "telnet-ssh"
+      },
+      {
+       "type": "lab",
+       "id": "linux-terminal"
+      },
+      {
+       "type": "lesson",
+       "id": "linux"
+      }
+     ]
+    },
+    {
+     "id": "4.2",
+     "title": "Asset management",
+     "coverage": "none",
+     "activities": [],
+     "gap": "Asset inventory, ownership and secure disposal aren't covered yet beyond practice questions."
+    },
+    {
+     "id": "4.3",
+     "title": "Vulnerability management",
      "coverage": "strong",
      "activities": [
       {
@@ -221,33 +382,104 @@
        "id": "validate-findings"
       },
       {
+       "type": "lab",
+       "id": "cvss-builder"
+      },
+      {
+       "type": "tool",
+       "id": "cvss-decode"
+      },
+      {
        "type": "lesson",
-       "id": "soc"
+       "id": "vuln-management"
+      }
+     ]
+    },
+    {
+     "id": "4.4",
+     "title": "Security alerting and monitoring",
+     "coverage": "strong",
+     "activities": [
+      {
+       "type": "agency",
+       "id": "shift-01"
+      },
+      {
+       "type": "agency",
+       "id": "shift-02"
       },
       {
        "type": "lab",
        "id": "log-detective"
       },
       {
-       "type": "mission",
-       "id": "ssh-brute"
+       "type": "tool",
+       "id": "log-search"
       },
       {
        "type": "lesson",
-       "id": "incident-response"
-      },
+       "id": "soc"
+      }
+     ]
+    },
+    {
+     "id": "4.5",
+     "title": "Enhancing enterprise security",
+     "coverage": "strong",
+     "activities": [
       {
        "type": "lab",
        "id": "header-inspector"
       },
       {
+       "type": "tool",
+       "id": "headers-check"
+      },
+      {
+       "type": "mission",
+       "id": "phish-triage"
+      },
+      {
        "type": "lab",
-       "id": "net-detective"
+       "id": "intervlan"
+      },
+      {
+       "type": "lab",
+       "id": "telnet-ssh"
+      },
+      {
+       "type": "lab",
+       "id": "wifi-survey"
+      }
+     ]
+    },
+    {
+     "id": "4.6",
+     "title": "Identity and access management",
+     "coverage": "strong",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "permissions"
       },
       {
        "type": "lesson",
        "id": "identity"
-      },
+      }
+     ]
+    },
+    {
+     "id": "4.7",
+     "title": "Automation and orchestration",
+     "coverage": "none",
+     "activities": [],
+     "gap": "Scripting, automation and SOAR aren't covered yet beyond practice questions."
+    },
+    {
+     "id": "4.8",
+     "title": "Incident response",
+     "coverage": "strong",
+     "activities": [
       {
        "type": "agency",
        "id": "shift-01"
@@ -258,38 +490,52 @@
       },
       {
        "type": "mission",
+       "id": "ssh-brute"
+      },
+      {
+       "type": "lesson",
+       "id": "incident-response"
+      }
+     ]
+    },
+    {
+     "id": "4.9",
+     "title": "Data sources for investigations",
+     "coverage": "strong",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "log-detective"
+      },
+      {
+       "type": "lab",
+       "id": "header-inspector"
+      },
+      {
+       "type": "mission",
+       "id": "ssh-brute"
+      },
+      {
+       "type": "mission",
        "id": "phish-triage"
       },
       {
-       "type": "lab",
-       "id": "permissions"
+       "type": "agency",
+       "id": "shift-01"
       },
       {
-       "type": "lab",
-       "id": "telnet-ssh"
-      },
-      {
-       "type": "lab",
-       "id": "cvss-builder"
+       "type": "agency",
+       "id": "shift-02"
       },
       {
        "type": "tool",
        "id": "log-search"
       },
       {
-       "type": "tool",
-       "id": "headers-check"
-      },
-      {
-       "type": "lesson",
-       "id": "wireless"
-      },
-      {
        "type": "lab",
-       "id": "wifi-survey"
+       "id": "net-detective"
       }
-     ],
-     "gap": "The SOC, log analysis, email investigation, vulnerability scoring, incident response and two simulated SOC shifts are hands-on. Automation and digital forensics in depth aren't yet."
+     ]
     }
    ]
   },
@@ -299,8 +545,60 @@
    "weight": 20,
    "objectives": [
     {
-     "id": "5.0",
-     "title": "Security program management & oversight",
+     "id": "5.1",
+     "title": "Security governance",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "frameworks"
+      }
+     ],
+     "gap": "Frameworks are introduced; policies, standards, procedures and roles are only in practice questions."
+    },
+    {
+     "id": "5.2",
+     "title": "Risk management",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "vuln-management"
+      },
+      {
+       "type": "lesson",
+       "id": "network-ops"
+      }
+     ],
+     "gap": "Risk-based prioritisation and business impact (RTO, RPO) are taught; formal risk registers and analysis aren't."
+    },
+    {
+     "id": "5.3",
+     "title": "Third-party risk",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "supply-chain"
+      }
+     ],
+     "gap": "Supply chain attacks are taught; vendor assessment and agreements are only in practice questions."
+    },
+    {
+     "id": "5.4",
+     "title": "Security compliance",
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "data-breach"
+      }
+     ],
+     "gap": "The consequences of breaches and UK GDPR reporting appear; compliance monitoring isn't covered."
+    },
+    {
+     "id": "5.5",
+     "title": "Audits and assessments",
      "coverage": "partial",
      "activities": [
       {
@@ -308,23 +606,26 @@
        "id": "scope-roe"
       },
       {
-       "type": "lesson",
-       "id": "frameworks"
-      },
-      {
-       "type": "lesson",
-       "id": "vuln-management"
-      },
-      {
-       "type": "lesson",
-       "id": "data-breach"
-      },
-      {
-       "type": "lesson",
-       "id": "nation-state"
+       "type": "lab",
+       "id": "validate-findings"
       }
      ],
-     "gap": "Frameworks, risk-based prioritisation and privacy are introduced. Formal risk management, third-party/vendor risk, audits and governance processes aren't covered in depth yet."
+     "gap": "Penetration test scoping and validating findings are hands-on; audits and attestation are only in practice questions."
+    },
+    {
+     "id": "5.6",
+     "title": "Security awareness practices",
+     "coverage": "strong",
+     "activities": [
+      {
+       "type": "mission",
+       "id": "phish-triage"
+      },
+      {
+       "type": "lesson",
+       "id": "phishing"
+      }
+     ]
     }
    ]
   }

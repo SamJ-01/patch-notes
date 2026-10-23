@@ -44,7 +44,7 @@ Wrong answers never end a lab: every quiz offers a retry of the questions you mi
 | **Learn** | 29 short lessons, each opening with three key ideas and a picture, a sourced real-world case and three checks; 4 learning paths and a glossary of 330+ terms |
 | **Practise** | The labs, missions and tools above, grouped by track |
 | **Agency** | The SOC shifts: a staff badge, the rota and your best reports |
-| **Exams** | CompTIA Network+ (N10-009, all 25 objectives), Security+ (SY0-701) and PenTest+ (PT0-003) mapped to what practises them, with honest coverage notes, 148 practice questions, timed mock exams and an "Am I ready?" check. Preparation, not a guarantee; no real exam questions |
+| **Exams** | CompTIA Network+ (N10-009, 25 objectives), Security+ (SY0-701, 28) and PenTest+ (PT0-003, 26) mapped to what practises them, with honest coverage notes, 184 practice questions, timed mock exams and an "Am I ready?" check. Preparation, not a guarantee; no real exam questions |
 | **News** | Headlines from 12 outlets, auto-tagged by topic, linked to lessons and CVEs, with "What this means" explanations (AI-written, fact-checked against each article and official records) |
 | **CVE Radar** | Every new CVE, enriched with CISA KEV and FIRST EPSS, prioritised by real-world risk, with trend charts; "Am I affected?" for the tech you use |
 | **You** | XP, access levels (guest to root), 17 badges, games ("Phish or Legit?", a quiz, a 3-flag CTF hidden in the site) and career paths |
