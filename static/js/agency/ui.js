@@ -145,7 +145,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
       renderGuide();
       const pill = $("ag-tk-st"), now = DESK.pill(selected in state.closed ? "closed" : "open", "ag-tk-st");
       if (pill && pill.outerHTML !== now) pill.outerHTML = now;
-      renderFound(); renderAsk(); if (structural) renderClose();
+      renderFound(); renderAsk(); if (structural) renderClose(); else markSeen();
     }
     const hand = $("ag-hand");
     if (A.canHandOver(shift, state)) { if (hand.hidden) renderHandover(); }
@@ -237,7 +237,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     if (ev.source !== source || !$("ag-lout")) return;
     const terms = ev.query ? ev.query.split(" ") : [];
     $("ag-lout").innerHTML = ev.lines.length ? ev.lines.map(l => markTerms(l, terms)).join("\n") : "No lines match. Check the spelling, or try fewer words.";
-    $("ag-lcount").textContent = ev.query ? `${ev.lines.length} of ${ev.total} lines contain “${ev.query}”.${ev.found.length ? ` New finding${ev.found.length === 1 ? "" : "s"} recorded.` : ""}` : `Showing all ${ev.total} lines. Search to narrow it down.`;
+    $("ag-lcount").textContent = ev.query ? `${ev.lines.length} of ${ev.total} lines contain “${ev.query}”.${ev.found.length ? ` New finding${ev.found.length === 1 ? "" : "s"} recorded.` : ev.lines.length && !ev.focused ? " That's most of the log: search for something more specific to record findings." : ""}` : `Showing all ${ev.total} lines. Search to narrow it down.`;
   }
   function renderFound() {
     $("ag-found").innerHTML = state.found.length ? `<h3 class="eyebrow">Findings so far (all alerts)</h3><ul class="findings">${state.found.map(f => `<li>${esc(all[f])}</li>`).join("")}</ul>`
@@ -258,6 +258,18 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         <div class="row"><button class="btn" type="submit">Send request</button><span class="muted">Takes ${plural(shift.costs.request, "minute")}; replies come later.</span></div></form>` : `<p class="muted">Nothing else to ask from this alert.</p>`}`;
     $("ag-askform")?.addEventListener("submit", e => { e.preventDefault(); run(A.ask(shift, state, $("ag-req").value, $("ag-att").value)); });
   }
+  // Evidence the learner has found for themselves gets a mark in the close form. Searches and replies update the
+  // marks in place, so a half-filled form keeps its ticks and focus.
+  const SEEN = '<span class="tag ev-seen">✓ You\'ve checked this</span>';
+  const seen = e => (e.findings || []).some(f => state.found.includes(f));
+  function markSeen() {
+    const a = selected && A.alertById(shift, selected);
+    if (!a) return;
+    $("ag-close")?.querySelectorAll('input[name="evidence"]').forEach(i => {
+      const item = i.closest(".ev-item"), mark = item.querySelector(".ev-seen"), now = seen(a.evidence[Number(i.value)]);
+      if (now && !mark) item.insertAdjacentHTML("beforeend", SEEN); else if (!now && mark) mark.remove();
+    });
+  }
   function renderClose() {
     const a = A.alertById(shift, selected), c = state.closed[selected];
     const box = $("ag-close");
@@ -276,7 +288,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
           ${Object.entries(A.VERDICTS).map(([k, v]) => `<div class="ev-item"><label><input type="radio" name="verdict" value="${k}" required><span>${esc(v)}</span></label></div>`).join("")}</fieldset>
         <label>Your severity <select name="severity">${A.SEVERITIES.map(s => `<option value="${s}">${s}</option>`).join("")}</select></label>
         <fieldset class="ev-set"><legend class="q">Which evidence supports your verdict? Tick it, leave out what doesn't.</legend>
-          ${a.evidence.map((e, i) => `<div class="ev-item"><label><input type="checkbox" name="evidence" value="${i}"><span>${esc(e.text)}</span></label></div>`).join("")}</fieldset>
+          ${a.evidence.map((e, i) => `<div class="ev-item"><label><input type="checkbox" name="evidence" value="${i}"><span>${esc(e.text)}</span></label>${seen(e) ? SEEN : ""}</div>`).join("")}</fieldset>
         ${others.length ? `<fieldset class="ev-set"><legend class="q">Is it connected to another alert? (optional)</legend>
           ${others.map(id => `<div class="ev-item"><label><input type="checkbox" name="related" value="${id}"><span>${esc(A.alertById(shift, id).title)}</span></label></div>`).join("")}</fieldset>` : ""}
         <p class="muted">${guided() ? `Guided: ${esc(leadName)} checks it as soon as you close it.` : "Nothing is marked until the handover, just as on a real shift."} Closing takes ${plural(shift.costs.close, "minute")}.</p>
@@ -285,7 +297,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     if (sev) box.querySelector("select").value = sev;
     // Guided: fill the form with the model answer, so the learner can read why before closing.
     $("ag-fill")?.addEventListener("click", () => {
-      const m = A.modelClose(shift, selected);
+      const m = A.modelClose(shift, selected, state);
       box.querySelectorAll("input").forEach(i => { i.checked = (i.name === "verdict" && i.value === m.verdict) || (i.name === "evidence" && m.evidence.includes(Number(i.value))) || (i.name === "related" && m.related.includes(i.value)); });
       box.querySelector("select").value = m.severity;
       $("ag-cfb").innerHTML = `<div class="feedback">Filled in with ${esc(leadName)}'s answer. ${gl(a.answer.why, 2)}</div>`;
@@ -364,7 +376,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
       ${rep.alerts.map(a => `<details class="tbl ag-dalert"${a.verdict.ok && a.evidence.pass && a.containOk ? "" : " open"}><summary>${ok(a.verdict.ok && a.evidence.pass && a.containOk && a.status.ok && a.summary.ok)} ${esc(a.title)}</summary>
         <p>${ok(a.verdict.ok)} Verdict: ${esc(A.VERDICTS[a.verdict.chosen] || "none")}${a.verdict.ok ? "" : `. Answer: ${esc(A.VERDICTS[a.verdict.answer])}`}.</p>
         <p>${ok(a.severity.ok)} Severity: ${esc(a.severity.chosen)} (fits: ${esc(a.severity.accepted.join(" or "))}).</p>
-        <div class="ev">${a.evidence.items.map(r => `<div class="ev-item ${r.ok ? "right" : "wrong"}"><p class="ev-why" style="margin-left:0"><b>${r.ok ? (r.supports ? (r.selected ? "Supports it." : "Supports it, but optional.") : "Right to leave out.") : (r.supports ? "Missed: this is key evidence." : "Not evidence for this.")}</b> ${esc(A.alertById(shift, a.id).evidence[r.index].text)}. ${esc(r.why)}</p></div>`).join("")}</div>
+        <div class="ev">${a.evidence.items.map(r => `<div class="ev-item ${r.ok ? "right" : "wrong"}"><p class="ev-why" style="margin-left:0"><b>${r.ok ? (r.supports ? (r.selected ? "Supports it." : "Supports it, but optional.") : "Right to leave out.") : (r.unchecked ? "Cited without checking." : r.supports ? "Missed: this is key evidence." : "Not evidence for this.")}</b> ${esc(A.alertById(shift, a.id).evidence[r.index].text)}. ${esc(r.why)}</p></div>`).join("")}</div>
         ${a.contain.length ? `<p>${ok(a.containOk)} Containment: ${a.contain.map(c => `${esc(c.label)} (${c.status ? esc(STATUS_WORDS[c.status]) : "not asked"})`).join("; ")}.</p>` : ""}
         <p>${ok(a.status.ok)} Status: ${esc(A.STATUSES[a.status.chosen] || "none")}${a.status.ok ? "" : `. Better: ${esc(A.STATUSES[a.status.answer])}`}.</p>
         <p>${ok(a.summary.ok)} Model summary: ${esc(a.summary.model)}</p>

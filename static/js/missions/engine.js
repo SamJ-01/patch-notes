@@ -196,7 +196,9 @@ export function hint(scenario, state) {
 export function searchLines(log, query) {
   const words = String(query || "").split(/\s+/).filter(Boolean), terms = words.map(w => w.toLowerCase());
   const lines = log.lines.filter(l => terms.every(t => l.toLowerCase().includes(t)));
-  const focused = terms.length > 0 && lines.length > 0 && lines.length < log.lines.length;
+  // A search only records findings when it actually narrows the log: at least 3 characters, and no more than 80%
+  // of the lines (searching "a" or ":" would otherwise turn up everything without looking at anything).
+  const focused = terms.join("").length >= 3 && lines.length > 0 && lines.length <= log.lines.length * 0.8;
   const findings = focused ? (log.findings || []).filter(f => lines.some(l => l.toLowerCase().includes(f.match.toLowerCase()))) : [];
   return { query: words.join(" "), lines, total: log.lines.length, focused, findings };
 }

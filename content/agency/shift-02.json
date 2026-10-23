@@ -304,25 +304,25 @@
    ],
    "evidence": [
     {
-     "text": "Mailbox audit: at 13:06 a rule named '..' sends mail from Corran, or about bank or payment, to RSS Feeds, marked as read",
+     "findings": ["rule-made"], "text": "Mailbox audit: at 13:06 a rule named '..' sends mail from Corran, or about bank or payment, to RSS Feeds, marked as read",
      "supports": true,
      "required": true,
      "why": "The rule itself: it hides exactly the emails that would expose a payment fraud."
     },
     {
-     "text": "Mailbox audit: the rule was made from 203.0.113.58, the address that got in after the MFA prompts",
+     "findings": ["rule-source"], "text": "Mailbox audit: the rule was made from 203.0.113.58, the address that got in after the MFA prompts",
      "supports": true,
      "required": true,
      "why": "Ties the rule to the takeover, not to Rhian tidying her inbox."
     },
     {
-     "text": "Mailbox audit: the same session searched the mailbox for 'Corran invoice'",
+     "findings": ["mailbox-search"], "text": "Mailbox audit: the same session searched the mailbox for 'Corran invoice'",
      "supports": true,
      "required": false,
      "why": "Shows what the attacker was after: an invoice worth redirecting."
     },
     {
-     "text": "Service Desk: r.hughes says she made no rules",
+     "findings": ["rhughes-confirms"], "text": "Service Desk: r.hughes says she made no rules",
      "supports": true,
      "required": false,
      "why": "Fits the logs. On its own a denial proves little; with the logs, it's strong."
@@ -402,25 +402,25 @@
    ],
    "evidence": [
     {
-     "text": "Sign-in log: 4 sign-ins from 203.0.113.58 were denied at MFA between 12:49 and 12:52, then one was approved at 12:53",
+     "findings": ["mfa-denied", "mfa-approved"], "text": "Sign-in log: 4 sign-ins from 203.0.113.58 were denied at MFA between 12:49 and 12:52, then one was approved at 12:53",
      "supports": true,
      "required": true,
      "why": "The password was already known: only the MFA prompt stood in the way, and it was eventually approved."
     },
     {
-     "text": "Sign-in log: r.hughes normally signs in from head office (198.51.100.61)",
+     "findings": ["rhughes-usual"], "text": "Sign-in log: r.hughes normally signs in from head office (198.51.100.61)",
      "supports": true,
      "required": true,
      "why": "203.0.113.58 isn't hers, and she was at work that day."
     },
     {
-     "text": "Client notes: MFA is a simple push approval with no number matching yet",
+     "findings": ["push-mfa"], "text": "Client notes: MFA is a simple push approval with no number matching yet",
      "supports": true,
      "required": false,
      "why": "Explains how it worked: a tired or distracted person can approve a prompt they didn't start."
     },
     {
-     "text": "Service Desk: r.hughes approved a prompt to make them stop",
+     "findings": ["rhughes-confirms"], "text": "Service Desk: r.hughes approved a prompt to make them stop",
      "supports": true,
      "required": false,
      "why": "Confirms it from the person herself."
@@ -496,25 +496,25 @@
    ],
    "evidence": [
     {
-     "text": "Inbox: the email is from corran-vetsupplies.example (with a hyphen); Corran's real domain is corranvetsupplies.example",
+     "findings": ["fake-domain", "real-invoice", "corran-domain"], "text": "Inbox: the email is from corran-vetsupplies.example (with a hyphen); Corran's real domain is corranvetsupplies.example",
      "supports": true,
      "required": true,
      "why": "The lookalike domain is the giveaway: one character's difference."
     },
     {
-     "text": "Inbox: it quotes INV-20931 and £18,460.00 and asks for payment to new bank details today",
+     "findings": ["fake-ask"], "text": "Inbox: it quotes INV-20931 and £18,460.00 and asks for payment to new bank details today",
      "supports": true,
      "required": true,
      "why": "Real invoice details plus urgency: whoever wrote it had read the real emails."
     },
     {
-     "text": "Mailbox audit: 'Rhian's' email pushing the payment was sent from 203.0.113.58",
+     "findings": ["send-rhughes"], "text": "Mailbox audit: 'Rhian's' email pushing the payment was sent from 203.0.113.58",
      "supports": true,
      "required": true,
      "why": "The internal email that makes the request look trusted came from the attacker, not Rhian."
     },
     {
-     "text": "Mailbox audit: the attacker searched r.hughes's mailbox for 'Corran invoice' at 12:58",
+     "findings": ["mailbox-search"], "text": "Mailbox audit: the attacker searched r.hughes's mailbox for 'Corran invoice' at 12:58",
      "supports": true,
      "required": false,
      "why": "Explains how they knew the invoice number and amount."
@@ -587,19 +587,19 @@
    ],
    "evidence": [
     {
-     "text": "Client notes: CHG-3107 is a laptop refresh this week, with laptops named FHV-LT-04xx",
+     "findings": ["chg3107"], "text": "Client notes: CHG-3107 is a laptop refresh this week, with laptops named FHV-LT-04xx",
      "supports": true,
      "required": true,
      "why": "A planned change explains a new device."
     },
     {
-     "text": "Sign-in log: FHV-LT-0412 signed in from head office (198.51.100.61) with MFA approved",
+     "findings": ["opryce-new"], "text": "Sign-in log: FHV-LT-0412 signed in from head office (198.51.100.61) with MFA approved",
      "supports": true,
      "required": true,
      "why": "Right place, right checks: nothing about it is odd."
     },
     {
-     "text": "Service Desk: Owen confirms it's his new laptop",
+     "findings": ["opryce-confirms"], "text": "Service Desk: Owen confirms it's his new laptop",
      "supports": true,
      "required": false,
      "why": "Confirmation from the person, which fits the logs."
@@ -664,19 +664,19 @@
    ],
    "evidence": [
     {
-     "text": "Mail trace: 2,418 emails from newsletter@ at 09:00 in two batches, through the mailing service",
+     "findings": ["newsletter-now"], "text": "Mail trace: 2,418 emails from newsletter@ at 09:00 in two batches, through the mailing service",
      "supports": true,
      "required": true,
      "why": "Scheduled, via the usual service, with a normal newsletter subject."
     },
     {
-     "text": "Client notes: the newsletter goes out on the fourth Thursday of each month at 09:00",
+     "findings": ["newsletter-plan"], "text": "Client notes: the newsletter goes out on the fourth Thursday of each month at 09:00",
      "supports": true,
      "required": true,
      "why": "Today is the fourth Thursday of October."
     },
     {
-     "text": "Mail trace: last month's newsletter went the same way on 24 September",
+     "findings": ["newsletter-last"], "text": "Mail trace: last month's newsletter went the same way on 24 September",
      "supports": true,
      "required": false,
      "why": "The same pattern a month ago: this is routine."

@@ -397,7 +397,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
   function showLog(ev) {
     const terms = ev.query ? ev.query.split(" ") : [];
     drawLog(ev.lines, terms);
-    $("m-logcount").textContent = ev.query ? `${ev.lines.length} of ${ev.total} lines contain “${ev.query}”.` : `Showing all ${ev.total} lines. Search to narrow it down.`;
+    $("m-logcount").textContent = ev.query ? `${ev.lines.length} of ${ev.total} lines contain “${ev.query}”.${ev.lines.length && !ev.focused ? " That's most of the log: search for something more specific to record findings." : ""}` : `Showing all ${ev.total} lines. Search to narrow it down.`;
     if (ev.query) logLine(`You searched the log for <strong>${esc(ev.query)}</strong>: ${ev.lines.length} line${ev.lines.length === 1 ? "" : "s"}${ev.found.length ? ` → ${ev.found.map(esc).join(" ")}` : ""}`);
     renderFindings();
   }

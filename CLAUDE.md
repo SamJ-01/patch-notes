@@ -55,7 +55,11 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   A shift (`content/agency/*.json`, `static/js/agency/`, route `#agency-<id>`, tests `tests/agency.test.mjs`: every shift
   must be finishable with every check passed from its own content, logs visible at the start mustn't postdate it) opens with
   clocking in (badge tap, the lead's briefing as chat, the client file), then the desk (queue, alert, messages), then clock out.
-  Design and decisions: `docs/agency-pilot.md`. Logs are searched with `engine.searchLines`.
+  Design and decisions: `docs/agency-pilot.md`. Logs are searched with `engine.searchLines`. A search records findings only when focused (3+ characters,
+  at most 80% of the log's lines). Each supporting evidence item lists the `findings` that back it; citing one before any is
+  found is noted at close (`closed[id].unchecked`) and judged "cited without checking" (`judgeClosed`); the close form marks
+  evidence the learner has found ("✓ You've checked this"). `modelClose(shift, id, state)` cites optional evidence only once
+  checked. Tested: every alert's required evidence is reachable from its own guided searches, emails and requests.
   Two levels, chosen on the client file (Guided is the default for a first go): Guided adds the lead's hints per alert
   (`guide.hints`, free, counted), suggested searches (`guide.searches` [[source, query]], tested to find lines in the
   alert's own logs), "Show me the answer" (`A.modelClose`), feedback as each alert closes (`A.feedback`) and a handover

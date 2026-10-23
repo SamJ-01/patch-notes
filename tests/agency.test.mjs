@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import * as A from "../static/js/agency/shift.js";
 import { matches } from "../static/js/missions/engine.js";
+import * as E from "../static/js/missions/engine.js";
 import { MAIL } from "../static/js/mail.js";
 
 const dir = new URL("../content/agency/", import.meta.url);
@@ -22,7 +23,10 @@ const closeRight = id => {
   const a = shift.alerts.find(x => x.id === id);
   return ["close", id, { verdict: a.answer.verdict, severity: a.answer.severity[0], evidence: evidenceFor(id), related: a.answer.related }];
 };
+// Each alert's own guided searches: what a careful analyst checks before closing it.
+const guidedSearches = ids => ids.flatMap(id => shift.alerts.find(a => a.id === id).guide.searches.map(([src, q]) => ["search", src, q]));
 const perfect = [
+  ...guidedSearches(["a1", "a2", "a3", "a4"]),
   ["search", "signin", "203.0.113.77"], ["search", "files01-auth", "svcbackup2"],
   closeRight("a1"), closeRight("a2"), closeRight("a3"),
   ["ask", "identity:lock-svcbackup2", "files-useradd"], ["ask", "identity:reset-mokafor", "spray-success"],
@@ -53,10 +57,24 @@ test("the clock only moves when the learner acts, by what the shift file says", 
 });
 
 test("a log can only be searched once an alert that uses it has arrived", () => {
-  const custom = { ...shift, alerts: shift.alerts.map(a => (a.id === "a2" ? { ...a, sources: ["notes"] } : a)) };
+  // Take the sign-in log away from the alerts that arrive at the start (a2 and a4), so none of them uses it yet.
+  const custom = { ...shift, alerts: shift.alerts.map(a => (["a2", "a4"].includes(a.id) ? { ...a, sources: a.sources.filter(x => x !== "signin") } : a)) };
   const { state } = A.start(custom);
   assert.deepEqual(A.search(custom, state, "signin", "j.patel").events, [], "no arrived alert uses the sign-in log");
   assert.deepEqual(A.search(shift, A.start(shift).state, "nope", "x").events, []);
+});
+
+test("a search too broad to be looking at anything records nothing", () => {
+  for (const sh of shifts) for (const [id, src] of Object.entries(sh.sources)) {
+    if (src.kind === "email") continue;
+    for (const q of ["a", "e", ":", "o", " ", "the"]) {
+      const r = E.searchLines(src, q);
+      assert.ok(!r.findings.length || r.lines.length <= src.lines.length * 0.8, `${sh.id} ${id}: "${q}" unlocks findings from ${r.lines.length}/${src.lines.length} lines`);
+    }
+    for (const q of ["a", "e", ":", "1"]) assert.equal(E.searchLines(src, q).findings.length, 0, `${sh.id} ${id}: one character is never a focused search`);
+  }
+  // The exploit the audit found: "a" in files01's auth.log used to record all five findings.
+  assert.equal(E.searchLines(shift.sources["files01-auth"], "a").findings.length, 0);
 });
 
 test("focused searches record findings once; whole-log views record nothing", () => {
@@ -124,7 +142,7 @@ test("closing validates its input; reopening allows a change of mind", () => {
   assert.deepEqual(A.close(shift, s0, "a1", { verdict: "noharm", severity: "huge" }).events, []);
   assert.deepEqual(A.close(shift, s0, "a5", { verdict: "act", severity: "high" }).events, [], "not arrived");
   let { s } = play([["close", "a1", { verdict: "noharm", severity: "low", evidence: [1, 1, 99, -1, 0.5, 0], related: ["a1", "zz", "a2"] }]]);
-  assert.deepEqual(s.closed.a1, { verdict: "noharm", severity: "low", evidence: [0, 1], related: ["a2"] });
+  assert.deepEqual(s.closed.a1, { verdict: "noharm", severity: "low", evidence: [0, 1], related: ["a2"], unchecked: [0, 1] }, "nothing was searched, so both are unchecked");
   const clock = s.clock;
   ({ s } = play([["reopen", "a1"], ["close", "a1", { verdict: "act", severity: "high" }]], s));
   assert.equal(s.closed.a1.verdict, "act");
@@ -150,6 +168,40 @@ test("debrief: a careful shift passes every check", () => {
   assert.ok(rep.pending.length > 0, "replies still on their way are listed, not lost");
   assert.equal(rep.note, "Spray got m.okafor; svcbackup2 locked.");
   assert.ok(rep.modelNote);
+});
+
+test("evidence has to be checked: citing it unseen isn't justified, and the debrief says so", () => {
+  // a1 closed with exactly the right evidence, but without searching anything.
+  let { s } = play([["close", "a1", { verdict: "noharm", severity: "low", evidence: [0, 1] }]]);
+  let fb = A.feedback({ ...shift }, { ...s, level: "guided" }, "a1");
+  assert.equal(fb.evidence.pass, false);
+  assert.ok(fb.evidence.items.filter(r => r.selected).every(r => r.unchecked && /without checking/.test(r.why)));
+  // The same close after searching the logs is justified.
+  ({ s } = play([["search", "web01-auth", "203.0.113.9"], ["search", "web01-auth", "Accepted"], ["close", "a1", { verdict: "noharm", severity: "low", evidence: [0, 1] }]]));
+  fb = A.feedback(shift, s, "a1");
+  assert.equal(fb.evidence.pass, true);
+  assert.deepEqual(s.closed.a1.unchecked, []);
+  // A trap is wrong for its own reason, never "unchecked"; checking evidence later doesn't rewrite a close.
+  ({ s } = play([["close", "a1", { verdict: "act", severity: "high", evidence: [3] }], ["search", "web01-auth", "203.0.113.9"]]));
+  assert.deepEqual(s.closed.a1.unchecked, []);
+  assert.equal(A.feedback(shift, s, "a1").evidence.items[3].unchecked, undefined);
+  // The model answer cites optional evidence only once it's been checked; required evidence always.
+  const fresh = A.start(shift).state;
+  assert.deepEqual(A.modelClose(shift, "a2", fresh).evidence, [0, 1], "the phone call (optional) isn't cited before it's made");
+  assert.deepEqual(A.modelClose(shift, "a2").evidence, [0, 1, 2, 3], "without a state: every supporting item");
+});
+
+test("every shift: each alert's required evidence can be found from its own guided searches, emails and requests", () => {
+  for (const sh of shifts) for (const a of sh.alerts) {
+    const reach = new Set();
+    for (const [src, q] of a.guide.searches) for (const f of E.searchLines(sh.sources[src], q).findings) reach.add(f.id);
+    for (const src of a.sources) if (sh.sources[src]?.kind === "email") for (const e of sh.sources[src].emails) for (const f of e.findings || []) reach.add(f.id);
+    for (const d of Object.values(sh.departments)) for (const r of d.requests || []) for (const rep of r.replies || []) if (rep.finding) reach.add(rep.finding.id);
+    for (const [i, e] of a.evidence.entries()) {
+      if (e.supports) assert.ok((e.findings || []).length, `${sh.id} ${a.id} evidence ${i}: link it to the finding that backs it`);
+      if (e.required) assert.ok(e.findings.some(f => reach.has(f)), `${sh.id} ${a.id} evidence ${i}: nothing the alert's guide does finds ${e.findings}`);
+    }
+  }
 });
 
 test("debrief: over-reaction, a wrong verdict, a missed link and missing containment are each reported", () => {
@@ -199,7 +251,8 @@ test("guided: feedback on a closed alert, and the filled-in answers pass", () =>
   for (const a of shift.alerts) {
     let t = A.start(shift, { level: "guided" }).state;
     t = { ...t, arrived: shift.alerts.map(x => x.id) };
-    t = A.close(shift, t, a.id, A.modelClose(shift, a.id)).state;
+    for (const [src, q] of a.guide.searches) t = A.search(shift, t, src, q).state;
+    t = A.close(shift, t, a.id, A.modelClose(shift, a.id, t)).state;
     const f = A.feedback(shift, t, a.id);
     assert.ok(f.verdict.ok && f.severity.ok && f.evidence.pass && f.links.ok, `${a.id}: the model answer passes its own check`);
   }
@@ -352,7 +405,7 @@ for (const sh of shifts) test(`${sh.id}: a perfect shift passes every check`, ()
     for (const [id, src] of Object.entries(sh.sources)) if (src.kind === "email" && A.sourcesOpen(sh, s).includes(id)) for (const e of src.emails) step(A.openEmail(sh, s, id, e.id));
     for (const a of sh.alerts.filter(x => s.arrived.includes(x.id) && !(x.id in s.closed))) {
       for (const ref of a.answer.contain) step(A.ask(sh, s, ref, s.found[0]));
-      step(A.close(sh, s, a.id, A.modelClose(sh, a.id)));
+      step(A.close(sh, s, a.id, A.modelClose(sh, a.id, s)));
     }
     step(A.wait(sh, s));
   }

@@ -22,6 +22,18 @@ export const STATUSES = { closed: "Closed", monitoring: "Closed, keep watching",
 
 export const alertById = (shift, id) => shift.alerts.find(a => a.id === id);
 export const sourcesOpen = (shift, state) => [...new Set(state.arrived.flatMap(id => alertById(shift, id).sources))];
+// An evidence statement is checked once any finding that backs it has been found. Statements with nothing to
+// find (the traps) are never "unchecked": citing one is wrong for its own reason.
+const checked = (e, state) => !(e.findings || []).length || e.findings.some(f => state.found.includes(f));
+// Judge the evidence ticked when closing: right and wrong as usual, and anything cited without having been
+// checked first is not justified, with its own explanation.
+function judgeClosed(a, c) {
+  const unchecked = new Set(c.unchecked || []);
+  const items = judgeEvidence(a.evidence, c.evidence).items.map(r => (unchecked.has(r.index) && r.supports
+    ? { ...r, ok: false, unchecked: true, why: "You cited this without checking it first. Search the logs (or ask the team) until you've seen it yourself." } : r));
+  return { pass: items.every(r => r.ok), items };
+}
+
 export function request(shift, ref) {
   const [dept, id] = String(ref).split(":");
   const d = shift.departments[dept], r = d?.requests.find(x => x.id === id);
@@ -157,7 +169,10 @@ export function close(shift, state, alertId, { verdict, severity, evidence = [],
   const s = clone(state);
   const ev = [...new Set(evidence)].filter(i => Number.isInteger(i) && i >= 0 && i < a.evidence.length).sort((x, y) => x - y);
   const rel = [...new Set(related)].filter(id => id !== alertId && alertById(shift, id));
-  s.closed[alertId] = { verdict, severity, evidence: ev, related: rel };
+  // Evidence cited before anything backing it was found (a search, an email, a team's reply) is noted now, at the
+  // moment of closing, so recognising a statement in the list never counts as having checked it.
+  const unchecked = ev.filter(i => !checked(a.evidence[i], s));
+  s.closed[alertId] = { verdict, severity, evidence: ev, related: rel, unchecked };
   spend(shift, s, "close");
   const events = [{ type: "closed", id: alertId, title: a.title }];
   settle(shift, s, events);
@@ -183,10 +198,13 @@ export function hint(shift, state, alertId) {
 export const hintsUsed = (state, alertId) => state.hints?.[alertId] || 0;
 
 // The model answer for one alert, as the close form takes it (for "Show me the answer" in guided).
-export function modelClose(shift, alertId) {
+// The model answer. Given the learner's state, optional evidence is only cited once it has been checked; the
+// required evidence is always cited (closing without having checked it is then judged as such).
+export function modelClose(shift, alertId, state = null) {
   const a = alertById(shift, alertId);
   if (!a) return null;
-  return { verdict: a.answer.verdict, severity: a.answer.severity[0], evidence: a.evidence.flatMap((e, i) => (e.supports ? [i] : [])), related: [...(a.answer.related || [])] };
+  const cite = e => e.supports && (e.required || !state || checked(e, state));
+  return { verdict: a.answer.verdict, severity: a.answer.severity[0], evidence: a.evidence.flatMap((e, i) => (cite(e) ? [i] : [])), related: [...(a.answer.related || [])] };
 }
 
 // Feedback on one closed alert, straight away (guided): verdict, severity and each evidence item, with why.
@@ -198,7 +216,7 @@ export function feedback(shift, state, alertId) {
   return {
     verdict: { chosen: c.verdict, answer: ans.verdict, ok: c.verdict === ans.verdict },
     severity: { chosen: c.severity, accepted: ans.severity, ok: ans.severity.includes(c.severity) },
-    evidence: judgeEvidence(a.evidence, c.evidence),
+    evidence: judgeClosed(a, c),
     links: { ok: [...want].every(x => rel.has(x)) && [...rel].every(x => want.has(x)), want: [...want] },
     contain: (ans.contain || []).map(ref => ({ ref, label: request(shift, ref).label })),
     why: ans.why,
@@ -252,7 +270,7 @@ export function debrief(shift, state) {
       id: a.id, title: a.title, why: ans.why,
       verdict: { chosen: c.verdict, answer: ans.verdict, ok: c.verdict === ans.verdict },
       severity: { chosen: c.severity, accepted: ans.severity, ok: ans.severity.includes(c.severity) },
-      evidence: judgeEvidence(a.evidence, c.evidence),
+      evidence: judgeClosed(a, c),
       contain, containOk: contain.every(x => x.ok),
       status: { chosen: h.status[a.id] || "", answer: ans.status, ok: h.status[a.id] === ans.status },
       summary: { chosen: h.summary[a.id] ?? -1, answer: ans.summary, ok: h.summary[a.id] === ans.summary, model: ans.summaries[ans.summary] },
@@ -327,7 +345,7 @@ export function shadow(shift) {
       take(ask(shift, s, ref, att));
       push("ask", { id: a.id, ref, dept: def.deptName, label: def.label, attached: att ? all[att] : "" });
     }
-    const m = modelClose(shift, a.id);
+    const m = modelClose(shift, a.id, s);
     take(close(shift, s, a.id, m));
     push("close", { id: a.id, verdict: VERDICTS[m.verdict], severity: m.severity, evidence: m.evidence.map(i => a.evidence[i].text), related: m.related,
       summary: a.answer.summaries[a.answer.summary], say: a.answer.why });

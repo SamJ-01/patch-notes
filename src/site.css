@@ -1959,3 +1959,5 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 /* A topic's own steps sit under a label, so they read as extras within one stop, not as the route. */
 .loopwrap { display: grid; gap: 6px; }
 .loop-eyebrow { margin: 0; }
+/* Agency close form: evidence the learner has already found for themselves. */
+.tag.ev-seen { color: var(--good); border-color: rgba(var(--good-rgb), 0.5); }

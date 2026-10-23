@@ -296,19 +296,19 @@
    ],
    "evidence": [
     {
-     "text": "auth.log: every attempt from 203.0.113.9 ended in 'Failed password'",
+     "findings": ["web-fails"], "text": "auth.log: every attempt from 203.0.113.9 ended in 'Failed password'",
      "supports": true,
      "required": true,
      "why": "Failures are the whole story here: the guesses didn't work."
     },
     {
-     "text": "auth.log: the only accepted logins were tbrooks's key from the office",
+     "findings": ["web-accepted"], "text": "auth.log: the only accepted logins were tbrooks's key from the office",
      "supports": true,
      "required": true,
      "why": "This is what rules out harm: had a guess worked, there would be an 'Accepted password' line from 203.0.113.9."
     },
     {
-     "text": "auth.log: it tried usernames that don't exist (admin, ubuntu, pi)",
+     "findings": ["web-invalid"], "text": "auth.log: it tried usernames that don't exist (admin, ubuntu, pi)",
      "supports": true,
      "required": false,
      "why": "Shows automated guessing from a list, which is what internet-facing SSH sees every day."
@@ -360,25 +360,25 @@
    ],
    "evidence": [
     {
-     "text": "Client notes: the VPN's internet exit moved to Amsterdam (198.51.100.10) on 20 Oct",
+     "findings": ["chg2291"], "text": "Client notes: the VPN's internet exit moved to Amsterdam (198.51.100.10) on 20 Oct",
      "supports": true,
      "required": true,
      "why": "This explains the 'NL' location: it's the company's own VPN, not j.patel's position."
     },
     {
-     "text": "Sign-in log: j.patel connected to the VPN at 06:44, just before the 'NL' sign-in",
+     "findings": ["jpatel-nl", "jpatel-gb"], "text": "Sign-in log: j.patel connected to the VPN at 06:44, just before the 'NL' sign-in",
      "supports": true,
      "required": true,
      "why": "Ties the jump to the VPN: once connected, j.patel's traffic left through Amsterdam."
     },
     {
-     "text": "Sign-in log: other staff on the VPN also appear from 198.51.100.10",
+     "findings": ["egress"], "text": "Sign-in log: other staff on the VPN also appear from 198.51.100.10",
      "supports": true,
      "required": false,
      "why": "If everyone on the VPN 'travels' to the Netherlands, it's the network, not the person."
     },
     {
-     "text": "Service Desk: j.patel confirmed both sign-ins were theirs",
+     "findings": ["jpatel-confirms"], "text": "Service Desk: j.patel confirmed both sign-ins were theirs",
      "supports": true,
      "required": false,
      "why": "Direct confirmation from the user is good evidence, as long as it fits what the logs show."
@@ -427,19 +427,19 @@
    ],
    "evidence": [
     {
-     "text": "access.log: every probe from 192.0.2.66 got 404 Not Found",
+     "findings": ["scan-404"], "text": "access.log: every probe from 192.0.2.66 got 404 Not Found",
      "supports": true,
      "required": true,
      "why": "Nothing the scanner asked for exists, so nothing was exposed."
     },
     {
-     "text": "access.log: well-known targets (/.env, /wp-login.php) asked for within seconds, by zgrab",
+     "findings": ["scan-paths"], "text": "access.log: well-known targets (/.env, /wp-login.php) asked for within seconds, by zgrab",
      "supports": true,
      "required": true,
      "why": "Shows an automated scanner checking for common mistakes, not someone targeting this site."
     },
     {
-     "text": "Client notes: web01 runs no WordPress or PHP",
+     "findings": ["nophp"], "text": "Client notes: web01 runs no WordPress or PHP",
      "supports": true,
      "required": false,
      "why": "Confirms the probes couldn't have worked even if a file had been there by accident."
@@ -478,9 +478,9 @@
     "at": 0
    },
    "detection": "files01: user svcbackup2 added to privileged group 'sudo' (by mokafor via sudo).",
-   "guide": {"hints": ["A new admin account is serious until proven otherwise. In files01's auth.log, search svcbackup2 to see who made it and when, then where that person logged in from.", "mokafor logged in from 10.8.0.14, a VPN address; their usual one is 10.8.0.5. Open the impossible-travel alert's sign-in log and search 10.8.0.14 to see whose session that was.", "That session came from the password spray (203.0.113.77): this is the attack, and it links to the spray alert. Lock svcbackup2, reset m.okafor (attach a finding when asked) and tell the client."], "searches": [["files01-auth", "svcbackup2"], ["files01-auth", "mokafor"]]},
+   "guide": {"hints": ["A new admin account is serious until proven otherwise. In files01's auth.log, search svcbackup2 to see who made it and when, then where that person logged in from.", "mokafor logged in from 10.8.0.14, a VPN address; their usual one is 10.8.0.5. Search the VPN sign-in log for 10.8.0.14 to see whose session that was.", "That session came from the password spray (203.0.113.77): this is the attack, and it links to the spray alert. Lock svcbackup2, reset m.okafor (attach a finding when asked) and tell the client."], "searches": [["files01-auth", "svcbackup2"], ["files01-auth", "mokafor"], ["signin", "10.8.0.14"]]},
    "sources": [
-    "files01-auth",
+    "files01-auth", "signin",
     "notes"
    ],
    "requests": [
@@ -491,25 +491,25 @@
    ],
    "evidence": [
     {
-     "text": "files01 auth.log: mokafor created svcbackup2, set its password and added it to sudo at 06:13 to 06:14",
+     "findings": ["files-useradd", "files-sudo"], "text": "files01 auth.log: mokafor created svcbackup2, set its password and added it to sudo at 06:13 to 06:14",
      "supports": true,
      "required": true,
      "why": "The change itself: a new account with full admin rights."
     },
     {
-     "text": "files01 auth.log: mokafor logged in at 06:12 from 10.8.0.14",
+     "findings": ["files-mokafor"], "text": "files01 auth.log: mokafor logged in at 06:12 from 10.8.0.14",
      "supports": true,
      "required": true,
      "why": "Places the change in a session from a specific VPN address, which you can trace."
     },
     {
-     "text": "Sign-in log: 10.8.0.14 belonged to m.okafor's VPN session from the spraying address, 203.0.113.77",
+     "findings": ["spray-success"], "text": "Sign-in log: 10.8.0.14 belonged to m.okafor's VPN session from the spraying address, 203.0.113.77",
      "supports": true,
      "required": true,
      "why": "This is the link: the session that made the change came from the password spray, not from m.okafor."
     },
     {
-     "text": "Service Desk: m.okafor says they didn't do it",
+     "findings": ["mokafor-denies"], "text": "Service Desk: m.okafor says they didn't do it",
      "supports": true,
      "required": false,
      "why": "Supports the logs. On its own a denial proves little; with the logs, it's strong."
@@ -569,19 +569,19 @@
    ],
    "evidence": [
     {
-     "text": "Sign-in log: 13 accounts tried from 203.0.113.77 in 6 minutes, once each",
+     "findings": ["spray"], "text": "Sign-in log: 13 accounts tried from 203.0.113.77 in 6 minutes, once each",
      "supports": true,
      "required": true,
      "why": "One password against many accounts, slowly, is a spray: it avoids lockouts that many guesses against one account would trigger."
     },
     {
-     "text": "Sign-in log: m.okafor signed in successfully from 203.0.113.77 at 05:47, without MFA",
+     "findings": ["spray-success"], "text": "Sign-in log: m.okafor signed in successfully from 203.0.113.77 at 05:47, without MFA",
      "supports": true,
      "required": true,
      "why": "The spray worked. This turns noise into an incident."
     },
     {
-     "text": "Client notes: VPN logins without MFA are still allowed until 31 Oct",
+     "findings": ["chg2240"], "text": "Client notes: VPN logins without MFA are still allowed until 31 Oct",
      "supports": true,
      "required": false,
      "why": "Explains why one guessed password was enough."
