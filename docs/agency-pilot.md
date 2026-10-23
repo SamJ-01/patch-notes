@@ -1,6 +1,8 @@
 # PATCH//AGENCY: pilot design
 
-Status: pilot built (21 Oct 2026). Decisions in section 9 were agreed on 21 Oct. Shift: `content/agency/shift-01.json`, route `#agency-shift-01`.
+Status: pilot built (21 Oct 2026). Decisions in section 9 were agreed on 21 Oct. First shift: `content/agency/shift-01.json`, route `#agency-shift-01`.
+
+Update (Oct 2026): the pilot succeeded and the format is now the main Agency section with four shifts (`shift-01` to `shift-04`); see the PATCH//AGENCY entry in `CLAUDE.md` for the current list, and `tests/agency.test.mjs` for the rules every shift must pass. The "out of scope" line below describes the original pilot, not today's product: multiple shifts now exist, and shadow (watch) mode was added. The design principles in the sections that follow still hold; where this document and `CLAUDE.md` disagree on what exists, `CLAUDE.md` is current.
 
 ## 1. The idea in one paragraph
 

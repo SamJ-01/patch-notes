@@ -88,6 +88,35 @@ await journey("shadow shift-01", async () => {
   await page.close();
 });
 
+// 3b. Work a shift by hand, guided: clock in, close every alert through the real close form, then the handover
+// form and the debrief. The engine is unit-tested; this checks the desk's form wiring actually drives it.
+await journey("work shift-01", async () => {
+  const page = await open("#agency-shift-01", 390, "light");
+  await page.waitForSelector("#ag-tap");
+  await page.evaluate(() => document.querySelector("#ag-tap").click());
+  await page.waitForSelector("#ag-dossier:not([hidden])", { timeout: 20000 });
+  await page.evaluate(() => document.querySelector("#ag-desk-go").click());  // guided is the default
+  await page.waitForSelector("#ag-desk:not([hidden])", { timeout: 10000 });
+  for (let guard = 0; guard < 12; guard++) {
+    const opened = await page.evaluate(() => { const b = document.querySelector("#ag-queue button.ag-qitem:not(.closed)"); if (b) { b.click(); return true; } return false; });
+    if (opened && await page.$("#ag-closeform")) {
+      await page.evaluate(() => document.querySelector("#ag-fill")?.click());   // "Show me the answer" fills the form
+      await page.waitForTimeout(80);
+      await page.evaluate(() => document.querySelector("#ag-closeform")?.requestSubmit());
+      await page.waitForTimeout(120);
+    }
+    await page.evaluate(() => document.querySelector("#ag-wait")?.click());  // let late alerts arrive
+    await page.waitForTimeout(80);
+    if (await page.evaluate(() => { const q = [...document.querySelectorAll("#ag-queue button.ag-qitem")]; return q.length > 0 && q.every(b => b.classList.contains("closed")); })) break;
+  }
+  if (!(await page.$("#ag-handform"))) { problems.push("work shift-01: handover form never appeared"); await page.close(); return; }
+  await page.evaluate(() => { document.querySelector("#ag-hfill")?.click(); document.querySelector("#ag-handform")?.requestSubmit(); });
+  await page.waitForSelector("#ag-debrief:not([hidden])", { timeout: 5000 }).catch(() => problems.push("work shift-01: no debrief after handover"));
+  if (!/Clocked out/.test(await page.evaluate(() => document.querySelector("#ag-d-h")?.innerText || ""))) problems.push("work shift-01: debrief didn't render");
+  await overflow(page, "work shift-01");
+  await page.close();
+});
+
 // 4. "Learn the basics" puts you on a route: the bar shows the stop, going deeper keeps it, and Next stop moves along it.
 await journey("route", async () => {
   const page = await open("", 390, "dark");
