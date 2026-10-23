@@ -219,3 +219,26 @@ test("feedback links: a GitHub issue form gets a title, any other form link is l
   assert.equal(href("https://forms.gle/AbCdEf123", "Lab X"), "https://forms.gle/AbCdEf123");
   assert.equal(href("", "Lab X"), "");
 });
+
+test("the route bar: a page's place on a route, with the stops either side", () => {
+  const c = {}; vm.createContext(c); vm.runInContext(extract("function trailStop(steps, hash)") + "\nthis.f = trailStop;", c);
+  const steps = [{ href: "#lesson-a" }, { href: "#lab-b" }, { href: "#play" }];
+  const at = h => JSON.parse(JSON.stringify(c.f(steps, h)));
+  assert.deepEqual(at("#lesson-a"), { i: 0, prev: null, next: { href: "#lab-b" } });
+  assert.deepEqual(at("#lab-b"), { i: 1, prev: { href: "#lesson-a" }, next: { href: "#play" } });
+  assert.deepEqual(at("#play"), { i: 2, prev: { href: "#lab-b" }, next: null });
+  assert.equal(c.f(steps, "#lab-zzz"), null, "a page that isn't a stop");
+  assert.equal(c.f([], "#lesson-a"), null, "no route");
+});
+
+test("page history: going back to the page before pops it, so a back link never ping-pongs", () => {
+  const src = template.match(/function noteCrumb\(h\) \{[\s\S]*?\n\}/)[0];
+  const c = { sessionStorage: { setItem() {} }, crumbs: [] }; vm.createContext(c);
+  vm.runInContext(src.replace("function noteCrumb", "this.note = function"), c);
+  for (const h of ["#today", "#lesson-a", "#lab-b"]) c.note(h);
+  assert.deepEqual([...c.crumbs], ["#today", "#lesson-a", "#lab-b"]);
+  c.note("#lesson-a");   // back to the lesson
+  assert.deepEqual([...c.crumbs], ["#today", "#lesson-a"], "the lab is popped, so the lesson's back link points home again");
+  c.note("#lesson-a");   // a redraw of the same page
+  assert.deepEqual([...c.crumbs], ["#today", "#lesson-a"]);
+});

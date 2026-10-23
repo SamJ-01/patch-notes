@@ -217,11 +217,33 @@ function parseRoute() {
   return { tab: NAV_PARENT[view] || view, path: view, draw: VIEWS[view] };
 }
 let lastHash = location.hash;
+function pageName(h) {
+  const k = h.slice(1), id = k.slice(k.indexOf("-") + 1);
+  if (k.startsWith("lesson-")) return LESSON[id]?.title;
+  if (k.startsWith("lab-")) return DATA.labs.find(x => x.id === id)?.title;
+  if (k.startsWith("mission-")) return MISSION(id)?.title;
+  if (k.startsWith("path-")) return DATA.paths.find(x => x.id === id)?.title;
+  if (k.startsWith("agency-")) return SHIFT(id)?.title;
+  return { today: "Home", learn: "Learn", missions: "Practise", agency: "The Agency", exams: "Exam prep" }[k];
+}
+// A "← Section" link becomes "← The page you came from" (modules render theirs later, so this watches the page).
+const SECTION_BACK = new Set(["#today", "#learn", "#missions", "#agency", "#exams"]);
+function relabelBack() {
+  const prev = crumbs.at(-2), name = prev && pageName(prev);
+  if (!name) return;
+  main.querySelectorAll("a.link-btn:not([data-back])").forEach(a => {
+    const href = a.getAttribute("href");
+    if (!SECTION_BACK.has(href) || href === prev || !a.textContent.trim().startsWith("←")) return;
+    a.dataset.back = "1"; a.setAttribute("href", prev); a.textContent = "← " + name;
+  });
+}
+new MutationObserver(relabelBack).observe(main, { childList: true, subtree: true });
 function route() {
   if (agencyShift?.inProgress && $("agency-root") && location.hash !== lastHash) {
     if (!confirm(LEAVE_SHIFT)) { history.replaceState(null, "", lastHash || "#today"); return; }
   }
   agencyShift = null; lastHash = location.hash;
+  noteCrumb(location.hash || "#today");
   const r = parseRoute();
   document.querySelectorAll("nav.tabs a").forEach(a => a.dataset.tab === r.tab ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   closePop();
@@ -231,6 +253,7 @@ function route() {
   window.scrollTo(0, 0);
   if (CVE_VIEWS.includes(r.path)) loadCves();
   r.draw();
+  drawTrail();
   main.classList.remove("enter"); void main.offsetWidth; main.classList.add("enter");
   revealLater();
 }

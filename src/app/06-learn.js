@@ -46,7 +46,7 @@ function pathView(id) {
     <a class="link-btn" href="#learn">← Learn</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">Learning path · ${done}/${steps.length} done</div><h1>${esc(p.title)}</h1><p class="hook">${esc(p.blurb)}</p></div>
     <div class="progress"><span class="trk" aria-hidden="true" style="flex-basis:100%"><i style="width:${Math.round(done / steps.length * 100)}%"></i></span></div>
-    <ol class="steps">${steps.map((st, i) => `<li class="${st.done ? "got" : ""}"><span class="st">${i + 1}${st.done ? '<span class="st-tick" aria-hidden="true">✓</span><span class="sr-only"> (done)</span>' : ""}</span><span class="stack" style="gap:2px"><span class="eyebrow">${esc(st.kind)}</span><a href="${st.href}"${st.flags ? ' data-play-mode="flags"' : st.kind === "game" ? ' data-play-mode="phish"' : ""}>${esc(st.label)}</a></span></li>`).join("")}</ol>
+    <ol class="steps" data-trail="${esc(p.id)}">${steps.map((st, i) => `<li class="${st.done ? "got" : ""}"><span class="st">${i + 1}${st.done ? '<span class="st-tick" aria-hidden="true">✓</span><span class="sr-only"> (done)</span>' : ""}</span><span class="stack" style="gap:2px"><span class="eyebrow">${esc(st.kind)}</span><a href="${st.href}"${st.flags ? ' data-play-mode="flags"' : st.kind === "game" ? ' data-play-mode="phish"' : ""}>${esc(st.label)}</a></span></li>`).join("")}</ol>
     <p class="muted">${P.paths[p.id] ? `Completed on ${esc(P.paths[p.id])}. Nice work.` : `Finish every step to earn <strong>+${PATH_XP} XP</strong> and the Pathfinder badge.`}${career ? ` See the <a href="#careers">${esc(career.role)}</a> career guide.` : ""}</p>
   </article></div>`;
 }
@@ -233,13 +233,15 @@ function topicStages(lessonId) {
 // The horizontal stage strip. `current` is the stage the learner is on now (not a link).
 function loopStrip(lessonId, current) {
   const stages = topicStages(lessonId); if (stages.length < 2) return "";
-  // Number the stages this topic actually has (some have no Diagnose step), so it never reads 1, 2, 4.
-  const mark = s => `${stages.indexOf(s) + 1}${s.status === "done" ? '<span class="st-tick" aria-hidden="true">✓</span>' : ""}`;
+  // No numbers: a route's stops are numbered, and these are steps within one topic, so they mustn't look like stops.
+  const mark = s => (s.status === "done" ? '<span aria-hidden="true">✓</span><span class="sr-only">(done)</span>' : "");
   const node = s => { const [label, sub] = LOOP_META[s.key], here = s.key === current;
     const inner = `<span class="loop-dot">${mark(s)}</span><span class="loop-lbl"><b>${label}</b><span>${s.count || sub}</span></span>`;
     return here ? `<span class="loop-node ${s.status} here" aria-current="step">${inner}</span>`
       : `<a class="loop-node ${s.status}" href="${s.href}"${s.prove ? ` data-prove='${esc(JSON.stringify(s.prove))}'` : ""}>${inner}</a>`; };
-  return `<nav class="looptrack" aria-label="This topic's learning path">${stages.map(node).join('<span class="loop-arr" aria-hidden="true">→</span>')}</nav>`;
+  const onRoute = trailStop(trailSteps(), "#lesson-" + lessonId);
+  return `<div class="loopwrap"><p class="eyebrow loop-eyebrow">${onRoute ? "Go deeper on this topic (optional)" : "In this topic"}</p>
+    <nav class="looptrack" aria-label="This topic's steps">${stages.map(node).join('<span class="loop-arr" aria-hidden="true">→</span>')}</nav></div>`;
 }
 
 // What to do after finishing something: the next unfinished step of a learning path that includes it
@@ -253,7 +255,8 @@ const afterInPath = (steps, type, id) => {
   return ahead ? { step: ahead, back: false } : (s => s && { step: s, back: true })(steps.slice(0, i).find(st => !st.done));
 };
 function nextStep(type, id) {
-  const paths = DATA.paths.filter(p => p.steps.some(st => st.type === type && st.id === id)).sort((a, b) => pathRank(b) - pathRank(a));
+  const on = trailId(), paths = DATA.paths.filter(p => p.steps.some(st => st.type === type && st.id === id))
+    .sort((a, b) => (b.id === on) - (a.id === on) || pathRank(b) - pathRank(a));  // the route you're on comes first
   for (const p of paths) {
     const n = afterInPath(pathSteps(p), type, id);
     if (n) return { ...n.step, why: n.back ? `Still to do in ${p.title}` : `Next in ${p.title}` };
@@ -275,6 +278,57 @@ function nextStep(type, id) {
   }
   return null;
 }
+// The pages visited this session, so a "←" link can go back to the page you came from rather than a fixed section
+// (stored per tab; read back as untrusted, so only strings starting with # are kept).
+let crumbs = [];
+try { crumbs = (JSON.parse(sessionStorage.getItem("pn-crumbs")) || []).filter(h => typeof h === "string" && h.startsWith("#")).slice(-20); } catch (e) { crumbs = []; }
+function noteCrumb(h) {
+  if (crumbs.at(-2) === h) crumbs.pop(); else if (crumbs.at(-1) !== h) crumbs.push(h);  // going back pops, like the browser
+  crumbs = crumbs.slice(-20);
+  try { sessionStorage.setItem("pn-crumbs", JSON.stringify(crumbs)); } catch (e) {}
+}
+/* THE ROUTE YOU'RE ON. Start from a route map, a path page or "Learn the basics" and the route stays with you for this
+   visit: a bar above each of its stops shows where you are, with the stops either side, wherever else you wander. */
+const trailId = () => { try { return sessionStorage.getItem("pn-trail"); } catch (e) { return null; } };
+const setTrail = id => { try { if (id) sessionStorage.setItem("pn-trail", id); else sessionStorage.removeItem("pn-trail"); } catch (e) {} };
+const trailPath = () => DATA.paths.find(p => p.id === trailId()) || null;
+const trailSteps = () => (p => (p ? pathSteps(p) : []))(trailPath());
+// Where a page (by its link) sits on a route's steps: its place and the stops either side, or null when it isn't one.
+function trailStop(steps, hash) {
+  const i = steps.findIndex(st => st.href === hash);
+  return i < 0 ? null : { i, prev: steps[i - 1] || null, next: steps[i + 1] || null };
+}
+function drawTrail() {
+  const bar = $("trail"), p = trailPath(), steps = trailSteps(), at = trailStop(steps, location.hash || "#today");
+  if (!bar) return;
+  // Off the route on a lesson, lab or mission (a topic's extras, say): a way back to the last stop you were on.
+  const h = location.hash || "#today", detail = /^#(lesson|lab|mission|agency)-/.test(h);
+  const last = !at && detail && [...crumbs].reverse().map(c => trailStop(steps, c)).find(Boolean);
+  if (!at && !last) { bar.hidden = true; bar.innerHTML = ""; return; }
+  const name = p.title.replace(/^Path to /, ""), stop = st => `${st.label} (${KIND_WORD[st.kind] || st.kind})`;
+  bar.dataset.trail = p.id; bar.hidden = false;
+  if (!at) {
+    const st = steps[last.i];
+    bar.innerHTML = `<div class="trail-in off">
+      <a class="trail-name" href="#path-${esc(p.id)}"><span class="eyebrow">Route · a side trip</span><b>${esc(name)}</b></a>
+      <span class="trail-nav"><a class="btn ghost" href="${st.href}" aria-label="${esc(`Back to stop ${last.i + 1}: ${stop(st)}`)}">‹ Back to stop ${last.i + 1}</a></span>
+      <button type="button" class="trail-x" aria-label="Leave this route">✕</button></div>`;
+    bar.querySelector(".trail-x").addEventListener("click", () => { setTrail(null); drawTrail(); });
+    return;
+  }
+  bar.innerHTML = `<div class="trail-in">
+    <a class="trail-name" href="#path-${esc(p.id)}"><span class="eyebrow">Route</span><b>${esc(name)}</b></a>
+    <span class="trail-pos mono">Stop ${at.i + 1} of ${steps.length}</span>
+    <ol class="trail-dots" aria-hidden="true">${steps.map((st, k) => `<li class="${k === at.i ? "here" : st.done ? "done" : ""}"></li>`).join("")}</ol>
+    <span class="trail-nav">${at.prev ? `<a class="btn ghost" href="${at.prev.href}" aria-label="${esc("Previous stop: " + stop(at.prev))}">‹ Prev</a>` : ""}${at.next
+      ? `<a class="btn brand" href="${at.next.href}" aria-label="${esc("Next stop: " + stop(at.next))}">Next stop ›</a>`
+      : `<a class="btn brand" href="#path-${esc(p.id)}">Finish ›</a>`}</span>
+    <button type="button" class="trail-x" aria-label="Leave this route">✕</button></div>`;
+  bar.querySelector(".trail-x").addEventListener("click", () => { setTrail(null); drawTrail(); });
+}
+// Following a link inside anything marked with a route (data-trail) puts you on that route.
+document.addEventListener("click", e => { const a = e.target.closest("a[href]"), t = a && a.closest("[data-trail]"); if (t) setTrail(t.dataset.trail); });
+
 // Turn a loop stage into a next-step card.
 function loopNext(s) {
   if (s.key === "experiment") { const x = DATA.labs.find(a => "#lab-" + a.id === s.href); return x && { label: x.title, href: s.href, kind: "lab", why: "Experiment: try it hands-on" }; }
@@ -288,7 +342,7 @@ function nextStepCard(type, id) {
   return n ? `<section class="panel next-step"><div class="eyebrow">${esc(n.why)}</div><h2>Next: ${esc(n.label)}</h2><a class="btn brand" href="${n.href}"${n.prove ? ` data-prove='${esc(JSON.stringify(n.prove))}'` : ""} style="justify-self:start">${GO_LABEL[n.kind] || "Go"} ›</a></section>` : "";
 }
 // After a lab or mission: what was practised, where the theory lives, and what to do next.
-const feedbackLine = what => (feedbackHref(what) ? `<p class="muted feedback-line">How was it? <a href="${esc(feedbackHref(what))}" target="_blank" rel="noopener">Tell us what worked and what didn't ↗</a> (a public GitHub form; needs a free account).</p>` : "");
+const feedbackLine = what => (feedbackHref(what) ? `<p class="muted feedback-line">How was it? <a href="${esc(feedbackHref(what))}" target="_blank" rel="noopener">Tell us what worked and what didn't ↗</a>${/^https:\/\/github\.com\//.test(DATA.site.feedback || "") ? " (a public GitHub form; needs a free account)" : ""}.</p>` : "");
 function showDoneCard(type, item, title) {
   const root = type === "lab" ? ($("lab-root") || main.querySelector(".view")) : $("mission-root");
   if (!root) return;

@@ -108,6 +108,11 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   `tests/intervlan.test.mjs`): a Cisco 2911 (IOS 15) router on a stick, `show ip route`/`show access-lists`, named extended
   ACLs (ip/icmp, inbound) in the model (`topo.acls`, `aclCheck`; replies are filtered too). Blocked pings time out (as with
   `no ip unreachables`, said in its simplification).
+- Navigation: a learning path you start (home route map, path page, "Learn the basics": anything inside `[data-trail]`) is
+  remembered for the visit (sessionStorage `pn-trail`); `drawTrail()` shows a route bar above each stop (`#trail`, Stop n of N,
+  Prev/Next stop) or "Back to stop n" on a side trip, and `nextStep` follows that route first. Topic steps (`loopStrip`) are
+  unnumbered so they don't look like route stops. `crumbs` (sessionStorage `pn-crumbs`) turn "← Section" links into
+  "← the page you came from" (`relabelBack`, watches `main`). Tested: `trailStop`, `noteCrumb`.
 - Every lesson, lab, mission and shift must be mapped to at least one exam objective (tested); maps can link shifts
   (`agency`) and tools (`subnet-calc`, `headers-check`, `log-search`, `cvss-decode`). Keep gap notes honest when coverage changes.
 - Feedback: public GitHub issue form (`.github/ISSUE_TEMPLATE/feedback.yml`), linked from every done card, the Agency debrief

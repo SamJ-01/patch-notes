@@ -34,7 +34,7 @@ let P = FRESH();
 try { const saved = localStorage.getItem(PKEY); if (saved) P = cleanProgress(JSON.parse(saved)); } catch (e) {}
 const saveP = () => { try { localStorage.setItem(PKEY, JSON.stringify(P)); } catch (e) {} };
 const count = o => Object.keys(o || {}).length;
-function progressChanged() { checkProgress(); saveP(); renderXP(); }
+function progressChanged() { checkProgress(); saveP(); renderXP(); if (typeof drawTrail === "function") drawTrail(); }  // ticks the route bar's dot
 function rank() {
   let i = 0; while (i + 1 < RANKS.length && P.xp >= RANKS[i + 1][0]) i++;
   const next = RANKS[i + 1];

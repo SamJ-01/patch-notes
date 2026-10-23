@@ -56,6 +56,7 @@ function routePathChoice() {
 function drawRoute() {
   const box = $("route"); if (!box) return;
   const p = routePathChoice(), steps = pathSteps(p), next = steps.findIndex(st => !st.done), done = steps.filter(st => st.done).length;
+  box.dataset.trail = p.id;  // a stop or Start link here puts you on this route
   const W = Math.max(300, box.clientWidth), cols = W < 520 ? 2 : W < 820 ? 4 : 6, maxCh = cols <= 2 ? 16 : 17;
   const L = routeLayout(steps.length, cols, cols <= 2 ? { W, rowH: 145, R: 46, pad: 40 } : { W });
   routeWidth = box.clientWidth;
@@ -93,10 +94,10 @@ const isNewcomer = () => !P.xp && !count(P.done) && !count(P.labs) && !count(P.m
 function startCards(news, kev) {
   const basics = pathSteps(DATA.paths.find(p => p.id === "awareness") || DATA.paths[0])[0];
   const shift = (DATA.agency || [])[0];
-  const card = (href, pic, eyebrow, title, text, cta) => `<a class="lcard art-card start-card" href="${href}">${pic}
+  const card = (href, pic, eyebrow, title, text, cta, trail = "") => `<a class="lcard art-card start-card" href="${href}"${trail ? ` data-trail="${esc(trail)}"` : ""}>${pic}
     <span class="eyebrow">${eyebrow}</span><h3>${title}</h3><p>${text}</p><span class="start-cta">${cta} →</span></a>`;
   return `<section class="start" aria-labelledby="start-h"><h2 id="start-h">Where do you want to start?</h2><div class="start-grid">
-    ${card(esc(basics?.href || "#learn"), cardArt("cia-triad"), "New to security", "Learn the basics", "Short lessons with pictures, then a game. No experience needed.", "Start the basics")}
+    ${card(esc(basics?.href || "#learn"), cardArt("cia-triad"), "New to security", "Learn the basics", "Short lessons with pictures, then a game. No experience needed.", "Start the basics", basics ? "awareness" : "")}
     ${card("#exams", cardPhoto("img/heads/exams.webp", 494, 247), "Studying for an exam", "Network+, Security+ or PenTest+", "See what to practise for each objective, then take a mock exam.", "Open exam prep")}
     ${shift?.clientImage ? card("#agency", cardPhoto(shift.clientImage.small || shift.clientImage.src, 800, Math.round(800 * shift.clientImage.height / shift.clientImage.width)), "PATCH//AGENCY", "Work a SOC shift", "Clock in at a security operations centre. Watch your shift lead work it first, then take the desk.", "Clock in") : ""}
     ${card("#news", cardArt("nation-state"), "Just the news", "This week, explained", `${news.length} stories in plain English, and ${kev.length} ${kev.length === 1 ? "bug" : "bugs"} being exploited right now.`, "Read the news")}
