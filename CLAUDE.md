@@ -61,7 +61,8 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   svc-backup account, rclone exfiltration of client data, then shadow-copy/catalogue deletion caught before encryption;
   two noise alerts, a cleaned AV quarantine and an oversized but scheduled Veeam backup. The Diagnose step for `malware`,
   `ransomware` and `data-breach`, mapped to Security+ 4.8). shift-03 has a client scene (Halstead & Rowe office at night) and a
-  client-contact portrait (Marcus Bell); the SOC team reuses the agency's own portraits. shift-04 (Wrenfield & Co, an online shop: SQL injection
+  client-contact portrait (Marcus Bell). All agency portraits (the SOC team morgan/priya/tomasz/grace/elliot and the
+  clients dana/owen/marcus/nadia) are in one dark cinematic style. shift-04 (Wrenfield & Co, an online shop: SQL injection
   reading the users table overnight, stored XSS stealing an admin session, that session walking order IDs (IDOR) and
   leaking a cloud storage key, then a customer-exports bucket downloaded with it; two noise alerts, an approved scanner
   and the scheduled analytics export. The Diagnose step for `web-sqli`, `web-xss`, `web-access` and `cloud`, mapped to
