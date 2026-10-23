@@ -733,6 +733,9 @@
   "aliases": [
    "password spraying",
    "password-spraying",
+   "password spray",
+   "password-spray",
+   "password sprays",
    "brute force",
    "brute-force",
    "brute-forcing"
@@ -4834,5 +4837,47 @@
   ],
   "short": "A widely used framework with six functions: Govern, Identify, Protect, Detect, Respond, Recover.",
   "lesson": "frameworks"
+ },
+ {
+  "id": "correlation-rule",
+  "term": "Correlation rule",
+  "kind": "Defence",
+  "aliases": [
+   "correlation rule",
+   "correlation rules",
+   "event correlation"
+  ],
+  "short": "A detection rule that looks for a pattern across multiple events, such as one source trying many accounts in a short time. It raises an alert for an analyst to investigate; it does not prove an attack succeeded.",
+  "lesson": "soc",
+  "see": [
+   "siem"
+  ]
+ },
+ {
+  "id": "publickey-auth",
+  "term": "Public-key authentication",
+  "kind": "Technology",
+  "aliases": [
+   "public-key authentication",
+   "public key authentication",
+   "publickey authentication",
+   "publickey"
+  ],
+  "short": "A login method that proves possession of a private key matching a public key the server trusts. In an SSH log, “Accepted publickey” records a successful login using that method; it does not by itself prove the login was authorised by the organisation.",
+  "lesson": "linux",
+  "see": [
+   "ssh",
+   "pki"
+  ]
+ },
+ {
+  "id": "rclone",
+  "term": "rclone",
+  "kind": "Technology",
+  "aliases": [
+   "rclone"
+  ],
+  "short": "A command-line tool for copying and synchronising files with local storage and cloud services. It is legitimate software, but attackers can misuse it to move stolen data out of an organisation.",
+  "lesson": "data-breach"
  }
 ]

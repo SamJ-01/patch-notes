@@ -65,7 +65,7 @@
     {
      "id": "web-accepted",
      "match": "Accepted publickey for tbrooks",
-     "finding": "The only accepted logins were tbrooks's SSH key from the office (198.51.100.23), at 18:05 yesterday and 06:52 today. Nothing from 203.0.113.9 got in."
+     "finding": "The only accepted logins were tbrooks's SSH key from the office address 198.51.100.23, at 18:05 yesterday and 06:52 today. The failed attempts from 203.0.113.9 did not result in a successful login."
     }
    ]
   },
@@ -201,7 +201,7 @@
     {
      "id": "spray",
      "match": "result=failure user=a.reid@pellowfinch.example src=203.0.113.77",
-     "finding": "From 05:41 to 05:47, 203.0.113.77 tried 13 different VPN accounts, once each, about every 30 seconds: a password spray."
+     "finding": "From 05:41 to 05:47, 203.0.113.77 tried 13 different VPN accounts, once each, about every 30 seconds: a password spray (a few passwords tried across many accounts, rather than many guesses against one account)."
     },
     {
      "id": "spray-success",
