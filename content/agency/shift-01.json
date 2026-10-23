@@ -1,1002 +1,819 @@
 {
-  "id": "shift-01",
-  "title": "Early shift: Pellow & Finch",
-  "agency": "Lanternfield Security Operations",
-  "client": "Pellow & Finch Logistics",
-  "date": "Wednesday 21 October",
-  "startsAt": "07:00",
-  "minutes": 25,
-  "xp": 100,
-  "summary": "Work the SOC desk for one shift: five alerts, most of them noise. Investigate the logs, decide what each one is, get other teams to act, and hand over to the next shift.",
-  "card": "Five alerts, mostly noise. Find the real one",
-  "lessons": [
-    "identity",
-    "incident-response",
-    "soc"
-  ],
-  "briefing": "Morning. The night shift left you four alerts for Pellow & Finch, and more may come in. Most nights it's noise, but check each one properly: decide what it is, ask other teams to act where it's needed, and leave a clean handover. The clock only moves when you do something, so take your time reading.",
-  "lead": "Morgan, shift lead",
-  "leadPhoto": "img/agency/morgan.webp",
-  "next": {
-    "href": "#mission-ssh-brute",
-    "label": "Mission: The 3am logins"
-  },
-  "clientImage": {
-    "src": "img/agency/pellow-finch-depot.webp",
-    "small": "img/agency/pellow-finch-depot-800.webp",
-    "width": 1536,
-    "height": 538,
-    "alt": "Pellow & Finch's parcel depot: a warehouse with four loading bays, delivery vans and parcels in the yard"
-  },
-  "simplification": "Simplified simulation: a real shift has more alerts and far longer logs. The Linux log lines follow Ubuntu 22.04's OpenSSH, sudo, shadow-utils (useradd, usermod, passwd) and nginx formats. The sign-in log is a generic SIEM export written for this shift: real identity providers and VPNs each have their own format. Countries are invented for the story, because documentation addresses have no real location. Department replies are scripted. All people and companies are fictional.",
-  "costs": {
-    "search": 1,
-    "request": 2,
-    "close": 3,
-    "wait": 5
-  },
-  "sources": {
-    "web01-auth": {
-      "name": "/var/log/auth.log on web01",
-      "about": "web01 (Ubuntu 22.04) authentication log, 18:05 yesterday to 06:52 today.",
-      "lines": [
-        "Oct 20 18:05:11 web01 sshd[1502]: Accepted publickey for tbrooks from 198.51.100.23 port 60412 ssh2: ED25519 SHA256:4fJq8Lw2ZpN0cV7xR3mT9yB1kH6sD5aG8eU2oI4nQwE",
-        "Oct 20 18:05:11 web01 sshd[1502]: pam_unix(sshd:session): session opened for user tbrooks(uid=1000) by (uid=0)",
-        "Oct 20 18:31:40 web01 sshd[1502]: pam_unix(sshd:session): session closed for user tbrooks",
-        "Oct 21 01:10:03 web01 sshd[2410]: Failed password for root from 203.0.113.9 port 40112 ssh2",
-        "Oct 21 01:10:06 web01 sshd[2410]: Failed password for root from 203.0.113.9 port 40112 ssh2",
-        "Oct 21 01:10:09 web01 sshd[2410]: Failed password for root from 203.0.113.9 port 40112 ssh2",
-        "Oct 21 01:10:09 web01 sshd[2410]: Connection closed by authenticating user root 203.0.113.9 port 40112 [preauth]",
-        "Oct 21 01:12:20 web01 sshd[2437]: Invalid user admin from 203.0.113.9 port 40188",
-        "Oct 21 01:12:20 web01 sshd[2437]: Failed password for invalid user admin from 203.0.113.9 port 40188 ssh2",
-        "Oct 21 01:12:23 web01 sshd[2437]: Failed password for invalid user admin from 203.0.113.9 port 40188 ssh2",
-        "Oct 21 01:12:23 web01 sshd[2437]: Connection closed by invalid user admin 203.0.113.9 port 40188 [preauth]",
-        "Oct 21 01:14:41 web01 sshd[2466]: Invalid user ubuntu from 203.0.113.9 port 40230",
-        "Oct 21 01:14:41 web01 sshd[2466]: Failed password for invalid user ubuntu from 203.0.113.9 port 40230 ssh2",
-        "Oct 21 01:14:44 web01 sshd[2466]: Failed password for invalid user ubuntu from 203.0.113.9 port 40230 ssh2",
-        "Oct 21 01:14:44 web01 sshd[2466]: Connection closed by invalid user ubuntu 203.0.113.9 port 40230 [preauth]",
-        "Oct 21 01:16:02 web01 sshd[2493]: Invalid user pi from 203.0.113.9 port 40291",
-        "Oct 21 01:16:02 web01 sshd[2493]: Failed password for invalid user pi from 203.0.113.9 port 40291 ssh2",
-        "Oct 21 01:16:05 web01 sshd[2493]: Failed password for invalid user pi from 203.0.113.9 port 40291 ssh2",
-        "Oct 21 01:16:05 web01 sshd[2493]: Connection closed by invalid user pi 203.0.113.9 port 40291 [preauth]",
-        "Oct 21 02:17:01 web01 CRON[2601]: pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)",
-        "Oct 21 02:17:01 web01 CRON[2601]: pam_unix(cron:session): session closed for user root",
-        "Oct 21 06:52:30 web01 sshd[2871]: Accepted publickey for tbrooks from 198.51.100.23 port 61022 ssh2: ED25519 SHA256:4fJq8Lw2ZpN0cV7xR3mT9yB1kH6sD5aG8eU2oI4nQwE",
-        "Oct 21 06:52:30 web01 sshd[2871]: pam_unix(sshd:session): session opened for user tbrooks(uid=1000) by (uid=0)"
-      ],
-      "findings": [
-        {
-          "id": "web-fails",
-          "match": "Failed password",
-          "finding": "9 failed passwords from 203.0.113.9 between 01:10 and 01:16, for root, admin, ubuntu and pi."
-        },
-        {
-          "id": "web-invalid",
-          "match": "Invalid user",
-          "finding": "203.0.113.9 tried usernames that don't exist on web01 (admin, ubuntu, pi): automated guessing, not a person who forgot a password."
-        },
-        {
-          "id": "web-accepted",
-          "match": "Accepted publickey for tbrooks",
-          "finding": "The only accepted logins were tbrooks's SSH key from the office address 198.51.100.23, at 18:05 yesterday and 06:52 today. The failed attempts from 203.0.113.9 did not result in a successful login."
-        }
-      ]
+ "id": "shift-01",
+ "title": "Early shift: Pellow & Finch",
+ "agency": "Lanternfield Security Operations",
+ "client": "Pellow & Finch Logistics",
+ "date": "Wednesday 21 October",
+ "startsAt": "07:00",
+ "minutes": 25,
+ "xp": 100,
+ "summary": "Work the SOC desk for one shift: five alerts, most of them noise. Investigate the logs, decide what each one is, get other teams to act, and hand over to the next shift.",
+ "card": "Five alerts, mostly noise. Find the real one",
+ "lessons": ["identity", "incident-response", "soc"],
+ "briefing": "Morning. The night shift left you four alerts for Pellow & Finch, and more may come in. Most nights it's noise, but check each one properly: decide what it is, ask other teams to act where it's needed, and leave a clean handover. The clock only moves when you do something, so take your time reading.",
+ "lead": "Morgan, shift lead",
+ "leadPhoto": "img/agency/morgan.webp",
+ "next": { "href": "#mission-ssh-brute", "label": "Mission: The 3am logins" },
+ "clientImage": { "src": "img/agency/pellow-finch-depot.webp", "small": "img/agency/pellow-finch-depot-800.webp", "width": 1536, "height": 538, "alt": "Pellow & Finch's parcel depot: a warehouse with four loading bays, delivery vans and parcels in the yard" },
+ "simplification": "Simplified simulation: a real shift has more alerts and far longer logs. The Linux log lines follow Ubuntu 22.04's OpenSSH, sudo, shadow-utils (useradd, usermod, passwd) and nginx formats. The sign-in log is a generic SIEM export written for this shift: real identity providers and VPNs each have their own format. Countries are invented for the story, because documentation addresses have no real location. Department replies are scripted. All people and companies are fictional.",
+ "costs": {
+  "search": 1,
+  "request": 2,
+  "close": 3,
+  "wait": 5
+ },
+ "sources": {
+  "web01-auth": {
+   "name": "/var/log/auth.log on web01",
+   "about": "web01 (Ubuntu 22.04) authentication log, 18:05 yesterday to 06:52 today.",
+   "lines": [
+    "Oct 20 18:05:11 web01 sshd[1502]: Accepted publickey for tbrooks from 198.51.100.23 port 60412 ssh2: ED25519 SHA256:4fJq8Lw2ZpN0cV7xR3mT9yB1kH6sD5aG8eU2oI4nQwE",
+    "Oct 20 18:05:11 web01 sshd[1502]: pam_unix(sshd:session): session opened for user tbrooks(uid=1000) by (uid=0)",
+    "Oct 20 18:31:40 web01 sshd[1502]: pam_unix(sshd:session): session closed for user tbrooks",
+    "Oct 21 01:10:03 web01 sshd[2410]: Failed password for root from 203.0.113.9 port 40112 ssh2",
+    "Oct 21 01:10:06 web01 sshd[2410]: Failed password for root from 203.0.113.9 port 40112 ssh2",
+    "Oct 21 01:10:09 web01 sshd[2410]: Failed password for root from 203.0.113.9 port 40112 ssh2",
+    "Oct 21 01:10:09 web01 sshd[2410]: Connection closed by authenticating user root 203.0.113.9 port 40112 [preauth]",
+    "Oct 21 01:12:20 web01 sshd[2437]: Invalid user admin from 203.0.113.9 port 40188",
+    "Oct 21 01:12:20 web01 sshd[2437]: Failed password for invalid user admin from 203.0.113.9 port 40188 ssh2",
+    "Oct 21 01:12:23 web01 sshd[2437]: Failed password for invalid user admin from 203.0.113.9 port 40188 ssh2",
+    "Oct 21 01:12:23 web01 sshd[2437]: Connection closed by invalid user admin 203.0.113.9 port 40188 [preauth]",
+    "Oct 21 01:14:41 web01 sshd[2466]: Invalid user ubuntu from 203.0.113.9 port 40230",
+    "Oct 21 01:14:41 web01 sshd[2466]: Failed password for invalid user ubuntu from 203.0.113.9 port 40230 ssh2",
+    "Oct 21 01:14:44 web01 sshd[2466]: Failed password for invalid user ubuntu from 203.0.113.9 port 40230 ssh2",
+    "Oct 21 01:14:44 web01 sshd[2466]: Connection closed by invalid user ubuntu 203.0.113.9 port 40230 [preauth]",
+    "Oct 21 01:16:02 web01 sshd[2493]: Invalid user pi from 203.0.113.9 port 40291",
+    "Oct 21 01:16:02 web01 sshd[2493]: Failed password for invalid user pi from 203.0.113.9 port 40291 ssh2",
+    "Oct 21 01:16:05 web01 sshd[2493]: Failed password for invalid user pi from 203.0.113.9 port 40291 ssh2",
+    "Oct 21 01:16:05 web01 sshd[2493]: Connection closed by invalid user pi 203.0.113.9 port 40291 [preauth]",
+    "Oct 21 02:17:01 web01 CRON[2601]: pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)",
+    "Oct 21 02:17:01 web01 CRON[2601]: pam_unix(cron:session): session closed for user root",
+    "Oct 21 06:52:30 web01 sshd[2871]: Accepted publickey for tbrooks from 198.51.100.23 port 61022 ssh2: ED25519 SHA256:4fJq8Lw2ZpN0cV7xR3mT9yB1kH6sD5aG8eU2oI4nQwE",
+    "Oct 21 06:52:30 web01 sshd[2871]: pam_unix(sshd:session): session opened for user tbrooks(uid=1000) by (uid=0)"
+   ],
+   "findings": [
+    {
+     "id": "web-fails",
+     "match": "Failed password",
+     "finding": "9 failed passwords from 203.0.113.9 between 01:10 and 01:16, for root, admin, ubuntu and pi."
     },
-    "web01-nginx": {
-      "name": "/var/log/nginx/access.log on web01",
-      "about": "web01's web server access log (nginx, combined format), 06:38 to 06:52.",
-      "lines": [
-        "198.51.100.140 - - [21/Oct/2026:06:38:12 +0100] \"GET /track?ref=PF4471209 HTTP/1.1\" 200 5120 \"https://www.pellowfinch.example/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\"",
-        "198.51.100.140 - - [21/Oct/2026:06:38:12 +0100] \"GET /static/app.css HTTP/1.1\" 200 18342 \"https://www.pellowfinch.example/track?ref=PF4471209\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\"",
-        "198.51.100.140 - - [21/Oct/2026:06:38:13 +0100] \"GET /favicon.ico HTTP/1.1\" 404 162 \"https://www.pellowfinch.example/track?ref=PF4471209\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\"",
-        "198.51.100.77 - - [21/Oct/2026:06:40:03 +0100] \"GET / HTTP/1.1\" 200 7431 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1\"",
-        "198.51.100.77 - - [21/Oct/2026:06:40:04 +0100] \"GET /static/app.css HTTP/1.1\" 200 18342 \"https://www.pellowfinch.example/\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1\"",
-        "192.0.2.66 - - [21/Oct/2026:06:41:02 +0100] \"GET / HTTP/1.1\" 200 7431 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
-        "192.0.2.66 - - [21/Oct/2026:06:41:03 +0100] \"GET /.env HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
-        "192.0.2.66 - - [21/Oct/2026:06:41:03 +0100] \"GET /.git/config HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
-        "192.0.2.66 - - [21/Oct/2026:06:41:04 +0100] \"GET /wp-login.php HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
-        "192.0.2.66 - - [21/Oct/2026:06:41:04 +0100] \"GET /phpmyadmin/ HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
-        "192.0.2.66 - - [21/Oct/2026:06:41:05 +0100] \"GET /vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
-        "192.0.2.66 - - [21/Oct/2026:06:41:05 +0100] \"GET /admin/.env HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
-        "192.0.2.66 - - [21/Oct/2026:06:41:06 +0100] \"GET /config.json HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
-        "192.0.2.66 - - [21/Oct/2026:06:41:06 +0100] \"GET /backup.zip HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
-        "192.0.2.66 - - [21/Oct/2026:06:41:07 +0100] \"GET /actuator/env HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
-        "198.51.100.77 - - [21/Oct/2026:06:44:31 +0100] \"GET /track?ref=PF4470385 HTTP/1.1\" 200 5098 \"https://www.pellowfinch.example/\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1\"",
-        "198.51.100.203 - - [21/Oct/2026:06:51:47 +0100] \"GET /track?ref=PF4472950 HTTP/1.1\" 200 5133 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\"",
-        "198.51.100.203 - - [21/Oct/2026:06:51:47 +0100] \"GET /static/app.css HTTP/1.1\" 304 0 \"https://www.pellowfinch.example/track?ref=PF4472950\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\""
-      ],
-      "findings": [
-        {
-          "id": "scan-paths",
-          "match": "/.git/config",
-          "finding": "192.0.2.66 asked for 9 well-known secret and admin paths (/.env, /.git/config, /wp-login.php, /phpmyadmin/ and more) within seconds, with a scanner's user agent (zgrab)."
-        },
-        {
-          "id": "scan-404",
-          "match": "\"GET /.env HTTP/1.1\" 404",
-          "finding": "Every one of those probes got 404 Not Found: none of those files exist on web01."
-        },
-        {
-          "id": "scan-home",
-          "match": "192.0.2.66 - - [21/Oct/2026:06:41:02 +0100] \"GET / HTTP/1.1\" 200",
-          "finding": "The only request from 192.0.2.66 that succeeded was the public home page, which anyone can load."
-        }
-      ]
+    {
+     "id": "web-invalid",
+     "match": "Invalid user",
+     "finding": "203.0.113.9 tried usernames that don't exist on web01 (admin, ubuntu, pi): automated guessing, not a person who forgot a password."
     },
-    "files01-auth": {
-      "name": "/var/log/auth.log on files01",
-      "about": "files01 (Ubuntu 22.04) authentication log, 09:03 yesterday to 06:18 today.",
-      "lines": [
-        "Oct 20 09:03:11 files01 sshd[1422]: Accepted password for mokafor from 10.8.0.5 port 49822 ssh2",
-        "Oct 20 09:03:11 files01 sshd[1422]: pam_unix(sshd:session): session opened for user mokafor(uid=1002) by (uid=0)",
-        "Oct 20 09:41:56 files01 sshd[1422]: pam_unix(sshd:session): session closed for user mokafor",
-        "Oct 21 02:30:01 files01 CRON[2950]: pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)",
-        "Oct 21 02:30:44 files01 CRON[2950]: pam_unix(cron:session): session closed for user root",
-        "Oct 21 06:12:40 files01 sshd[3088]: Accepted password for mokafor from 10.8.0.14 port 50122 ssh2",
-        "Oct 21 06:12:40 files01 sshd[3088]: pam_unix(sshd:session): session opened for user mokafor(uid=1002) by (uid=0)",
-        "Oct 21 06:12:40 files01 systemd-logind[612]: New session 41 of user mokafor.",
-        "Oct 21 06:13:55 files01 sudo:  mokafor : TTY=pts/0 ; PWD=/home/mokafor ; USER=root ; COMMAND=/usr/sbin/useradd -m -s /bin/bash svcbackup2",
-        "Oct 21 06:13:55 files01 sudo: pam_unix(sudo:session): session opened for user root(uid=0) by mokafor(uid=1002)",
-        "Oct 21 06:13:55 files01 useradd[3101]: new group: name=svcbackup2, GID=1005",
-        "Oct 21 06:13:55 files01 useradd[3101]: new user: name=svcbackup2, UID=1005, GID=1005, home=/home/svcbackup2, shell=/bin/bash, from=/dev/pts/0",
-        "Oct 21 06:13:55 files01 sudo: pam_unix(sudo:session): session closed for user root",
-        "Oct 21 06:14:08 files01 sudo:  mokafor : TTY=pts/0 ; PWD=/home/mokafor ; USER=root ; COMMAND=/usr/bin/passwd svcbackup2",
-        "Oct 21 06:14:08 files01 sudo: pam_unix(sudo:session): session opened for user root(uid=0) by mokafor(uid=1002)",
-        "Oct 21 06:14:15 files01 passwd[3110]: pam_unix(passwd:chauthtok): password changed for svcbackup2",
-        "Oct 21 06:14:15 files01 sudo: pam_unix(sudo:session): session closed for user root",
-        "Oct 21 06:14:31 files01 sudo:  mokafor : TTY=pts/0 ; PWD=/home/mokafor ; USER=root ; COMMAND=/usr/sbin/usermod -aG sudo svcbackup2",
-        "Oct 21 06:14:31 files01 sudo: pam_unix(sudo:session): session opened for user root(uid=0) by mokafor(uid=1002)",
-        "Oct 21 06:14:31 files01 usermod[3118]: add 'svcbackup2' to group 'sudo'",
-        "Oct 21 06:14:31 files01 usermod[3118]: add 'svcbackup2' to shadow group 'sudo'",
-        "Oct 21 06:14:31 files01 sudo: pam_unix(sudo:session): session closed for user root",
-        "Oct 21 06:16:20 files01 sshd[3088]: Received disconnect from 10.8.0.14 port 50122:11: disconnected by user",
-        "Oct 21 06:16:20 files01 sshd[3088]: Disconnected from user mokafor 10.8.0.14 port 50122",
-        "Oct 21 06:16:20 files01 sshd[3088]: pam_unix(sshd:session): session closed for user mokafor",
-        "Oct 21 06:18:02 files01 sshd[3140]: Accepted password for svcbackup2 from 10.8.0.14 port 50160 ssh2",
-        "Oct 21 06:18:02 files01 sshd[3140]: pam_unix(sshd:session): session opened for user svcbackup2(uid=1005) by (uid=0)",
-        "Oct 21 06:18:02 files01 systemd-logind[612]: New session 42 of user svcbackup2."
-      ],
-      "findings": [
-        {
-          "id": "files-mokafor",
-          "match": "Accepted password for mokafor from 10.8.0.14",
-          "finding": "At 06:12 mokafor logged in to files01 with a password from 10.8.0.14, an address from the VPN pool."
-        },
-        {
-          "id": "files-useradd",
-          "match": "new user: name=svcbackup2",
-          "finding": "At 06:13 mokafor used sudo to create a new account, svcbackup2, then set its password."
-        },
-        {
-          "id": "files-sudo",
-          "match": "add 'svcbackup2' to group 'sudo'",
-          "finding": "At 06:14 svcbackup2 was added to the sudo group, so it can run anything as root: a new admin account."
-        },
-        {
-          "id": "files-svc",
-          "match": "Accepted password for svcbackup2",
-          "finding": "At 06:18 svcbackup2 logged in from the same VPN address, 10.8.0.14. There's no 'session closed' line for it: it's still logged in."
-        },
-        {
-          "id": "files-usual",
-          "match": "Accepted password for mokafor from 10.8.0.5",
-          "finding": "mokafor's previous login to files01 was at 09:03 yesterday, in working hours."
-        }
-      ]
-    },
-    "signin": {
-      "name": "Sign-in log (SIEM export)",
-      "about": "Pellow & Finch sign-ins to the VPN, mail and staff portal, as the SIEM shows them. Generic format, simplified for this shift.",
-      "lines": [
-        "2026-10-20 08:57:40 app=vpn result=success user=m.okafor@pellowfinch.example src=198.51.100.188 country=GB mfa=not_enrolled vpn_ip=10.8.0.5",
-        "2026-10-21 05:41:07 app=vpn result=failure user=a.reid@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
-        "2026-10-21 05:41:39 app=vpn result=failure user=b.osei@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
-        "2026-10-21 05:42:10 app=vpn result=failure user=c.lloyd@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
-        "2026-10-21 05:42:44 app=vpn result=failure user=d.hughes@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
-        "2026-10-21 05:43:15 app=vpn result=failure user=e.novak@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
-        "2026-10-21 05:43:51 app=vpn result=failure user=f.grant@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
-        "2026-10-21 05:44:20 app=vpn result=failure user=g.ahmed@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
-        "2026-10-21 05:44:58 app=vpn result=failure user=h.ward@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
-        "2026-10-21 05:45:31 app=vpn result=failure user=i.costa@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
-        "2026-10-21 05:46:02 app=vpn result=failure user=j.patel@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
-        "2026-10-21 05:46:40 app=vpn result=failure user=k.ito@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
-        "2026-10-21 05:47:12 app=vpn result=failure user=l.fraser@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
-        "2026-10-21 05:47:30 app=vpn result=success user=m.okafor@pellowfinch.example src=203.0.113.77 country=DE mfa=not_enrolled vpn_ip=10.8.0.14",
-        "2026-10-21 06:20:40 app=vpn result=success user=r.singh@pellowfinch.example src=198.51.100.150 country=GB mfa=passed vpn_ip=10.8.0.17",
-        "2026-10-21 06:21:05 app=portal result=success user=r.singh@pellowfinch.example src=198.51.100.10 country=NL mfa=passed",
-        "2026-10-21 06:31:02 app=mail result=success user=j.patel@pellowfinch.example src=198.51.100.200 country=GB mfa=passed",
-        "2026-10-21 06:44:50 app=vpn result=success user=j.patel@pellowfinch.example src=198.51.100.200 country=GB mfa=passed vpn_ip=10.8.0.21",
-        "2026-10-21 06:48:13 app=mail result=success user=j.patel@pellowfinch.example src=198.51.100.10 country=NL mfa=passed",
-        "2026-10-21 06:54:22 app=vpn result=success user=k.ito@pellowfinch.example src=198.51.100.161 country=GB mfa=passed vpn_ip=10.8.0.25",
-        "2026-10-21 06:55:12 app=mail result=success user=k.ito@pellowfinch.example src=198.51.100.10 country=NL mfa=passed"
-      ],
-      "findings": [
-        {
-          "id": "spray",
-          "match": "result=failure user=a.reid@pellowfinch.example src=203.0.113.77",
-          "finding": "From 05:41 to 05:47, 203.0.113.77 tried 13 different VPN accounts, once each, about every 30 seconds: a password spray (a few passwords tried across many accounts, rather than many guesses against one account)."
-        },
-        {
-          "id": "spray-success",
-          "match": "result=success user=m.okafor@pellowfinch.example src=203.0.113.77",
-          "finding": "At 05:47 m.okafor signed in to the VPN from the spraying address without MFA (not enrolled), and was given VPN address 10.8.0.14."
-        },
-        {
-          "id": "mokafor-usual",
-          "match": "user=m.okafor@pellowfinch.example src=198.51.100.188",
-          "finding": "m.okafor's previous VPN sign-in was at 08:57 yesterday from a UK address (VPN address 10.8.0.5)."
-        },
-        {
-          "id": "spray-jpatel",
-          "match": "result=failure user=j.patel@pellowfinch.example",
-          "finding": "j.patel's account was one of the 12 that failed in the spray (05:46). It never succeeded from 203.0.113.77."
-        },
-        {
-          "id": "jpatel-gb",
-          "match": "user=j.patel@pellowfinch.example src=198.51.100.200",
-          "finding": "j.patel signed in to mail from 198.51.100.200 (GB) at 06:31, then connected to the VPN from the same address at 06:44."
-        },
-        {
-          "id": "jpatel-nl",
-          "match": "user=j.patel@pellowfinch.example src=198.51.100.10",
-          "finding": "j.patel's 06:48 'NL' sign-in came from 198.51.100.10, four minutes after connecting to the VPN, and passed MFA."
-        },
-        {
-          "id": "egress",
-          "match": "user=r.singh@pellowfinch.example src=198.51.100.10",
-          "finding": "Other staff on the VPN (r.singh, k.ito) also appear from 198.51.100.10 (NL) this morning."
-        }
-      ]
-    },
-    "notes": {
-      "name": "Client notes: Pellow & Finch",
-      "about": "What Lanternfield knows about this client: systems, contacts and recent changes.",
-      "lines": [
-        "Client: Pellow & Finch Logistics, parcel delivery, about 220 staff. Lanternfield monitors their servers, VPN and sign-ins.",
-        "Contact: Dana Whitfield, IT manager, 07:30 to 18:00. Report confirmed incidents to Dana.",
-        "web01: public parcel-tracking site (nginx on Ubuntu 22.04). Static pages and a tracking API. No WordPress, no PHP.",
-        "web01: SSH is open to the internet so the web admin, tbrooks, can log in from the office (198.51.100.23) with a key. Password logins are still enabled (CHG-2302 will switch them off).",
-        "files01: internal file server (Ubuntu 22.04), reachable only from the office and the VPN. IT support staff have sudo.",
-        "files01: server logins use directory names without the dot (m.okafor logs in as mokafor).",
-        "VPN: address pool 10.8.0.0/24. Full tunnel: while connected, staff internet traffic leaves through the VPN.",
-        "CHG-2291 (20 Oct): the VPN's internet exit moved from London (198.51.100.4) to the Amsterdam data centre (198.51.100.10). Staff on the VPN now appear to be in the Netherlands.",
-        "CHG-2240: MFA rollout for the VPN. Accounts not yet enrolled can still sign in with just a password until 31 Oct.",
-        "Network Ops block single addresses on request. Blocking anything wider needs a change ticket from the client.",
-        "Staff: j.patel (finance) works from home on Mondays and Wednesdays.",
-        "Staff: m.okafor (IT support) works 09:00 to 17:30."
-      ],
-      "findings": [
-        {
-          "id": "chg2291",
-          "match": "CHG-2291",
-          "finding": "Client change CHG-2291: since 20 Oct the VPN's internet exit is in Amsterdam (198.51.100.10), so staff on the VPN appear to be in the Netherlands."
-        },
-        {
-          "id": "chg2240",
-          "match": "CHG-2240",
-          "finding": "Client change CHG-2240: VPN accounts not yet enrolled in MFA can still sign in with just a password until 31 Oct."
-        },
-        {
-          "id": "nophp",
-          "match": "No WordPress",
-          "finding": "web01 runs no WordPress and no PHP, so probes for wp-login.php or phpunit can't succeed."
-        },
-        {
-          "id": "hours",
-          "match": "m.okafor (IT support) works",
-          "finding": "m.okafor works 09:00 to 17:30: 05:47 and 06:12 are well outside their hours."
-        }
-      ]
+    {
+     "id": "web-accepted",
+     "match": "Accepted publickey for tbrooks",
+     "finding": "The only accepted logins were tbrooks's SSH key from the office address 198.51.100.23, at 18:05 yesterday and 06:52 today. The failed attempts from 203.0.113.9 did not result in a successful login."
     }
+   ]
   },
-  "alerts": [
+  "web01-nginx": {
+   "name": "/var/log/nginx/access.log on web01",
+   "about": "web01's web server access log (nginx, combined format), 06:38 to 06:52.",
+   "lines": [
+    "198.51.100.140 - - [21/Oct/2026:06:38:12 +0100] \"GET /track?ref=PF4471209 HTTP/1.1\" 200 5120 \"https://www.pellowfinch.example/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\"",
+    "198.51.100.140 - - [21/Oct/2026:06:38:12 +0100] \"GET /static/app.css HTTP/1.1\" 200 18342 \"https://www.pellowfinch.example/track?ref=PF4471209\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\"",
+    "198.51.100.140 - - [21/Oct/2026:06:38:13 +0100] \"GET /favicon.ico HTTP/1.1\" 404 162 \"https://www.pellowfinch.example/track?ref=PF4471209\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\"",
+    "198.51.100.77 - - [21/Oct/2026:06:40:03 +0100] \"GET / HTTP/1.1\" 200 7431 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1\"",
+    "198.51.100.77 - - [21/Oct/2026:06:40:04 +0100] \"GET /static/app.css HTTP/1.1\" 200 18342 \"https://www.pellowfinch.example/\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1\"",
+    "192.0.2.66 - - [21/Oct/2026:06:41:02 +0100] \"GET / HTTP/1.1\" 200 7431 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "192.0.2.66 - - [21/Oct/2026:06:41:03 +0100] \"GET /.env HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "192.0.2.66 - - [21/Oct/2026:06:41:03 +0100] \"GET /.git/config HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "192.0.2.66 - - [21/Oct/2026:06:41:04 +0100] \"GET /wp-login.php HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "192.0.2.66 - - [21/Oct/2026:06:41:04 +0100] \"GET /phpmyadmin/ HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "192.0.2.66 - - [21/Oct/2026:06:41:05 +0100] \"GET /vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "192.0.2.66 - - [21/Oct/2026:06:41:05 +0100] \"GET /admin/.env HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "192.0.2.66 - - [21/Oct/2026:06:41:06 +0100] \"GET /config.json HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "192.0.2.66 - - [21/Oct/2026:06:41:06 +0100] \"GET /backup.zip HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "192.0.2.66 - - [21/Oct/2026:06:41:07 +0100] \"GET /actuator/env HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 zgrab/0.x\"",
+    "198.51.100.77 - - [21/Oct/2026:06:44:31 +0100] \"GET /track?ref=PF4470385 HTTP/1.1\" 200 5098 \"https://www.pellowfinch.example/\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1\"",
+    "198.51.100.203 - - [21/Oct/2026:06:51:47 +0100] \"GET /track?ref=PF4472950 HTTP/1.1\" 200 5133 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\"",
+    "198.51.100.203 - - [21/Oct/2026:06:51:47 +0100] \"GET /static/app.css HTTP/1.1\" 304 0 \"https://www.pellowfinch.example/track?ref=PF4472950\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36\""
+   ],
+   "findings": [
     {
-      "id": "a1",
-      "ref": "SOC-24117",
-      "title": "Multiple failed SSH logins on web01",
-      "time": "01:16",
-      "severity": "medium",
-      "arrives": {
-        "at": 0
-      },
-      "detection": "web01: 9 failed SSH logins from 203.0.113.9 in 6 minutes (threshold: 5).",
-      "guide": {
-        "hints": [
-          "Start in web01's auth.log. The question isn't whether someone tried, it's whether anything got in. Search for the address in the alert.",
-          "Every attempt from 203.0.113.9 says 'Failed password'. Now search 'Accepted' to see who did log in, and from where.",
-          "Only tbrooks's key from the office got in. Internet-facing SSH gets guessed at all the time: suspicious, but no harm done. Low severity, close it, no request needed."
-        ],
-        "searches": [
-          [
-            "web01-auth",
-            "203.0.113.9"
-          ],
-          [
-            "web01-auth",
-            "Accepted"
-          ],
-          [
-            "web01-auth",
-            "Invalid user"
-          ]
-        ]
-      },
-      "sources": [
-        "web01-auth",
-        "notes"
-      ],
-      "requests": [
-        "netops:block-9"
-      ],
-      "evidence": [
-        {
-          "findings": [
-            "web-fails"
-          ],
-          "text": "auth.log: every attempt from 203.0.113.9 ended in 'Failed password'",
-          "supports": true,
-          "required": true,
-          "why": "Failures are the whole story here: the guesses didn't work."
-        },
-        {
-          "findings": [
-            "web-accepted"
-          ],
-          "text": "auth.log: the only accepted logins were tbrooks's key from the office",
-          "supports": true,
-          "required": true,
-          "why": "This is what rules out harm: had a guess worked, there would be an 'Accepted password' line from 203.0.113.9."
-        },
-        {
-          "findings": [
-            "web-invalid"
-          ],
-          "text": "auth.log: it tried usernames that don't exist (admin, ubuntu, pi)",
-          "supports": true,
-          "required": false,
-          "why": "Shows automated guessing from a list, which is what internet-facing SSH sees every day."
-        },
-        {
-          "text": "The alert fired, so someone must have got in",
-          "supports": false,
-          "required": false,
-          "why": "This alert counts failed logins: it says someone tried. Only an accepted login would show they got in."
-        }
-      ],
-      "answer": {
-        "verdict": "noharm",
-        "severity": [
-          "low",
-          "medium"
-        ],
-        "related": [],
-        "contain": [],
-        "status": "closed",
-        "summaries": [
-          "Failed SSH logins on web01 overnight. Probably nothing.",
-          "SSH password guessing on web01 from 203.0.113.9 (9 attempts, 01:10 to 01:16). All failed; the only accepted logins were tbrooks's key from the office. No action needed.",
-          "Brute force on web01 from 203.0.113.9. The server may be compromised: recommend rebuilding web01."
-        ],
-        "summary": 1,
-        "why": "Internet-facing SSH gets guessed at constantly. What matters is whether a guess worked, and auth.log shows none did. Blocking one address is optional and does little, because the next scanner uses another. The lasting fix is already planned: CHG-2302 switches web01 to key-only logins."
-      }
+     "id": "scan-paths",
+     "match": "/.git/config",
+     "finding": "192.0.2.66 asked for 9 well-known secret and admin paths (/.env, /.git/config, /wp-login.php, /phpmyadmin/ and more) within seconds, with a scanner's user agent (zgrab)."
     },
     {
-      "id": "a2",
-      "ref": "SOC-24131",
-      "title": "Impossible travel: j.patel",
-      "time": "06:49",
-      "severity": "high",
-      "arrives": {
-        "at": 0
-      },
-      "detection": "j.patel@pellowfinch.example signed in from GB (06:31) and then NL (06:48): 17 minutes apart, about 360 km.",
-      "guide": {
-        "hints": [
-          "Impossible travel compares where public addresses are. Before suspecting j.patel, check the client notes for anything that changes where people appear to be.",
-          "Look at CHG-2291 in the notes, then j.patel's sign-ins: did a VPN connection come just before the 'NL' one? Do others on the VPN show the same address?",
-          "The VPN's internet exit moved to Amsterdam, and j.patel connected to the VPN at 06:44. It's legitimate: a false alarm. No action, and certainly no locking the account."
-        ],
-        "searches": [
-          [
-            "notes",
-            "CHG-2291"
-          ],
-          [
-            "signin",
-            "j.patel"
-          ],
-          [
-            "signin",
-            "198.51.100.10"
-          ]
-        ]
-      },
-      "sources": [
-        "signin",
-        "notes"
-      ],
-      "requests": [
-        "identity:disable-jpatel",
-        "servicedesk:call-jpatel",
-        "client:report-jpatel"
-      ],
-      "evidence": [
-        {
-          "findings": [
-            "chg2291"
-          ],
-          "text": "Client notes: the VPN's internet exit moved to Amsterdam (198.51.100.10) on 20 Oct",
-          "supports": true,
-          "required": true,
-          "why": "This explains the 'NL' location: it's the company's own VPN, not j.patel's position."
-        },
-        {
-          "findings": [
-            "jpatel-nl",
-            "jpatel-gb"
-          ],
-          "text": "Sign-in log: j.patel connected to the VPN at 06:44, just before the 'NL' sign-in",
-          "supports": true,
-          "required": true,
-          "why": "Ties the jump to the VPN: once connected, j.patel's traffic left through Amsterdam."
-        },
-        {
-          "findings": [
-            "egress"
-          ],
-          "text": "Sign-in log: other staff on the VPN also appear from 198.51.100.10",
-          "supports": true,
-          "required": false,
-          "why": "If everyone on the VPN 'travels' to the Netherlands, it's the network, not the person."
-        },
-        {
-          "findings": [
-            "jpatel-confirms"
-          ],
-          "text": "Service Desk: j.patel confirmed both sign-ins were theirs",
-          "supports": true,
-          "required": false,
-          "why": "Direct confirmation from the user is good evidence, as long as it fits what the logs show."
-        },
-        {
-          "text": "j.patel's account was in the 05:46 password spray, so these sign-ins are suspect",
-          "supports": false,
-          "required": false,
-          "why": "That attempt failed. The later sign-ins came from j.patel's usual addresses and passed MFA."
-        }
-      ],
-      "answer": {
-        "verdict": "legit",
-        "severity": [
-          "low"
-        ],
-        "related": [],
-        "contain": [],
-        "status": "closed",
-        "summaries": [
-          "False alarm: j.patel's 'NL' sign-in is the VPN's new Amsterdam exit (CHG-2291). j.patel connected to the VPN at 06:44 and passed MFA. Consider tuning the rule to ignore 198.51.100.10.",
-          "j.patel signed in from two countries. Account disabled as a precaution.",
-          "Possible account takeover of j.patel: they were also targeted by the VPN spray."
-        ],
-        "summary": 0,
-        "why": "Impossible-travel rules compare locations of public addresses, so a VPN or proxy makes people 'travel'. Here the client's own change calendar explains it, and the sign-ins passed MFA. Check before you escalate: disabling the account or worrying the client costs them real time."
-      }
+     "id": "scan-404",
+     "match": "\"GET /.env HTTP/1.1\" 404",
+     "finding": "Every one of those probes got 404 Not Found: none of those files exist on web01."
     },
     {
-      "id": "a3",
-      "ref": "SOC-24126",
-      "title": "Web server 404 spike on web01",
-      "time": "06:42",
-      "severity": "medium",
-      "arrives": {
-        "at": 0
-      },
-      "detection": "web01: 9 '404 Not Found' responses in one minute from one address (usual: under 2).",
-      "guide": {
-        "hints": [
-          "A 404 spike usually means someone asking for pages that don't exist. Open web01's access.log and look at what 192.0.2.66 asked for, and the status codes it got.",
-          "/.env, /.git/config, /wp-login.php: a scanner hunting for common mistakes. Did any of those get a 200? The client notes say what web01 really runs.",
-          "Every probe got 404, and the home page 200 is just the public page. Real activity, no harm done: low severity, close it. Blocking one scanner is optional and won't stop the next."
-        ],
-        "searches": [
-          [
-            "web01-nginx",
-            "192.0.2.66"
-          ],
-          [
-            "web01-nginx",
-            "404"
-          ],
-          [
-            "notes",
-            "WordPress"
-          ]
-        ]
-      },
-      "sources": [
-        "web01-nginx",
-        "notes"
-      ],
-      "requests": [
-        "netops:block-66"
-      ],
-      "evidence": [
-        {
-          "findings": [
-            "scan-404"
-          ],
-          "text": "access.log: every probe from 192.0.2.66 got 404 Not Found",
-          "supports": true,
-          "required": true,
-          "why": "Nothing the scanner asked for exists, so nothing was exposed."
-        },
-        {
-          "findings": [
-            "scan-paths"
-          ],
-          "text": "access.log: well-known targets (/.env, /wp-login.php) asked for within seconds, by zgrab",
-          "supports": true,
-          "required": true,
-          "why": "Shows an automated scanner checking for common mistakes, not someone targeting this site."
-        },
-        {
-          "findings": [
-            "nophp"
-          ],
-          "text": "Client notes: web01 runs no WordPress or PHP",
-          "supports": true,
-          "required": false,
-          "why": "Confirms the probes couldn't have worked even if a file had been there by accident."
-        },
-        {
-          "text": "access.log: 192.0.2.66 got a 200 for the home page, so it got in",
-          "supports": false,
-          "required": false,
-          "why": "The home page is public: anyone can load it. A 200 for /.env would have been a problem; a 200 for / is not."
-        }
-      ],
-      "answer": {
-        "verdict": "noharm",
-        "severity": [
-          "low"
-        ],
-        "related": [],
-        "contain": [],
-        "status": "closed",
-        "summaries": [
-          "Web attack on web01 from 192.0.2.66. Escalated to the client.",
-          "404 spike on web01. Couldn't tell what it was.",
-          "Automated scan of web01 from 192.0.2.66 (zgrab) at 06:41: 9 probes for common secret and admin paths, all 404. Only the public home page was served. No action needed."
-        ],
-        "summary": 2,
-        "why": "Every public web server is scanned many times a day. The questions are whether anything the scanner asked for existed, and whether anything other than public pages came back. Here, nothing did."
-      }
-    },
-    {
-      "id": "a4",
-      "ref": "SOC-24129",
-      "title": "New account added to the sudo group on files01",
-      "time": "06:14",
-      "severity": "high",
-      "arrives": {
-        "at": 0
-      },
-      "detection": "files01: user svcbackup2 added to privileged group 'sudo' (by mokafor via sudo).",
-      "guide": {
-        "hints": [
-          "A new admin account is serious until proven otherwise. In files01's auth.log, search svcbackup2 to see who made it and when, then where that person logged in from.",
-          "mokafor logged in from 10.8.0.14, a VPN address; their usual one is 10.8.0.5. Search the VPN sign-in log for 10.8.0.14 to see whose session that was.",
-          "That session came from the password spray (203.0.113.77): this is the attack, and it links to the spray alert. Lock svcbackup2, reset m.okafor (attach a finding when asked) and tell the client."
-        ],
-        "searches": [
-          [
-            "files01-auth",
-            "svcbackup2"
-          ],
-          [
-            "files01-auth",
-            "mokafor"
-          ],
-          [
-            "signin",
-            "10.8.0.14"
-          ]
-        ]
-      },
-      "sources": [
-        "files01-auth",
-        "signin",
-        "notes"
-      ],
-      "requests": [
-        "identity:lock-svcbackup2",
-        "identity:reset-mokafor",
-        "servicedesk:call-mokafor",
-        "client:report-incident"
-      ],
-      "evidence": [
-        {
-          "findings": [
-            "files-useradd",
-            "files-sudo"
-          ],
-          "text": "files01 auth.log: mokafor created svcbackup2, set its password and added it to sudo at 06:13 to 06:14",
-          "supports": true,
-          "required": true,
-          "why": "The change itself: a new account with full admin rights."
-        },
-        {
-          "findings": [
-            "files-mokafor"
-          ],
-          "text": "files01 auth.log: mokafor logged in at 06:12 from 10.8.0.14",
-          "supports": true,
-          "required": true,
-          "why": "Places the change in a session from a specific VPN address, which you can trace."
-        },
-        {
-          "findings": [
-            "spray-success"
-          ],
-          "text": "Sign-in log: 10.8.0.14 belonged to m.okafor's VPN session from the spraying address, 203.0.113.77",
-          "supports": true,
-          "required": true,
-          "why": "This is the link: the session that made the change came from the password spray, not from m.okafor."
-        },
-        {
-          "findings": [
-            "mokafor-denies"
-          ],
-          "text": "Service Desk: m.okafor says they didn't do it",
-          "supports": true,
-          "required": false,
-          "why": "Supports the logs. On its own a denial proves little; with the logs, it's strong."
-        },
-        {
-          "text": "mokafor is in IT support and has sudo, so creating accounts is part of the job",
-          "supports": false,
-          "required": false,
-          "why": "Having the right to do something doesn't mean they did it. Out of hours, from a session that started with a spray, a new admin account is how attackers keep their access."
-        }
-      ],
-      "answer": {
-        "verdict": "act",
-        "severity": [
-          "high",
-          "critical"
-        ],
-        "related": [
-          "a5"
-        ],
-        "contain": [
-          "identity:lock-svcbackup2",
-          "identity:reset-mokafor",
-          "client:report-incident"
-        ],
-        "status": "escalated",
-        "summaries": [
-          "Attacker created svcbackup2 with sudo on files01 at 06:13, using m.okafor's account over a VPN session from the password spray (203.0.113.77). svcbackup2 locked, m.okafor reset, client informed. Check files01 for anything else changed since 06:12.",
-          "mokafor created a new account on files01. Probably IT support work; asked them to confirm.",
-          "files01 compromised. Recommend wiping all servers."
-        ],
-        "summary": 0,
-        "why": "A new admin account created out of hours is a classic way for an attacker to keep access. The logs alone show what happened; the sign-in log shows how. Lock the new account and end its session, reset the account that was used, and tell the client."
-      }
-    },
-    {
-      "id": "a5",
-      "ref": "SOC-24133",
-      "title": "Password spray against the VPN",
-      "severity": "medium",
-      "arrives": {
-        "closed": 2,
-        "at": 30
-      },
-      "detection": "VPN: 13 accounts tried from 203.0.113.77 between 05:41 and 05:47, 12 failed (raised by the hourly correlation rule).",
-      "guide": {
-        "hints": [
-          "A spray tries one password on many accounts. In the sign-in log, search the address and check two things: how many accounts, and did any succeed?",
-          "m.okafor's sign-in from 203.0.113.77 at 05:47 succeeded, without MFA. Check the client notes for why that was still allowed, and look for what that session did next.",
-          "One account fell, and its VPN session made the files01 change: link this to the sudo alert. Block 203.0.113.77 (not the whole range), reset m.okafor and tell the client."
-        ],
-        "searches": [
-          [
-            "signin",
-            "203.0.113.77"
-          ],
-          [
-            "notes",
-            "CHG-2240"
-          ],
-          [
-            "signin",
-            "m.okafor"
-          ]
-        ]
-      },
-      "sources": [
-        "signin",
-        "notes"
-      ],
-      "requests": [
-        "netops:block-77",
-        "netops:block-range",
-        "identity:reset-mokafor",
-        "servicedesk:call-mokafor",
-        "client:report-incident"
-      ],
-      "evidence": [
-        {
-          "findings": [
-            "spray"
-          ],
-          "text": "Sign-in log: 13 accounts tried from 203.0.113.77 in 6 minutes, once each",
-          "supports": true,
-          "required": true,
-          "why": "One password against many accounts, slowly, is a spray: it avoids lockouts that many guesses against one account would trigger."
-        },
-        {
-          "findings": [
-            "spray-success"
-          ],
-          "text": "Sign-in log: m.okafor signed in successfully from 203.0.113.77 at 05:47, without MFA",
-          "supports": true,
-          "required": true,
-          "why": "The spray worked. This turns noise into an incident."
-        },
-        {
-          "findings": [
-            "chg2240"
-          ],
-          "text": "Client notes: VPN logins without MFA are still allowed until 31 Oct",
-          "supports": true,
-          "required": false,
-          "why": "Explains why one guessed password was enough."
-        },
-        {
-          "text": "It all came from one address, so blocking it ends the problem",
-          "supports": false,
-          "required": false,
-          "why": "Blocking stops this address only. The attacker already has m.okafor's password and made their own admin account on files01."
-        }
-      ],
-      "answer": {
-        "verdict": "act",
-        "severity": [
-          "high",
-          "critical"
-        ],
-        "related": [
-          "a4"
-        ],
-        "contain": [
-          "netops:block-77",
-          "identity:reset-mokafor",
-          "client:report-incident"
-        ],
-        "status": "escalated",
-        "summaries": [
-          "Password spray on the VPN from 203.0.113.77. All attempts failed. Address blocked.",
-          "VPN password spray from 203.0.113.77 (05:41 to 05:47, 13 accounts) succeeded for m.okafor (no MFA). Linked to the new admin account on files01. Address blocked, m.okafor reset, client informed. Watch for sign-ins from other accounts without MFA.",
-          "Many failed VPN logins this morning; users should change their passwords."
-        ],
-        "summary": 1,
-        "why": "Most sprays fail and are noise. This one has a success in it, from an account without MFA, and the same session went on to make the files01 change. The alert arrived later than the harm it explains: that is normal, and why linking alerts matters."
-      }
+     "id": "scan-home",
+     "match": "192.0.2.66 - - [21/Oct/2026:06:41:02 +0100] \"GET / HTTP/1.1\" 200",
+     "finding": "The only request from 192.0.2.66 that succeeded was the public home page, which anyone can load."
     }
-  ],
-  "departments": {
-    "identity": {
-      "name": "Identity & Access",
-      "contact": {
-        "name": "Priya Raman",
-        "photo": "img/agency/priya.webp",
-        "role": "Identity & Access"
-      },
-      "requests": [
-        {
-          "id": "lock-svcbackup2",
-          "label": "Lock svcbackup2 on files01 and end its sessions",
-          "minutes": 10,
-          "replies": [
-            {
-              "when": {
-                "attached": ""
-              },
-              "minutes": 4,
-              "outcome": "asks",
-              "text": "files01 is a production server, so we need a reason on the ticket before we lock accounts on it. Attach a finding and send it again."
-            },
-            {
-              "outcome": "done",
-              "text": "Done. svcbackup2 is locked and its SSH session on files01 has been ended. We've kept the account, not deleted it, so its history can be investigated."
-            }
-          ],
-          "effects": {
-            "accounts.svcbackup2": "locked"
-          }
-        },
-        {
-          "id": "reset-mokafor",
-          "label": "Reset m.okafor's password and end their VPN sessions",
-          "minutes": 15,
-          "replies": [
-            {
-              "when": {
-                "attached": ""
-              },
-              "minutes": 4,
-              "outcome": "asks",
-              "text": "We need a reason on the ticket before we reset someone's password. Attach a finding and send it again."
-            },
-            {
-              "outcome": "done",
-              "text": "Done. m.okafor's password is reset and their VPN session is ended. They'll have to enrol in MFA before they can sign in again."
-            }
-          ],
-          "effects": {
-            "accounts.mokafor": "reset"
-          }
-        },
-        {
-          "id": "disable-jpatel",
-          "label": "Disable j.patel's account",
-          "minutes": 8,
-          "replies": [
-            {
-              "when": {
-                "attached": ""
-              },
-              "minutes": 4,
-              "outcome": "asks",
-              "text": "We need a reason on the ticket before we disable someone's account. Attach a finding and send it again."
-            },
-            {
-              "outcome": "done",
-              "text": "Done. j.patel's account is disabled. (Update: Pellow & Finch's finance team have called to ask why j.patel can't work.)",
-              "cost": "Disabled a legitimate user: j.patel was locked out of work for something the client's change calendar explained."
-            }
-          ],
-          "effects": {
-            "accounts.jpatel": "disabled"
-          }
-        }
-      ]
-    },
-    "netops": {
-      "name": "Network Operations",
-      "contact": {
-        "name": "Tomasz Nowak",
-        "photo": "img/agency/tomasz.webp",
-        "role": "Network Operations"
-      },
-      "requests": [
-        {
-          "id": "block-77",
-          "label": "Block 203.0.113.77 at the VPN gateway and edge firewall",
-          "minutes": 8,
-          "replies": [
-            {
-              "outcome": "done",
-              "text": "Done. 203.0.113.77 is blocked at the VPN gateway and the edge firewall."
-            }
-          ],
-          "effects": {
-            "blocked.ip77": true
-          }
-        },
-        {
-          "id": "block-range",
-          "label": "Block all of 203.0.113.0/24 at the edge",
-          "minutes": 5,
-          "replies": [
-            {
-              "outcome": "refused",
-              "text": "We can't block a whole /24 without a change ticket from the client (it's in their notes). If you need the spraying address gone, ask us to block 203.0.113.77 and we'll do it now. For the wider range, ask the client contact to raise a ticket."
-            }
-          ]
-        },
-        {
-          "id": "block-9",
-          "label": "Block 203.0.113.9 at the edge firewall",
-          "minutes": 8,
-          "replies": [
-            {
-              "outcome": "done",
-              "text": "Done. Bear in mind SSH on web01 is open to the internet, so the next scanner will just come from a different address."
-            }
-          ]
-        },
-        {
-          "id": "block-66",
-          "label": "Block 192.0.2.66 at the edge firewall",
-          "minutes": 8,
-          "replies": [
-            {
-              "outcome": "done",
-              "text": "Done. It's a public website, though: scanners will keep coming from other addresses."
-            }
-          ]
-        }
-      ]
-    },
-    "servicedesk": {
-      "name": "Service Desk",
-      "contact": {
-        "name": "Grace Adeyemi",
-        "photo": "img/agency/grace.webp",
-        "role": "Service Desk"
-      },
-      "requests": [
-        {
-          "id": "call-jpatel",
-          "label": "Call j.patel to check this morning's sign-ins",
-          "minutes": 12,
-          "replies": [
-            {
-              "outcome": "done",
-              "text": "Spoke to j.patel: working from home today, connected to the VPN at about quarter to seven. Both sign-ins were theirs.",
-              "finding": {
-                "id": "jpatel-confirms",
-                "finding": "Service Desk: j.patel was working from home and connected to the VPN at about 06:45. Both sign-ins were theirs."
-              }
-            }
-          ]
-        },
-        {
-          "id": "call-mokafor",
-          "label": "Call m.okafor about this morning's activity",
-          "minutes": 12,
-          "replies": [
-            {
-              "outcome": "done",
-              "text": "Woke m.okafor up, sorry. They were asleep at 05:47 and haven't created any account. They admit their VPN password is one they've used on other sites.",
-              "finding": {
-                "id": "mokafor-denies",
-                "finding": "Service Desk: m.okafor was asleep at 05:47 and didn't create any account. Their VPN password is reused on other sites."
-              }
-            }
-          ]
-        }
-      ]
-    },
-    "client": {
-      "name": "Dana Whitfield (Pellow & Finch IT)",
-      "contact": {
-        "name": "Dana Whitfield",
-        "photo": "img/agency/dana.webp",
-        "role": "Client: Pellow & Finch IT"
-      },
-      "requests": [
-        {
-          "id": "report-incident",
-          "label": "Report a confirmed incident: VPN account taken over, new admin account on files01",
-          "minutes": 20,
-          "replies": [
-            {
-              "outcome": "done",
-              "text": "Thanks for the clear report. I've told our MD, and we'll enforce MFA on the VPN for everyone today instead of waiting for 31 October. Send me the full timeline when you have it."
-            }
-          ]
-        },
-        {
-          "id": "report-jpatel",
-          "label": "Report j.patel's sign-ins from two countries as suspicious",
-          "minutes": 20,
-          "replies": [
-            {
-              "outcome": "done",
-              "text": "That'll be our VPN: we moved its internet exit to Amsterdam yesterday (CHG-2291), so everyone on it looks Dutch now. Worth checking our change calendar before escalating.",
-              "cost": "Escalated a false alarm to the client: the answer was in their own change calendar."
-            }
-          ]
-        }
-      ]
-    }
+   ]
   },
-  "handover": {
-    "links": "Two alerts were one incident: the VPN session from the spray is the one that made the change. Linking alerts is how a SOC sees the whole attack.",
-    "model": "Overnight noise: SSH guessing on web01 (203.0.113.9) and a scan of web01 (192.0.2.66), both failed, no action. j.patel's impossible travel is the VPN's new Amsterdam exit (CHG-2291). Real incident: a password spray on the VPN from 203.0.113.77 (05:41 to 05:47) got m.okafor's password (no MFA). The attacker used that session to create svcbackup2 with sudo on files01 at 06:13. svcbackup2 locked, m.okafor reset, 203.0.113.77 blocked, Dana informed. Next shift: watch other accounts not enrolled in MFA, any sign-ins from 203.0.113.0/24, and check files01 for anything else changed since 06:12."
+  "files01-auth": {
+   "name": "/var/log/auth.log on files01",
+   "about": "files01 (Ubuntu 22.04) authentication log, 09:03 yesterday to 06:18 today.",
+   "lines": [
+    "Oct 20 09:03:11 files01 sshd[1422]: Accepted password for mokafor from 10.8.0.5 port 49822 ssh2",
+    "Oct 20 09:03:11 files01 sshd[1422]: pam_unix(sshd:session): session opened for user mokafor(uid=1002) by (uid=0)",
+    "Oct 20 09:41:56 files01 sshd[1422]: pam_unix(sshd:session): session closed for user mokafor",
+    "Oct 21 02:30:01 files01 CRON[2950]: pam_unix(cron:session): session opened for user root(uid=0) by (uid=0)",
+    "Oct 21 02:30:44 files01 CRON[2950]: pam_unix(cron:session): session closed for user root",
+    "Oct 21 06:12:40 files01 sshd[3088]: Accepted password for mokafor from 10.8.0.14 port 50122 ssh2",
+    "Oct 21 06:12:40 files01 sshd[3088]: pam_unix(sshd:session): session opened for user mokafor(uid=1002) by (uid=0)",
+    "Oct 21 06:12:40 files01 systemd-logind[612]: New session 41 of user mokafor.",
+    "Oct 21 06:13:55 files01 sudo:  mokafor : TTY=pts/0 ; PWD=/home/mokafor ; USER=root ; COMMAND=/usr/sbin/useradd -m -s /bin/bash svcbackup2",
+    "Oct 21 06:13:55 files01 sudo: pam_unix(sudo:session): session opened for user root(uid=0) by mokafor(uid=1002)",
+    "Oct 21 06:13:55 files01 useradd[3101]: new group: name=svcbackup2, GID=1005",
+    "Oct 21 06:13:55 files01 useradd[3101]: new user: name=svcbackup2, UID=1005, GID=1005, home=/home/svcbackup2, shell=/bin/bash, from=/dev/pts/0",
+    "Oct 21 06:13:55 files01 sudo: pam_unix(sudo:session): session closed for user root",
+    "Oct 21 06:14:08 files01 sudo:  mokafor : TTY=pts/0 ; PWD=/home/mokafor ; USER=root ; COMMAND=/usr/bin/passwd svcbackup2",
+    "Oct 21 06:14:08 files01 sudo: pam_unix(sudo:session): session opened for user root(uid=0) by mokafor(uid=1002)",
+    "Oct 21 06:14:15 files01 passwd[3110]: pam_unix(passwd:chauthtok): password changed for svcbackup2",
+    "Oct 21 06:14:15 files01 sudo: pam_unix(sudo:session): session closed for user root",
+    "Oct 21 06:14:31 files01 sudo:  mokafor : TTY=pts/0 ; PWD=/home/mokafor ; USER=root ; COMMAND=/usr/sbin/usermod -aG sudo svcbackup2",
+    "Oct 21 06:14:31 files01 sudo: pam_unix(sudo:session): session opened for user root(uid=0) by mokafor(uid=1002)",
+    "Oct 21 06:14:31 files01 usermod[3118]: add 'svcbackup2' to group 'sudo'",
+    "Oct 21 06:14:31 files01 usermod[3118]: add 'svcbackup2' to shadow group 'sudo'",
+    "Oct 21 06:14:31 files01 sudo: pam_unix(sudo:session): session closed for user root",
+    "Oct 21 06:16:20 files01 sshd[3088]: Received disconnect from 10.8.0.14 port 50122:11: disconnected by user",
+    "Oct 21 06:16:20 files01 sshd[3088]: Disconnected from user mokafor 10.8.0.14 port 50122",
+    "Oct 21 06:16:20 files01 sshd[3088]: pam_unix(sshd:session): session closed for user mokafor",
+    "Oct 21 06:18:02 files01 sshd[3140]: Accepted password for svcbackup2 from 10.8.0.14 port 50160 ssh2",
+    "Oct 21 06:18:02 files01 sshd[3140]: pam_unix(sshd:session): session opened for user svcbackup2(uid=1005) by (uid=0)",
+    "Oct 21 06:18:02 files01 systemd-logind[612]: New session 42 of user svcbackup2."
+   ],
+   "findings": [
+    {
+     "id": "files-mokafor",
+     "match": "Accepted password for mokafor from 10.8.0.14",
+     "finding": "At 06:12 mokafor logged in to files01 with a password from 10.8.0.14, an address from the VPN pool."
+    },
+    {
+     "id": "files-useradd",
+     "match": "new user: name=svcbackup2",
+     "finding": "At 06:13 mokafor used sudo to create a new account, svcbackup2, then set its password."
+    },
+    {
+     "id": "files-sudo",
+     "match": "add 'svcbackup2' to group 'sudo'",
+     "finding": "At 06:14 svcbackup2 was added to the sudo group, so it can run anything as root: a new admin account."
+    },
+    {
+     "id": "files-svc",
+     "match": "Accepted password for svcbackup2",
+     "finding": "At 06:18 svcbackup2 logged in from the same VPN address, 10.8.0.14. There's no 'session closed' line for it: it's still logged in."
+    },
+    {
+     "id": "files-usual",
+     "match": "Accepted password for mokafor from 10.8.0.5",
+     "finding": "mokafor's previous login to files01 was at 09:03 yesterday, in working hours."
+    }
+   ]
+  },
+  "signin": {
+   "name": "Sign-in log (SIEM export)",
+   "about": "Pellow & Finch sign-ins to the VPN, mail and staff portal, as the SIEM shows them. Generic format, simplified for this shift.",
+   "lines": [
+    "2026-10-20 08:57:40 app=vpn result=success user=m.okafor@pellowfinch.example src=198.51.100.188 country=GB mfa=not_enrolled vpn_ip=10.8.0.5",
+    "2026-10-21 05:41:07 app=vpn result=failure user=a.reid@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
+    "2026-10-21 05:41:39 app=vpn result=failure user=b.osei@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
+    "2026-10-21 05:42:10 app=vpn result=failure user=c.lloyd@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
+    "2026-10-21 05:42:44 app=vpn result=failure user=d.hughes@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
+    "2026-10-21 05:43:15 app=vpn result=failure user=e.novak@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
+    "2026-10-21 05:43:51 app=vpn result=failure user=f.grant@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
+    "2026-10-21 05:44:20 app=vpn result=failure user=g.ahmed@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
+    "2026-10-21 05:44:58 app=vpn result=failure user=h.ward@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
+    "2026-10-21 05:45:31 app=vpn result=failure user=i.costa@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
+    "2026-10-21 05:46:02 app=vpn result=failure user=j.patel@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
+    "2026-10-21 05:46:40 app=vpn result=failure user=k.ito@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
+    "2026-10-21 05:47:12 app=vpn result=failure user=l.fraser@pellowfinch.example src=203.0.113.77 country=DE mfa=- reason=bad_password",
+    "2026-10-21 05:47:30 app=vpn result=success user=m.okafor@pellowfinch.example src=203.0.113.77 country=DE mfa=not_enrolled vpn_ip=10.8.0.14",
+    "2026-10-21 06:20:40 app=vpn result=success user=r.singh@pellowfinch.example src=198.51.100.150 country=GB mfa=passed vpn_ip=10.8.0.17",
+    "2026-10-21 06:21:05 app=portal result=success user=r.singh@pellowfinch.example src=198.51.100.10 country=NL mfa=passed",
+    "2026-10-21 06:31:02 app=mail result=success user=j.patel@pellowfinch.example src=198.51.100.200 country=GB mfa=passed",
+    "2026-10-21 06:44:50 app=vpn result=success user=j.patel@pellowfinch.example src=198.51.100.200 country=GB mfa=passed vpn_ip=10.8.0.21",
+    "2026-10-21 06:48:13 app=mail result=success user=j.patel@pellowfinch.example src=198.51.100.10 country=NL mfa=passed",
+    "2026-10-21 06:54:22 app=vpn result=success user=k.ito@pellowfinch.example src=198.51.100.161 country=GB mfa=passed vpn_ip=10.8.0.25",
+    "2026-10-21 06:55:12 app=mail result=success user=k.ito@pellowfinch.example src=198.51.100.10 country=NL mfa=passed"
+   ],
+   "findings": [
+    {
+     "id": "spray",
+     "match": "result=failure user=a.reid@pellowfinch.example src=203.0.113.77",
+     "finding": "From 05:41 to 05:47, 203.0.113.77 tried 13 different VPN accounts, once each, about every 30 seconds: a password spray (a few passwords tried across many accounts, rather than many guesses against one account)."
+    },
+    {
+     "id": "spray-success",
+     "match": "result=success user=m.okafor@pellowfinch.example src=203.0.113.77",
+     "finding": "At 05:47 m.okafor signed in to the VPN from the spraying address without MFA (not enrolled), and was given VPN address 10.8.0.14."
+    },
+    {
+     "id": "mokafor-usual",
+     "match": "user=m.okafor@pellowfinch.example src=198.51.100.188",
+     "finding": "m.okafor's previous VPN sign-in was at 08:57 yesterday from a UK address (VPN address 10.8.0.5)."
+    },
+    {
+     "id": "spray-jpatel",
+     "match": "result=failure user=j.patel@pellowfinch.example",
+     "finding": "j.patel's account was one of the 12 that failed in the spray (05:46). It never succeeded from 203.0.113.77."
+    },
+    {
+     "id": "jpatel-gb",
+     "match": "user=j.patel@pellowfinch.example src=198.51.100.200",
+     "finding": "j.patel signed in to mail from 198.51.100.200 (GB) at 06:31, then connected to the VPN from the same address at 06:44."
+    },
+    {
+     "id": "jpatel-nl",
+     "match": "user=j.patel@pellowfinch.example src=198.51.100.10",
+     "finding": "j.patel's 06:48 'NL' sign-in came from 198.51.100.10, four minutes after connecting to the VPN, and passed MFA."
+    },
+    {
+     "id": "egress",
+     "match": "user=r.singh@pellowfinch.example src=198.51.100.10",
+     "finding": "Other staff on the VPN (r.singh, k.ito) also appear from 198.51.100.10 (NL) this morning."
+    }
+   ]
+  },
+  "notes": {
+   "name": "Client notes: Pellow & Finch",
+   "about": "What Lanternfield knows about this client: systems, contacts and recent changes.",
+   "lines": [
+    "Client: Pellow & Finch Logistics, parcel delivery, about 220 staff. Lanternfield monitors their servers, VPN and sign-ins.",
+    "Contact: Dana Whitfield, IT manager, 07:30 to 18:00. Report confirmed incidents to Dana.",
+    "web01: public parcel-tracking site (nginx on Ubuntu 22.04). Static pages and a tracking API. No WordPress, no PHP.",
+    "web01: SSH is open to the internet so the web admin, tbrooks, can log in from the office (198.51.100.23) with a key. Password logins are still enabled (CHG-2302 will switch them off).",
+    "files01: internal file server (Ubuntu 22.04), reachable only from the office and the VPN. IT support staff have sudo.",
+    "files01: server logins use directory names without the dot (m.okafor logs in as mokafor).",
+    "VPN: address pool 10.8.0.0/24. Full tunnel: while connected, staff internet traffic leaves through the VPN.",
+    "CHG-2291 (20 Oct): the VPN's internet exit moved from London (198.51.100.4) to the Amsterdam data centre (198.51.100.10). Staff on the VPN now appear to be in the Netherlands.",
+    "CHG-2240: MFA rollout for the VPN. Accounts not yet enrolled can still sign in with just a password until 31 Oct.",
+    "Network Ops block single addresses on request. Blocking anything wider needs a change ticket from the client.",
+    "Staff: j.patel (finance) works from home on Mondays and Wednesdays.",
+    "Staff: m.okafor (IT support) works 09:00 to 17:30."
+   ],
+   "findings": [
+    {
+     "id": "chg2291",
+     "match": "CHG-2291",
+     "finding": "Client change CHG-2291: since 20 Oct the VPN's internet exit is in Amsterdam (198.51.100.10), so staff on the VPN appear to be in the Netherlands."
+    },
+    {
+     "id": "chg2240",
+     "match": "CHG-2240",
+     "finding": "Client change CHG-2240: VPN accounts not yet enrolled in MFA can still sign in with just a password until 31 Oct."
+    },
+    {
+     "id": "nophp",
+     "match": "No WordPress",
+     "finding": "web01 runs no WordPress and no PHP, so probes for wp-login.php or phpunit can't succeed."
+    },
+    {
+     "id": "hours",
+     "match": "m.okafor (IT support) works",
+     "finding": "m.okafor works 09:00 to 17:30: 05:47 and 06:12 are well outside their hours."
+    }
+   ]
   }
+ },
+ "alerts": [
+  {
+   "id": "a1",
+   "ref": "SOC-24117",
+   "title": "Multiple failed SSH logins on web01",
+   "time": "01:16",
+   "severity": "medium",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "web01: 9 failed SSH logins from 203.0.113.9 in 6 minutes (threshold: 5).",
+   "guide": {"hints": ["Start in web01's auth.log. The question isn't whether someone tried, it's whether anything got in. Search for the address in the alert.", "Every attempt from 203.0.113.9 says 'Failed password'. Now search 'Accepted' to see who did log in, and from where.", "Only tbrooks's key from the office got in. Internet-facing SSH gets guessed at all the time: suspicious, but no harm done. Low severity, close it, no request needed."], "searches": [["web01-auth", "203.0.113.9"], ["web01-auth", "Accepted"], ["web01-auth", "Invalid user"]]},
+   "sources": [
+    "web01-auth",
+    "notes"
+   ],
+   "requests": [
+    "netops:block-9"
+   ],
+   "evidence": [
+    {
+     "findings": ["web-fails"], "text": "auth.log: every attempt from 203.0.113.9 ended in 'Failed password'",
+     "supports": true,
+     "required": true,
+     "why": "Failures are the whole story here: the guesses didn't work."
+    },
+    {
+     "findings": ["web-accepted"], "text": "auth.log: the only accepted logins were tbrooks's key from the office",
+     "supports": true,
+     "required": true,
+     "why": "This is what rules out harm: had a guess worked, there would be an 'Accepted password' line from 203.0.113.9."
+    },
+    {
+     "findings": ["web-invalid"], "text": "auth.log: it tried usernames that don't exist (admin, ubuntu, pi)",
+     "supports": true,
+     "required": false,
+     "why": "Shows automated guessing from a list, which is what internet-facing SSH sees every day."
+    },
+    {
+     "text": "The alert fired, so someone must have got in",
+     "supports": false,
+     "required": false,
+     "why": "This alert counts failed logins: it says someone tried. Only an accepted login would show they got in."
+    }
+   ],
+   "answer": {
+    "verdict": "noharm",
+    "severity": [
+     "low",
+     "medium"
+    ],
+    "related": [],
+    "contain": [],
+    "status": "closed",
+    "summaries": [
+     "Failed SSH logins on web01 overnight. Probably nothing.",
+     "SSH password guessing on web01 from 203.0.113.9 (9 attempts, 01:10 to 01:16). All failed; the only accepted logins were tbrooks's key from the office. No action needed.",
+     "Brute force on web01 from 203.0.113.9. The server may be compromised: recommend rebuilding web01."
+    ],
+    "summary": 1,
+    "why": "Internet-facing SSH gets guessed at constantly. What matters is whether a guess worked, and auth.log shows none did. Blocking one address is optional and does little, because the next scanner uses another. The lasting fix is already planned: CHG-2302 switches web01 to key-only logins."
+   }
+  },
+  {
+   "id": "a2",
+   "ref": "SOC-24131",
+   "title": "Impossible travel: j.patel",
+   "time": "06:49",
+   "severity": "high",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "j.patel@pellowfinch.example signed in from GB (06:31) and then NL (06:48): 17 minutes apart, about 360 km.",
+   "guide": {"hints": ["Impossible travel compares where public addresses are. Before suspecting j.patel, check the client notes for anything that changes where people appear to be.", "Look at CHG-2291 in the notes, then j.patel's sign-ins: did a VPN connection come just before the 'NL' one? Do others on the VPN show the same address?", "The VPN's internet exit moved to Amsterdam, and j.patel connected to the VPN at 06:44. It's legitimate: a false alarm. No action, and certainly no locking the account."], "searches": [["notes", "CHG-2291"], ["signin", "j.patel"], ["signin", "198.51.100.10"]]},
+   "sources": [
+    "signin",
+    "notes"
+   ],
+   "requests": [
+    "identity:disable-jpatel",
+    "servicedesk:call-jpatel",
+    "client:report-jpatel"
+   ],
+   "evidence": [
+    {
+     "findings": ["chg2291"], "text": "Client notes: the VPN's internet exit moved to Amsterdam (198.51.100.10) on 20 Oct",
+     "supports": true,
+     "required": true,
+     "why": "This explains the 'NL' location: it's the company's own VPN, not j.patel's position."
+    },
+    {
+     "findings": ["jpatel-nl", "jpatel-gb"], "text": "Sign-in log: j.patel connected to the VPN at 06:44, just before the 'NL' sign-in",
+     "supports": true,
+     "required": true,
+     "why": "Ties the jump to the VPN: once connected, j.patel's traffic left through Amsterdam."
+    },
+    {
+     "findings": ["egress"], "text": "Sign-in log: other staff on the VPN also appear from 198.51.100.10",
+     "supports": true,
+     "required": false,
+     "why": "If everyone on the VPN 'travels' to the Netherlands, it's the network, not the person."
+    },
+    {
+     "findings": ["jpatel-confirms"], "text": "Service Desk: j.patel confirmed both sign-ins were theirs",
+     "supports": true,
+     "required": false,
+     "why": "Direct confirmation from the user is good evidence, as long as it fits what the logs show."
+    },
+    {
+     "text": "j.patel's account was in the 05:46 password spray, so these sign-ins are suspect",
+     "supports": false,
+     "required": false,
+     "why": "That attempt failed. The later sign-ins came from j.patel's usual addresses and passed MFA."
+    }
+   ],
+   "answer": {
+    "verdict": "legit",
+    "severity": [
+     "low"
+    ],
+    "related": [],
+    "contain": [],
+    "status": "closed",
+    "summaries": [
+     "False alarm: j.patel's 'NL' sign-in is the VPN's new Amsterdam exit (CHG-2291). j.patel connected to the VPN at 06:44 and passed MFA. Consider tuning the rule to ignore 198.51.100.10.",
+     "j.patel signed in from two countries. Account disabled as a precaution.",
+     "Possible account takeover of j.patel: they were also targeted by the VPN spray."
+    ],
+    "summary": 0,
+    "why": "Impossible-travel rules compare locations of public addresses, so a VPN or proxy makes people 'travel'. Here the client's own change calendar explains it, and the sign-ins passed MFA. Check before you escalate: disabling the account or worrying the client costs them real time."
+   }
+  },
+  {
+   "id": "a3",
+   "ref": "SOC-24126",
+   "title": "Web server 404 spike on web01",
+   "time": "06:42",
+   "severity": "medium",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "web01: 9 '404 Not Found' responses in one minute from one address (usual: under 2).",
+   "guide": {"hints": ["A 404 spike usually means someone asking for pages that don't exist. Open web01's access.log and look at what 192.0.2.66 asked for, and the status codes it got.", "/.env, /.git/config, /wp-login.php: a scanner hunting for common mistakes. Did any of those get a 200? The client notes say what web01 really runs.", "Every probe got 404, and the home page 200 is just the public page. Real activity, no harm done: low severity, close it. Blocking one scanner is optional and won't stop the next."], "searches": [["web01-nginx", "192.0.2.66"], ["web01-nginx", "404"], ["notes", "WordPress"]]},
+   "sources": [
+    "web01-nginx",
+    "notes"
+   ],
+   "requests": [
+    "netops:block-66"
+   ],
+   "evidence": [
+    {
+     "findings": ["scan-404"], "text": "access.log: every probe from 192.0.2.66 got 404 Not Found",
+     "supports": true,
+     "required": true,
+     "why": "Nothing the scanner asked for exists, so nothing was exposed."
+    },
+    {
+     "findings": ["scan-paths"], "text": "access.log: well-known targets (/.env, /wp-login.php) asked for within seconds, by zgrab",
+     "supports": true,
+     "required": true,
+     "why": "Shows an automated scanner checking for common mistakes, not someone targeting this site."
+    },
+    {
+     "findings": ["nophp"], "text": "Client notes: web01 runs no WordPress or PHP",
+     "supports": true,
+     "required": false,
+     "why": "Confirms the probes couldn't have worked even if a file had been there by accident."
+    },
+    {
+     "text": "access.log: 192.0.2.66 got a 200 for the home page, so it got in",
+     "supports": false,
+     "required": false,
+     "why": "The home page is public: anyone can load it. A 200 for /.env would have been a problem; a 200 for / is not."
+    }
+   ],
+   "answer": {
+    "verdict": "noharm",
+    "severity": [
+     "low"
+    ],
+    "related": [],
+    "contain": [],
+    "status": "closed",
+    "summaries": [
+     "Web attack on web01 from 192.0.2.66. Escalated to the client.",
+     "404 spike on web01. Couldn't tell what it was.",
+     "Automated scan of web01 from 192.0.2.66 (zgrab) at 06:41: 9 probes for common secret and admin paths, all 404. Only the public home page was served. No action needed."
+    ],
+    "summary": 2,
+    "why": "Every public web server is scanned many times a day. The questions are whether anything the scanner asked for existed, and whether anything other than public pages came back. Here, nothing did."
+   }
+  },
+  {
+   "id": "a4",
+   "ref": "SOC-24129",
+   "title": "New account added to the sudo group on files01",
+   "time": "06:14",
+   "severity": "high",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "files01: user svcbackup2 added to privileged group 'sudo' (by mokafor via sudo).",
+   "guide": {"hints": ["A new admin account is serious until proven otherwise. In files01's auth.log, search svcbackup2 to see who made it and when, then where that person logged in from.", "mokafor logged in from 10.8.0.14, a VPN address; their usual one is 10.8.0.5. Search the VPN sign-in log for 10.8.0.14 to see whose session that was.", "That session came from the password spray (203.0.113.77): this is the attack, and it links to the spray alert. Lock svcbackup2, reset m.okafor (attach a finding when asked) and tell the client."], "searches": [["files01-auth", "svcbackup2"], ["files01-auth", "mokafor"], ["signin", "10.8.0.14"]]},
+   "sources": [
+    "files01-auth", "signin",
+    "notes"
+   ],
+   "requests": [
+    "identity:lock-svcbackup2",
+    "identity:reset-mokafor",
+    "servicedesk:call-mokafor",
+    "client:report-incident"
+   ],
+   "evidence": [
+    {
+     "findings": ["files-useradd", "files-sudo"], "text": "files01 auth.log: mokafor created svcbackup2, set its password and added it to sudo at 06:13 to 06:14",
+     "supports": true,
+     "required": true,
+     "why": "The change itself: a new account with full admin rights."
+    },
+    {
+     "findings": ["files-mokafor"], "text": "files01 auth.log: mokafor logged in at 06:12 from 10.8.0.14",
+     "supports": true,
+     "required": true,
+     "why": "Places the change in a session from a specific VPN address, which you can trace."
+    },
+    {
+     "findings": ["spray-success"], "text": "Sign-in log: 10.8.0.14 belonged to m.okafor's VPN session from the spraying address, 203.0.113.77",
+     "supports": true,
+     "required": true,
+     "why": "This is the link: the session that made the change came from the password spray, not from m.okafor."
+    },
+    {
+     "findings": ["mokafor-denies"], "text": "Service Desk: m.okafor says they didn't do it",
+     "supports": true,
+     "required": false,
+     "why": "Supports the logs. On its own a denial proves little; with the logs, it's strong."
+    },
+    {
+     "text": "mokafor is in IT support and has sudo, so creating accounts is part of the job",
+     "supports": false,
+     "required": false,
+     "why": "Having the right to do something doesn't mean they did it. Out of hours, from a session that started with a spray, a new admin account is how attackers keep their access."
+    }
+   ],
+   "answer": {
+    "verdict": "act",
+    "severity": [
+     "high",
+     "critical"
+    ],
+    "related": [
+     "a5"
+    ],
+    "contain": [
+     "identity:lock-svcbackup2",
+     "identity:reset-mokafor",
+     "client:report-incident"
+    ],
+    "status": "escalated",
+    "summaries": [
+     "Attacker created svcbackup2 with sudo on files01 at 06:13, using m.okafor's account over a VPN session from the password spray (203.0.113.77). svcbackup2 locked, m.okafor reset, client informed. Check files01 for anything else changed since 06:12.",
+     "mokafor created a new account on files01. Probably IT support work; asked them to confirm.",
+     "files01 compromised. Recommend wiping all servers."
+    ],
+    "summary": 0,
+    "why": "A new admin account created out of hours is a classic way for an attacker to keep access. The logs alone show what happened; the sign-in log shows how. Lock the new account and end its session, reset the account that was used, and tell the client."
+   }
+  },
+  {
+   "id": "a5",
+   "ref": "SOC-24133",
+   "title": "Password spray against the VPN",
+   "severity": "medium",
+   "arrives": {
+    "closed": 2,
+    "at": 30
+   },
+   "detection": "VPN: 13 accounts tried from 203.0.113.77 between 05:41 and 05:47, 12 failed (raised by the hourly correlation rule).",
+   "guide": {"hints": ["A spray tries one password on many accounts. In the sign-in log, search the address and check two things: how many accounts, and did any succeed?", "m.okafor's sign-in from 203.0.113.77 at 05:47 succeeded, without MFA. Check the client notes for why that was still allowed, and look for what that session did next.", "One account fell, and its VPN session made the files01 change: link this to the sudo alert. Block 203.0.113.77 (not the whole range), reset m.okafor and tell the client."], "searches": [["signin", "203.0.113.77"], ["notes", "CHG-2240"], ["signin", "m.okafor"]]},
+   "sources": [
+    "signin",
+    "notes"
+   ],
+   "requests": [
+    "netops:block-77",
+    "netops:block-range",
+    "identity:reset-mokafor",
+    "servicedesk:call-mokafor",
+    "client:report-incident"
+   ],
+   "evidence": [
+    {
+     "findings": ["spray"], "text": "Sign-in log: 13 accounts tried from 203.0.113.77 in 6 minutes, once each",
+     "supports": true,
+     "required": true,
+     "why": "One password against many accounts, slowly, is a spray: it avoids lockouts that many guesses against one account would trigger."
+    },
+    {
+     "findings": ["spray-success"], "text": "Sign-in log: m.okafor signed in successfully from 203.0.113.77 at 05:47, without MFA",
+     "supports": true,
+     "required": true,
+     "why": "The spray worked. This turns noise into an incident."
+    },
+    {
+     "findings": ["chg2240"], "text": "Client notes: VPN logins without MFA are still allowed until 31 Oct",
+     "supports": true,
+     "required": false,
+     "why": "Explains why one guessed password was enough."
+    },
+    {
+     "text": "It all came from one address, so blocking it ends the problem",
+     "supports": false,
+     "required": false,
+     "why": "Blocking stops this address only. The attacker already has m.okafor's password and made their own admin account on files01."
+    }
+   ],
+   "answer": {
+    "verdict": "act",
+    "severity": [
+     "high",
+     "critical"
+    ],
+    "related": [
+     "a4"
+    ],
+    "contain": [
+     "netops:block-77",
+     "identity:reset-mokafor",
+     "client:report-incident"
+    ],
+    "status": "escalated",
+    "summaries": [
+     "Password spray on the VPN from 203.0.113.77. All attempts failed. Address blocked.",
+     "VPN password spray from 203.0.113.77 (05:41 to 05:47, 13 accounts) succeeded for m.okafor (no MFA). Linked to the new admin account on files01. Address blocked, m.okafor reset, client informed. Watch for sign-ins from other accounts without MFA.",
+     "Many failed VPN logins this morning; users should change their passwords."
+    ],
+    "summary": 1,
+    "why": "Most sprays fail and are noise. This one has a success in it, from an account without MFA, and the same session went on to make the files01 change. The alert arrived later than the harm it explains: that is normal, and why linking alerts matters."
+   }
+  }
+ ],
+ "departments": {
+  "identity": {
+   "name": "Identity & Access",
+   "contact": { "name": "Priya Raman", "photo": "img/agency/priya.webp", "role": "Identity & Access" },
+   "requests": [
+    {
+     "id": "lock-svcbackup2",
+     "label": "Lock svcbackup2 on files01 and end its sessions",
+     "minutes": 10,
+     "replies": [
+      {
+       "when": {
+        "attached": ""
+       },
+       "minutes": 4,
+       "outcome": "asks",
+       "text": "files01 is a production server, so we need a reason on the ticket before we lock accounts on it. Attach a finding and send it again."
+      },
+      {
+       "outcome": "done",
+       "text": "Done. svcbackup2 is locked and its SSH session on files01 has been ended. We've kept the account, not deleted it, so its history can be investigated."
+      }
+     ],
+     "effects": {
+      "accounts.svcbackup2": "locked"
+     }
+    },
+    {
+     "id": "reset-mokafor",
+     "label": "Reset m.okafor's password and end their VPN sessions",
+     "minutes": 15,
+     "replies": [
+      {
+       "when": {
+        "attached": ""
+       },
+       "minutes": 4,
+       "outcome": "asks",
+       "text": "We need a reason on the ticket before we reset someone's password. Attach a finding and send it again."
+      },
+      {
+       "outcome": "done",
+       "text": "Done. m.okafor's password is reset and their VPN session is ended. They'll have to enrol in MFA before they can sign in again."
+      }
+     ],
+     "effects": {
+      "accounts.mokafor": "reset"
+     }
+    },
+    {
+     "id": "disable-jpatel",
+     "label": "Disable j.patel's account",
+     "minutes": 8,
+     "replies": [
+      {
+       "when": {
+        "attached": ""
+       },
+       "minutes": 4,
+       "outcome": "asks",
+       "text": "We need a reason on the ticket before we disable someone's account. Attach a finding and send it again."
+      },
+      {
+       "outcome": "done",
+       "text": "Done. j.patel's account is disabled. (Update: Pellow & Finch's finance team have called to ask why j.patel can't work.)",
+       "cost": "Disabled a legitimate user: j.patel was locked out of work for something the client's change calendar explained."
+      }
+     ],
+     "effects": {
+      "accounts.jpatel": "disabled"
+     }
+    }
+   ]
+  },
+  "netops": {
+   "name": "Network Operations",
+   "contact": { "name": "Tomasz Nowak", "photo": "img/agency/tomasz.webp", "role": "Network Operations" },
+   "requests": [
+    {
+     "id": "block-77",
+     "label": "Block 203.0.113.77 at the VPN gateway and edge firewall",
+     "minutes": 8,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done. 203.0.113.77 is blocked at the VPN gateway and the edge firewall."
+      }
+     ],
+     "effects": {
+      "blocked.ip77": true
+     }
+    },
+    {
+     "id": "block-range",
+     "label": "Block all of 203.0.113.0/24 at the edge",
+     "minutes": 5,
+     "replies": [
+      {
+       "outcome": "refused",
+       "text": "We can't block a whole /24 without a change ticket from the client (it's in their notes). If you need the spraying address gone, ask us to block 203.0.113.77 and we'll do it now. For the wider range, ask the client contact to raise a ticket."
+      }
+     ]
+    },
+    {
+     "id": "block-9",
+     "label": "Block 203.0.113.9 at the edge firewall",
+     "minutes": 8,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done. Bear in mind SSH on web01 is open to the internet, so the next scanner will just come from a different address."
+      }
+     ]
+    },
+    {
+     "id": "block-66",
+     "label": "Block 192.0.2.66 at the edge firewall",
+     "minutes": 8,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done. It's a public website, though: scanners will keep coming from other addresses."
+      }
+     ]
+    }
+   ]
+  },
+  "servicedesk": {
+   "name": "Service Desk",
+   "contact": { "name": "Grace Adeyemi", "photo": "img/agency/grace.webp", "role": "Service Desk" },
+   "requests": [
+    {
+     "id": "call-jpatel",
+     "label": "Call j.patel to check this morning's sign-ins",
+     "minutes": 12,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Spoke to j.patel: working from home today, connected to the VPN at about quarter to seven. Both sign-ins were theirs.",
+       "finding": {
+        "id": "jpatel-confirms",
+        "finding": "Service Desk: j.patel was working from home and connected to the VPN at about 06:45. Both sign-ins were theirs."
+       }
+      }
+     ]
+    },
+    {
+     "id": "call-mokafor",
+     "label": "Call m.okafor about this morning's activity",
+     "minutes": 12,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Woke m.okafor up, sorry. They were asleep at 05:47 and haven't created any account. They admit their VPN password is one they've used on other sites.",
+       "finding": {
+        "id": "mokafor-denies",
+        "finding": "Service Desk: m.okafor was asleep at 05:47 and didn't create any account. Their VPN password is reused on other sites."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "client": {
+   "name": "Dana Whitfield (Pellow & Finch IT)",
+   "contact": { "name": "Dana Whitfield", "photo": "img/agency/dana.webp", "role": "Client: Pellow & Finch IT" },
+   "requests": [
+    {
+     "id": "report-incident",
+     "label": "Report a confirmed incident: VPN account taken over, new admin account on files01",
+     "minutes": 20,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Thanks for the clear report. I've told our MD, and we'll enforce MFA on the VPN for everyone today instead of waiting for 31 October. Send me the full timeline when you have it."
+      }
+     ]
+    },
+    {
+     "id": "report-jpatel",
+     "label": "Report j.patel's sign-ins from two countries as suspicious",
+     "minutes": 20,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "That'll be our VPN: we moved its internet exit to Amsterdam yesterday (CHG-2291), so everyone on it looks Dutch now. Worth checking our change calendar before escalating.",
+       "cost": "Escalated a false alarm to the client: the answer was in their own change calendar."
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "handover": {
+  "links": "Two alerts were one incident: the VPN session from the spray is the one that made the change. Linking alerts is how a SOC sees the whole attack.",
+  "model": "Overnight noise: SSH guessing on web01 (203.0.113.9) and a scan of web01 (192.0.2.66), both failed, no action. j.patel's impossible travel is the VPN's new Amsterdam exit (CHG-2291). Real incident: a password spray on the VPN from 203.0.113.77 (05:41 to 05:47) got m.okafor's password (no MFA). The attacker used that session to create svcbackup2 with sudo on files01 at 06:13. svcbackup2 locked, m.okafor reset, 203.0.113.77 blocked, Dana informed. Next shift: watch other accounts not enrolled in MFA, any sign-ins from 203.0.113.0/24, and check files01 for anything else changed since 06:12."
+ }
 }
