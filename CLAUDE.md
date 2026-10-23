@@ -14,6 +14,8 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   learning paths in `paths.json`. Missions build order and rules: `docs/missions.md`. Roadmap/audit: `docs/horizon-1-plan.md`.
 - `build.py` → `site/` (gitignored). `news.py`, `cve_watch.py`, `explain.py`: daily data pipeline (Python stdlib only).
   If NVD is down, `cve_watch.collect()` falls back to CVEs saved in `cves.db` (kept between CI runs by actions/cache).
+  The snapshot records which sources were fresh (`fresh`, `fetched`); `build.stale_sources()` → `DATA.meta.cveStale`, shown as a
+  notice on CVE Radar.
   Locally, unset a placeholder `NVD_API_KEY`: NVD answers invalid keys with 404.
 
 ## Commands
@@ -30,7 +32,8 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 ## Conventions
 - Accuracy is a release requirement: tool output and log lines must match the real tool/OS (say which), and anything
   simplified says so in the scenario's `simplification`. Use documentation IP ranges (192.0.2/24, 198.51.100/24, 203.0.113/24) and fictional companies.
-- Saved progress is untrusted: any new field in `FRESH()` needs cleaning in `cleanProgress()` and a test in `tests/page.test.mjs`.
+- Saved progress is untrusted: any new field in `FRESH()` needs cleaning in `cleanProgress()` and a test in `tests/page.test.mjs`. Nested
+  records (done, labs, read, missions, exam stats…) are cleaned to plain id → date/flag/number maps, capped at 5,000.
 - Keep logic pure and tested (engine/exam pattern); the UI only renders events. Escape everything with `esc()`.
 - Accessibility: keyboard, screen-reader labels, reduced motion, axe clean in dark and light, no sideways scroll at 390px.
 - UK English, plain language, no em dashes in new copy. Commit messages explain why, and list what was verified.

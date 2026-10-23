@@ -116,6 +116,12 @@ class Fetching(unittest.TestCase):
 class NvdOutage(unittest.TestCase):
     """If NVD stays down after retries, the build uses CVEs saved by earlier runs instead of failing."""
 
+    def test_stale_cve_sources_are_reported(self):
+        """A source that couldn't be reached on the last update is named on CVE Radar; older snapshots say nothing."""
+        self.assertEqual(build.stale_sources({"fresh": {"NVD": False, "CISA KEV": True, "FIRST EPSS": False}}), ["NVD", "FIRST EPSS"])
+        self.assertEqual(build.stale_sources({"fresh": {"NVD": True, "CISA KEV": True, "FIRST EPSS": True}}), [])
+        self.assertEqual(build.stale_sources({"rows": []}), [], "a snapshot from before freshness was recorded")
+
     def test_collect_falls_back_to_saved_cves(self):
         import http.client
         import tempfile

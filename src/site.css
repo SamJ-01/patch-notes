@@ -1961,3 +1961,5 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .loop-eyebrow { margin: 0; }
 /* Agency close form: evidence the learner has already found for themselves. */
 .tag.ev-seen { color: var(--good); border-color: rgba(var(--good-rgb), 0.5); }
+/* A plain notice above a section, such as CVE data that came from an earlier update. */
+.notice { margin: 0; padding: 10px 14px; border: 1px solid rgba(var(--sun-rgb), 0.5); border-left-width: 4px; border-radius: var(--radius-sm); background: var(--surface); font-size: 0.9rem; }

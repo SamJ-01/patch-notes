@@ -23,6 +23,15 @@ function cleanProgress(src) {
   // Agency shifts: when one was first completed and the best number of debrief checks passed.
   out.agency = Object.fromEntries(Object.entries(out.agency).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && v && typeof v === "object" && !Array.isArray(v))
     .map(([k, v]) => [k, { d: String(v.d ?? "").slice(0, 10), best: Math.min(20, Math.max(0, Math.round(Number(v.best) || 0))), total: Math.min(20, Math.max(0, Math.round(Number(v.total) || 0))), own: v.own === true }]));
+  // Records of what's been done: an id (or a story's link) with the date or flag it happened. Anything else is dropped,
+  // so a damaged file can't mark something done with a value nothing understands, or block recording it later.
+  const keyOk = k => k.length > 0 && k.length <= 300, plain = v => (typeof v === "string" ? v.slice(0, 40) : typeof v === "number" && isFinite(v) ? v : v === true ? 1 : null);
+  const record = o => Object.fromEntries(Object.entries(o).filter(([k, v]) => keyOk(k) && plain(v) !== null).slice(0, 5000).map(([k, v]) => [k, plain(v)]));
+  const isMap = v => v && typeof v === "object" && !Array.isArray(v);
+  for (const k of ["done", "flags", "labs", "paths", "terms", "read", "badges", "days"]) out[k] = record(out[k]);
+  out.missions = Object.fromEntries(Object.entries(out.missions).filter(([k, v]) => keyOk(k) && isMap(v)).map(([k, v]) => [k, record(v)]));
+  out.exam = Object.fromEntries(Object.entries(out.exam).filter(([k, v]) => keyOk(k) && isMap(v)).slice(0, 5000)
+    .map(([k, v]) => [k, { r: Math.max(0, Math.round(Number(v.r) || 0)), w: Math.max(0, Math.round(Number(v.w) || 0)), last: v.last === 1 ? 1 : 0 }]));
   // Shapes the loop above can't check: the stack is a list of ids, lab steps are lists, best scores are numbers.
   out.stack = Array.isArray(out.stack) ? out.stack.filter(x => typeof x === "string").slice(0, 100) : null;
   out.labSteps = Object.fromEntries(Object.entries(out.labSteps).filter(([, v]) => Array.isArray(v)).map(([k, v]) => [k, v.filter(x => ["string", "number"].includes(typeof x)).slice(0, 100)]));

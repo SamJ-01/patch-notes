@@ -57,6 +57,12 @@ def load(name, default=None):
     return json.loads(path.read_text())
 
 
+def stale_sources(cves):
+    """The CVE sources that couldn't be reached when the snapshot was made (their data came from earlier runs).
+    Snapshots made before this was recorded say nothing, so nothing is reported for them."""
+    return [name for name, fresh in (cves.get("fresh") or {}).items() if fresh is False]
+
+
 def snapshot(name, data=None):
     """Save data to data/<name>.json, or load it back when data is None."""
     path = DATA_DIR / f"{name}.json"
@@ -331,7 +337,8 @@ def main():
     else:
         rows, cve_meta = cve_watch.collect(days)
         cves = snapshot("cves", {"rows": [{k: r.get(k) for k in CVE_FIELDS} for r in rows],
-                                 "watchlist": cve_meta["watchlist"], "days": days})
+                                 "watchlist": cve_meta["watchlist"], "days": days, "fetched": cve_meta["generated"],
+                                 "fresh": {"NVD": cve_meta["nvd_fresh"], "CISA KEV": cve_meta["kev_fresh"], "FIRST EPSS": cve_meta["epss_fresh"]}})
 
     if args.offline:
         stories = snapshot("news")
@@ -360,6 +367,8 @@ def main():
             "watchlist": cves["watchlist"],
             "cveCount": len(rows),
             "priorityCounts": collections.Counter(r["priority"] for r in rows),
+            "cveFetched": cves.get("fetched", ""),
+            "cveStale": stale_sources(cves),
         },
         "site": site,
         "news": stories,

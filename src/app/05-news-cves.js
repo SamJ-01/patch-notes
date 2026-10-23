@@ -132,15 +132,17 @@ VIEWS.cves = () => {
   main.innerHTML = `<div class="view">
     <div class="view-head with-art">${headArt("cves")}<h1>Which vulnerabilities actually matter</h1>
       <p>This week's vulnerabilities, ranked by real-world risk.</p></div>
+    ${(st => st.length ? `<p class="notice" role="note">${esc(st.join(" and "))} couldn't be reached on the last update, so ${st.length === 1 ? "its" : "their"} details come from an earlier one${DATA.meta.cveFetched ? ` (CVE list fetched ${esc(DATA.meta.cveFetched)})` : ""}. Check the source for anything urgent.</p>` : "")(DATA.meta.cveStale || [])}
     <section class="glance" id="glance" aria-label="At a glance"></section>
     <details class="more-what fold-sec"><summary><h2>How the priority works</h2><span class="muted">exploited, likely, critical, high, other</span></summary>
       <div class="ladder">
-        <div class="rung p1"><b>1 · Exploited</b><span>On CISA's KEV list. Patch now.</span></div>
+        <div class="rung p1"><b>1 · Exploited</b><span>On CISA's KEV list. If you run it, patch first.</span></div>
         <div class="rung p2"><b>2 · Likely</b><span>EPSS of 10% or more.</span></div>
         <div class="rung p3"><b>3 · Critical</b><span>CVSS 9.0+, no attacks seen yet.</span></div>
         <div class="rung p4"><b>4 · High</b><span>CVSS 7.0–8.9.</span></div>
         <div class="rung p5"><b>5 · Other</b><span>Lower or not scored yet.</span></div>
       </div>
+      <p class="muted" style="font-size:0.88rem">This is a starting point for triage, not a full risk assessment: what matters most is whether you run the product and how exposed it is. <a href="#stack">Am I affected?</a> narrows it to your tech.</p>
       <p class="muted" style="font-size:0.88rem">New to CVE, CVSS, EPSS and KEV? <a href="#lesson-vuln-management">Take the 5-minute lesson</a>.</p>
     </details>
     ${trendsHtml()}

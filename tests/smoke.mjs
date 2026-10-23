@@ -47,7 +47,7 @@ const overflow = async (page, where) => {
 };
 
 // 1. Key routes: every tab, a cert page, and one of each kind of activity.
-const ROUTES = ["#today", "#learn", "#missions", "#agency", "#exams", "#progress", "#news", "#cve-radar", "#cert-network-plus",
+const ROUTES = ["#today", "#learn", "#missions", "#agency", "#exams", "#progress", "#news", "#cves", "#cert-network-plus",
   "#path-soc", "#lesson-phishing", "#lab-slow-network", "#lab-vlans", "#lab-network-builder", "#mission-dhcp", "#agency-shift-01", "#subnet-calc"];
 for (const route of ROUTES) for (const [width, theme] of [[1280, "dark"], [390, "light"]]) {
   const page = await open(route, width, theme);

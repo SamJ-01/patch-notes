@@ -122,6 +122,15 @@ test("progress: restored or stored data is cleaned before use", () => {
   assert.deepEqual(JSON.parse(JSON.stringify(sh.labSteps)), { hashing: [0, "a"] }, "lab steps are lists of ids");
   assert.deepEqual(JSON.parse(JSON.stringify(sh.best)), { quiz: 7 }, "best scores are numbers, never markup");
   assert.deepEqual(cleanProgress({ xp: 1, stack: ["a", 2, "b"] }).stack, ["a", "b"]);
+  // Records of what's been done keep only ids with a date or flag; a mission is a map of modes; question stats are numbers.
+  const rec = cleanProgress({ xp: 1, done: { phishing: "2026-10-22", bad: { x: 1 }, list: [1], flag: true, n: 2 }, read: { "https://example.com/a?b=1": "2026-10-22" },
+    missions: { dhcp: "x", dns: { practice: "2026-10-22", odd: {} }, [evil]: { guided: "2026-10-22" } }, exam: { "np-1.1-1": { r: "3", w: evil, last: 1 }, "np-1.1-2": "junk" } });
+  assert.deepEqual(JSON.parse(JSON.stringify(rec.done)), { phishing: "2026-10-22", flag: 1, n: 2 }, "objects and lists aren't records");
+  assert.ok(rec.read["https://example.com/a?b=1"], "stories are keyed by their link");
+  assert.deepEqual(Object.keys(rec.missions).sort(), ["dns", evil].sort(), "a mission saved as text is dropped, so finishing it later still records");
+  assert.deepEqual(JSON.parse(JSON.stringify(rec.missions.dns)), { practice: "2026-10-22" });
+  assert.deepEqual(JSON.parse(JSON.stringify(rec.exam)), { "np-1.1-1": { r: 3, w: 0, last: 1 } }, "question stats are counts, never markup");
+  assert.equal(Object.keys(cleanProgress({ xp: 1, done: Object.fromEntries(Array.from({ length: 6000 }, (_, i) => ["l" + i, "2026-10-22"])) }).done).length, 5000, "capped");
   assert.throws(() => cleanProgress({ xp: "lots" }));
   assert.throws(() => cleanProgress([1, 2]));
   assert.throws(() => restoreProgress({ progress: { xp: 1 } }), "files must say they come from patch-notes");
