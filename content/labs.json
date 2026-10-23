@@ -1706,7 +1706,7 @@
   "category": "Networking",
   "track": "Networking",
   "minutes": 15,
-  "lesson": "networking",
+  "lesson": "network-ops",
   "title": "Why is the network slow?",
   "skill": "Troubleshoot a slow network step by step: latency, jitter, packet loss and congestion",
   "card": "Pings, a tracert and a full uplink",

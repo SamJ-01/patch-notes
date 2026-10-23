@@ -2503,6 +2503,120 @@
   ]
  },
  {
+  "id": "network-ops",
+  "title": "Running a network",
+  "track": "Foundations",
+  "level": "Beginner",
+  "minutes": 6,
+  "hook": "Racks, power, changes, monitoring and the plan for the worst day.",
+  "what": "Keeping a network running is mostly careful routine, and much of it is on the exam. Physically, equipment sits in racks measured in rack units (1U is 1.75 inches, 44.45 mm). A UPS (a battery unit) rides through short power cuts and gives a generator time to start, and PDUs share power out to each device. Hot and cold aisles keep air moving, and temperature, humidity and fire suppression are watched. Processes keep it known: change management means every change is requested, assessed, approved, scheduled and recorded, with a way to roll it back. Documentation covers physical and logical diagrams, IP address records and an asset inventory, and life-cycle tracking flags kit reaching end of life or end of support. For monitoring, SNMP lets a monitoring server poll devices and receive traps (alerts); use SNMPv3, which adds authentication and encryption. Flow data such as NetFlow shows who talked to whom, syslog gathers logs, and a baseline shows what normal looks like. For disaster recovery, the RPO is how much data you can afford to lose and the RTO is how long you can afford to be down. MTBF is the average time between failures, and MTTR the average time to repair. A hot site can take over at once, a warm site has hardware but needs data and setup, and a cold site is space and power only. Plans are tested, often with a tabletop exercise.",
+  "example": {
+   "title": "British Airways data centre outage",
+   "year": "2017",
+   "text": "On a bank holiday weekend in May 2017, British Airways lost its UK data centre. BA said an engineer disconnected a power supply and it was restored in an uncontrolled way, causing a surge that damaged its IT systems, and its backups didn't take over. Hundreds of flights were cancelled and about 75,000 passengers were affected.",
+   "source": {
+    "label": "Data Center Knowledge: BA says an engineer disconnected the power supply",
+    "url": "https://www.datacenterknowledge.com/archives/2017/06/06/british-airways-says-engineer-disconnected-data-center-power-supply"
+   }
+  },
+  "defend": [
+   "Route every change through change management, with a tested way to roll it back",
+   "Put critical kit on a UPS, and test the generator and failover rather than just owning them",
+   "Use SNMPv3 rather than v1 or v2c, and record a baseline so you can spot what isn't normal",
+   "Agree an RPO and RTO for each system, and prove backups work by restoring them"
+  ],
+  "practice": {
+   "label": "Find a change that slowed a network in the slow network lab",
+   "url": "#lab-slow-network"
+  },
+  "checks": [
+   {
+    "q": "A business can afford to lose at most four hours of data. Which number is that?",
+    "options": [
+     "RTO",
+     "RPO",
+     "MTBF",
+     "MTTR"
+    ],
+    "answer": 1,
+    "why": "The recovery point objective is how far back you can afford to go: so backups must run at least every four hours.",
+    "see": "concept"
+   },
+   {
+    "q": "Which SNMP version adds authentication and encryption?",
+    "options": [
+     "SNMPv1",
+     "SNMPv2c",
+     "SNMPv3",
+     "None of them"
+    ],
+    "answer": 2,
+    "why": "v1 and v2c send a community string in plain text. SNMPv3 adds user logins and encryption.",
+    "see": "what"
+   },
+   {
+    "q": "What turned BA's 2017 power problem into a three-day disruption?",
+    "options": [
+     "A ransomware attack",
+     "Power was restored in an uncontrolled way, damaging systems, and the backups didn't take over",
+     "A DDoS attack on its website",
+     "A leaked password"
+    ],
+    "answer": 1,
+    "why": "Power and failover matter as much as cyber defences: owning a backup isn't the same as having tested it.",
+    "see": "example"
+   }
+  ],
+  "concept": {
+   "type": "cards",
+   "title": "Disaster recovery in a few words",
+   "items": [
+    {
+     "label": "RPO",
+     "icon": "database",
+     "text": "How much data you can lose: the time since the last good backup."
+    },
+    {
+     "label": "RTO",
+     "icon": "gauge",
+     "text": "How long you can be down before it really hurts."
+    },
+    {
+     "label": "MTBF",
+     "icon": "cycle",
+     "text": "Average time between failures. Higher is better."
+    },
+    {
+     "label": "MTTR",
+     "icon": "bolt",
+     "text": "Average time to repair. Lower is better."
+    },
+    {
+     "label": "Hot, warm, cold sites",
+     "icon": "server",
+     "text": "Ready now, ready once data is loaded, or just a room with power."
+    }
+   ]
+  },
+  "keys": [
+   {
+    "icon": "server",
+    "label": "Racks and power",
+    "text": "Kit sits in racks; a UPS rides through power cuts."
+   },
+   {
+    "icon": "doc",
+    "label": "Change control",
+    "text": "Every change is approved, scheduled, recorded and reversible."
+   },
+   {
+    "icon": "gauge",
+    "label": "Monitoring",
+    "text": "SNMP, flow data and logs, measured against a baseline."
+   }
+  ]
+ },
+ {
   "id": "encryption",
   "title": "Encryption & hashing",
   "track": "Foundations",

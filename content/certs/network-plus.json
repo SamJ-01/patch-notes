@@ -220,9 +220,14 @@
     {
      "id": "2.4",
      "title": "Physical installations",
-     "coverage": "none",
-     "activities": [],
-     "gap": "Rack, power and environmental factors aren't covered yet."
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lesson",
+       "id": "network-ops"
+      }
+     ],
+     "gap": "Racks, rack units, UPS, generators, PDUs, airflow and environmental monitoring are taught in Running a network; there's no hands-on practice for them."
     }
    ]
   },
@@ -237,17 +242,25 @@
      "coverage": "partial",
      "activities": [
       {
+       "type": "lesson",
+       "id": "network-ops"
+      },
+      {
        "type": "lab",
        "id": "slow-network"
       }
      ],
-     "gap": "Change records appear in the slow network lab (what changed is the clue); documentation and life-cycle management aren't covered yet."
+     "gap": "Change management, documentation and life-cycle tracking are taught in Running a network, and a change record is the clue in the slow network lab; there's no hands-on documentation task yet."
     },
     {
      "id": "3.2",
      "title": "Network monitoring technologies",
      "coverage": "partial",
      "activities": [
+      {
+       "type": "lesson",
+       "id": "network-ops"
+      },
       {
        "type": "lab",
        "id": "slow-network"
@@ -265,13 +278,17 @@
        "id": "linux"
       }
      ],
-     "gap": "Baselines and interface counters appear in the slow network lab; SNMP and flow data aren't covered yet."
+     "gap": "SNMP, flow data, syslog and baselines are taught in Running a network; baselines and interface counters are hands-on in the slow network lab. There's no hands-on SNMP yet."
     },
     {
      "id": "3.3",
      "title": "Disaster recovery concepts",
      "coverage": "partial",
      "activities": [
+      {
+       "type": "lesson",
+       "id": "network-ops"
+      },
       {
        "type": "lesson",
        "id": "ransomware"
@@ -281,7 +298,7 @@
        "id": "incident-response"
       }
      ],
-     "gap": "RPO, RTO, MTTR, MTBF and site types (hot, warm, cold) aren't covered yet."
+     "gap": "RPO, RTO, MTBF, MTTR, hot, warm and cold sites and tabletop exercises are taught in Running a network; active-active and active-passive high availability aren't covered yet."
     },
     {
      "id": "3.4",

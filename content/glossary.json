@@ -4363,7 +4363,7 @@
    "baselines"
   ],
   "short": "A record of what normal looks like (speeds, traffic, response times), so you can tell when something isn't.",
-  "lesson": "networking"
+  "lesson": "network-ops"
  },
  {
   "id": "change-management",
@@ -4378,6 +4378,171 @@
   "short": "Planning, approving and recording changes to systems, so when something breaks you can see what changed and when.",
   "see": [
    "baseline"
+  ],
+  "lesson": "network-ops"
+ },
+ {
+  "id": "ups",
+  "term": "UPS",
+  "kind": "Technology",
+  "aliases": [
+   "UPS",
+   "uninterruptible power supply"
+  ],
+  "short": "Uninterruptible power supply: a battery unit that keeps equipment running through short power cuts, long enough for a generator to start or a clean shutdown.",
+  "lesson": "network-ops"
+ },
+ {
+  "id": "snmp",
+  "term": "SNMP",
+  "kind": "Technology",
+  "aliases": [
+   "SNMP",
+   "SNMPv3",
+   "SNMPv2c",
+   "SNMPv1"
+  ],
+  "short": "Simple Network Management Protocol: lets a monitoring server read a device's status and receive its alerts (traps). Only SNMPv3 is encrypted.",
+  "lesson": "network-ops",
+  "see": [
+   "baseline"
   ]
+ },
+ {
+  "id": "rpo",
+  "term": "RPO",
+  "kind": "Concept",
+  "aliases": [
+   "RPO",
+   "recovery point objective"
+  ],
+  "short": "Recovery point objective: the most data you can afford to lose, measured as time since the last good backup.",
+  "lesson": "network-ops",
+  "see": [
+   "rto"
+  ]
+ },
+ {
+  "id": "rto",
+  "term": "RTO",
+  "kind": "Concept",
+  "aliases": [
+   "RTO",
+   "recovery time objective"
+  ],
+  "short": "Recovery time objective: how long a system can be down before the business is badly hurt.",
+  "lesson": "network-ops",
+  "see": [
+   "rpo"
+  ]
+ },
+ {
+  "id": "mtbf",
+  "term": "MTBF",
+  "kind": "Concept",
+  "aliases": [
+   "MTBF",
+   "mean time between failures"
+  ],
+  "short": "Mean time between failures: how long something usually runs before it fails. Higher is better.",
+  "lesson": "network-ops",
+  "see": [
+   "mttr"
+  ]
+ },
+ {
+  "id": "mttr",
+  "term": "MTTR",
+  "kind": "Concept",
+  "aliases": [
+   "MTTR",
+   "mean time to repair"
+  ],
+  "short": "Mean time to repair: how long a fix usually takes. Lower is better.",
+  "lesson": "network-ops",
+  "see": [
+   "mtbf"
+  ]
+ },
+ {
+  "id": "hot-site",
+  "term": "Hot site",
+  "kind": "Concept",
+  "aliases": [
+   "hot site",
+   "warm site",
+   "cold site",
+   "hot sites",
+   "warm sites",
+   "cold sites"
+  ],
+  "short": "Backup locations for disaster recovery. A hot site can take over at once, a warm site needs data and setup, a cold site is just space and power.",
+  "lesson": "network-ops",
+  "see": [
+   "rto"
+  ]
+ },
+ {
+  "id": "netflow",
+  "term": "NetFlow",
+  "kind": "Technology",
+  "aliases": [
+   "NetFlow",
+   "flow data"
+  ],
+  "short": "Records of who talked to whom on a network, when and how much, without the content. Good for spotting unusual traffic.",
+  "lesson": "network-ops",
+  "see": [
+   "baseline"
+  ]
+ },
+ {
+  "id": "syslog",
+  "term": "Syslog",
+  "kind": "Technology",
+  "aliases": [
+   "syslog"
+  ],
+  "short": "A standard way for devices and servers to send their logs to a central log server.",
+  "lesson": "network-ops"
+ },
+ {
+  "id": "rack-unit",
+  "term": "Rack unit",
+  "kind": "Concept",
+  "aliases": [
+   "rack unit",
+   "rack units",
+   "1U",
+   "2U"
+  ],
+  "short": "The height unit for equipment racks: 1U is 1.75 inches (44.45 mm). A 42U rack holds 42 of them.",
+  "lesson": "network-ops"
+ },
+ {
+  "id": "pdu",
+  "term": "PDU",
+  "kind": "Technology",
+  "aliases": [
+   "PDU",
+   "PDUs",
+   "power distribution unit"
+  ],
+  "short": "Power distribution unit: a power strip built for racks, often able to report and switch each socket remotely.",
+  "lesson": "network-ops",
+  "see": [
+   "ups"
+  ]
+ },
+ {
+  "id": "tabletop",
+  "term": "Tabletop exercise",
+  "kind": "Concept",
+  "aliases": [
+   "tabletop exercise",
+   "tabletop exercises"
+  ],
+  "short": "A practice run of an incident or disaster plan, talked through around a table, to find gaps before they matter.",
+  "lesson": "network-ops"
  }
 ]
