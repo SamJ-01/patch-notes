@@ -109,6 +109,10 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - Slow network lab (`#lab-slow-network`, evidence lab): Windows 10 ping/tracert and Cisco IOS 15 `show interfaces` for a
   congested upload (txload, output drops), a jittery Wi-Fi laptop and a change log; walks the troubleshooting method
   (Network+ 5.1, 5.4, 5.5, 3.1, 3.2). Windows ping summaries in any lab must agree with their reply lines (tested).
+- Web and ransomware evidence labs (kind "log", Simplified notes in the evidence): `sqli-log` (nginx log, sqlmap probes,
+  UNION, then an admin login), `xss-review` (stored XSS in a review steals an admin session; cookie lacks HttpOnly),
+  `idor-log` (portal audit log, owner vs user) and `ransomware-timeline` (EDR timeline: service account RDP, rclone
+  exfiltration, vssadmin/bcdedit/wbadmin, renames). Defender's view only. No card photos yet.
 - Hashing lab (`#lab-hashing`, `static/js/labs/hashing.js`, tests `tests/hashing.test.mjs`): MD5/SHA-1/SHA-256, salts, slow hashes.
 - Device drawings (`static/js/hw.js`, `HW`): a 3/4 view (`hwBox` adds a lit top and shaded side, which also carry
   `hw-body` so state colours reach them; `--hw-face-top/side` per theme). Keep detail readable at ~50 px.
@@ -124,7 +128,8 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   Prev/Next stop) or "Back to stop n" on a side trip, and `nextStep` follows that route first. Topic steps (`loopStrip`) are
   unnumbered, always show all four stages (missing ones greyed "none yet") and sit under the title of the lesson, lab,
   mission and "Prove it" drill with the current one lit (`topicTop`); going deeper on a stop's topic keeps the bar at that
-  stop (`topicOf`, "going deeper"), and pages end with "Back to the top" (`toTopButton`). `crumbs` (sessionStorage `pn-crumbs`) turn "← Section" links into
+  stop (`topicOf`, "going deeper"), and pages end with "Back to the top" (`toTopButton`). A lab or mission can serve other topics too (`also: [lessonIds]`) and a
+  shift lists the topics it diagnoses (`lessons`); only add pairings a learner would agree are the same topic. `crumbs` (sessionStorage `pn-crumbs`) turn "← Section" links into
   "← the page you came from" (`relabelBack`, watches `main`). Tested: `trailStop`, `noteCrumb`.
 - Exam routes: `paths.json` entries with `exam` (network-plus 16 stops, security-plus 12, pentest-plus 10), linked from each cert
   page ("Follow the … route"); tested: one per exam, and every stop is mapped to that exam's objectives.

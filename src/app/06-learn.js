@@ -222,12 +222,15 @@ const LOOP_META = { understand: ["Understand", "the idea"], experiment: ["Experi
 function topicStages(lessonId) {
   const l = LESSON[lessonId]; if (!l) return [];
   const stages = [{ key: "understand", status: P.done[lessonId] ? "done" : "now", href: "#lesson-" + lessonId }];
-  const labs = DATA.labs.filter(x => x.lesson === lessonId);
+  // A lab or mission belongs to its own lesson and to any it lists in `also`; a shift to the lessons it lists. Own ones first.
+  const mine = list => list.filter(x => x.lesson === lessonId).concat(list.filter(x => x.lesson !== lessonId && (x.also || []).includes(lessonId)));
+  const labs = mine(DATA.labs);
   if (labs.length) { const d = labs.filter(x => P.labs[x.id]).length, nx = labs.find(x => !P.labs[x.id]) || labs[0];
     stages.push({ key: "experiment", status: d === labs.length ? "done" : d ? "part" : "open", href: "#lab-" + nx.id, count: labs.length > 1 ? `${d}/${labs.length}` : "" }); }
-  const missions = DATA.missions.filter(m => m.lesson === lessonId);
-  if (missions.length) { const d = missions.filter(m => count((P.missions || {})[m.id]) > 0).length, nx = missions.find(m => !(count((P.missions || {})[m.id]) > 0)) || missions[0];
-    stages.push({ key: "diagnose", status: d === missions.length ? "done" : d ? "part" : "open", href: "#mission-" + nx.id, count: missions.length > 1 ? `${d}/${missions.length}` : "" }); }
+  const faults = [...mine(DATA.missions).map(m => ({ href: "#mission-" + m.id, done: count((P.missions || {})[m.id]) > 0 })),
+    ...(DATA.agency || []).filter(sh => (sh.lessons || []).includes(lessonId)).map(sh => ({ href: "#agency-" + sh.id, done: !!(P.agency || {})[sh.id] }))];
+  if (faults.length) { const d = faults.filter(f => f.done).length, nx = faults.find(f => !f.done) || faults[0];
+    stages.push({ key: "diagnose", status: d === faults.length ? "done" : d ? "part" : "open", href: nx.href, count: faults.length > 1 ? `${d}/${faults.length}` : "" }); }
   const prove = lessonProveTargets(lessonId);
   if (prove) { const m = proveMastery(prove);
     stages.push({ key: "prove", status: m.level === "strong" ? "done" : m.answered ? "part" : "open", href: "#cert-" + prove.cert.id,
@@ -248,7 +251,10 @@ function loopStrip(lessonId, current) {
   return `<div class="loopwrap"><p class="eyebrow loop-eyebrow">${onRoute ? "Go deeper on this topic (optional)" : "This topic, step by step"}</p>
     <nav class="looptrack" aria-label="This topic's steps">${stages.map(node).join('<span class="loop-arr" aria-hidden="true">→</span>')}</nav></div>`;
 }
-// The same strip at the top of a lab, mission or "Prove it" page, under its title, with that page's stage lit.
+// The same strip at the top of a lab, mission or "Prove it" page, under its title, with that page's stage lit. A lab or
+// mission that serves several topics shows the one you came from (the last lesson you opened), else its own.
+const pageTopic = x => { const ids = [x.lesson, ...(x.also || [])];
+  return [...crumbs].reverse().map(c => /^#lesson-(.+)$/.exec(c)?.[1]).find(id => id && ids.includes(id)) || x.lesson; };
 function topicTop(root, lessonId, stage) {
   const h = root && LESSON[lessonId] && root.querySelector("h1"); if (!h) return;
   (h.closest(".view-head, .stack") || h).insertAdjacentHTML("afterend", loopStrip(lessonId, stage));
@@ -256,12 +262,14 @@ function topicTop(root, lessonId, stage) {
 // The topic a page belongs to: a lesson, a lab or mission of that lesson, or its "Prove it" questions (proveTopic,
 // set while they're open on the cert page). drawTrail uses it to keep you at your stop while you go deeper.
 let proveTopic = null;
-function topicOf(hash, here = true) {
-  const [, kind, id] = /^#(lesson|lab|mission|cert)-(.+)$/.exec(hash) || [];
-  if (kind === "lesson") return id;
-  if (kind === "lab") return LAB[id]?.lesson || null;
-  if (kind === "mission") return MISSION(id)?.lesson || null;
-  return here && kind === "cert" && $("ex-root") ? proveTopic : null;
+function topicsOf(hash, here = true) {
+  const [, kind, id] = /^#(lesson|lab|mission|agency|cert)-(.+)$/.exec(hash) || [];
+  const of = x => (x ? [x.lesson, ...(x.also || [])].filter(Boolean) : []);
+  if (kind === "lesson") return [id];
+  if (kind === "lab") return of(LAB[id]);
+  if (kind === "mission") return of(MISSION(id));
+  if (kind === "agency") return SHIFT(id)?.lessons || [];
+  return here && kind === "cert" && $("ex-root") && proveTopic ? [proveTopic] : [];
 }
 // Back up to the steps: from the end of a page you can go deeper on the topic or take the route's next stop.
 const toTopButton = () => `<button type="button" class="btn ghost to-top" data-to-top>↑ Back to the top: go deeper or move on</button>`;
@@ -288,7 +296,7 @@ function nextStep(type, id) {
     if (n) return { ...n.step, why: n.back ? `Still to do in ${p.title}` : `Next in ${p.title}` };
   }
   // Follow the topic's learning loop: the next stage that isn't done, in order.
-  const lessonId = type === "lesson" ? id : type === "lab" ? DATA.labs.find(x => x.id === id)?.lesson : MISSION(id)?.lesson;
+  const lessonId = type === "lesson" ? id : (x => x && pageTopic(x))(type === "lab" ? LAB[id] : MISSION(id));
   if (lessonId && LESSON[lessonId]) {
     const l = LESSON[lessonId];
     // Coming from a lab or mission with the theory still unread: send there first.
@@ -330,8 +338,8 @@ function drawTrail() {
   // Going deeper on a stop's topic (its lab, mission or questions) still counts as being at that stop, so the bar keeps
   // its place and its Next stop rather than calling it a side trip.
   // With several stops on one topic, the one you came from most recently.
-  const direct = trailStop(steps, h), topic = !direct && topicOf(h);
-  const ofTopic = topic ? steps.filter(st => topicOf(st.href, false) === topic).map(st => st.href) : [];
+  const direct = trailStop(steps, h), topics = direct ? [] : topicsOf(h);
+  const ofTopic = steps.filter(st => topicsOf(st.href, false).some(t => topics.includes(t))).map(st => st.href);
   const from = [...crumbs].reverse().find(c => ofTopic.includes(c)) || ofTopic[0];
   const at = direct || (from ? trailStop(steps, from) : null), deeper = !direct && !!at;
   // Off the route on a lesson, lab or mission (another topic's extras, say): a way back to the last stop you were on.
@@ -365,11 +373,12 @@ document.addEventListener("click", e => { const a = e.target.closest("a[href]"),
 // Turn a loop stage into a next-step card.
 function loopNext(s) {
   if (s.key === "experiment") { const x = DATA.labs.find(a => "#lab-" + a.id === s.href); return x && { label: x.title, href: s.href, kind: "lab", why: "Experiment: try it hands-on" }; }
-  if (s.key === "diagnose") { const m = DATA.missions.find(a => "#mission-" + a.id === s.href); return m && { label: m.title, href: s.href, kind: "mission", why: "Diagnose: fix a real fault" }; }
+  if (s.key === "diagnose") { const m = DATA.missions.find(a => "#mission-" + a.id === s.href); if (m) return { label: m.title, href: s.href, kind: "mission", why: "Diagnose: fix a real fault" };
+    const sh = (DATA.agency || []).find(a => "#agency-" + a.id === s.href); return sh && { label: `PATCH//AGENCY: ${sh.title}`, href: s.href, kind: "agency", why: "Diagnose: work a real incident" }; }
   if (s.key === "prove") return { label: "Exam questions for this topic", href: s.href, kind: "prove", why: "Prove it: show you've got it", prove: s.prove };
   return null;
 }
-const GO_LABEL = { lesson: "Start the lesson", lab: "Open the lab", mission: "Open the mission", game: "Play", ctf: "Go hunting", prove: "Start the questions" };
+const GO_LABEL = { agency: "Clock in", lesson: "Start the lesson", lab: "Open the lab", mission: "Open the mission", game: "Play", ctf: "Go hunting", prove: "Start the questions" };
 function nextStepCard(type, id) {
   const n = nextStep(type, id);
   return n ? `<section class="panel next-step"><div class="eyebrow">${esc(n.why)}</div><h2>Next: ${esc(n.label)}</h2><a class="btn brand" href="${n.href}"${n.prove ? ` data-prove='${esc(JSON.stringify(n.prove))}'` : ""} style="justify-self:start">${GO_LABEL[n.kind] || "Go"} ›</a></section>` : "";
@@ -381,7 +390,7 @@ function showDoneCard(type, item, title) {
   if (!root) return;
   root.querySelector("#done-card")?.remove();
   const ls = LESSON[item.lesson], n = nextStep(type, item.id);
-  const strip = ls ? loopStrip(item.lesson, type === "lab" ? "experiment" : "diagnose") : "";
+  const strip = ls ? loopStrip(pageTopic(item), type === "lab" ? "experiment" : "diagnose") : "";
   root.insertAdjacentHTML("beforeend", `<section class="panel next-step" id="done-card" tabindex="-1"><div class="eyebrow">${esc(title)}</div>
     <h2>${esc(item.title)}</h2><p class="muted" style="margin:0">${esc(item.skill || item.summary)}</p>${strip}
     <div class="row">${n ? `<a class="btn brand" href="${n.href}"${n.prove ? ` data-prove='${esc(JSON.stringify(n.prove))}'` : ""}>Next: ${esc(n.label)} ›</a>` : ""}${ls && (!n || n.href !== "#lesson-" + ls.id) ? `<a class="btn ghost" href="#lesson-${esc(ls.id)}">Revisit the lesson: ${esc(ls.title)}</a>` : ""}<a class="link-btn" href="#missions">All missions and labs</a></div>${ls ? toTopButton() : ""}${feedbackLine(item.title)}</section>`);
@@ -395,8 +404,10 @@ function lessonView(id) {
   const l = LESSON[id]; if (!l) return VIEWS.learn();
   const related = DATA.news.filter(n => n.topics.includes(id)).slice(0, 5);
   const internal = l.practice.url.startsWith("#");
-  const practice = [...DATA.missions.filter(m => m.lesson === id).map(m => ({ kind: "Mission", href: "#mission-" + m.id, title: m.title, sub: m.card || m.summary, min: m.minutes, done: count((P.missions || {})[m.id]) > 0 })),
-    ...DATA.labs.filter(x => x.lesson === id).map(x => ({ kind: "Lab", href: "#lab-" + x.id, title: x.title, sub: x.card || x.skill, min: x.minutes, done: !!P.labs[x.id] }))];
+  const ours = x => x.lesson === id || (x.also || []).includes(id);
+  const practice = [...DATA.missions.filter(ours).map(m => ({ kind: "Mission", href: "#mission-" + m.id, title: m.title, sub: m.card || m.summary, min: m.minutes, done: count((P.missions || {})[m.id]) > 0 })),
+    ...(DATA.agency || []).filter(sh => (sh.lessons || []).includes(id)).map(sh => ({ kind: "Agency shift", href: "#agency-" + sh.id, title: sh.title, sub: sh.card || sh.summary, min: sh.minutes, done: !!(P.agency || {})[sh.id] })),
+    ...DATA.labs.filter(ours).map(x => ({ kind: "Lab", href: "#lab-" + x.id, title: x.title, sub: x.card || x.skill, min: x.minutes, done: !!P.labs[x.id] }))];
   const lseen = new Set([id]);
   main.innerHTML = `<div class="view"${bannerAttr(id)}><article class="article lesson">
     <a class="link-btn" href="#learn">← All lessons</a>

@@ -4665,5 +4665,61 @@
   "see": [
    "dual-stack"
   ]
+ },
+ {
+  "id": "shadow-copy",
+  "term": "Shadow copies",
+  "kind": "Technology",
+  "aliases": [
+   "shadow copies",
+   "shadow copy",
+   "Volume Shadow Copy"
+  ],
+  "short": "Windows' built-in snapshots of files, used to roll back. Ransomware deletes them first with vssadmin.",
+  "lesson": "ransomware"
+ },
+ {
+  "id": "httponly",
+  "term": "HttpOnly",
+  "kind": "Defence",
+  "aliases": [
+   "HttpOnly"
+  ],
+  "short": "A cookie setting that stops page scripts reading the cookie, so XSS can't simply steal a session.",
+  "lesson": "web-xss"
+ },
+ {
+  "id": "parameterised-query",
+  "term": "Parameterised query",
+  "kind": "Defence",
+  "aliases": [
+   "parameterised queries",
+   "parameterised query",
+   "prepared statements",
+   "prepared statement"
+  ],
+  "short": "Sending SQL and the user's values separately, so input can never change the query. The fix for SQL injection.",
+  "lesson": "web-sqli"
+ },
+ {
+  "id": "service-account",
+  "term": "Service account",
+  "kind": "Concept",
+  "aliases": [
+   "service account",
+   "service accounts"
+  ],
+  "short": "An account software uses to run in the background. It shouldn't log on interactively, so when one does, look closer.",
+  "lesson": "identity"
+ },
+ {
+  "id": "immutable-backup",
+  "term": "Immutable backup",
+  "kind": "Defence",
+  "aliases": [
+   "immutable"
+  ],
+  "short": "A backup copy that can't be changed or deleted for a set time, even by an admin, so ransomware can't destroy it.",
+  "lesson": "ransomware"
  }
 ]

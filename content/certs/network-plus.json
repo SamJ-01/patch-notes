@@ -305,6 +305,10 @@
       {
        "type": "lesson",
        "id": "incident-response"
+      },
+      {
+       "type": "lab",
+       "id": "ransomware-timeline"
       }
      ],
      "gap": "RPO, RTO, MTBF, MTTR, hot, warm and cold sites and tabletop exercises are taught in Running a network; active-active and active-passive high availability aren't covered yet."

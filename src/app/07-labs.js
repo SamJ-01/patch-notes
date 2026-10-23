@@ -353,7 +353,7 @@ function missionView(id) {
         showDoneCard("mission", m, `${m.modes[mode].label} mode complete`);
       },
     });
-    topicTop(root, m.lesson, "diagnose");
+    topicTop(root, pageTopic(m), "diagnose");
   }).catch(() => {
     $("mission-root").innerHTML = `<div class="empty">Couldn't load the mission code (js/missions/ui.js). If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`;
   });
@@ -369,7 +369,7 @@ function moduleLab(l) {
       onComplete: () => completeLab(l),
       onReset: () => resetLab(l.id),
     });
-    topicTop($("lab-root"), l.lesson, "experiment");
+    topicTop($("lab-root"), pageTopic(l), "experiment");
   }).catch(() => { $("lab-root").innerHTML = `<div class="empty">Couldn't load this lab. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
 }
 function completeLab(l) {
@@ -388,7 +388,7 @@ function labView(id) {
   main.innerHTML = `<div class="view"${bannerAttr(id)}><article class="article" style="max-width:900px">
     <a class="link-btn" href="#missions">← Missions</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${l.minutes} min · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${gloss(l.intro, 4)}</p></div>
-    ${loopStrip(l.lesson, "experiment")}
+    ${loopStrip(pageTopic(l), "experiment")}
     ${l.primer ? `<section class="panel"><h2>${esc(l.primer.title)}</h2><ul class="keys">${l.primer.keys.map(k => `<li>${keyIcon(k.icon)}<b>${gloss(k.label, 1)}</b><span>${esc(k.text)}</span></li>`).join("")}</ul>
       ${l.primer.results ? `<p class="muted" style="margin:10px 0 4px">What each result means:</p><ul class="results">${l.primer.results.map(([w, m, tone]) => `<li class="${esc(tone)}"><b class="mono">${esc(w)}</b>${esc(m)}</li>`).join("")}</ul>` : ""}</section>` : ""}
     ${l.artifact.kind === "headers" ? `<section class="panel"><div class="panel-title"><h2>The email</h2><span class="sim-tag">Simulated email</span></div>
@@ -539,7 +539,7 @@ function cvssLab(l) {
     main.innerHTML = `<div class="view"${bannerAttr(l.id)}><article class="article" style="max-width:900px">
       <a class="link-btn" href="#missions">← Missions</a>
       <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${done.size}/${l.scenarios.length} scenarios · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.intro)}</p></div>
-      ${loopStrip(l.lesson, "experiment")}
+      ${loopStrip(pageTopic(l), "experiment")}
       <div class="row">${l.scenarios.map((x, i) => `<button class="chip" data-sc="${i}" aria-pressed="${i === cur}">${done.has(i) ? "✓ " : ""}${esc(x.title)}</button>`).join("")}</div>
       <section class="case"><h2 class="eyebrow">Scenario ${cur + 1}</h2><h3>${esc(sc.title)}</h3><p>${esc(sc.text)}</p></section>
       <div class="cvss-grid">${CVSS_METRICS.map(([k, label, opts]) => `<fieldset class="metric"><legend>${esc(label)}</legend><div class="row">${opts.map(([v, t]) => `<button class="chip" data-m="${k}" data-v="${v}" aria-pressed="${pick[k] === v}">${esc(t)}</button>`).join("")}</div></fieldset>`).join("")}</div>

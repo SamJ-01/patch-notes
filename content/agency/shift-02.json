@@ -9,6 +9,7 @@
  "xp": 120,
  "summary": "A finance mailbox, a supplier's bank details and a 17:00 payment run. Work out which alerts are real, stop the money moving, and hand over.",
  "card": "A finance mailbox, a bank change and a 17:00 deadline",
+ "lessons": ["identity", "incident-response", "soc", "phishing"],
  "briefing": "Afternoon. Fernhollow Vets this shift: four alerts from the morning shift, and more may come in. Their finance team sends payments to the bank at 17:00, so anything to do with money comes first. Check each alert properly and ask other teams to act where it's needed. The clock only moves when you do something.",
  "lead": "Morgan, shift lead",
  "leadPhoto": "img/agency/morgan.webp",

@@ -171,9 +171,21 @@
       {
        "type": "lesson",
        "id": "ai-security"
+      },
+      {
+       "type": "lab",
+       "id": "sqli-log"
+      },
+      {
+       "type": "lab",
+       "id": "xss-review"
+      },
+      {
+       "type": "lab",
+       "id": "idor-log"
       }
      ],
-     "gap": "Web, zero-day and AI-related flaws are taught; memory-safety bugs and hardware flaws aren't, and there's no hands-on exploitation (deliberately)."
+     "gap": "Web, zero-day and AI-related flaws are taught, and three labs read the evidence SQL injection, XSS and IDOR leave behind; memory-safety bugs and hardware flaws aren't covered, and there's no hands-on exploitation (deliberately)."
     },
     {
      "id": "2.4",
@@ -207,6 +219,14 @@
       {
        "type": "lesson",
        "id": "ddos"
+      },
+      {
+       "type": "lab",
+       "id": "ransomware-timeline"
+      },
+      {
+       "type": "lab",
+       "id": "sqli-log"
       }
      ]
     },
@@ -495,6 +515,10 @@
       {
        "type": "lesson",
        "id": "incident-response"
+      },
+      {
+       "type": "lab",
+       "id": "ransomware-timeline"
       }
      ]
     },
@@ -534,6 +558,18 @@
       {
        "type": "lab",
        "id": "net-detective"
+      },
+      {
+       "type": "lab",
+       "id": "ransomware-timeline"
+      },
+      {
+       "type": "lab",
+       "id": "sqli-log"
+      },
+      {
+       "type": "lab",
+       "id": "idor-log"
       }
      ]
     }
