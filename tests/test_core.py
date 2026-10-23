@@ -610,6 +610,18 @@ class ContentIntegrity(unittest.TestCase):
             for other in g.get("see", []):
                 self.assertIn(other, ids, g["id"])
 
+    def test_exam_routes_only_use_what_that_exam_maps(self):
+        """A route named after an exam (path "exam") only stops at things mapped to that exam's objectives, and each
+        exam has one, so a learner following it is always practising for the exam they chose."""
+        certs = {f.stem: json.loads(f.read_text()) for f in (ROOT / "content" / "certs").glob("*.json") if not f.stem.endswith("-questions")}
+        routes = {p["exam"]: p for p in content("paths.json") if p.get("exam")}
+        self.assertEqual(sorted(routes), sorted(certs), "one route per exam")
+        for exam, p in routes.items():
+            mapped = {(a["type"], a["id"]) for d in certs[exam]["domains"] for o in d["objectives"] for a in o["activities"]}
+            for st in p["steps"]:
+                self.assertIn((st["type"], st["id"]), mapped, f"{p['id']}: {st['type']} {st['id']} isn't mapped to {exam}")
+            self.assertEqual(len(p["steps"]), len({(st["type"], st["id"]) for st in p["steps"]}), f"{p['id']}: a stop twice")
+
     def test_quiz_and_paths_reference_real_things(self):
         for q in content("quiz.json"):
             self.assertIn(q["topic"], self.lessons, q["q"])

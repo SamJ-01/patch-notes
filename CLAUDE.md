@@ -119,6 +119,8 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   Prev/Next stop) or "Back to stop n" on a side trip, and `nextStep` follows that route first. Topic steps (`loopStrip`) are
   unnumbered so they don't look like route stops. `crumbs` (sessionStorage `pn-crumbs`) turn "← Section" links into
   "← the page you came from" (`relabelBack`, watches `main`). Tested: `trailStop`, `noteCrumb`.
+- Exam routes: `paths.json` entries with `exam` (network-plus 16 stops, security-plus 12, pentest-plus 10), linked from each cert
+  page ("Follow the … route"); tested: one per exam, and every stop is mapped to that exam's objectives.
 - Every lesson, lab, mission and shift must be mapped to at least one exam objective (tested); maps can link shifts
   (`agency`) and tools (`subnet-calc`, `headers-check`, `log-search`, `cvss-decode`). Keep gap notes honest when coverage changes.
 - Feedback: public GitHub issue form (`.github/ISSUE_TEMPLATE/feedback.yml`), linked from every done card, the Agency debrief

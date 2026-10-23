@@ -186,5 +186,183 @@
     "id": "cvss-builder"
    }
   ]
+ },
+ {
+  "id": "network-plus",
+  "title": "Path to Network+",
+  "exam": "network-plus",
+  "blurb": "CompTIA Network+ (N10-009) in a sensible order: the ideas, hands-on labs on real equipment output, then faults to find and fix.",
+  "steps": [
+   {
+    "type": "lesson",
+    "id": "networking"
+   },
+   {
+    "type": "lab",
+    "id": "osi-model"
+   },
+   {
+    "type": "lab",
+    "id": "ports-protocols"
+   },
+   {
+    "type": "lab",
+    "id": "subnetting"
+   },
+   {
+    "type": "lab",
+    "id": "cable-wiring"
+   },
+   {
+    "type": "lesson",
+    "id": "wireless"
+   },
+   {
+    "type": "lab",
+    "id": "wifi-survey"
+   },
+   {
+    "type": "lab",
+    "id": "vlans"
+   },
+   {
+    "type": "lab",
+    "id": "intervlan"
+   },
+   {
+    "type": "lesson",
+    "id": "network-ops"
+   },
+   {
+    "type": "lesson",
+    "id": "network-modern"
+   },
+   {
+    "type": "lab",
+    "id": "ipv6-read"
+   },
+   {
+    "type": "mission",
+    "id": "dhcp",
+    "mode": "practice"
+   },
+   {
+    "type": "mission",
+    "id": "dns",
+    "mode": "practice"
+   },
+   {
+    "type": "lab",
+    "id": "net-detective"
+   },
+   {
+    "type": "lab",
+    "id": "slow-network"
+   }
+  ]
+ },
+ {
+  "id": "security-plus",
+  "title": "Path to Security+",
+  "exam": "security-plus",
+  "blurb": "CompTIA Security+ (SY0-701): the core ideas, the attacks they defend against, and the hands-on checks an analyst makes.",
+  "steps": [
+   {
+    "type": "lesson",
+    "id": "cia-triad"
+   },
+   {
+    "type": "lesson",
+    "id": "security-controls"
+   },
+   {
+    "type": "lesson",
+    "id": "encryption"
+   },
+   {
+    "type": "lesson",
+    "id": "certificates"
+   },
+   {
+    "type": "lab",
+    "id": "hashing"
+   },
+   {
+    "type": "lesson",
+    "id": "identity"
+   },
+   {
+    "type": "lesson",
+    "id": "phishing"
+   },
+   {
+    "type": "lab",
+    "id": "header-inspector"
+   },
+   {
+    "type": "lesson",
+    "id": "vuln-management"
+   },
+   {
+    "type": "lab",
+    "id": "log-detective"
+   },
+   {
+    "type": "lesson",
+    "id": "incident-response"
+   },
+   {
+    "type": "lesson",
+    "id": "frameworks"
+   }
+  ]
+ },
+ {
+  "id": "pentest-plus",
+  "title": "Path to PenTest+",
+  "exam": "pentest-plus",
+  "blurb": "CompTIA PenTest+ (PT0-003) from the tester's side: scope first, then recon, reading scans, checking findings and reporting.",
+  "steps": [
+   {
+    "type": "lab",
+    "id": "scope-roe"
+   },
+   {
+    "type": "lesson",
+    "id": "osint"
+   },
+   {
+    "type": "lab",
+    "id": "recon-basics"
+   },
+   {
+    "type": "lab",
+    "id": "nmap-read"
+   },
+   {
+    "type": "lab",
+    "id": "telnet-ssh"
+   },
+   {
+    "type": "lab",
+    "id": "validate-findings"
+   },
+   {
+    "type": "lab",
+    "id": "cvss-builder"
+   },
+   {
+    "type": "lesson",
+    "id": "web-sqli"
+   },
+   {
+    "type": "lesson",
+    "id": "web-xss"
+   },
+   {
+    "type": "lab",
+    "id": "permissions"
+   }
+  ]
  }
 ]

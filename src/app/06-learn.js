@@ -160,6 +160,7 @@ function certView(id) {
     <div class="stack" style="gap:8px"><div class="eyebrow">Exam prep · ${esc(c.exam)}</div><h1>${esc(c.name)}</h1>
       <p class="hook">Every exam objective, mapped to what you can practise here, with honest gaps.</p></div>
     <p class="muted cert-note">${esc(c.note)} Objectives last checked ${esc(reviewed)} against <a href="${esc(c.source.url)}" target="_blank" rel="noopener">${esc(c.source.label)} ↗</a>.</p>
+    ${(r => r ? `<a class="btn brand" href="#path-${esc(r.id)}" style="justify-self:start">Follow the ${esc(r.title.replace(/^Path to /, ""))} route: ${r.steps.length} stops →</a>` : "")(DATA.paths.find(p => p.exam === c.id))}
     <section class="panel wide"><div class="panel-title"><h2>Your progress</h2><span class="eyebrow">${practised} of ${objs.length} objectives practised</span></div>
       <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(practised / objs.length * 100)}%"></i></span></div>
       <p class="muted" style="margin:0">Coverage on Patch Notes: ${cov("strong")} with hands-on practice · ${cov("partial")} partly covered · ${cov("none")} not covered yet.</p>
