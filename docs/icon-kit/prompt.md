@@ -46,7 +46,7 @@ For each device, give me: the device name, one sentence on what you changed, and
 ### Phone (`phone`)
 
 ```svg
-<path class="hw-body hw-side" d="M11 -20l3-3v41l-3 3z"/><path class="hw-body hw-top" d="M-11 -20l3-3h22l-3 3z"/><rect class="hw-body" x="-11" y="-20" width="22" height="41" rx="4"/><rect class="hw-screen" x="-8.5" y="-15.5" width="17" height="31" rx="1.5"/>
+<path class="hw-body hw-side" d="M-7.33 -21.33A4 4 0 0 1 -4.5 -22.5H9.5A4 4 0 0 1 13.5 -18.5V14.5A4 4 0 0 1 12.33 17.33L9.83 19.83A4 4 0 0 1 7 21H-7A4 4 0 0 1 -11 17V-16A4 4 0 0 1 -9.83 -18.83Z"/><path class="hw-body hw-top" d="M-9.83 -18.83L-7.33 -21.33A4 4 0 0 1 -4.5 -22.5H9.5A4 4 0 0 1 12.33 -21.33L9.83 -18.83A4 4 0 0 0 7 -20H-7A4 4 0 0 0 -9.83 -18.83Z"/><rect class="hw-body" x="-11" y="-20" width="22" height="41" rx="4"/><rect class="hw-screen" x="-8.5" y="-15.5" width="17" height="31" rx="1.5"/>
 <circle class="hw-port" cx="0" cy="-17.8" r="0.9"/><path class="hw-line" d="M-3 18.3h6"/>
 ```
 
@@ -117,7 +117,7 @@ For each device, give me: the device name, one sentence on what you changed, and
 <path class="hw-body hw-threat" d="M-27 20.5c0-10 7-15 15-17h24c8 2 15 7 15 17z"/>
 <path class="hw-body hw-threat" d="M0-22.5c-10 0-16 8-16 18 0 5 2 9 4 11h24c2-2 4-6 4-11 0-10-6-18-16-18z"/>
 <path class="hw-face" d="M0-14.5c-6 0-9 5-9 10 0 4 3 7 9 7s9-3 9-7c0-5-3-10-9-10z"/><path class="hw-glint" d="M-5-3.5h3.5M1.5-3.5h3.5"/>
-<path class="hw-body hw-side" d="M14 2.5l3-3v16l-3 3z"/><path class="hw-body hw-top" d="M-16 2.5l3-3h30l-3 3z"/><rect class="hw-body" x="-16" y="2.5" width="30" height="16" rx="1.5"/><path class="hw-body hw-side" d="M-16 18.5h30v2.5h-30z"/><circle class="hw-led" cx="-1" cy="10.5" r="1.8"/>
+<path class="hw-body hw-side" d="M-13.91 1.09A2 2 0 0 1 -12.5 0.5H15.5A2 2 0 0 1 17.5 2.5V16.5A2 2 0 0 1 16.91 17.91L14.41 20.41A2 2 0 0 1 13 21H-15A2 2 0 0 1 -17 19V5A2 2 0 0 1 -16.41 3.59Z"/><path class="hw-body hw-top" d="M-16.41 3.59L-13.91 1.09A2 2 0 0 1 -12.5 0.5H15.5A2 2 0 0 1 16.91 1.09L14.41 3.59A2 2 0 0 0 13 3H-15A2 2 0 0 0 -16.41 3.59Z"/><rect class="hw-body" x="-17" y="3" width="32" height="18" rx="2"/><circle class="hw-led" cx="-1" cy="12" r="1.8"/>
 ```
 
 ## The CSS that colours them (for reference: don't change it)

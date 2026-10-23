@@ -6,6 +6,18 @@
 // Devices are drawn in a 3/4 view: the detail sits on the front face, with a lit top and a shaded right side
 // (hwBox) for depth. Those faces also carry hw-body, so every state rule that recolours a device's outline
 // (talking, ok, bad, selected) recolours its depth too.
+// Rounded things (a phone, a laptop lid) need their depth to follow the corners, or the faces meet the curve at a
+// sharp angle and look stuck on. hwSlab sweeps a rounded rectangle d units back (up and right): the whole sweep
+// as the shaded side, the strip along the top as the lit top, then the front on top of both.
+const hwSlab = (x, y, w, h, r, d, cls = "") => {
+  const s = r * Math.SQRT1_2, n = v => +v.toFixed(2), A = (px, py, sw = 1) => `A${r} ${r} 0 0 ${sw} ${n(px)} ${n(py)}`;
+  const tl = (ox, oy) => [x + ox + r - s, y + oy + r - s], tr = (ox, oy) => [x + ox + w - r + s, y + oy + r - s], br = (ox, oy) => [x + ox + w - r + s, y + oy + h - r + s];
+  const [tlbX, tlbY] = tl(d, -d), [tlfX, tlfY] = tl(0, 0), [trbX, trbY] = tr(d, -d), [trfX, trfY] = tr(0, 0), [brbX, brbY] = br(d, -d), [brfX, brfY] = br(0, 0);
+  const side = `M${n(tlbX)} ${n(tlbY)}${A(x + d + r, y - d)}H${n(x + d + w - r)}${A(x + d + w, y - d + r)}V${n(y - d + h - r)}${A(brbX, brbY)}L${n(brfX)} ${n(brfY)}`
+    + `${A(x + w - r, y + h)}H${n(x + r)}${A(x, y + h - r)}V${n(y + r)}${A(tlfX, tlfY)}Z`;
+  const top = `M${n(tlfX)} ${n(tlfY)}L${n(tlbX)} ${n(tlbY)}${A(x + d + r, y - d)}H${n(x + d + w - r)}${A(trbX, trbY)}L${n(trfX)} ${n(trfY)}${A(x + w - r, y, 0)}H${n(x + r)}${A(tlfX, tlfY, 0)}Z`;
+  return `<path class="hw-body hw-side${cls}" d="${side}"/><path class="hw-body hw-top${cls}" d="${top}"/><rect class="hw-body${cls}" x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"/>`;
+};
 const hwBox = (x, y, w, h, d = 6, cls = "") => `<path class="hw-body hw-side${cls}" d="M${x + w} ${y}l${d}-${d}v${h}l-${d} ${d}z"/><path class="hw-body hw-top${cls}" d="M${x} ${y}l${d}-${d}h${w}l-${d} ${d}z"/>`;
 
 export const HW = {
@@ -21,7 +33,7 @@ export const HW = {
     <path class="hw-port" d="M-19.5 11.8h31l3.6-4.2h-31z"/><path class="hw-port" d="M-6.5 14.4h10l1.2-1.5h-10z"/>
     ${hwBox(-19, -21, 44, 26, 2)}<rect class="hw-body" x="-19" y="-21" width="44" height="26" rx="2"/><rect class="hw-screen" x="-16" y="-18" width="38" height="20" rx="1"/>`,
   // A slim handset: camera, screen and home bar.
-  phone: `${hwBox(-11, -20, 22, 41, 3)}<rect class="hw-body" x="-11" y="-20" width="22" height="41" rx="4"/><rect class="hw-screen" x="-8.5" y="-15.5" width="17" height="31" rx="1.5"/>
+  phone: `${hwSlab(-11, -20, 22, 41, 4, 2.5)}<rect class="hw-screen" x="-8.5" y="-15.5" width="17" height="31" rx="1.5"/>
     <circle class="hw-port" cx="0" cy="-17.8" r="0.9"/><path class="hw-line" d="M-3 18.3h6"/>`,
   // Three drive bays, each with its handle and a status light, then vents and the power button.
   server: `${hwBox(-18, -17, 32, 39, 5)}<rect class="hw-body" x="-18" y="-17" width="32" height="39" rx="2"/>
@@ -51,12 +63,12 @@ export const HW = {
     <path class="hw-body hw-side" d="M-19 11v5a19 4.8 0 0 0 38 0v-5"/><ellipse class="hw-body hw-top" cx="0" cy="11" rx="19" ry="4.8"/><circle class="hw-led" cx="0" cy="11" r="1.6"/>`,
   cloud: `<path class="hw-body hw-cloud" d="M-17 16a12 12 0 0 1-2-23.8a15 15 0 0 1 28.5-5.2a11.5 11.5 0 0 1 11 29z"/>
     <path class="hw-line hw-globe" d="M-6 6a7 7 0 1 0 14 0a7 7 0 1 0-14 0M-6 6h14M1-1c-3 4-3 10 0 14c3-4 3-10 0-14"/>`,
-  // The attacker: a hooded figure behind a laptop, face in shadow. We see the back of the lid (logo, no keyboard)
-  // with its thickness, so the laptop faces them.
+  // The attacker: a hooded figure behind a laptop, face in shadow. We see the back of the lid (a logo, no keyboard),
+  // its thickness going back towards them like every other device's depth, so the laptop faces them.
   attacker: `<path class="hw-body hw-threat" d="M-27 20.5c0-10 7-15 15-17h24c8 2 15 7 15 17z"/>
     <path class="hw-body hw-threat" d="M0-22.5c-10 0-16 8-16 18 0 5 2 9 4 11h24c2-2 4-6 4-11 0-10-6-18-16-18z"/>
     <path class="hw-face" d="M0-14.5c-6 0-9 5-9 10 0 4 3 7 9 7s9-3 9-7c0-5-3-10-9-10z"/><path class="hw-glint" d="M-5-3.5h3.5M1.5-3.5h3.5"/>
-    ${hwBox(-16, 2.5, 30, 16, 3)}<rect class="hw-body" x="-16" y="2.5" width="30" height="16" rx="1.5"/><path class="hw-body hw-side" d="M-16 18.5h30v2.5h-30z"/><circle class="hw-led" cx="-1" cy="10.5" r="1.8"/>`,
+    ${hwSlab(-17, 3, 32, 18, 2, 2.5)}<circle class="hw-led" cx="-1" cy="12" r="1.8"/>`,
 };
 
 export const HW_INFO = {
