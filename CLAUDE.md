@@ -120,7 +120,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   `map-the-attack` (ATT&CK technique IDs, NIST CSF 2.0), `zero-day-advisory` (made-up advisory ID, not a CVE), `breach-clock`
   (UK GDPR 72 hours from awareness, Art. 33/34), `advisory-hunt` (living off the land: ntdsutil IFM, netsh portproxy),
   `prompt-injection` (hidden text, image-URL exfiltration) and `factory-scan` (Nmap 7.94 -sT, Modbus/mbap 502). Every
-  lesson now has an Experiment step; Diagnose (missions and shifts) is the gap. Defender's view only. Drawn scenes in `SCENE` until they get card photos.
+  lesson now has an Experiment step; Diagnose (missions and shifts) is the gap. Defender's view only. All have card photos (made as three 3 x 2 grids).
 - Hashing lab (`#lab-hashing`, `static/js/labs/hashing.js`, tests `tests/hashing.test.mjs`): MD5/SHA-1/SHA-256, salts, slow hashes.
 - Device drawings (`static/js/hw.js`, `HW`): a 3/4 view (`hwBox` adds a lit top and shaded side, which also carry
   `hw-body` so state colours reach them; `--hw-face-top/side` per theme). Keep detail readable at ~50 px.
