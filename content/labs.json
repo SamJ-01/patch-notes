@@ -4932,7 +4932,7 @@
    },
    {
     "type": "text",
-    "q": "Which account did that IP eventually log in to?",
+    "q": "Which account did that IP eventually log in to? (the account name)",
     "answers": [
      "backup"
     ],
@@ -5030,7 +5030,7 @@
    },
    {
     "type": "text",
-    "q": "If Jordan clicks Reply, which address does the reply go to?",
+    "q": "If Jordan clicks Reply, which address does the reply go to? (the email address)",
     "answers": [
      "northvale-verify@quickmail.example"
     ],
@@ -5982,7 +5982,7 @@
   "steps": [
    {
     "type": "text",
-    "q": "Which account did the intruder use to get onto FS01?",
+    "q": "Which account did the intruder use to get onto FS01? (the account name)",
     "answers": [
      "svc-backup",
      "msd\\svc-backup"
@@ -6303,7 +6303,7 @@
    },
    {
     "type": "text",
-    "q": "Which IAM user made the bucket public?",
+    "q": "Which IAM user made the bucket public? (the username)",
     "answers": [
      "j.reyes"
     ],
@@ -6503,7 +6503,7 @@
    },
    {
     "type": "text",
-    "q": "Whose password did the attacker guess?",
+    "q": "Whose password did the attacker guess? (the username)",
     "answers": [
      "r.james",
      "r.james@thornbury.example"
@@ -7036,7 +7036,7 @@
    },
    {
     "type": "text",
-    "q": "Which of Wexcombe's gateways is affected?",
+    "q": "Which of Wexcombe's gateways is affected? (the hostname)",
     "answers": [
      "vpn-gw-01"
     ],
@@ -7257,7 +7257,7 @@
    },
    {
     "type": "text",
-    "q": "Which account ran ntdsutil on the domain controller?",
+    "q": "Which account ran ntdsutil on the domain controller? (the account name)",
     "answers": [
      "m.hale",
      "SMW\\m.hale"
@@ -7345,7 +7345,7 @@
    },
    {
     "type": "text",
-    "q": "How many bookings did the assistant look up because of it?",
+    "q": "How many bookings did the assistant look up because of it? (a number)",
     "answers": [
      "23"
     ],
