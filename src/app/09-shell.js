@@ -197,7 +197,7 @@ document.addEventListener("keydown", e => {
 // Which tab each route lives under, and what draws it.
 const CVE_VIEWS = ["cves", "today/stack"];
 // Sections without their own nav tab, and the tab that's highlighted for them.
-const NAV_PARENT = { play: "missions", careers: "progress" };
+const NAV_PARENT = { play: "missions", careers: "progress", feedback: "today" };
 function parseRoute() {
   const h = (location.hash || "#today").slice(1);
   if (h.startsWith("lesson-")) return { tab: "learn", path: "learn/" + h.slice(7), draw: () => lessonView(h.slice(7)) };
@@ -224,7 +224,7 @@ function pageName(h) {
   if (k.startsWith("mission-")) return MISSION(id)?.title;
   if (k.startsWith("path-")) return DATA.paths.find(x => x.id === id)?.title;
   if (k.startsWith("agency-")) return SHIFT(id)?.title;
-  return { today: "Home", learn: "Learn", missions: "Practise", agency: "The Agency", exams: "Exam prep" }[k];
+  return { today: "Home", learn: "Learn", missions: "Practise", agency: "The Agency", exams: "Exam prep", feedback: "Feedback" }[k];
 }
 // A "← Section" link becomes "← The page you came from" (modules render theirs later, so this watches the page).
 const SECTION_BACK = new Set(["#today", "#learn", "#missions", "#agency", "#exams"]);
@@ -339,7 +339,7 @@ $("foot-meta").textContent = `Updated ${DATA.meta.generated}.` + (DATA.site.auth
 $("xp").addEventListener("click", () => { location.hash = "progress"; });
 $("xp").style.cursor = "pointer";
 if (DATA.site.url) $("lessons-link").href = DATA.site.url + "lessons/";
-if (DATA.site.feedback) $("feedback-link").href = DATA.site.feedback;
+if (DATA.site.feedback) { const fbl = $("feedback-link"); fbl.href = DATA.site.feedback; if (DATA.site.feedback.startsWith("#")) { fbl.removeAttribute("target"); fbl.removeAttribute("rel"); } }
 // The full CVE list (~600 KB) is only fetched by the views that use it.
 let cvesLoading = null;
 function loadCves() {

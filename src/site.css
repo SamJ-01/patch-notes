@@ -1967,3 +1967,14 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 /* A plain notice above a section, such as CVE data that came from an earlier update. */
 .notice { margin: 0; padding: 10px 14px; border: 1px solid rgba(var(--sun-rgb), 0.5); border-left-width: 4px; border-radius: var(--radius-sm); background: var(--surface); font-size: 0.9rem; }
 @media (max-width: 560px) { .loop-node.none .loop-lbl span { display: block; } }
+
+/* The on-site feedback form (#feedback). */
+.fb-set { border: 1px solid var(--card-line); border-radius: var(--radius-sm); padding: 12px 14px; margin: 0; }
+.fb-set legend { padding: 0 6px; font: 600 0.9rem var(--font-display); }
+.fb-opts { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.fb-opt { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.fb-opt input { width: 18px; height: 18px; flex: none; accent-color: var(--brand); }
+.fb-scale .fb-opt { flex-direction: column-reverse; gap: 4px; }
+#fb-form textarea, #fb-form input[type="email"] { width: 100%; box-sizing: border-box; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; font: inherit; }
+#fb-form textarea:focus, #fb-form input:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
+.fb-honey { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }

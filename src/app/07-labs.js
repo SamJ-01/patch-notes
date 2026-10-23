@@ -331,7 +331,7 @@ VIEWS.agency = () => {
         <li><b>Work the queue</b><span>Open each alert and search the logs behind it. Most are noise; some aren't.</span></li>
         <li><b>Ask other teams</b><span>You can't fix everything yourself. Ask, give a reason, and wait for replies.</span></li>
         <li><b>Hand over and clock out</b><span>Close every alert with evidence, leave notes for the next shift, and get your report.</span></li></ol>
-      <p class="muted">${feedbackHref("PATCH//AGENCY") ? `The Agency is a pilot. <a href="${esc(feedbackHref("PATCH//AGENCY"))}" target="_blank" rel="noopener">Tell us what you think ↗</a>` : ""}</p></section>
+      <p class="muted">${(fb => fb ? `The Agency is a pilot. <a href="${esc(fb)}"${fb.startsWith("#") ? "" : ' target="_blank" rel="noopener"'}>Tell us what you think${fb.startsWith("#") ? "" : " ↗"}</a>` : "")(feedbackHref("PATCH//AGENCY"))}</p></section>
   </div>`;
 };
 // A PATCH//AGENCY shift. Leaving mid-shift restarts it, so route() asks first (agencyShift.inProgress).

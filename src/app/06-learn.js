@@ -384,7 +384,7 @@ function nextStepCard(type, id) {
   return n ? `<section class="panel next-step"><div class="eyebrow">${esc(n.why)}</div><h2>Next: ${esc(n.label)}</h2><a class="btn brand" href="${n.href}"${n.prove ? ` data-prove='${esc(JSON.stringify(n.prove))}'` : ""} style="justify-self:start">${GO_LABEL[n.kind] || "Go"} ›</a></section>` : "";
 }
 // After a lab or mission: what was practised, where the theory lives, and what to do next.
-const feedbackLine = what => (feedbackHref(what) ? `<p class="muted feedback-line">How was it? <a href="${esc(feedbackHref(what))}" target="_blank" rel="noopener">Tell us what worked and what didn't ↗</a>${/^https:\/\/github\.com\//.test(DATA.site.feedback || "") ? " (a public GitHub form; needs a free account)" : ""}.</p>` : "");
+const feedbackLine = what => { const href = feedbackHref(what); if (!href) return ""; const hash = href.startsWith("#"), gh = /^https:\/\/github\.com\//.test(DATA.site.feedback || ""); return `<p class="muted feedback-line">How was it? <a href="${esc(href)}"${hash ? "" : ' target="_blank" rel="noopener"'}>Tell us what worked and what didn't${hash ? "" : " ↗"}</a>${gh ? " (a public GitHub form; needs a free account)" : ""}.</p>`; };
 function showDoneCard(type, item, title) {
   const root = type === "lab" ? ($("lab-root") || main.querySelector(".view")) : $("mission-root");
   if (!root) return;

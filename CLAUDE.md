@@ -154,7 +154,11 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   page ("Follow the … route"); tested: one per exam, and every stop is mapped to that exam's objectives.
 - Every lesson, lab, mission and shift must be mapped to at least one exam objective (tested); maps can link shifts
   (`agency`) and tools (`subnet-calc`, `headers-check`, `log-search`, `cvss-decode`). Keep gap notes honest when coverage changes.
-- Feedback: public GitHub issue form (`.github/ISSUE_TEMPLATE/feedback.yml`), linked from every done card, the Agency debrief
-  and the footer (`DATA.site.feedback`). Read new `feedback` issues before planning.
+- Feedback: an on-site form at `#feedback` (`VIEWS.feedback` in 08-you) that posts with `fetch` to a form-to-email relay
+  (`DATA.site.feedbackPost`, FormSubmit) and emails the owner; no account, stays on the page, nothing saved. A honeypot
+  (`_honey`) guards it, and the CSP `connect-src` allows `https://formsubmit.co` (build.py `csp_meta`). `DATA.site.feedback`
+  is `#feedback`, linked from every done card, the Agency debrief and the footer; `feedbackHref`/consumers drop `target=_blank`
+  and the GitHub note for a hash link. To switch back to the GitHub issue form (`.github/ISSUE_TEMPLATE/feedback.yml`), set
+  `feedback` to its URL. Tested: `tests/test_core.py` FeedbackForm (accepts either config).
 - Next: learner feedback on the shift and the new labs, more Security+
   questions, more Agency shifts (one client and incident each; the people for a shift made in one image). No accounts/backend until real users need cross-device saves.

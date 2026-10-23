@@ -419,13 +419,27 @@ class QuizFairness(unittest.TestCase):
 
 
 class FeedbackForm(unittest.TestCase):
-    def test_feedback_link_points_at_a_real_issue_form(self):
+    def test_feedback_link_is_wired(self):
+        """Feedback is either a public GitHub issue form, or the on-site form (#feedback) that posts to a
+        form-to-email relay. Whichever is set must actually work: a real issue template, or a form with a
+        submit endpoint, the form markup and a honeypot against bots."""
         import re
-        url = content("site.json")["feedback"]
-        self.assertTrue(url.startswith("https://github.com/SamJ-01/patch-notes/issues/new?template="))
-        form = ROOT / ".github" / "ISSUE_TEMPLATE" / re.search(r"template=([\w.-]+)", url).group(1)
-        self.assertTrue(form.exists(), form.name)
-        self.assertIn("public", form.read_text(), "the form must warn that issues are public")
+        site = content("site.json")
+        url = site["feedback"]
+        if url.startswith("#"):
+            self.assertEqual(url, "#feedback")
+            post = site.get("feedbackPost", "")
+            self.assertTrue(post.startswith("https://"), "the on-site form needs an https submit endpoint")
+            page = build.assemble_template()
+            self.assertIn("VIEWS.feedback", page)
+            self.assertIn('id="fb-form"', page)
+            self.assertIn('name="_honey"', page, "the form needs a honeypot against spam bots")
+            self.assertIn("DATA.site.feedbackPost", page, "the form must post to the configured endpoint")
+        else:
+            self.assertTrue(url.startswith("https://github.com/SamJ-01/patch-notes/issues/new?template="))
+            form = ROOT / ".github" / "ISSUE_TEMPLATE" / re.search(r"template=([\w.-]+)", url).group(1)
+            self.assertTrue(form.exists(), form.name)
+            self.assertIn("public", form.read_text(), "the form must warn that issues are public")
 
 
 class PageAssembly(unittest.TestCase):

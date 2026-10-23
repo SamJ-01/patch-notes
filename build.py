@@ -85,8 +85,10 @@ def csp_meta(page, scripts=True):
     if scripts:
         hashes = " ".join("'sha256-" + base64.b64encode(hashlib.sha256(body.encode()).digest()).decode() + "'"
                           for body in re.findall(r"<script>(.*?)</script>", page, re.S))
+        # connect-src allows the browser's own data fetches (same origin) and the feedback form's submit to the
+        # form-to-email relay; form-action stays 'none' because the form posts with fetch, not a navigation.
         policy = (f"default-src 'self'; script-src 'self' {hashes}; {FONT_SOURCES}; img-src 'self' data:; "
-                  "connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'")
+                  "connect-src 'self' https://formsubmit.co; object-src 'none'; base-uri 'self'; form-action 'none'")
     else:
         policy = f"default-src 'none'; {FONT_SOURCES}; img-src 'self' data:; base-uri 'none'; form-action 'none'"
     return f'<meta http-equiv="Content-Security-Policy" content="{policy}">\n'
