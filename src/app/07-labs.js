@@ -111,7 +111,7 @@ SCENE.play = HEAD_SCENE.play;  // the games card on the practise page
 // Page headers: an illustration where one exists (img/heads/<page>.webp, 2:1), otherwise the drawn scene.
 // loading="lazy" matters: Chrome's look-ahead preloader can read this template inside the page's script and fetch
 // the unfilled "img/heads/${k}.webp", but it skips lazy images. (It still loads at once: headers are at the top.)
-const HEAD_PHOTOS = new Set(["learn", "missions", "news", "cves", "progress", "careers"]);
+const HEAD_PHOTOS = new Set(["learn", "missions", "news", "cves", "progress", "careers", "exams", "play"]);
 const headArt = k => (HEAD_PHOTOS.has(k)
   ? `<span class="head-art photo" aria-hidden="true"><img class="card-img" src="img/heads/${k}.webp" alt="" width="494" height="247" loading="lazy" decoding="async"></span>`
   : `<span class="head-art card-art" aria-hidden="true">${sceneSvg(HEAD_SCENE[k])}</span>`);
@@ -121,13 +121,14 @@ const CARD_PHOTOS = new Set(["dhcp", "dns", "phish-triage", "ssh-brute", "hashin
   "osi-model", "topologies", "ports-protocols", "subnetting", "tcp-handshake", "cable-wiring",
   "finding-the-server", "one-request", "vlans", "network-builder", "telnet-ssh", "linux-terminal",
   "net-detective", "log-detective", "header-inspector", "cvss-builder", "recon-basics", "play",
+  "intervlan", "wifi-survey", "slow-network", "scope-roe", "nmap-read", "validate-findings",
   // Lessons (the Learn page)
   "cia-triad", "frameworks", "phishing", "ransomware", "malware", "zero-day",
   "vuln-management", "supply-chain", "data-breach", "nation-state", "ddos", "ai-security",
   "cloud", "identity", "iot-ot", "web-sqli", "web-xss", "web-access",
-  "networking", "encryption", "linux", "soc", "incident-response", "osint"]);
+  "networking", "encryption", "linux", "soc", "incident-response", "osint", "wireless", "certificates", "security-controls"]);
 // Tools reuse the picture of the lab they belong with.
-const PHOTO_ALIAS = { "subnet-calc": "subnetting", certificates: "telnet-ssh", "security-controls": "permissions" };  // stand-ins until their own pictures are made
+const PHOTO_ALIAS = { "subnet-calc": "subnetting" };
 const cardPhoto = (src, w = 506, h = 253) => `<span class="card-art photo"><img class="card-img" src="${esc(src)}" alt="" width="${w}" height="${h}" loading="lazy" decoding="async"></span>`;
 // The card's picture as a slim banner at the top of its lesson, lab or mission page (a decorative ::before, so it
 // shows while a module loads and whatever the module draws). Nothing when the card has no photo.

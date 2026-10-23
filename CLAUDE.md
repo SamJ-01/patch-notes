@@ -46,7 +46,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   exam clutter (a lesson only shows its "Prove it" stage). Network+ N10-009 (25 objectives, 60 questions, "Am I ready?" panel), Security+ map (5 domains, 53 questions incl. PKI and control types, mock exams). PenTest+ PT0-003 map (5 domains, 35 questions;
   mostly defender-side coverage, said in its note), with three evidence labs for it:
   `scope-roe` (rules of engagement, kind "doc"), `nmap-read` (Nmap 7.94 -sV output) and `validate-findings` (false positives, backports). `build.load_certs()` orders them Network+, Security+, PenTest+ (tested). Lessons `certificates` and
-  `security-controls` back 1.0; their cards borrow pictures (`PHOTO_ALIAS`) until they get their own.
+  `security-controls` back 1.0.
 - PATCH//AGENCY: its own nav tab and hub (`#agency`, `VIEWS.agency` in 07-labs: badge, time clock, rota). Two shifts:
   shift-01 (Pellow & Finch: VPN spray, new sudo account) and shift-02 (Fernhollow Vets: MFA fatigue, hidden inbox rule,
   lookalike-supplier bank change; mailbox sources `{ kind: "email", emails }` opened with `A.openEmail` and shown with MAIL).
@@ -103,7 +103,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - Inter-VLAN routing lab (`#lab-intervlan`, same `vlan.js` with `lab.routers` and a `lab.start` state; tests
   `tests/intervlan.test.mjs`): a Cisco 2911 (IOS 15) router on a stick, `show ip route`/`show access-lists`, named extended
   ACLs (ip/icmp, inbound) in the model (`topo.acls`, `aclCheck`; replies are filtered too). Blocked pings time out (as with
-  `no ip unreachables`, said in its simplification). Its card uses a drawn scene until it gets a picture.
+  `no ip unreachables`, said in its simplification).
 - Every lesson, lab, mission and shift must be mapped to at least one exam objective (tested); maps can link shifts
   (`agency`) and tools (`subnet-calc`, `headers-check`, `log-search`, `cvss-decode`). Keep gap notes honest when coverage changes.
 - Feedback: public GitHub issue form (`.github/ISSUE_TEMPLATE/feedback.yml`), linked from every done card, the Agency debrief
