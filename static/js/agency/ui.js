@@ -13,7 +13,7 @@ const STATUS_WORDS = { pending: "waiting for a reply", asks: "they asked for a r
 // Ticket numbers: alerts carry their own (ref in the shift file); requests are numbered in the order you raise them.
 const reqNo = (state, ref) => { const i = state.requests.map(r => r.ref).lastIndexOf(ref); return i < 0 ? "" : `REQ-${5301 + i}`; };
 
-export function mount(root, shift, { done = false, onComplete = () => {}, onAgain = null, feedback = "" } = {}) {
+export function mount(root, shift, { done = false, onComplete = () => {}, onAgain = null, feedback = "", shadow = false } = {}) {
   let state, selected = null, source = null;
   const all = A.findings(shift);
   const reduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -372,9 +372,10 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
       ${rep.pending.length ? `<p class="muted">Still on their way at handover: ${rep.pending.map(esc).join("; ")}.</p>` : ""}
       <h3 class="eyebrow">Handover notes</h3>
       <div class="ag-notes"><div><b>Yours</b><p>${rep.note ? esc(rep.note) : '<span class="muted">(none)</span>'}</p></div><div><b>A model handover</b><p>${esc(rep.modelNote)}</p></div></div>
-      <div class="row"><button class="btn brand" type="button" id="ag-again">Work the shift again</button>${shift.next ? `<a class="btn ghost" href="${esc(shift.next.href)}">${esc(shift.next.label)}</a>` : ""}</div>
+      <div class="row"><button class="btn brand" type="button" id="ag-again">Work the shift again</button><button class="btn ghost" type="button" id="ag-watch">Watch ${esc(leadName)} work it</button>${shift.next ? `<a class="btn ghost" href="${esc(shift.next.href)}">${esc(shift.next.label)}</a>` : ""}</div>
       ${feedback ? `<p class="muted">This is a pilot. <a href="${esc(feedback)}" target="_blank" rel="noopener">Tell us how the shift went ↗</a> (a public GitHub form; needs a free account).</p>` : ""}`;
     $("ag-again").addEventListener("click", () => (onAgain ? onAgain() : mount(root, shift, { done: true, onComplete })));
+    $("ag-watch").addEventListener("click", () => (onAgain ? onAgain({ shadow: true }) : mount(root, shift, { done: true, onComplete, shadow: true })));
     $("ag-d-h").focus();
     onComplete(rep);
   }
@@ -492,6 +493,8 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     };
     box.hidden = false; draw(); $("ag-sh-h").setAttribute("tabindex", "-1"); $("ag-sh-h").focus();
   }
+  // From the shift report: straight to shadowing, without clocking in again.
+  if (shadow) { $("ag-in").hidden = true; startShadow(); }
   // The page uses inProgress to warn before leaving mid-shift (the shift is short; there is no mid-shift save).
   return { get state() { return state; }, get inProgress() { return !!state && !state.complete && state.clock > 0; } };
 }

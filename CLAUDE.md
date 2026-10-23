@@ -63,6 +63,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   Shadow (third option on the client file): `A.shadow(shift)` plays the shift's own content through the rules (guided searches
   narrated with `guide.hints`, emails with findings, `answer.contain` requests with a finding attached when needed, model
   closes, model handover) into steps the page shows with Back/Next, then "Your turn". Tested to be a perfect shift; not saved.
+  Also offered from the shift report ("Watch <lead> work it", `mount(..., { shadow: true })` skips clocking in) and named on the hub.
 - Emails anywhere on the site use `static/js/mail.js` (`MAIL.card`/`MAIL.wire`; inlined into the page like hw.js): a mail
   app look, links that reveal where they go, Details/Original views from raw headers, clues pinned with `{ at, text }`.
 - Tickets and staff messages anywhere on the site use `static/js/desk.js` (`DESK.ticket`/`DESK.message`/`DESK.channel`; inlined

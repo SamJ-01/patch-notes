@@ -290,7 +290,7 @@ VIEWS.agency = () => {
         <h2 id="ag-next-h">${esc(next.title)}</h2>
         <p>${esc(next.card || next.summary)}</p>
         <a class="btn brand ag-clockin" href="#agency-${esc(next.id)}">Clock in</a>
-        <p class="muted">About ${next.minutes} minutes. The clock only moves when you act, so take your time reading.</p>
+        <p class="muted">About ${next.minutes} minutes. The clock only moves when you act, so take your time reading. New to this? Choose Shadow on the client file to watch your lead work it first.</p>
       </section>
     </div>
     <section class="panel ag-pinned" aria-labelledby="ag-pin-h"><h2 id="ag-pin-h">Pinned by your lead</h2>
@@ -302,6 +302,7 @@ VIEWS.agency = () => {
     <section class="panel"><h2>How a shift works</h2>
       <ol class="ag-steps">
         <li><b>Clock in</b><span>Tap your badge. Your shift lead briefs you and hands you the client file.</span></li>
+        <li><b>Choose how to work</b><span>Shadow (watch your lead do it, step by step), Guided (hints as you go) or On your own.</span></li>
         <li><b>Work the queue</b><span>Open each alert and search the logs behind it. Most are noise; some aren't.</span></li>
         <li><b>Ask other teams</b><span>You can't fix everything yourself. Ask, give a reason, and wait for replies.</span></li>
         <li><b>Hand over and clock out</b><span>Close every alert with evidence, leave notes for the next shift, and get your report.</span></li></ol>
@@ -310,14 +311,14 @@ VIEWS.agency = () => {
 };
 // A PATCH//AGENCY shift. Leaving mid-shift restarts it, so route() asks first (agencyShift.inProgress).
 let agencyShift = null;
-function agencyView(id) {
+function agencyView(id, { shadow = false } = {}) {
   const sh = SHIFT(id); if (!sh) return VIEWS.missions();
   main.innerHTML = `<div class="view" id="agency-root"><div class="empty">Loading the shift…</div></div>`;
   import("./js/agency/ui.js").then(ui => {
     if (parseRoute().path !== "agency/" + id) return;
     agencyShift = ui.mount($("agency-root"), sh, {
-      done: !!(P.agency || {})[id],
-      onAgain: () => agencyView(id),
+      done: !!(P.agency || {})[id], shadow,
+      onAgain: opts => agencyView(id, opts),
       feedback: feedbackHref("Agency " + sh.title),
       onComplete: rep => {
         P.agency = P.agency || {};
