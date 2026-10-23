@@ -1151,6 +1151,9 @@ a.loop-node:hover { border-color: var(--brand); }
 .loop-node.done .loop-dot { background: var(--good-tint); color: var(--good); border-color: var(--good); }
 .loop-node.part .loop-dot { background: rgba(var(--sun-rgb), 0.12); color: var(--sun); border-color: var(--sun); }
 .loop-node.here .loop-dot { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+.loop-node.none { box-shadow: none; background: transparent; border-style: dashed; color: var(--muted); }
+.loop-node.none .loop-dot { background: transparent; border-style: dashed; }
+.to-top { justify-self: start; }
 .loop-lbl { display: grid; line-height: 1.2; min-width: 0; }
 .loop-lbl b { font: 600 0.9rem var(--font-display); }
 .loop-lbl span { font: 0.72rem var(--font-mono); color: var(--muted); white-space: nowrap; }
@@ -1963,3 +1966,4 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .tag.ev-seen { color: var(--good); border-color: rgba(var(--good-rgb), 0.5); }
 /* A plain notice above a section, such as CVE data that came from an earlier update. */
 .notice { margin: 0; padding: 10px 14px; border: 1px solid rgba(var(--sun-rgb), 0.5); border-left-width: 4px; border-radius: var(--radius-sm); background: var(--surface); font-size: 0.9rem; }
+@media (max-width: 560px) { .loop-node.none .loop-lbl span { display: block; } }

@@ -91,18 +91,20 @@ function recordAnswer(q, right) {
   right ? s.r++ : s.w++; s.last = right ? 1 : 0; saveP();
 }
 const MASTERY_LABEL = { new: ["Not tried", "muted"], started: ["Started", "sun"], weak: ["Revise", "bad"], strong: ["All correct", "good"] };
-function startPractice(c, mode, questions, title) {
+function startPractice(c, mode, questions, title, lesson = null) {
   import("./js/exam.js").then(ex => {
     if (parseRoute().path !== "exams/" + c.id) return;
+    proveTopic = lesson;
     const names = Object.fromEntries(certObjectives(c).map(o => [o.id, o.title]));
     main.innerHTML = `<div class="view"><article class="article lesson"><a class="link-btn" href="#cert-${esc(c.id)}">← ${esc(c.name)} objectives</a><h1 class="sr-only">${esc(c.name)} practice: ${esc(title)}</h1><section class="panel wide ex" id="ex-root"></section></article></div>`;
     window.scrollTo(0, 0);
     // Practice is drawn under the cert's own hash, so following the link wouldn't change it (no hashchange).
-    main.querySelector(".lesson > .link-btn").addEventListener("click", e => { e.preventDefault(); certView(c.id); window.scrollTo(0, 0); });
+    main.querySelector(".lesson > .link-btn").addEventListener("click", e => { e.preventDefault(); certView(c.id); drawTrail(); window.scrollTo(0, 0); });
+    if (lesson) { topicTop(main.querySelector(".lesson"), lesson, "prove"); drawTrail(); }
     ex.mount($("ex-root"), { title, mode, questions: mode === "mock" ? ex.buildMock(c.questions, c.domains) : questions,
       objectiveName: id => names[id] || id, onAnswer: recordAnswer,
       onFinish: r => { if (r.mode === "mock") { (P.mocks[c.id] || (P.mocks[c.id] = [])).push({ d: todayStr(), score: r.score, total: r.total }); P.mocks[c.id] = P.mocks[c.id].slice(-20); saveP(); award(20, "Mock exam completed"); celebrate("Mock exam done", `${r.score} of ${r.total} correct`); } },
-      onExit: () => { certView(c.id); window.scrollTo(0, 0); } });
+      onExit: () => { certView(c.id); drawTrail(); window.scrollTo(0, 0); } });
   }).catch(() => toast("Couldn't load the practice questions"));
 }
 // "Am I ready?": readiness per domain from practice and question results (logic in exam.js, tested there).
@@ -192,12 +194,13 @@ function certView(id) {
   if (pendingProve && pendingProve.certId === c.id) {
     const pp = pendingProve; pendingProve = null;
     const qs = c.questions.filter(q => pp.objIds.includes(q.objective));
-    if (qs.length) startPractice(c, "drill", qs, pp.title);
+    if (qs.length) startPractice(c, "drill", qs, pp.title, pp.lesson || null);
   }
 }
 
 /* THE LEARNING LOOP: one topic, four stages — Understand (lesson) → Experiment (lab) → Diagnose (mission) → Prove it
-   (the mapped exam-objective questions). Only the stages that exist for a topic are shown, so the arc is honest. */
+   (the mapped exam-objective questions). All four always show, in the same places, so every topic looks the same; a stage
+   a topic doesn't have yet is shown greyed out ("None yet") rather than hidden, so the arc stays honest. */
 let pendingProve = null;  // set by a "Prove it" click, consumed by certView to auto-start the objective drill
 // The exam questions that prove a lesson's topic: the first cert whose mapped objectives for this lesson have questions.
 function lessonProveTargets(id) {
@@ -228,22 +231,44 @@ function topicStages(lessonId) {
   const prove = lessonProveTargets(lessonId);
   if (prove) { const m = proveMastery(prove);
     stages.push({ key: "prove", status: m.level === "strong" ? "done" : m.answered ? "part" : "open", href: "#cert-" + prove.cert.id,
-      prove: { certId: prove.cert.id, objIds: prove.objIds, title: `${l.title}: prove it` }, count: `${m.total} Q` }); }
-  return stages;
+      prove: { certId: prove.cert.id, objIds: prove.objIds, title: `${l.title}: prove it`, lesson: lessonId }, count: `${m.total} Q` }); }
+  return Object.keys(LOOP_META).map(key => stages.find(s => s.key === key) || { key, status: "none" });
 }
 // The horizontal stage strip. `current` is the stage the learner is on now (not a link).
 function loopStrip(lessonId, current) {
-  const stages = topicStages(lessonId); if (stages.length < 2) return "";
+  const stages = topicStages(lessonId); if (!stages.length) return "";
   // No numbers: a route's stops are numbered, and these are steps within one topic, so they mustn't look like stops.
   const mark = s => (s.status === "done" ? '<span aria-hidden="true">✓</span><span class="sr-only">(done)</span>' : "");
   const node = s => { const [label, sub] = LOOP_META[s.key], here = s.key === current;
-    const inner = `<span class="loop-dot">${mark(s)}</span><span class="loop-lbl"><b>${label}</b><span>${s.count || sub}</span></span>`;
-    return here ? `<span class="loop-node ${s.status} here" aria-current="step">${inner}</span>`
+    const inner = `<span class="loop-dot">${mark(s)}</span><span class="loop-lbl"><b>${label}</b><span>${s.status === "none" ? "none yet" : s.count || sub}</span></span>`;
+    if (s.status === "none") return `<span class="loop-node none">${inner}</span>`;
+    return here ? `<span class="loop-node ${s.status} here" aria-current="step">${inner}<span class="sr-only">(you're here)</span></span>`
       : `<a class="loop-node ${s.status}" href="${s.href}"${s.prove ? ` data-prove='${esc(JSON.stringify(s.prove))}'` : ""}>${inner}</a>`; };
   const onRoute = trailStop(trailSteps(), "#lesson-" + lessonId);
-  return `<div class="loopwrap"><p class="eyebrow loop-eyebrow">${onRoute ? "Go deeper on this topic (optional)" : "In this topic"}</p>
+  return `<div class="loopwrap"><p class="eyebrow loop-eyebrow">${onRoute ? "Go deeper on this topic (optional)" : "This topic, step by step"}</p>
     <nav class="looptrack" aria-label="This topic's steps">${stages.map(node).join('<span class="loop-arr" aria-hidden="true">→</span>')}</nav></div>`;
 }
+// The same strip at the top of a lab, mission or "Prove it" page, under its title, with that page's stage lit.
+function topicTop(root, lessonId, stage) {
+  const h = root && LESSON[lessonId] && root.querySelector("h1"); if (!h) return;
+  (h.closest(".view-head, .stack") || h).insertAdjacentHTML("afterend", loopStrip(lessonId, stage));
+}
+// The topic a page belongs to: a lesson, a lab or mission of that lesson, or its "Prove it" questions (proveTopic,
+// set while they're open on the cert page). drawTrail uses it to keep you at your stop while you go deeper.
+let proveTopic = null;
+function topicOf(hash, here = true) {
+  const [, kind, id] = /^#(lesson|lab|mission|cert)-(.+)$/.exec(hash) || [];
+  if (kind === "lesson") return id;
+  if (kind === "lab") return LAB[id]?.lesson || null;
+  if (kind === "mission") return MISSION(id)?.lesson || null;
+  return here && kind === "cert" && $("ex-root") ? proveTopic : null;
+}
+// Back up to the steps: from the end of a page you can go deeper on the topic or take the route's next stop.
+const toTopButton = () => `<button type="button" class="btn ghost to-top" data-to-top>↑ Back to the top: go deeper or move on</button>`;
+document.addEventListener("click", e => { if (!e.target.closest("[data-to-top]")) return;
+  const strip = main.querySelector(".loopwrap") || main;
+  window.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  strip.querySelector("a.loop-node, .loop-node")?.focus?.({ preventScroll: true }); });
 
 // What to do after finishing something: the next unfinished step of a learning path that includes it
 // (paths already in progress first), otherwise practice for a lesson or the lesson behind a lab.
@@ -269,7 +294,7 @@ function nextStep(type, id) {
     // Coming from a lab or mission with the theory still unread: send there first.
     if (type !== "lesson" && !P.done[lessonId]) return { label: l.title, href: "#lesson-" + lessonId, kind: "lesson", why: "Understand: check you've got the theory" };
     const curKey = type === "lesson" ? "understand" : type === "lab" ? "experiment" : "diagnose";
-    const nx = topicStages(lessonId).find(s => s.status !== "done" && s.key !== curKey);
+    const nx = topicStages(lessonId).find(s => s.status !== "done" && s.status !== "none" && s.key !== curKey);
     if (nx) { const step = loopNext(nx); if (step) return step; }
     if (type === "lesson") {  // whole loop done (or understand-only topic): next lesson in the track
       const track = DATA.lessons.filter(x => x.track === l.track);
@@ -300,10 +325,17 @@ function trailStop(steps, hash) {
   return i < 0 ? null : { i, prev: steps[i - 1] || null, next: steps[i + 1] || null };
 }
 function drawTrail() {
-  const bar = $("trail"), p = trailPath(), steps = trailSteps(), at = trailStop(steps, location.hash || "#today");
+  const bar = $("trail"), p = trailPath(), steps = trailSteps(), h = location.hash || "#today";
   if (!bar) return;
-  // Off the route on a lesson, lab or mission (a topic's extras, say): a way back to the last stop you were on.
-  const h = location.hash || "#today", detail = /^#(lesson|lab|mission|agency)-/.test(h);
+  // Going deeper on a stop's topic (its lab, mission or questions) still counts as being at that stop, so the bar keeps
+  // its place and its Next stop rather than calling it a side trip.
+  // With several stops on one topic, the one you came from most recently.
+  const direct = trailStop(steps, h), topic = !direct && topicOf(h);
+  const ofTopic = topic ? steps.filter(st => topicOf(st.href, false) === topic).map(st => st.href) : [];
+  const from = [...crumbs].reverse().find(c => ofTopic.includes(c)) || ofTopic[0];
+  const at = direct || (from ? trailStop(steps, from) : null), deeper = !direct && !!at;
+  // Off the route on a lesson, lab or mission (another topic's extras, say): a way back to the last stop you were on.
+  const detail = /^#(lesson|lab|mission|agency)-/.test(h);
   const last = !at && detail && [...crumbs].reverse().map(c => trailStop(steps, c)).find(Boolean);
   if (!at && !last) { bar.hidden = true; bar.innerHTML = ""; return; }
   const name = p.title.replace(/^Path to /, ""), stop = st => `${st.label} (${KIND_WORD[st.kind] || st.kind})`;
@@ -318,7 +350,7 @@ function drawTrail() {
     return;
   }
   bar.innerHTML = `<div class="trail-in">
-    <a class="trail-name" href="#path-${esc(p.id)}"><span class="eyebrow">Route</span><b>${esc(name)}</b></a>
+    <a class="trail-name" href="#path-${esc(p.id)}"><span class="eyebrow">Route${deeper ? " · going deeper" : ""}</span><b>${esc(name)}</b></a>
     <span class="trail-pos mono">Stop ${at.i + 1} of ${steps.length}</span>
     <ol class="trail-dots" aria-hidden="true">${steps.map((st, k) => `<li class="${k === at.i ? "here" : st.done ? "done" : ""}"></li>`).join("")}</ol>
     <span class="trail-nav">${at.prev ? `<a class="btn ghost" href="${at.prev.href}" aria-label="${esc("Previous stop: " + stop(at.prev))}">‹ Prev</a>` : ""}${at.next
@@ -352,7 +384,7 @@ function showDoneCard(type, item, title) {
   const strip = ls ? loopStrip(item.lesson, type === "lab" ? "experiment" : "diagnose") : "";
   root.insertAdjacentHTML("beforeend", `<section class="panel next-step" id="done-card" tabindex="-1"><div class="eyebrow">${esc(title)}</div>
     <h2>${esc(item.title)}</h2><p class="muted" style="margin:0">${esc(item.skill || item.summary)}</p>${strip}
-    <div class="row">${n ? `<a class="btn brand" href="${n.href}"${n.prove ? ` data-prove='${esc(JSON.stringify(n.prove))}'` : ""}>Next: ${esc(n.label)} ›</a>` : ""}${ls && (!n || n.href !== "#lesson-" + ls.id) ? `<a class="btn ghost" href="#lesson-${esc(ls.id)}">Revisit the lesson: ${esc(ls.title)}</a>` : ""}<a class="link-btn" href="#missions">All missions and labs</a></div>${feedbackLine(item.title)}</section>`);
+    <div class="row">${n ? `<a class="btn brand" href="${n.href}"${n.prove ? ` data-prove='${esc(JSON.stringify(n.prove))}'` : ""}>Next: ${esc(n.label)} ›</a>` : ""}${ls && (!n || n.href !== "#lesson-" + ls.id) ? `<a class="btn ghost" href="#lesson-${esc(ls.id)}">Revisit the lesson: ${esc(ls.title)}</a>` : ""}<a class="link-btn" href="#missions">All missions and labs</a></div>${ls ? toTopButton() : ""}${feedbackLine(item.title)}</section>`);
   setTimeout(() => { const c = root.querySelector("#done-card"); c?.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); c?.focus({ preventScroll: true }); }, 400);
 }
 
@@ -385,6 +417,7 @@ function lessonView(id) {
     </section>
     <section class="panel" id="lcheck"><div class="panel-title"><h2>Check yourself</h2><span class="eyebrow" id="lcheck-n">${P.done[id] ? '<span style="color:var(--good)">Completed</span>' : `${l.checks.length} questions · +25 XP`}</span></div><div class="stack" id="lcheck-body"></div></section>
     <div id="lnext">${nextStepCard("lesson", id)}</div>
+    ${toTopButton()}
     ${related.length ? `<section class="panel wide"><h2>In the news this week</h2><ul class="news-lines">${related.slice(0, 3).map(n => `<li><a href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.title)} ↗</a><span class="muted">${esc(n.source)} · ${ago(n.date)}</span></li>`).join("")}</ul></section>` : ""}
   </article></div>`;
   if (l.diagram) import("./js/flow.js").then(f => { if (parseRoute().path === "learn/" + id && $("lflow")) f.mount($("lflow"), l.diagram); })

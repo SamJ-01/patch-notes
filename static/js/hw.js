@@ -63,12 +63,13 @@ export const HW = {
     <path class="hw-body hw-side" d="M-19 11v5a19 4.8 0 0 0 38 0v-5"/><ellipse class="hw-body hw-top" cx="0" cy="11" rx="19" ry="4.8"/><circle class="hw-led" cx="0" cy="11" r="1.6"/>`,
   cloud: `<path class="hw-body hw-cloud" d="M-17 16a12 12 0 0 1-2-23.8a15 15 0 0 1 28.5-5.2a11.5 11.5 0 0 1 11 29z"/>
     <path class="hw-line hw-globe" d="M-6 6a7 7 0 1 0 14 0a7 7 0 1 0-14 0M-6 6h14M1-1c-3 4-3 10 0 14c3-4 3-10 0-14"/>`,
-  // The attacker: a hooded figure behind a laptop, face in shadow. We see the back of the lid (a logo, no keyboard),
-  // its thickness going back towards them like every other device's depth, so the laptop faces them.
+  // The attacker: a hooded figure behind a laptop, face in shadow. We see the back of the open lid, flat on (a logo, no
+  // keyboard), with the base as a thin edge on the desk: no depth, which read as a thick box.
   attacker: `<path class="hw-body hw-threat" d="M-27 20.5c0-10 7-15 15-17h24c8 2 15 7 15 17z"/>
     <path class="hw-body hw-threat" d="M0-22.5c-10 0-16 8-16 18 0 5 2 9 4 11h24c2-2 4-6 4-11 0-10-6-18-16-18z"/>
     <path class="hw-face" d="M0-14.5c-6 0-9 5-9 10 0 4 3 7 9 7s9-3 9-7c0-5-3-10-9-10z"/><path class="hw-glint" d="M-5-3.5h3.5M1.5-3.5h3.5"/>
-    ${hwSlab(-17, 3, 32, 18, 2, 2.5)}<circle class="hw-led" cx="-1" cy="12" r="1.8"/>`,
+    <rect class="hw-body" x="-16" y="3" width="32" height="18" rx="2"/><rect class="hw-body" x="-19.5" y="20" width="39" height="2.2" rx="1.1"/>
+    <circle class="hw-led" cx="0" cy="11.5" r="1.8"/>`,
 };
 
 export const HW_INFO = {

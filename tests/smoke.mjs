@@ -88,13 +88,20 @@ await journey("shadow shift-01", async () => {
   await page.close();
 });
 
-// 4. "Learn the basics" puts you on a route: the bar shows the stop, and Next stop moves along it.
+// 4. "Learn the basics" puts you on a route: the bar shows the stop, going deeper keeps it, and Next stop moves along it.
 await journey("route", async () => {
   const page = await open("", 390, "dark");
   await page.click(".start-card >> nth=0");
   await page.waitForTimeout(400);
   const bar = async () => page.evaluate(() => { const t = document.getElementById("trail"); return t && !t.hidden ? t.innerText.replace(/\s+/g, " ") : ""; });
   if (!/Stop 1 of \d+/.test(await bar())) problems.push(`route: no route bar on the first stop (${await bar() || "hidden"})`);
+  // Going deeper on the stop's topic (its next stage) keeps you at that stop, not on a side trip.
+  if (await page.evaluate(() => { const n = document.querySelector("main .loopwrap a.loop-node"); if (n) n.click(); return !!n; })) {
+    await page.waitForTimeout(800);
+    if (!/going deeper.*Stop 1 of \d+/i.test(await bar())) problems.push(`route: going deeper lost the stop (${await bar() || "hidden"})`);
+    if (!(await page.$("main .loop-node.here"))) problems.push("route: the topic steps don't show where you are");
+    await page.goBack(); await page.waitForTimeout(400);
+  }
   await page.click("#trail .trail-nav .btn.brand");
   await page.waitForTimeout(300);
   if (!/Stop 2 of \d+/.test(await bar())) problems.push(`route: Next stop didn't reach stop 2 (${await bar() || "hidden"})`);

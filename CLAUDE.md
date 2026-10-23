@@ -122,7 +122,9 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - Navigation: a learning path you start (home route map, path page, "Learn the basics": anything inside `[data-trail]`) is
   remembered for the visit (sessionStorage `pn-trail`); `drawTrail()` shows a route bar above each stop (`#trail`, Stop n of N,
   Prev/Next stop) or "Back to stop n" on a side trip, and `nextStep` follows that route first. Topic steps (`loopStrip`) are
-  unnumbered so they don't look like route stops. `crumbs` (sessionStorage `pn-crumbs`) turn "← Section" links into
+  unnumbered, always show all four stages (missing ones greyed "none yet") and sit under the title of the lesson, lab,
+  mission and "Prove it" drill with the current one lit (`topicTop`); going deeper on a stop's topic keeps the bar at that
+  stop (`topicOf`, "going deeper"), and pages end with "Back to the top" (`toTopButton`). `crumbs` (sessionStorage `pn-crumbs`) turn "← Section" links into
   "← the page you came from" (`relabelBack`, watches `main`). Tested: `trailStop`, `noteCrumb`.
 - Exam routes: `paths.json` entries with `exam` (network-plus 16 stops, security-plus 12, pentest-plus 10), linked from each cert
   page ("Follow the … route"); tested: one per exam, and every stop is mapped to that exam's objectives.
