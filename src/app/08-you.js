@@ -72,6 +72,7 @@ VIEWS.progress = () => {
       <li><span></span><span>Correct quiz answer / spotted phish</span><b>+10 / +15</b></li><li><span></span><span>Set up your stack</span><b>+10</b></li><li><span></span><span>New glossary term or story explanation</span><b>+2</b></li></ul></details>
     <section class="panel"><h2>Keep your progress</h2>
       <p class="muted" style="max-width:70ch">Saved <b>in this browser only</b>, with no account. Some browsers (Safari especially) clear it after a while, so back it up: copy a code or download a file.</p>
+      <p class="notice" role="note">Restoring a progress code or file replaces the progress currently saved in this browser. Download a backup first if you want to keep the current progress too.</p>
       <details class="tbl" id="pcode-box"><summary>Back up / restore with a code</summary>
         <div class="stack" style="gap:10px;margin-top:10px">
           <div class="stack" style="gap:6px"><label class="eyebrow" for="pcode">Your progress code (copy and keep it safe)</label>

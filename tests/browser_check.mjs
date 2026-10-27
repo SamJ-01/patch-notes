@@ -16,7 +16,7 @@ import { extname, join, normalize } from "node:path";
 const require = createRequire(import.meta.url);
 const ROOT = new URL("../site/", import.meta.url).pathname;
 const OUT = process.env.OUT || join(ROOT, "_checks");
-const routes = process.argv.slice(2).length ? process.argv.slice(2) : ["#today", "#learn", "#missions", "#cert-network-plus", "#progress"];
+const routes = process.argv.slice(2).length ? process.argv.slice(2) : ["#today", "#learn", "#missions", "#agency", "#exams", "#progress", "#news", "#cves", "#cert-network-plus", "#lesson-phishing", "#lab-slow-network", "#subnet-calc"];
 const axePath = process.env.AXE || new URL("../node_modules/axe-core/axe.min.js", import.meta.url).pathname;
 const axe = existsSync(axePath) ? readFileSync(axePath, "utf8") : null;
 const progress = process.env.PROGRESS ? readFileSync(process.env.PROGRESS, "utf8") : null;

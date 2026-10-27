@@ -56,6 +56,38 @@ for (const route of ROUTES) for (const [width, theme] of [[1280, "dark"], [390, 
   await page.close();
 }
 
+// Keyboard accessibility: the first Tab reveals the skip link and Enter moves focus to main.
+await journey("skip navigation", async () => {
+  const page = await open("#today", 390, "dark");
+  await page.keyboard.press("Tab");
+  const first = await page.evaluate(() => ({ text: document.activeElement?.textContent?.trim(), href: document.activeElement?.getAttribute("href"), top: document.activeElement?.getBoundingClientRect().top }));
+  if (first.href !== "#main" || !/skip to main content/i.test(first.text || "") || first.top < 0) problems.push("skip navigation: first Tab does not reveal the skip link");
+  await page.keyboard.press("Enter");
+  const target = await page.evaluate(() => ({ id: document.activeElement?.id, tag: document.activeElement?.tagName }));
+  if (target.id !== "main") problems.push(`skip navigation: Enter did not focus main (focused ${target.id || target.tag})`);
+  await page.close();
+});
+
+// Progress survives a full reload, including on the phone-sized layout.
+await journey("progress persistence", async () => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 900 }, reducedMotion: "reduce" });
+  page.setDefaultTimeout(15000);
+  page.on("pageerror", e => problems.push(`progress persistence: page error: ${e.message}`));
+  await page.addInitScript(() => {
+    localStorage.setItem("pn-theme", "dark");
+    localStorage.setItem("patch-notes-progress", JSON.stringify({ xp: 125, done: {}, labs: {}, missions: {}, agency: {} }));
+  });
+  await page.goto(base + "#progress");
+  await page.waitForFunction(() => /uid=intern/i.test(document.querySelector("main h1")?.innerText || ""));
+  const before = await page.locator("main h1").innerText();
+  await page.reload();
+  await page.waitForFunction(() => /uid=intern/i.test(document.querySelector("main h1")?.innerText || ""));
+  const after = await page.locator("main h1").innerText();
+  if (!/uid=intern/i.test(before)) problems.push(`progress persistence: expected intern rank after restore, saw "${before}"`);
+  if (after !== before) problems.push(`progress persistence: rank changed after reload ("${before}" -> "${after}")`);
+  await page.close();
+});
+
 // 2. An evidence lab, answered from its own content, to the end.
 await journey("lab slow-network", async () => {
   const lab = labs.find(l => l.id === "slow-network"), page = await open("#lab-slow-network", 390, "light");

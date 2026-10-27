@@ -96,7 +96,7 @@ function startCards(news, kev) {
   const shift = (DATA.agency || [])[0];
   const card = (href, pic, eyebrow, title, text, cta, trail = "") => `<a class="lcard art-card start-card" href="${href}"${trail ? ` data-trail="${esc(trail)}"` : ""}>${pic}
     <span class="eyebrow">${eyebrow}</span><h3>${title}</h3><p>${text}</p><span class="start-cta">${cta} →</span></a>`;
-  return `<section class="start" aria-labelledby="start-h"><h2 id="start-h">Where do you want to start?</h2><div class="start-grid">
+  return `<section class="start" aria-labelledby="start-h"><h2 id="start-h">Where do you want to start?</h2><p class="muted start-note">No account needed. Your progress stays in this browser; open <a href="#progress">You</a> to back it up or move it to another device.</p><div class="start-grid">
     ${card(esc(basics?.href || "#learn"), cardArt("cia-triad"), "New to security", "Learn the basics", "Short lessons with pictures, then a game. No experience needed.", "Start the basics", basics ? "awareness" : "")}
     ${card("#exams", cardPhoto("img/heads/exams.webp", 494, 247), "Studying for an exam", "Network+, Security+ or PenTest+", "See what to practise for each objective, then take a mock exam.", "Open exam prep")}
     ${shift?.clientImage ? card("#agency", cardPhoto(shift.clientImage.small || shift.clientImage.src, 800, Math.round(800 * shift.clientImage.height / shift.clientImage.width)), "PATCH//AGENCY", "Work a SOC shift", "Clock in at a security operations centre. Watch your shift lead work it first, then take the desk.", "Clock in") : ""}
