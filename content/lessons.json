@@ -1309,6 +1309,7 @@
   "level": "Beginner",
   "minutes": 3,
   "hook": "Knock a site offline by drowning it in traffic.",
+  "explainer": {"kind": "ddos"},
   "what": "A Distributed Denial of Service attack floods a website or network with so much traffic from so many machines that real users can't get through. The traffic usually comes from botnets of hacked computers, routers and cameras. DDoS is used for extortion, activism (hacktivism), or as a distraction during another attack.",
   "example": {
    "title": "Mirai and Dyn",
@@ -2623,6 +2624,7 @@
   "level": "Beginner",
   "minutes": 7,
   "hook": "IPv6, software-defined networks, zero trust and SASE, without the buzzwords.",
+  "explainer": {"kind": "zero-trust"},
   "what": "IPv4 has about 4.3 billion addresses, which ran out; NAT stretched them. IPv6 addresses are 128 bits, written as eight groups of four hex digits, such as 2001:db8:4a1:10::25. Leading zeros can be dropped, and :: replaces one run of all-zero groups. Every IPv6 interface has a link-local address starting fe80, which only works on its own segment, and most get a global address too, often set up automatically with SLAAC. There are so many addresses that NAT isn't needed, though a firewall still decides what gets in. While both versions are in use, devices run dual stack (IPv4 and IPv6 side by side), and tunnelling or NAT64 joins IPv6-only and IPv4-only networks. Software-defined networking (SDN) splits the control plane (deciding where traffic goes) from the data plane (forwarding it), so one controller programs many devices. SD-WAN applies that to links between sites, choosing the best of several internet connections for each application. VXLAN carries layer 2 networks over layer 3, with about 16 million segment IDs instead of 4,094 VLANs. Zero trust drops the idea of a trusted inside network: every request is checked (who, which device, is it healthy) and given the least access needed. SASE delivers networking and security (secure web gateway, cloud access security broker, zero trust network access, firewall) as a cloud service close to the user. Infrastructure as code (IaC) keeps device and cloud settings as version-controlled files, so changes are reviewed and repeatable.",
   "example": {
    "title": "Google's BeyondCorp",
@@ -2871,6 +2873,7 @@
   "level": "Beginner",
   "minutes": 5,
   "hook": "How your browser knows a site is real.",
+  "explainer": {"kind": "cert"},
   "what": "A certificate ties a public key to a name, like shop.example.com. A certificate authority (CA) checks that the requester controls the name, then signs the certificate. Your device trusts a short list of root CAs, built into the operating system or browser. Roots sign intermediate CAs, which sign site certificates, so your browser follows the chain up to a root it already trusts. To get a certificate, a server sends the CA a certificate signing request (CSR) holding its public key; the private key never leaves the server. If that key is stolen, the certificate is revoked: CAs publish revocation lists (CRLs) and can answer single questions over OCSP, though many browsers now get revocation data pushed to them by the browser maker instead. This whole system of CAs, certificates and trust is called PKI.",
   "example": {
    "title": "DigiNotar",

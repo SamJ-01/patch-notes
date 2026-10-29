@@ -7,9 +7,25 @@ import * as A from "../static/js/agency/shift.js";
 import { matches } from "../static/js/missions/engine.js";
 import * as E from "../static/js/missions/engine.js";
 import { MAIL } from "../static/js/mail.js";
+import * as INFRA from "../static/js/agency/infra.js";
 
 const dir = new URL("../content/agency/", import.meta.url);
 const shifts = readdirSync(dir).filter(f => f.endsWith(".json")).map(f => JSON.parse(readFileSync(new URL(f, dir), "utf8")));
+
+test("every shift has a well-formed infrastructure map", () => {
+  for (const sh of shifts) {
+    assert.ok(sh.infra, `${sh.id}: needs an infra map for the client file`);
+    const ids = new Set(sh.infra.nodes.map(n => n.id));
+    assert.ok(sh.infra.nodes.length >= 3 && ids.size === sh.infra.nodes.length, `${sh.id}: needs a few nodes with unique ids`);
+    for (const n of sh.infra.nodes) {
+      assert.ok(n.id && n.label && Array.isArray(n.at) && n.at.length === 2, `${sh.id}: node ${n.id} is missing fields`);
+      assert.ok(INFRA.ICON_NAMES.includes(n.icon), `${sh.id}: node ${n.id} has unknown icon "${n.icon}"`);
+    }
+    for (const [a, b] of sh.infra.links) assert.ok(ids.has(a) && ids.has(b), `${sh.id}: link ${a}->${b} references a missing node`);
+    const out = INFRA.svg(sh.infra);
+    for (const n of sh.infra.nodes) assert.ok(out.includes(n.label), `${sh.id}: ${n.label} is not drawn`);
+  }
+});
 const shift = shifts.find(s => s.id === "shift-01");
 
 // Apply actions in turn, collecting every event.

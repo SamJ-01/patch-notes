@@ -649,6 +649,119 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 @media (max-width: 1180px) { .ag-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr); } .ag-comms { grid-column: 1 / -1; } }
 @media (max-width: 900px) { .ag-grid, .ag-notes { grid-template-columns: 1fr; } .ag-bar { top: 0; } }
 
+/* The shift desk uses more of a wide screen than a normal reading column, so the three panes breathe. */
+.view-wide { max-width: 1460px; }
+
+/* The client file's "what you're watching" infrastructure map (static/js/agency/infra.js). Decorative SVG. */
+.ag-infra { margin-top: 14px; }
+.infra-map { margin: 6px 0 0; }
+.im-svg { width: 100%; height: auto; max-width: 440px; display: block; }
+.im-plate { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+.im-ic { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.im-lbl { fill: var(--ink); font: 700 9px var(--font-mono, ui-monospace, monospace); }
+.im-sub { fill: var(--muted); font: 8px var(--font-body); }
+.im-link { stroke: var(--line); stroke-width: 2; }
+.im-link.watch { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 3 3; opacity: 0.55; }
+.im-llbl { fill: var(--muted); font: 8px var(--font-mono, ui-monospace, monospace); }
+.im-node.bad .im-plate { stroke: rgba(var(--bad-rgb), 0.6); }
+.im-node.bad .im-ic { stroke: var(--bad); }
+.infra-map figcaption { font-size: 0.82rem; margin-top: 6px; }
+
+/* The alert's work is split into two labelled cards: Investigate (logs, findings) and Decide (ask a team, close).
+   They stack on narrow screens and sit side by side on a wide one, so the panel reads as steps, not one long scroll. */
+.ag-worksplit { display: grid; gap: 14px; min-width: 0; }
+.ag-worksplit > .ag-card { display: grid; gap: 12px; align-content: start; min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius); }
+.ag-worksplit > .ag-card > .ag-work:first-child { margin-top: 0; }
+@media (min-width: 1300px) { .ag-worksplit { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; } }
+@media (max-width: 560px) { .ag-worksplit > .ag-card { padding: 0; border: 0; } }
+
+/* "See it at work": an optional, inline explainer on an alert. Opening it never leaves the shift or changes its state. */
+.ag-see { border: 1px solid rgba(var(--sun-rgb), 0.45); border-radius: var(--radius); background: var(--brand-soft); padding: 0 14px; }
+.ag-see > summary { cursor: pointer; font-weight: 600; color: var(--brand); padding: 11px 0; list-style: none; }
+.ag-see > summary::-webkit-details-marker { display: none; }
+.ag-see > summary:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: var(--radius-sm); }
+.ag-see-ic { display: inline-block; transition: transform 0.2s ease; }
+.ag-see[open] > summary .ag-see-ic { transform: rotate(90deg); }
+.ag-see-body { padding-bottom: 14px; }
+
+/* The "See it at work" diagrams themselves (static/js/explainers.js). SVG in currentColor, legible in both themes. */
+.xpl { display: grid; gap: 12px; margin: 0; }
+.xpl-head b { font-size: 1rem; }
+.xpl-toggle { align-items: center; gap: 12px; }
+.xpl-stage { display: grid; gap: 10px; }
+.xpl-svg { width: 100%; height: auto; max-width: 540px; margin: 0 auto; display: block; }
+.xpl-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+.xpl-node .xpl-lbl { fill: var(--muted); font: 600 9px var(--font-mono, ui-monospace, monospace); text-anchor: middle; }
+.xpl-node g path, .xpl-node g circle { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.xpl-node g rect { fill: none; stroke: var(--ink); stroke-width: 1.4; }
+.xpl-link line { stroke: var(--line); stroke-width: 2; }
+.xpl-link .xpl-dot { fill: var(--brand); opacity: 0; }
+.xpl-exit { opacity: 0.5; }
+.xpl-vpn.is-on .xpl-exit { opacity: 1; }
+.xpl-vpn.is-on .xpl-exit rect:first-child { stroke: var(--brand); }
+.xpl-vpn.is-on .xpl-link-a line { stroke: var(--brand); stroke-dasharray: 5 3; }
+.xpl-caption { margin: 0; font-size: 0.92rem; line-height: 1.5; }
+.xpl-caption .mono { color: var(--muted); }
+.xpl-foot { font-size: 0.78rem; }
+@media (prefers-reduced-motion: no-preference) {
+  .xpl-vpn:not(.is-reduced) .xpl-link .xpl-dot { opacity: 1; animation: xpl-travel 1.8s linear infinite; }
+  @keyframes xpl-travel { from { transform: translateX(0); } to { transform: translateX(62px); } }
+}
+
+/* Request/response explainers (IDOR, cloud): a request line, then a card that flips allowed (a leak) to denied. */
+.xpl-req { display: grid; gap: 4px; }
+.xpl-url { font-size: 0.95rem; overflow-wrap: anywhere; }
+.xpl-url b { color: var(--ink); }
+.xpl-resp { display: flex; gap: 10px; align-items: baseline; margin-top: 12px; padding: 11px 13px; border-radius: var(--radius-sm); border: 1px solid var(--line); }
+.xpl-resp .xpl-status { font-weight: 700; white-space: nowrap; }
+.xpl-resp.no { background: var(--bad-tint); border-color: rgba(var(--bad-rgb), 0.5); }
+.xpl-resp.no .xpl-status { color: var(--bad); }
+.xpl-resp.ok { background: var(--good-tint); border-color: rgba(var(--good-rgb), 0.5); }
+.xpl-resp.ok .xpl-status { color: var(--good); }
+
+/* Inbox-rule explainer: a small mailbox; the supplier mail vanishes from the Inbox when the hidden rule is on. */
+.xpl-folder { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; }
+.xpl-maillist { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
+.xpl-mail { display: grid; grid-template-columns: minmax(0, 10ch) minmax(0, 1fr); gap: 10px; padding: 7px 8px; border-radius: var(--radius-sm); background: var(--surface); font-size: 0.9rem; }
+.xpl-mail b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xpl-mail span { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xpl-mail.unread { border-left: 3px solid var(--sun); }
+.xpl-mail.unread b, .xpl-mail.unread span { color: var(--ink); font-weight: 600; }
+@media (max-width: 420px) { .xpl-mail { grid-template-columns: 1fr; gap: 1px; } }
+
+/* Pick-one explainers (password spray / certificate states): option chips + a body that redraws per choice. */
+.xpl-pick { flex-wrap: wrap; gap: 8px; }
+.xpl-opt[aria-pressed="true"] { background: var(--brand-soft); border-color: var(--brand); color: var(--brand); }
+.xpl-shape { display: inline-block; padding: 5px 10px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line); font-size: 0.9rem; }
+.xpl-facts { margin: 12px 0 0; display: grid; gap: 8px; }
+.xpl-facts div { display: grid; grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr); gap: 10px; }
+.xpl-facts dt { font-weight: 600; color: var(--muted); font-size: 0.82rem; }
+.xpl-facts dd { margin: 0; font-size: 0.92rem; }
+@media (max-width: 460px) { .xpl-facts div { grid-template-columns: 1fr; gap: 1px; } }
+
+/* DDoS explainer: a capacity bar that fills with legitimate (green) then flood (red) traffic past a capacity line. */
+.xpl-capwrap { display: grid; gap: 6px; }
+.xpl-cap { position: relative; display: flex; height: 22px; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
+.xpl-seg { height: 100%; transition: width 0.35s ease; }
+.xpl-seg.legit { background: var(--good); }
+.xpl-seg.attack { background: var(--bad); }
+.xpl-cap.over { box-shadow: inset 0 0 0 1px var(--bad); }
+.xpl-capline { position: absolute; inset: 0 0 0 auto; width: 2px; background: var(--ink); opacity: 0.55; }
+.xpl-caplabel { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .xpl-seg { transition: none; } }
+
+/* Attack-chain explainer: a row of numbered stages (click or Back/Next) and a detail card for the current one. */
+.xpl-timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.xpl-step { display: inline-flex; align-items: center; gap: 7px; font: inherit; font-size: 0.82rem; cursor: pointer; text-align: left; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px 4px 4px; }
+.xpl-step-n { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--line); color: var(--ink); font-weight: 700; font-size: 0.74rem; flex: none; }
+.xpl-step[aria-pressed="true"] { border-color: var(--brand); background: var(--brand-soft); color: var(--brand); }
+.xpl-step[aria-pressed="true"] .xpl-step-n { background: var(--brand); color: #04121a; }
+.xpl-step.win .xpl-step-n { background: var(--good); color: #04121a; }
+.xpl-chain-card { border: 1px solid var(--line); border-left: 3px solid var(--brand); border-radius: var(--radius-sm); padding: 11px 13px; display: grid; gap: 4px; }
+.xpl-chain-card b { font-size: 1rem; }
+.xpl-chain-card p { margin: 0; }
+.xpl-chain-card.win { border-left-color: var(--good); }
+
 /* ---------- Illustrated cards ---------- */
 .art-card, .card-art { --cat: var(--brand); }
 .art-card { padding-top: 0; overflow: hidden; border-top: 3px solid var(--cat); }
@@ -789,6 +902,10 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .vlan-lab .term-out { white-space: pre; overflow-wrap: normal; overflow-x: auto; }
 .vl-tabs { justify-content: flex-start; flex-wrap: wrap; gap: 6px; }
 .vl-tabs .chip { padding: 4px 9px; font-size: 0.74rem; }
+.vl-reuse { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 8px 12px; border-top: 1px solid var(--line); }
+.vl-reuse .eyebrow { margin: 0; }
+.vl-reuse select { font: 0.82rem var(--font-mono); background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 4px 6px; max-width: 100%; }
+.vl-reuse-note { font-size: 0.74rem; }
 .vl-diagram .netview { max-height: 460px; margin: 0 auto; }
 .vl-node .plate { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
 .vl-name { font: 600 11px var(--font-mono); fill: var(--ink); }
@@ -886,7 +1003,7 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
   .cwd { display: none; }
   .cmd-btn span { display: none; }
   .statusbar { display: none; }
-  .score-panel { bottom: 8px; }
+  .score-panel { bottom: 8px; grid-template-columns: 1fr; }  /* stack on phones so the CVSS vector gets full width, not one char per line */
   .xp-log li { grid-template-columns: minmax(0, 1fr) auto; }
   .xp-log li .mono { display: none; }
   body.has-status { padding-bottom: 0; }
@@ -1295,6 +1412,14 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .nv-wire.seg7 { stroke: var(--seg7); } .nv-dot.seg7, .nv-swatch.seg7 { fill: var(--seg7); background: var(--seg7); } .nv-plate.seg7 { stroke: var(--seg7); }
 .nv-plate { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
 .nv-pc .nv-plate[class*="seg"] { stroke-width: 3; }
+/* The PC's VLAN colour bar: a solid stripe so devices on the same segment read as one colour at a glance. */
+.nv-stripe, .nv-tint { pointer-events: none; }
+.nv-tint { fill-opacity: 0.12; }
+.nv-tint.seg0 { fill: var(--seg0); } .nv-tint.seg1 { fill: var(--seg1); } .nv-tint.seg2 { fill: var(--seg2); } .nv-tint.seg3 { fill: var(--seg3); }
+.nv-tint.seg4 { fill: var(--seg4); } .nv-tint.seg5 { fill: var(--seg5); } .nv-tint.seg6 { fill: var(--seg6); } .nv-tint.seg7 { fill: var(--seg7); }
+.nv-stripe.seg0 { fill: var(--seg0); } .nv-stripe.seg1 { fill: var(--seg1); } .nv-stripe.seg2 { fill: var(--seg2); } .nv-stripe.seg3 { fill: var(--seg3); }
+.nv-stripe.seg4 { fill: var(--seg4); } .nv-stripe.seg5 { fill: var(--seg5); } .nv-stripe.seg6 { fill: var(--seg6); } .nv-stripe.seg7 { fill: var(--seg7); }
+.nv-dev.dim .nv-stripe { opacity: 0.25; }
 .nv-name { font: 600 12px var(--font-mono); fill: var(--ink); }
 .nv-sub, .nv-port, .nv-tag { font: 10.5px var(--font-mono); fill: var(--muted); }
 .nv-tag { font-weight: 600; fill: var(--ink); paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }

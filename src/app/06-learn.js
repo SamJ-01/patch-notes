@@ -419,6 +419,7 @@ function lessonView(id) {
     ${l.tip ? `<aside class="qtip"><span class="qtip-k">★ Quick tip</span><p>${gloss(l.tip, 3, lseen)}</p></aside>` : ""}
     ${l.diagram ? `<section class="panel wide" id="l-diagram" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">Step through it</span></div><div id="lflow"><div class="empty">Loading the diagram…</div></div></section>` : ""}
     ${l.concept ? `<section class="panel wide" id="l-concept" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">${l.concept.type === "cards" ? "At a glance" : "Select a part"}</span></div><div id="lconcept"><div class="empty">Loading the diagram…</div></div></section>` : ""}
+    ${l.explainer ? `<section class="panel wide" id="l-xpl" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">Try the toggle</span></div><div id="lxpl"><div class="empty">Loading…</div></div></section>` : ""}
     <section class="case" id="l-example" tabindex="-1"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h3>${esc(l.example.title)}</h3><p>${gloss(l.example.text, 4, lseen)}</p>${l.example.source ? `<p class="muted" style="font-size:0.85rem">Source: <a href="${esc(l.example.source.url)}" target="_blank" rel="noopener">${esc(l.example.source.label)} ↗</a></p>` : ""}</section>
     <section id="l-defend" tabindex="-1"><h2>How defenders stop it</h2><ul class="checklist">${l.defend.map(d => `<li>${esc(d)}</li>`).join("")}</ul></section>
     <section class="panel${practice.length > 1 ? " wide" : ""}"><h2>Try it</h2>
@@ -435,6 +436,8 @@ function lessonView(id) {
     .catch(() => { if ($("lflow")) $("lflow").innerHTML = `<div class="empty">Couldn't load the diagram.</div>`; });
   if (l.concept) { const el = $("lconcept"); if (el) el.id = "lconcept-" + id; import("./js/concept.js").then(c => { const t = $("lconcept-" + id); if (parseRoute().path === "learn/" + id && t) c.mount(t, l.concept); })
     .catch(() => { const t = $("lconcept-" + id); if (t) t.innerHTML = `<div class="empty">Couldn't load the diagram.</div>`; }); }
+  if (l.explainer) import("./js/explainers.js").then(x => { if (parseRoute().path === "learn/" + id && $("lxpl")) x.mount($("lxpl"), l.explainer.kind, { ...(l.explainer.opts || {}), head: false }); })
+    .catch(() => { if ($("lxpl")) $("lxpl").innerHTML = `<div class="empty">Couldn't load the explainer.</div>`; });
   lessonChecks(l, id);
 }
 // Questions one at a time. A wrong answer explains why, points back to the section to re-read and asks again

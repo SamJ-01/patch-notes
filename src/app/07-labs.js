@@ -338,7 +338,7 @@ VIEWS.agency = () => {
 let agencyShift = null;
 function agencyView(id, { shadow = false } = {}) {
   const sh = SHIFT(id); if (!sh) return VIEWS.missions();
-  main.innerHTML = `<div class="view" id="agency-root"><div class="empty">Loading the shift…</div></div>`;
+  main.innerHTML = `<div class="view view-wide" id="agency-root"><div class="empty">Loading the shift…</div></div>`;
   import("./js/agency/ui.js").then(ui => {
     if (parseRoute().path !== "agency/" + id) return;
     agencyShift = ui.mount($("agency-root"), sh, {

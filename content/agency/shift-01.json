@@ -16,6 +16,24 @@
  "next": { "href": "#mission-ssh-brute", "label": "Mission: The 3am logins" },
  "clientImage": { "src": "img/agency/pellow-finch-depot.webp", "small": "img/agency/pellow-finch-depot-800.webp", "width": 1536, "height": 538, "alt": "Pellow & Finch's parcel depot: a warehouse with four loading bays, delivery vans and parcels in the yard" },
  "simplification": "Simplified simulation: a real shift has more alerts and far longer logs. The Linux log lines follow Ubuntu 22.04's OpenSSH, sudo, shadow-utils (useradd, usermod, passwd) and nginx formats. The sign-in log is a generic SIEM export written for this shift: real identity providers and VPNs each have their own format. Countries are invented for the story, because documentation addresses have no real location. Department replies are scripted. All people and companies are fictional.",
+ "infra": {
+  "caption": "Lanternfield's SOC watches Pellow & Finch's servers, VPN and sign-ins.",
+  "nodes": [
+   {"id": "net", "label": "Internet", "sub": "incl. attackers", "icon": "globe", "at": [0, 0], "bad": true},
+   {"id": "vpn", "label": "VPN", "sub": "staff remote", "icon": "lock", "at": [1, 0]},
+   {"id": "files01", "label": "files01", "sub": "file server", "icon": "database", "at": [2, 0]},
+   {"id": "web01", "label": "web01", "sub": "web server", "icon": "server", "at": [1, 1]},
+   {"id": "siem", "label": "SIEM", "sub": "the SOC", "icon": "eye", "at": [0, 1]}
+  ],
+  "links": [
+   ["net", "vpn", {"label": "VPN"}],
+   ["vpn", "files01"],
+   ["net", "web01", {"label": "SSH / web"}],
+   ["siem", "web01", {"watch": true}],
+   ["siem", "vpn", {"watch": true}],
+   ["siem", "files01", {"watch": true}]
+  ]
+ },
  "costs": {
   "search": 1,
   "request": 2,
@@ -287,7 +305,7 @@
     "at": 0
    },
    "detection": "web01: 9 failed SSH logins from 203.0.113.9 in 6 minutes (threshold: 5).",
-   "guide": {"hints": ["Start in web01's auth.log. The question isn't whether someone tried, it's whether anything got in. Search for the address in the alert.", "Every attempt from 203.0.113.9 says 'Failed password'. Now search 'Accepted' to see who did log in, and from where.", "Only tbrooks's key from the office got in. Internet-facing SSH gets guessed at all the time: suspicious, but no harm done. Low severity, close it, no request needed."], "searches": [["web01-auth", "203.0.113.9"], ["web01-auth", "Accepted"], ["web01-auth", "Invalid user"]]},
+   "guide": {"hints": ["Start in web01's auth.log. The question isn't whether someone tried, it's whether anything got in. Search for the address in the alert.", "Every attempt from 203.0.113.9 says 'Failed password'. Now search 'Accepted' to see who did log in, and from where.", "The only 'Accepted' logins are tbrooks, a Pellow & Finch admin, using a key from the office (198.51.100.23). Every attempt from the alert's address failed, so nothing got in. A real attempt (true positive) but no harm: low severity, close it, no request needed."], "searches": [["web01-auth", "203.0.113.9"], ["web01-auth", "Accepted"], ["web01-auth", "Invalid user"]]},
    "sources": [
     "web01-auth",
     "notes"
@@ -303,7 +321,7 @@
      "why": "Failures are the whole story here: the guesses didn't work."
     },
     {
-     "findings": ["web-accepted"], "text": "auth.log: the only accepted logins were tbrooks's key from the office",
+     "findings": ["web-accepted"], "text": "auth.log: the only successful ('Accepted') logins were tbrooks, a staff admin, using an SSH key from the office",
      "supports": true,
      "required": true,
      "why": "This is what rules out harm: had a guess worked, there would be an 'Accepted password' line from 203.0.113.9."
@@ -349,6 +367,7 @@
     "at": 0
    },
    "detection": "j.patel@pellowfinch.example signed in from GB (06:31) and then NL (06:48): 17 minutes apart, about 360 km.",
+   "seeItAtWork": {"kind": "vpn", "label": "See how a VPN changes your sign-in location"},
    "guide": {"hints": ["Impossible travel compares where public addresses are. Before suspecting j.patel, check the client notes for anything that changes where people appear to be.", "Look at CHG-2291 in the notes, then j.patel's sign-ins: did a VPN connection come just before the 'NL' one? Do others on the VPN show the same address?", "The VPN's internet exit moved to Amsterdam, and j.patel connected to the VPN at 06:44. It's legitimate: a false alarm. No action, and certainly no locking the account."], "searches": [["notes", "CHG-2291"], ["signin", "j.patel"], ["signin", "198.51.100.10"]]},
    "sources": [
     "signin",
@@ -555,7 +574,8 @@
     "closed": 2,
     "at": 30
    },
-   "detection": "VPN: 13 accounts tried from 203.0.113.77 between 05:41 and 05:47, 12 failed (raised by the hourly correlation rule).",
+   "detection": "VPN: password spray pattern, 13 accounts tried from 203.0.113.77 between 05:41 and 05:47, 12 failed (raised by the hourly correlation rule).",
+   "seeItAtWork": {"kind": "spray", "label": "See how a spray differs from brute force and credential stuffing"},
    "guide": {"hints": ["A spray tries one password on many accounts. In the sign-in log, search the address and check two things: how many accounts, and did any succeed?", "m.okafor's sign-in from 203.0.113.77 at 05:47 succeeded, without MFA. Check the client notes for why that was still allowed, and look for what that session did next.", "One account fell, and its VPN session made the files01 change: link this to the sudo alert. Block 203.0.113.77 (not the whole range), reset m.okafor and tell the client."], "searches": [["signin", "203.0.113.77"], ["notes", "CHG-2240"], ["signin", "m.okafor"]]},
    "sources": [
     "signin",

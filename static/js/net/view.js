@@ -42,6 +42,9 @@ function deviceSvg(topo, id, [x, y], seg, opts) {
   const dim = opts.focus != null && !mine.includes(opts.focus) ? " dim" : "";
   const sel = opts.selected === id ? " sel" : "";
   const ring = d.kind === "pc" && mine.length ? ` ${segClass(mine[0])}` : "";
+  // A PC wears a solid colour bar in its segment's colour, so PCs on the same VLAN visibly match at a glance
+  // (the outline alone was too subtle). Switches and routers carry a dot per segment they're in instead.
+  const stripe = d.kind === "pc" && mine.length ? `<rect class="nv-tint ${segClass(mine[0])}" x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="9"/><rect class="nv-stripe ${segClass(mine[0])}" x="${-w / 2}" y="${-h / 2}" width="${w}" height="7" rx="9"/>` : "";
   const dots = d.kind !== "pc" ? mine.map((s, i) => `<circle class="nv-dot ${segClass(s)}" cx="${-w / 2 + 9 + i * 9}" cy="${-h / 2 - 1}" r="4"/>`).join("") : "";
   const sub = d.kind === "pc" ? (d.ip || "no IP") : "";  // router and switch details are in the legend
   const r = opts.reach?.[id];
@@ -49,7 +52,7 @@ function deviceSvg(topo, id, [x, y], seg, opts) {
   const scale = d.kind === "switch" ? 0.95 : d.kind === "router" ? 0.7 : 0.6;
   const a11y = opts.interactive ? ` tabindex="0" role="button" aria-label="${esc(describe(topo, id, seg, r))}" aria-pressed="${opts.selected === id}"` : "";
   return `<g class="nv-dev nv-${d.kind}${dim}${sel}" data-node="${esc(id)}" transform="translate(${x},${y})"${a11y}>
-    <rect class="nv-plate${ring}" x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="9"/>${dots}
+    <rect class="nv-plate${ring}" x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="9"/>${stripe}${dots}
     <g transform="translate(0,${d.kind === "pc" ? -4 : 2}) scale(${scale})">${HW[GLYPH[d.kind]]}</g>
     <text class="nv-name" y="${-h / 2 - 8}" text-anchor="middle">${esc(id)}</text>
     ${sub ? `<text class="nv-sub" y="${h / 2 + 13}" text-anchor="middle">${esc(sub)}</text>` : ""}${badge}</g>`;

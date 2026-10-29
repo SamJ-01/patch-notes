@@ -70,6 +70,29 @@ test("a fresh switch: user mode, every port in VLAN 1, IOS messages", () => {
   assert.equal(on(net, "S1", "e").out, '% Ambiguous command:  "e"');
 });
 
+test("recipe: records a switch's successful config lines for reuse, not navigation, show or failures", () => {
+  const net = createNet(lab);
+  on(net, "S1", "enable", "configure terminal", "vlan 10", "name Staff", "exit", "show vlan brief");
+  const rec = net.recipe("S1");
+  assert.ok(rec.includes("vlan 10") && rec.includes("name Staff"), "keeps the config lines");
+  assert.ok(!rec.some(l => /^(enable|configure|exit|end|show)\b/i.test(l)), "drops navigation and show");
+  // A line that errors isn't recorded (name is invalid in plain config mode).
+  on(net, "S2", "enable", "configure terminal", "name Nope");
+  assert.ok(!net.recipe("S2").includes("name Nope"), "a failed line is not recorded");
+  // Each line is recorded once, in order.
+  on(net, "S1", "vlan 10");
+  assert.equal(net.recipe("S1").filter(l => l === "vlan 10").length, 1, "no duplicates");
+  // PC commands (ping) are never recorded for reuse.
+  on(net, "PC1", "ping 10.10.10.14");
+  assert.equal(net.recipe("PC1").length, 0);
+  // Abbreviations resolve to their canonical command: an abbreviated show is still dropped, abbreviated config kept.
+  const n2 = createNet(lab);
+  on(n2, "S3", "en", "conf t", "int fa0/11", "sw mode access", "sw acc vlan 10", "sh vl br", "do sh vl br");
+  const r2 = n2.recipe("S3");
+  assert.ok(!r2.some(l => /^(sh|do)\b/i.test(l)), `abbreviated show/do must not be recorded, got ${JSON.stringify(r2)}`);
+  assert.ok(r2.includes("int fa0/11") && r2.includes("sw mode access") && r2.includes("sw acc vlan 10"), "abbreviated config lines are kept");
+});
+
 test("modes: configure, VLAN and interface submodes, exit, end and do", () => {
   const net = createNet(lab);
   on(net, "S1", "enable");

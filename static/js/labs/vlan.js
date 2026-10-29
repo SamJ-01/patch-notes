@@ -220,7 +220,7 @@ export function fromLab(lab) {
 // topology in place, so a diagram drawn from it stays in step. `ran` and `pings` record what was done.
 export function createCli(topo) {
   const cli = {}, ran = [], pings = [];
-  const st = id => (cli[id] ||= { mode: "user", ctx: [], history: [] });
+  const st = id => (cli[id] ||= { mode: "user", ctx: [], history: [], recipe: [] });
   const sw = id => topo.devices[id];
   const kind = id => topo.devices[id]?.kind;
   const prompt = dev => (kind(dev) === "pc" ? "C:\\>" : `${dev}${PROMPT[st(dev).mode]}`);
@@ -304,6 +304,10 @@ export function createCli(topo) {
   function iosLine(s, line) {
     const C = st(s), words = line.trim().split(/\s+/).filter(Boolean);
     if (!words.length) return { out: "" };
+    // A common slip is typing ping at a switch prompt (often in config mode). Point to the PC consoles instead of
+    // a bare caret error, and say how to leave config mode. The switch still doesn't run ping here.
+    if (["ping", "traceroute", "tracert"].includes(words[0].toLowerCase()))
+      return { out: `[Simulator: the switch doesn't run ping here. Pick a PC console above (for example PC1) and run "ping <ip>".${["vlan", "if", "range", "config"].includes(C.mode) ? " Type end first to leave configuration mode." : ""}]`, error: true };
     if (words.at(-1).endsWith("?")) {
       const last = words.at(-1).slice(0, -1);  // "sh?" lists words starting "sh"; "show ?" lists what follows show
       const opts = options(C.mode, words.slice(0, -1)).filter(o => !last || o.word.startsWith(last.toLowerCase()));
@@ -663,11 +667,26 @@ export function createCli(topo) {
     return { out: `${head}\n${body}`, ping: r };
   }
 
+  // A line is a reusable configuration step if, in the mode it ran in, it resolves to a command that changes
+  // configuration: not show / do / configure / enable / disable / end / exit, whatever IOS abbreviation was typed
+  // (so "sh vl br" and "conf t" are dropped, but an abbreviated "shut" in interface mode is kept).
+  const recordable = (k, mode, line) => {
+    const words = line.split(/\s+/).filter(Boolean);
+    if (!words.length || words.at(-1).endsWith("?")) return false;
+    const G = k === "router" ? RGRAMMAR : GRAMMAR;
+    let r = parse(mode, words, G);
+    if (r.error && ["vlan", "if", "range", "subif"].includes(mode)) r = parse("config", words, G);
+    const p = r.path || "";
+    return !!p && !/^(show|do |configure|enable|disable|end|exit)/.test(p);
+  };
   function exec(dev, line) {
     if (line.trim()) st(dev).history.push(line);
-    if (kind(dev) === "pc") return pcLine(dev, line);
-    if (kind(dev) === "router") return routerLine(dev, line);
-    return iosLine(dev, line);
+    const k = kind(dev), preMode = st(dev).mode;
+    const res = k === "pc" ? pcLine(dev, line) : k === "router" ? routerLine(dev, line) : iosLine(dev, line);
+    // Record this device's successful configuration lines for the "Reuse a command" picker (switches/routers only).
+    const t = line.trim();
+    if (k !== "pc" && t && !res.error && !st(dev).recipe.includes(t) && recordable(k, preMode, t)) st(dev).recipe.push(t);
+    return res;
   }
   // Tab: complete the last word if exactly one keyword fits (IOS beeps otherwise).
   function complete(dev, line) {
@@ -676,7 +695,7 @@ export function createCli(topo) {
     const hits = options(st(dev).mode, words.filter(Boolean), kind(dev) === "router" ? RGRAMMAR : GRAMMAR).map(o => o.word).filter(w => /^[a-z]/.test(w) && w.startsWith(last.toLowerCase()));
     return hits.length === 1 && last ? [...words, hits[0]].join(" ") + " " : line;
   }
-  return { prompt, exec, complete, history: dev => st(dev).history, ran, pings, forget: id => { delete cli[id]; } };
+  return { prompt, exec, complete, history: dev => st(dev).history, recipe: dev => st(dev).recipe, ran, pings, forget: id => { delete cli[id]; } };
 }
 
 export function createNet(lab) {
@@ -700,7 +719,7 @@ export function createNet(lab) {
     return false;
   }
   return {
-    topo, state: { ran: cli.ran, pings: cli.pings }, prompt: cli.prompt, exec: cli.exec, complete: cli.complete, history: cli.history,
+    topo, state: { ran: cli.ran, pings: cli.pings }, prompt: cli.prompt, exec: cli.exec, complete: cli.complete, history: cli.history, recipe: cli.recipe,
     isDone, opMode, pcVlan: id => M.vlanOf(topo, id),
     reachable: (a, b) => M.ping(topo, a, sw(b).ip).result === "ok",
   };
@@ -727,6 +746,8 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
         <div class="term-bar vl-tabs" role="group" aria-label="Choose a device">${devices.map(d => `<button type="button" class="chip" data-dev="${d}" aria-pressed="${d === dev}">${d}</button>`).join("")}</div>
         <div class="term-out" id="v-out" aria-live="polite" tabindex="0" aria-label="Console output"></div>
         <form class="term-in" id="v-form"><label class="sr" for="v-in">Command for the selected device</label><span class="term-ps" id="v-ps"></span><input id="v-in" autocomplete="off" autocapitalize="off" spellcheck="false"></form>
+        <div class="vl-reuse" id="v-reuse-wrap" hidden><label class="eyebrow" for="v-reuse" id="v-reuse-lbl"></label>
+          <select id="v-reuse"></select><span class="muted vl-reuse-note">Fills the box; you still press Enter.</span></div>
       </section>
       <aside class="panel term-tasks"><div class="panel-title"><h2>Objectives</h2><span class="mono" id="v-count"></span></div><ol id="v-tasks"></ol>
         <div class="row"><button class="link-btn" id="v-hint">Show a hint</button></div><div id="v-hinttext"></div>
@@ -756,12 +777,30 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     if (!next) { if ($("v-next")) $("v-next").hidden = false; if (!finished) { finished = true; onComplete(); } }
   }
   const ps = () => { $("v-ps").textContent = net.prompt(dev); };
+  // "Reuse a command": once a switch (or router) has been configured, offer its proven config lines on another
+  // device of the same kind, so a repeated sequence (e.g. the same VLANs on S2 and S3) needn't be retyped.
+  // It only fills the box with lines this device hasn't run yet; the learner reviews and presses Enter.
+  function updateReuse() {
+    const wrap = $("v-reuse-wrap"), sel = $("v-reuse");
+    if (!wrap) return;
+    const k = net.topo.devices[dev]?.kind;
+    if (k === "pc") { wrap.hidden = true; return; }
+    const siblings = devices.filter(d => d !== dev && net.topo.devices[d]?.kind === k && net.recipe(d).length);
+    const source = siblings.sort((a, b) => net.recipe(b).length - net.recipe(a).length)[0];
+    const mine = source ? new Set(net.recipe(dev)) : null;
+    const lines = source ? net.recipe(source).filter(l => !mine.has(l)) : [];
+    if (!lines.length) { wrap.hidden = true; return; }
+    wrap.hidden = false;
+    $("v-reuse-lbl").textContent = `Reuse a command from ${source}`;
+    sel.innerHTML = `<option value="">Pick a command to fill…</option>` + lines.map(l => `<option value="${esc(l)}">${esc(l)}</option>`).join("");
+    sel.value = "";
+  }
   function choose(d, focus = true) {
     dev = d; histI = null;
     root.querySelectorAll("[data-dev]").forEach(b => b.setAttribute("aria-pressed", b.dataset.dev === d));
     out.innerHTML = outs[d] || `<div class="muted">${lab.pcs[d] ? `${esc(d)}: Windows command prompt. Try ipconfig or ping.` : lab.routers?.[d] ? `${esc(d)}: Cisco 2911 router console. Type ? for help; abbreviations like "sh ip int br" work.` : `${esc(d)}: Cisco Catalyst 2960 console. Type ? for help; abbreviations like "sh vl br" work.`}</div>`;
     if (!outs[d]) outs[d] = out.innerHTML;
-    ps(); if (focus) input.focus();
+    ps(); updateReuse(); if (focus) input.focus();
   }
 
   $("v-form").addEventListener("submit", e => {
@@ -770,8 +809,10 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     print(`<div><span class="term-ps">${esc(net.prompt(dev))}</span>${esc(line)}</div>`);
     const res = net.exec(dev, line);
     if (res.out) print(`<div class="${res.error ? "t-err" : ""}">${esc(res.out)}</div>`);
-    input.value = ""; histI = null; ps(); drawDiagram(); renderTasks();
+    input.value = ""; histI = null; ps(); drawDiagram(); renderTasks(); updateReuse();
   });
+  // Choosing a proven command fills the input (never runs it): the learner reviews it and presses Enter.
+  $("v-reuse").addEventListener("change", e => { const v = e.target.value; if (v) { input.value = v; input.focus(); input.setSelectionRange(v.length, v.length); } e.target.value = ""; });
   input.addEventListener("keydown", e => {
     const h = net.history(dev);
     if (e.key === "ArrowUp" && h.length) { e.preventDefault(); histI = histI == null ? h.length - 1 : Math.max(0, histI - 1); input.value = h[histI]; }

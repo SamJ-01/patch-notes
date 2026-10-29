@@ -31,6 +31,23 @@
   "close": 3,
   "wait": 5
  },
+ "infra": {
+  "caption": "Lanternfield's SOC watches Halstead & Rowe's workstations and file server with EDR.",
+  "nodes": [
+   {"id": "net", "label": "Internet", "sub": "beacon + exfil", "icon": "globe", "at": [0, 0], "bad": true},
+   {"id": "pc", "label": "HAL-PC-07", "sub": "workstation", "icon": "pc", "at": [1, 0]},
+   {"id": "fs01", "label": "FS01", "sub": "file server", "icon": "database", "at": [2, 0]},
+   {"id": "backup", "label": "BACKUP02", "sub": "backups", "icon": "shield", "at": [2, 1]},
+   {"id": "siem", "label": "EDR / SIEM", "sub": "the SOC", "icon": "eye", "at": [0, 1]}
+  ],
+  "links": [
+   ["net", "pc", {"label": "beacon"}],
+   ["pc", "fs01", {"label": "RDP"}],
+   ["fs01", "backup", {"label": "deletes"}],
+   ["siem", "pc", {"watch": true}],
+   ["siem", "fs01", {"watch": true}]
+  ]
+ },
  "sources": {
   "edr": {
    "name": "EDR timeline: HAL-PC-07 (SIEM export)",
@@ -180,6 +197,7 @@
     "at": 0
    },
    "detection": "EDR on HAL-PC-07 (user j.doyle): a script from Downloads ran hidden PowerShell and an unsigned program (winupd.exe) that is beaconing to an external address.",
+   "seeItAtWork": {"kind": "chain", "label": "See how this one PC led to the file server, step by step"},
    "guide": {
     "hints": [
      "Open the EDR timeline for HAL-PC-07 and read it top to bottom. What did the user open, and what did it start?",

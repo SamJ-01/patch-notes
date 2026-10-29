@@ -4,6 +4,7 @@ import * as A from "./shift.js";
 import { markText } from "../missions/engine.js";
 import { DESK } from "../desk.js";
 import { MAIL } from "../mail.js";
+import * as INFRA from "./infra.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 // Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
@@ -42,6 +43,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
           <ol class="dk-msgs ag-chat" id="ag-chat" aria-live="polite" aria-label="Messages from ${esc(leadName)}"></ol>
           <div class="ag-dossier" id="ag-dossier" hidden>${DESK.scene(shift.clientImage)}<div class="eyebrow">Client file</div><h2>${esc(shift.client)}</h2>
             <dl class="fields"><div><dt>Alerts waiting</dt><dd>${waiting}, with more likely</dd></div><div><dt>Logs you can search</dt><dd>${Object.keys(shift.sources).length}</dd></div><div><dt>Shift length</dt><dd>about ${shift.minutes} min</dd></div>${done ? `<div><dt>Your record</dt><dd>✓ worked before</dd></div>` : ""}</dl>
+            ${shift.infra ? `<div class="ag-infra"><div class="eyebrow">What you're watching</div>${INFRA.svg(shift.infra)}</div>` : ""}
             <fieldset class="ag-level"><legend>How do you want to work?</legend>
               <label class="ag-lv"><input type="radio" name="ag-level" value="shadow"><span><b>Shadow</b> Watch ${esc(leadName)} work this shift, step by step and explained, then take your turn.</span></label>
               <label class="ag-lv"><input type="radio" name="ag-level" value="guided"${done ? "" : " checked"}><span><b>Guided</b> ${esc(leadName)} gives hints, suggests searches and checks each alert as you close it.</span></label>
@@ -162,13 +164,28 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         fields: [["Client", shift.client], ["Raised", a.time ? `${a.time}, by the night shift's SIEM` : "This shift"], ["Assigned to", "You"], ["Logs", plural(a.sources.length, "source")]],
         bodyLabel: "What the detection rule saw", body: `<p>${gl(a.detection, 2)}</p>`,
       }, { headingId: "ag-a-h", statusId: "ag-tk-st" })}
+      ${a.seeItAtWork ? `<details class="ag-see" id="ag-see"><summary><span class="ag-see-ic" aria-hidden="true">▸</span> ${esc(a.seeItAtWork.label)}</summary><div class="ag-see-body" id="ag-see-body"></div></details>` : ""}
       <div id="ag-guide"></div>
-      <h3 class="eyebrow ag-work">Investigate</h3>
-      <div class="row" role="group" aria-label="Log sources for this alert">${a.sources.map(s => `<button type="button" class="chip" data-src="${s}" aria-pressed="${s === source}">${esc(shift.sources[s].name)}</button>`).join("")}</div>
-      <div class="m-logview" id="ag-log"></div>
-      <div id="ag-found"></div>
-      <div class="ag-ask" id="ag-ask"></div>
-      <div class="ag-close" id="ag-close"></div>`;
+      <div class="ag-worksplit">
+        <section class="ag-card ag-investigate" aria-label="Investigate">
+          <h3 class="eyebrow ag-work">Investigate</h3>
+          <div class="row" role="group" aria-label="Log sources for this alert">${a.sources.map(s => `<button type="button" class="chip" data-src="${s}" aria-pressed="${s === source}">${esc(shift.sources[s].name)}</button>`).join("")}</div>
+          <div class="m-logview" id="ag-log"></div>
+          <div id="ag-found"></div>
+        </section>
+        <section class="ag-card ag-decide" aria-label="Decide and act">
+          <div class="ag-ask" id="ag-ask"></div>
+          <div class="ag-close" id="ag-close"></div>
+        </section>
+      </div>`;
+    // "See it at work": load and draw the explainer the first time it's opened. It changes nothing in the shift.
+    const see = $("ag-see");
+    see?.addEventListener("toggle", () => {
+      if (see.open && !see.dataset.ready) {
+        see.dataset.ready = "1";
+        import("../explainers.js").then(X => X.mount($("ag-see-body"), a.seeItAtWork.kind)).catch(() => { see.dataset.ready = ""; });
+      }
+    });
     $("ag-alert").querySelectorAll("[data-src]").forEach(b => b.addEventListener("click", () => {
       source = b.dataset.src;
       $("ag-alert").querySelectorAll("[data-src]").forEach(x => x.setAttribute("aria-pressed", x.dataset.src === source));
