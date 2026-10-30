@@ -219,16 +219,20 @@ function proveMastery(t) {
   return { answered: seen.length > 0, right, total: t.questions.length, level: !seen.length ? "new" : right === t.questions.length ? "strong" : "weak" };
 }
 const LOOP_META = { understand: ["Understand", "the idea"], experiment: ["Experiment", "hands-on"], diagnose: ["Diagnose", "a real fault"], prove: ["Prove it", "exam questions"] };
+// Most labs are the Experiment stage; a lab marked `stage: "diagnose"` is a work-it-out case that fills the Diagnose
+// stage instead (for topics with no mission or shift), so the loop stays complete without a packet simulator.
+const labStage = x => (x && x.stage === "diagnose") ? "diagnose" : "experiment";
 function topicStages(lessonId) {
   const l = LESSON[lessonId]; if (!l) return [];
   const stages = [{ key: "understand", status: P.done[lessonId] ? "done" : "now", href: "#lesson-" + lessonId }];
   // A lab or mission belongs to its own lesson and to any it lists in `also`; a shift to the lessons it lists. Own ones first.
   const mine = list => list.filter(x => x.lesson === lessonId).concat(list.filter(x => x.lesson !== lessonId && (x.also || []).includes(lessonId)));
-  const labs = mine(DATA.labs);
+  const labs = mine(DATA.labs).filter(x => labStage(x) === "experiment");
   if (labs.length) { const d = labs.filter(x => P.labs[x.id]).length, nx = labs.find(x => !P.labs[x.id]) || labs[0];
     stages.push({ key: "experiment", status: d === labs.length ? "done" : d ? "part" : "open", href: "#lab-" + nx.id, count: labs.length > 1 ? `${d}/${labs.length}` : "" }); }
   const faults = [...mine(DATA.missions).map(m => ({ href: "#mission-" + m.id, done: count((P.missions || {})[m.id]) > 0 })),
-    ...(DATA.agency || []).filter(sh => (sh.lessons || []).includes(lessonId)).map(sh => ({ href: "#agency-" + sh.id, done: !!(P.agency || {})[sh.id] }))];
+    ...(DATA.agency || []).filter(sh => (sh.lessons || []).includes(lessonId)).map(sh => ({ href: "#agency-" + sh.id, done: !!(P.agency || {})[sh.id] })),
+    ...mine(DATA.labs).filter(x => labStage(x) === "diagnose").map(x => ({ href: "#lab-" + x.id, done: !!P.labs[x.id] }))];
   if (faults.length) { const d = faults.filter(f => f.done).length, nx = faults.find(f => !f.done) || faults[0];
     stages.push({ key: "diagnose", status: d === faults.length ? "done" : d ? "part" : "open", href: nx.href, count: faults.length > 1 ? `${d}/${faults.length}` : "" }); }
   const prove = lessonProveTargets(lessonId);
@@ -301,7 +305,7 @@ function nextStep(type, id) {
     const l = LESSON[lessonId];
     // Coming from a lab or mission with the theory still unread: send there first.
     if (type !== "lesson" && !P.done[lessonId]) return { label: l.title, href: "#lesson-" + lessonId, kind: "lesson", why: "Understand: check you've got the theory" };
-    const curKey = type === "lesson" ? "understand" : type === "lab" ? "experiment" : "diagnose";
+    const curKey = type === "lesson" ? "understand" : type === "lab" ? labStage(LAB[id]) : "diagnose";
     const nx = topicStages(lessonId).find(s => s.status !== "done" && s.status !== "none" && s.key !== curKey);
     if (nx) { const step = loopNext(nx); if (step) return step; }
     if (type === "lesson") {  // whole loop done (or understand-only topic): next lesson in the track
@@ -374,7 +378,8 @@ document.addEventListener("click", e => { const a = e.target.closest("a[href]"),
 function loopNext(s) {
   if (s.key === "experiment") { const x = DATA.labs.find(a => "#lab-" + a.id === s.href); return x && { label: x.title, href: s.href, kind: "lab", why: "Experiment: try it hands-on" }; }
   if (s.key === "diagnose") { const m = DATA.missions.find(a => "#mission-" + a.id === s.href); if (m) return { label: m.title, href: s.href, kind: "mission", why: "Diagnose: fix a real fault" };
-    const sh = (DATA.agency || []).find(a => "#agency-" + a.id === s.href); return sh && { label: `PATCH//AGENCY: ${sh.title}`, href: s.href, kind: "agency", why: "Diagnose: work a real incident" }; }
+    const sh = (DATA.agency || []).find(a => "#agency-" + a.id === s.href); if (sh) return { label: `PATCH//AGENCY: ${sh.title}`, href: s.href, kind: "agency", why: "Diagnose: work a real incident" };
+    const lb = DATA.labs.find(a => "#lab-" + a.id === s.href); return lb && { label: lb.title, href: s.href, kind: "lab", why: "Diagnose: work out what's wrong" }; }
   if (s.key === "prove") return { label: "Exam questions for this topic", href: s.href, kind: "prove", why: "Prove it: show you've got it", prove: s.prove };
   return null;
 }
@@ -390,7 +395,7 @@ function showDoneCard(type, item, title) {
   if (!root) return;
   root.querySelector("#done-card")?.remove();
   const ls = LESSON[item.lesson], n = nextStep(type, item.id);
-  const strip = ls ? loopStrip(pageTopic(item), type === "lab" ? "experiment" : "diagnose") : "";
+  const strip = ls ? loopStrip(pageTopic(item), type === "lab" ? labStage(item) : "diagnose") : "";
   root.insertAdjacentHTML("beforeend", `<section class="panel next-step" id="done-card" tabindex="-1"><div class="eyebrow">${esc(title)}</div>
     <h2>${esc(item.title)}</h2><p class="muted" style="margin:0">${esc(item.skill || item.summary)}</p>${strip}
     <div class="row">${n ? `<a class="btn brand" href="${n.href}"${n.prove ? ` data-prove='${esc(JSON.stringify(n.prove))}'` : ""}>Next: ${esc(n.label)} ›</a>` : ""}${ls && (!n || n.href !== "#lesson-" + ls.id) ? `<a class="btn ghost" href="#lesson-${esc(ls.id)}">Revisit the lesson: ${esc(ls.title)}</a>` : ""}<a class="link-btn" href="#missions">All missions and labs</a></div>${ls ? toTopButton() : ""}${feedbackLine(item.title)}</section>`);
@@ -417,9 +422,9 @@ function lessonView(id) {
       ${l.keys ? `<ul class="keys">${l.keys.map(k => `<li>${keyIcon(k.icon)}<b>${esc(k.label)}</b><span>${gloss(k.text, 1, lseen)}</span></li>`).join("")}</ul>
       <details class="more-what" id="l-what-more"><summary>Read the full explanation</summary><p>${gloss(l.what, 6, lseen)}</p></details>` : `<p>${gloss(l.what, 6, lseen)}</p>`}</section>
     ${l.tip ? `<aside class="qtip"><span class="qtip-k">★ Quick tip</span><p>${gloss(l.tip, 3, lseen)}</p></aside>` : ""}
-    ${l.diagram ? `<section class="panel wide" id="l-diagram" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">Step through it</span></div><div id="lflow"><div class="empty">Loading the diagram…</div></div></section>` : ""}
-    ${l.concept ? `<section class="panel wide" id="l-concept" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">${l.concept.type === "cards" ? "At a glance" : "Select a part"}</span></div><div id="lconcept"><div class="empty">Loading the diagram…</div></div></section>` : ""}
-    ${l.explainer ? `<section class="panel wide" id="l-xpl" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">Try the toggle</span></div><div id="lxpl"><div class="empty">Loading…</div></div></section>` : ""}
+    ${l.diagram ? `<section class="panel wide" id="l-diagram" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">Step through it</span></div>${l.diagram.why ? `<p class="muted xpl-why">${gloss(l.diagram.why, 2)}</p>` : ""}<div id="lflow"><div class="empty">Loading the diagram…</div></div></section>` : ""}
+    ${l.concept ? `<section class="panel wide" id="l-concept" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">${l.concept.type === "cards" ? "At a glance" : "Select a part"}</span></div>${l.concept.why ? `<p class="muted xpl-why">${gloss(l.concept.why, 2)}</p>` : ""}<div id="lconcept"><div class="empty">Loading the diagram…</div></div></section>` : ""}
+    ${l.explainer ? `<section class="panel wide" id="l-xpl" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">Try the toggle</span></div>${l.explainer.why ? `<p class="muted xpl-why">${gloss(l.explainer.why, 2)}</p>` : ""}<div id="lxpl"><div class="empty">Loading…</div></div></section>` : ""}
     <section class="case" id="l-example" tabindex="-1"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h3>${esc(l.example.title)}</h3><p>${gloss(l.example.text, 4, lseen)}</p>${l.example.source ? `<p class="muted" style="font-size:0.85rem">Source: <a href="${esc(l.example.source.url)}" target="_blank" rel="noopener">${esc(l.example.source.label)} ↗</a></p>` : ""}</section>
     <section id="l-defend" tabindex="-1"><h2>How defenders stop it</h2><ul class="checklist">${l.defend.map(d => `<li>${esc(d)}</li>`).join("")}</ul></section>
     <section class="panel${practice.length > 1 ? " wide" : ""}"><h2>Try it</h2>

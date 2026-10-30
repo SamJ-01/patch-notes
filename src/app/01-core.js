@@ -6,6 +6,8 @@ const DATA = /*__DATA__*/null;
 /*__MAIL__*/
 /* ---------- service desk component: tickets and staff messages (static/js/desk.js, inlined by build.py) ---------- */
 /*__DESK__*/
+/* ---------- Patch, the site guide (static/js/patch.js, inlined by build.py) ---------- */
+/*__PATCH__*/
 
 /* ---------- helpers ---------- */
 // Highlight search terms: match in the raw text, merge overlaps, then escape each piece (same as engine.markText).

@@ -117,6 +117,12 @@ test("progress: restored or stored data is cleaned before use", () => {
   const ag = cleanProgress({ xp: 1, agency: { "shift-01": { d: evil, best: 999, total: "6", own: "yes" }, [evil]: { best: 1 }, "shift-02": "nope", "shift-03": [1], "shift-04": { best: 3, total: 6, own: true } } });
   assert.deepEqual(JSON.parse(JSON.stringify(ag.agency)), { "shift-01": { d: evil.slice(0, 10), best: 20, total: 6, own: false }, "shift-04": { d: "", best: 3, total: 6, own: true } }, "agency results are clamped numbers, a short date and whether it was done on your own");
   assert.equal(Object.keys(cleanProgress({ xp: 1 }).agency).length, 0, "older saves without agency still load");
+  // Review deck (spaced repetition): each card is clamped to sane numbers; junk shapes are dropped.
+  const rev = cleanProgress({ xp: 1, review: { http: { e: "2.9", i: 999, due: 1234.7, reps: "3" }, [evil]: { e: 5, i: 2, due: 1, reps: 1 }, bad: "nope", arr: [1] } });
+  assert.deepEqual(JSON.parse(JSON.stringify(rev.review.http)), { e: 2.9, i: 365, due: 1235, reps: 3 }, "review cards are clamped numbers");
+  assert.ok(rev.review[evil].e <= 3 && rev.review[evil].e >= 1.3, "ease stays in band even for an odd key");
+  assert.equal(rev.review.bad, undefined, "non-map review entries are dropped");
+  assert.equal(Object.keys(cleanProgress({ xp: 1 }).review).length, 0, "older saves without review still load");
   const sh = cleanProgress({ xp: 1, stack: "abc", labSteps: { vlans: 5, hashing: [0, "a", {}] }, best: { phish: evil, quiz: "7", x: true } });
   assert.equal(sh.stack, null, "a stack that isn't a list is dropped (the home page maps it)");
   assert.deepEqual(JSON.parse(JSON.stringify(sh.labSteps)), { hashing: [0, "a"] }, "lab steps are lists of ids");
@@ -165,6 +171,55 @@ test("route map: a full last row sends the finish round the turn; phones use two
   const phone = routeLayout(6, 2, { W: 350, rowH: 145, R: 46, pad: 40 });
   assert.deepEqual(JSON.parse(JSON.stringify(phone.stops.map(s => s.row))), [0, 0, 1, 1, 2, 2]);
   for (const s of phone.stops) assert.ok(s.x - 60 >= 0 && s.x + 60 <= 350, "labels have room at phone width");
+});
+
+// The practice streak and the week dot strip, counted from the P.days map.
+const sctx = {};
+vm.createContext(sctx);
+vm.runInContext([
+  'const dateStr = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;',
+  extract("function dayBack(str, n)"),
+  extract("function streakInfo(days, today"),
+  extract("function lastDays(days, n, today"),
+  "this.api = { streakInfo, lastDays };",
+].join("\n"), sctx);
+const { streakInfo, lastDays } = sctx.api;
+const plain = v => JSON.parse(JSON.stringify(v));  // streakInfo/lastDays build objects in the vm realm
+
+test("streak: counts consecutive days, survives today until midnight, breaks on a gap", () => {
+  const today = "2026-10-30";
+  assert.deepEqual(plain(streakInfo({ "2026-10-28": 1, "2026-10-29": 1, "2026-10-30": 1 }, today)), { streak: 3, todayDone: true, alive: true });
+  // Not practised yet today, but yesterday counted: the streak is still alive, counted up to yesterday.
+  assert.deepEqual(plain(streakInfo({ "2026-10-28": 1, "2026-10-29": 1 }, today)), { streak: 2, todayDone: false, alive: true });
+  // A missing day breaks it: only yesterday counts, the day before is a gap.
+  assert.deepEqual(plain(streakInfo({ "2026-10-27": 1, "2026-10-29": 1 }, today)), { streak: 1, todayDone: false, alive: true });
+  // Neither today nor yesterday: the streak is over.
+  assert.deepEqual(plain(streakInfo({ "2026-10-25": 1 }, today)), { streak: 0, todayDone: false, alive: false });
+  assert.deepEqual(plain(streakInfo({}, today)), { streak: 0, todayDone: false, alive: false });
+});
+
+// Patch the companion only speaks when there's a reason: cards due, or a gentle home nudge; otherwise silence.
+const pcx = {};
+vm.createContext(pcx);
+vm.runInContext(fn("function patchReasonFor({ due, path") + "\nthis.f = patchReasonFor;", pcx);
+const patchReasonFor = pcx.f;
+test("Patch: pops for review cards, nudges on the home page, stays silent otherwise", () => {
+  assert.equal(patchReasonFor({ due: 3, path: "learn/passwords", streak: 0, todayDone: true }).href, "#review");
+  assert.match(patchReasonFor({ due: 1, path: "today", streak: 0, todayDone: false }).text, /1 card ready/);
+  assert.match(patchReasonFor({ due: 0, path: "today", streak: 4, todayDone: false }).text, /4-day streak/);
+  assert.match(patchReasonFor({ due: 0, path: "today", streak: 0, todayDone: false }).text, /make a start/);
+  assert.equal(patchReasonFor({ due: 0, path: "today", streak: 4, todayDone: true }), null);  // already practised
+  assert.equal(patchReasonFor({ due: 0, path: "learn/passwords", streak: 0, todayDone: false }), null);  // not a hallway reason
+});
+
+test("week strip: last 7 days oldest first, today flagged, practised days marked", () => {
+  const today = "2026-10-30";
+  const w = lastDays({ "2026-10-28": 1, "2026-10-30": 1 }, 7, today);
+  assert.equal(w.length, 7);
+  assert.equal(w[0].date, "2026-10-24");
+  assert.equal(w[6].date, "2026-10-30");
+  assert.ok(w[6].isToday && !w[0].isToday);
+  assert.deepEqual(plain(w.map(d => d.done)), [false, false, false, false, true, false, true]);
 });
 
 test("CVSS decoder: checks the vector, scores 3.0 and 3.1, decodes 4.0 without inventing a score", () => {

@@ -230,6 +230,10 @@
       {
        "type": "lab",
        "id": "wifi-survey"
+      },
+      {
+       "type": "lab",
+       "id": "rogue-or-misconfig"
       }
      ],
      "gap": "Bands, channels, 802.11 standards and Wi-Fi security (WEP to WPA3, 802.1X) are covered, with a hands-on scan; antennas, roaming, heat-map site surveys and wireless controllers aren't yet."
@@ -452,6 +456,10 @@
       {
        "type": "lab",
        "id": "malware-tree"
+      },
+      {
+       "type": "lab",
+       "id": "ddos-who-stops-it"
       }
      ],
      "gap": "SYN floods, phishing triage, an evil twin in a Wi-Fi scan, a reflection DDoS and a malware process tree are hands-on; VLAN hopping, MAC flooding, ARP and DNS poisoning are explained only in the glossary and practice questions."

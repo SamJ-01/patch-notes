@@ -66,7 +66,7 @@ function drawRoute() {
     ${isNewcomer() ? "" : `<div class="row route-paths" role="group" aria-label="Choose a route">${DATA.paths.map(x => `<button type="button" class="chip" data-route="${esc(x.id)}" aria-pressed="${x.id === p.id}">${esc(short(x.title))}</button>`).join("")}</div>`}
     <svg class="route-map" viewBox="0 0 ${W} ${L.height}" role="group" aria-label="${esc(`${p.title}: ${steps.length} stops, ${done} done.`)}">
       <path class="route-road" d="${routePath([L.start, ...L.stops, L.finish], L.R)}"/>
-      <path class="route-road done" d="${routePath(reached, L.R)}"/>
+      <path class="route-road done" pathLength="1" d="${routePath(reached, L.R)}"/>
       <g class="route-start" transform="translate(${L.start.x},${L.start.y})" aria-hidden="true"><rect x="-22" y="-22" width="44" height="44" rx="10"/><text y="5" text-anchor="middle">GO</text></g>
       ${steps.map((st, i) => { const s = L.stops[i], state = st.done ? "done" : i === next ? "next" : "todo";
         return `<a href="${st.href}" class="route-stop ${state}" aria-label="${esc(`Stop ${i + 1} of ${steps.length}: ${st.label} (${KIND_WORD[st.kind] || st.kind})${st.done ? ", done" : i === next ? ", next" : ""}`)}">
@@ -86,6 +86,32 @@ function drawRoute() {
 // The map is drawn at its real width, so redraw when that changes (once the resizing settles).
 let routeWidth = 0, routeTimer = null;
 addEventListener("resize", () => { clearTimeout(routeTimer); routeTimer = setTimeout(() => { const b = $("route"); if (b && Math.abs(b.clientWidth - routeWidth) > 8) drawRoute(); }, 120); });
+
+/* STREAK & DAILY GOAL: the habit loop. A flame with the run of consecutive days, a dot strip of the last week,
+   and one clear thing to do today (clear your review, or pick your route back up) so the streak stays alive. */
+const FLAME_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="fl-outer" d="M12 2c1 3-2 4-2 7 0 1.5 1 2.5 1 2.5S9 11 7.5 12.5C6 14 5 16 5 18a7 7 0 0 0 14 0c0-3-2-5-3.5-7C14 9 13 7 13 5c0-1.3-.5-2.3-1-3z"/><path class="fl-inner" d="M12 12c.8 1.4-.5 2 .5 3.6.6 1 .5 2.4-.5 3.2-1.4 1.1-3.5.3-3.5-1.8 0-1.6 1.5-2.3 2-3.5.4-1 .3-1.8 1-1.5z"/></svg>';
+function streakStrip() {
+  const s = streakInfo(P.days), week = lastDays(P.days, 7);
+  const revDue = typeof reviewDueCount === "function" ? reviewDueCount() : 0;
+  const practisedWeek = week.filter(d => d.done).length;
+  const dots = week.map(d => `<span class="sl-dot${d.done ? " on" : ""}${d.isToday ? " today" : ""}"></span>`).join("");
+  const next = pathSteps(routePathChoice()).find(st => !st.done);
+  const cta = revDue
+    ? `<a class="btn brand sl-cta" href="#review">Review ${revDue} card${revDue === 1 ? "" : "s"} →</a>`
+    : !s.todayDone ? `<a class="btn brand sl-cta" href="${next ? next.href : "#learn"}">${next ? "Continue learning" : "Keep exploring"} →</a>` : "";
+  const goal = s.todayDone
+    ? `<span class="sl-goal on">You've practised today${s.streak > 1 ? ", streak safe" : ""}.</span>`
+    : `<span class="sl-goal">Do one thing today ${s.streak ? `to keep your ${s.streak}-day streak going` : "to start a streak"}.</span>`;
+  return `<section class="streak-strip${s.streak ? " lit" : ""}" aria-label="Your streak and today's goal">
+    <div class="sl-flame" aria-hidden="true">${FLAME_SVG}<b class="sl-n">${s.streak}</b></div>
+    <div class="sl-main">
+      <div class="sl-head"><b>${s.streak} day${s.streak === 1 ? "" : "s"} in a row</b>
+        <span class="sl-week" role="img" aria-label="Practised ${practisedWeek} of the last 7 days">${dots}</span></div>
+      ${goal}
+    </div>
+    ${cta}
+  </section>`;
+}
 
 /* TODAY */
 // Someone who hasn't done anything yet gets a calmer home page: four ways in, their route, a beginner question,
@@ -121,23 +147,24 @@ VIEWS.today = () => {
       <div class="split"><section class="panel" id="daily"></section>
         <aside class="panel news-line"><div class="eyebrow">This week</div><p><b>${news.length} stories</b> from ${sources} outlets, each linked to a lesson that explains it.</p><a class="btn ghost" href="#news">Read the news →</a></aside></div>
     </div>`;
-    renderDaily(); drawRoute();
+    renderDaily(); drawRoute(); animateBriefing();
     return;
   }
   main.innerHTML = `<div class="view">${head}
+    ${streakStrip()}
     <section class="panel route-panel" aria-labelledby="route-h"><div id="route"></div></section>
     <div class="split">
       <div class="stack" style="gap:18px">
         <section class="changelog" aria-labelledby="today-h">
           <div class="win-bar"><b>this-week.log</b><span>v${esc(m.version)} · ${esc(m.dateLong)}</span></div>
           <div class="win-body">
-          <div class="ver"><span class="ps">guest@patchnotes</span>:<i style="font-style:normal;color:var(--sun)">~$</i> patchnotes --since ${m.days}d --explain</div>
+          <div class="ver"><span class="ps">guest@patchnotes</span>:<i style="font-style:normal;color:var(--sun)">~$</i> <span class="cmd">patchnotes --since ${m.days}d --explain</span></div>
           <h2 id="today-h">This week in security</h2>
           <ul>
-            <li><span class="mk add">+</span><span><a href="#news">${news.length} stories</a> from ${sources} outlets, each linked to a lesson that explains it.</span></li>
-            <li><span class="mk warn">!</span><span><a href="#cves" data-radar-prio="1">${kev.length} ${kev.length === 1 ? "vulnerability" : "vulnerabilities"}</a> newly confirmed as actively exploited. These get patched first.</span></li>
-            <li><span class="mk add">+</span><span><a href="#cves">${m.cveCount.toLocaleString()} new CVEs</a> published in the last ${m.days} days.</span></li>
-            ${top ? `<li><span class="mk trend">~</span><span>Most-covered topic: <a href="#lesson-${esc(top[0])}">${esc(TOPIC_NAME(top[0]))}</a>, in ${top[1]} stories.</span></li>` : ""}
+            <li><span class="mk add">+</span><span><a href="#news"><span class="count" data-to="${news.length}">${news.length}</span> stories</a> from ${sources} outlets, each linked to a lesson that explains it.</span></li>
+            <li><span class="mk warn">!</span><span><a href="#cves" data-radar-prio="1"><span class="count" data-to="${kev.length}">${kev.length}</span> ${kev.length === 1 ? "vulnerability" : "vulnerabilities"}</a> newly confirmed as actively exploited. These get patched first.</span></li>
+            <li><span class="mk add">+</span><span><a href="#cves"><span class="count" data-to="${m.cveCount}">${m.cveCount.toLocaleString()}</span> new CVEs</a> published in the last ${m.days} days.</span></li>
+            ${top ? `<li><span class="mk trend">~</span><span>Most-covered topic: <a href="#lesson-${esc(top[0])}">${esc(TOPIC_NAME(top[0]))}</a>, in <span class="count" data-to="${top[1]}">${top[1]}</span> stories.</span></li>` : ""}
           </ul>
           </div>
         </section>
@@ -158,7 +185,30 @@ VIEWS.today = () => {
   </div>`;
   renderDaily();
   drawRoute();
+  animateBriefing();
 };
+
+// Bring the daily briefing to life on open: the command types out and the headline numbers count up.
+// Both respect reduced motion by jumping straight to the final state.
+const prefersReduced = () => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } };
+function countUp(el, ms = 900) {
+  const to = Number(el.dataset.to); if (!Number.isFinite(to)) return;
+  if (prefersReduced() || to <= 0) { el.textContent = to.toLocaleString("en-GB"); return; }
+  const t0 = performance.now();
+  const step = now => { const p = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(to * e).toLocaleString("en-GB"); if (p < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function typeLine(el, ms = 30) {
+  const full = el.textContent; if (!full || prefersReduced()) return;
+  el.textContent = ""; el.classList.add("typing"); let i = 0;
+  const tick = () => { el.textContent = full.slice(0, ++i); if (i < full.length) setTimeout(tick, ms); else el.classList.remove("typing"); };
+  setTimeout(tick, 220);
+}
+function animateBriefing() {
+  main.querySelectorAll(".changelog .count").forEach(el => countUp(el));
+  const cmd = main.querySelector(".changelog .ver .cmd"); if (cmd) typeLine(cmd);
+}
 
 document.addEventListener("click", e => { const r = e.target.closest?.("[data-reset-lab]"); if (r) resetLab(r.dataset.resetLab); });
 

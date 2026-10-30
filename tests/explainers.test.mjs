@@ -3,7 +3,7 @@
 // they can't drift from shift-01's scenario.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { vpnView, VPN, idorView, IDOR, cloudView, CLOUD, inboxView, INBOX, sprayView, SPRAY, mfaView, MFA, ddosView, DDOS, certView, CERT, chainStep, CHAIN, ztView, ZT, KINDS } from "../static/js/explainers.js";
+import { vpnView, VPN, idorView, IDOR, cloudView, CLOUD, inboxView, INBOX, sprayView, SPRAY, mfaView, MFA, ddosView, DDOS, certView, CERT, chainStep, CHAIN, ztView, ZT, sqliView, SQLI, xssView, XSS, hashView, HASHES, KINDS } from "../static/js/explainers.js";
 
 test("vpn: off is the real location, on is the VPN exit", () => {
   assert.equal(vpnView(false), VPN.off);
@@ -98,6 +98,30 @@ test("zero-trust: perimeter trusts by location, zero trust checks every request"
   assert.match(ZT.on.status, /every request/i);
 });
 
+test("sqli: string-built query runs the injection; parameterised treats it as data", () => {
+  assert.equal(sqliView(false), SQLI.off);
+  assert.equal(sqliView(true), SQLI.on);
+  assert.match(SQLI.off.query, /'1'='1'/);           // the injection ends up in the SQL
+  assert.match(SQLI.off.status, /200/);               // logged in
+  assert.match(SQLI.on.status, /401/);                // blocked
+  assert.ok(SQLI.on.query.includes("?"));             // parameter placeholder, no injection in the SQL
+});
+
+test("xss: raw output runs the script; escaped output shows it as text", () => {
+  assert.equal(xssView(false), XSS.off);
+  assert.equal(xssView(true), XSS.on);
+  assert.match(XSS.comment, /<script>/);
+  assert.match(XSS.off.status, /code/i);
+  assert.match(XSS.on.status, /text/i);
+});
+
+test("hashing: real SHA-256, same input same hash, one change totally different", () => {
+  assert.equal(hashView("a").hash, "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8");
+  assert.equal(hashView("a"), hashView("a"));          // deterministic
+  assert.notEqual(hashView("a").hash, hashView("b").hash); // "password" vs "Password"
+  for (const h of HASHES) assert.equal(h.hash.length, 64, "SHA-256 is 64 hex chars");
+});
+
 test("KINDS lists every explainer mount can draw", () => {
-  for (const k of ["vpn", "idor", "cloud", "inbox-rule", "spray", "mfa-fatigue", "ddos", "cert", "chain", "zero-trust"]) assert.ok(KINDS.includes(k), `KINDS missing ${k}`);
+  for (const k of ["vpn", "idor", "cloud", "inbox-rule", "spray", "mfa-fatigue", "ddos", "cert", "chain", "zero-trust", "sqli", "xss", "hashing"]) assert.ok(KINDS.includes(k), `KINDS missing ${k}`);
 });

@@ -61,6 +61,7 @@
    }
   ],
   "concept": {
+   "why": "Everything in security protects one of these three goals. Keep them in mind as the lesson goes on.",
    "type": "triad",
    "title": "The three goals every control serves",
    "items": [
@@ -169,6 +170,7 @@
    }
   ],
   "concept": {
+   "why": "Which rules apply depends on what you handle. Here is who each framework is for.",
    "type": "cards",
    "title": "The playbooks and who they serve",
    "items": [
@@ -279,6 +281,7 @@
    }
   ],
   "concept": {
+   "why": "Controls work in different ways. Here are the types, with an example of each.",
    "type": "cards",
    "title": "What each type of control does",
    "items": [
@@ -334,6 +337,7 @@
  },
  {
   "id": "phishing",
+  "explainer": { "kind": "inbox-rule", "why": "A stolen password is rarely the end of it. Once inside a mailbox, an attacker adds a hidden rule to bury the replies that would expose the fraud. Toggle it below." },
   "title": "Phishing & social engineering",
   "track": "Threats",
   "level": "Beginner",
@@ -398,6 +402,7 @@
    }
   ],
   "diagram": {
+   "why": "Step through a phishing attack from the first email to the stolen login, so you can see where it is stopped.",
    "title": "How a credential-phishing attack unfolds",
    "nodes": [
     {
@@ -539,6 +544,7 @@
    }
   ],
   "diagram": {
+   "why": "Follow a ransomware attack from the first foothold to encryption, and the chances to catch it on the way.",
    "title": "How a ransomware attack reaches the point of encryption",
    "nodes": [
     {
@@ -689,6 +695,7 @@
    }
   ],
   "concept": {
+   "why": "Malware is grouped by what it does. Here are the main families and how each behaves.",
    "type": "cards",
    "title": "The main families",
    "items": [
@@ -818,6 +825,7 @@
    }
   ],
   "concept": {
+   "why": "A flaw moves from hidden to patched. Here is its life, and what defenders can do at each stage.",
    "type": "cards",
    "title": "The life of a flaw",
    "items": [
@@ -927,6 +935,7 @@
    }
   ],
   "concept": {
+   "why": "Patching is a loop, not a one-off. Here are the stages it runs through.",
    "type": "cycle",
    "title": "The patching loop",
    "items": [
@@ -1036,6 +1045,7 @@
    }
   ],
   "concept": {
+   "why": "You rely on a lot of code you did not write. Here is where that trust gets abused.",
    "type": "cards",
    "title": "Where the trust is abused",
    "items": [
@@ -1145,6 +1155,7 @@
    }
   ],
   "concept": {
+   "why": "Most breaches begin in a few familiar ways. Here they are before we go deeper.",
    "type": "cards",
    "title": "How breaches usually start",
    "items": [
@@ -1259,6 +1270,7 @@
    }
   ],
   "concept": {
+   "why": "A state-backed attacker behaves unlike a smash-and-grab. Here is what sets one apart.",
    "type": "cards",
    "title": "What makes an APT different",
    "items": [
@@ -1309,7 +1321,7 @@
   "level": "Beginner",
   "minutes": 3,
   "hook": "Knock a site offline by drowning it in traffic.",
-  "explainer": {"kind": "ddos"},
+  "explainer": {"kind": "ddos", "why": "You have met the attack. Now watch what a flood does to a server as the requests pile up, and why it is hard to tell from a genuinely busy day."},
   "what": "A Distributed Denial of Service attack floods a website or network with so much traffic from so many machines that real users can't get through. The traffic usually comes from botnets of hacked computers, routers and cameras. DDoS is used for extortion, activism (hacktivism), or as a distraction during another attack.",
   "example": {
    "title": "Mirai and Dyn",
@@ -1369,6 +1381,7 @@
    }
   ],
   "concept": {
+   "why": "Floods come in different shapes. Here is how each overwhelms a target.",
    "type": "cards",
    "title": "The shapes a flood takes",
    "items": [
@@ -1478,6 +1491,7 @@
    }
   ],
   "concept": {
+   "why": "AI shifts both attack and defence. Here is what is new on each side.",
    "type": "cards",
    "title": "How AI changes the game",
    "items": [
@@ -1523,6 +1537,7 @@
  },
  {
   "id": "cloud",
+  "explainer": { "kind": "cloud", "why": "One key leaks eventually. See why giving each key only the access it needs stops that single leak from turning into a full breach." },
   "title": "Cloud security",
   "track": "Defence",
   "level": "Intermediate",
@@ -1587,6 +1602,7 @@
    }
   ],
   "concept": {
+   "why": "Most cloud incidents trace to a few mistakes. Here is where things go wrong.",
    "type": "cards",
    "title": "Where cloud goes wrong",
    "items": [
@@ -1632,6 +1648,7 @@
  },
  {
   "id": "identity",
+  "explainer": { "kind": "vpn", "why": "A sign-in is judged partly on where it comes from. See how a VPN changes the location a login appears to start from, for better and for worse." },
   "title": "Passwords, MFA & passkeys",
   "track": "Defence",
   "level": "Beginner",
@@ -1696,6 +1713,7 @@
    }
   ],
   "diagram": {
+   "why": "Step through a login to see where MFA stops an attacker who already has the password.",
    "title": "Why a stolen password isn't enough with MFA",
    "nodes": [
     {
@@ -1832,6 +1850,7 @@
    }
   ],
   "concept": {
+   "why": "These devices break the usual rules. Here is why they are hard to secure.",
    "type": "cards",
    "title": "Why these devices are hard to secure",
    "items": [
@@ -1877,6 +1896,7 @@
  },
  {
   "id": "web-sqli",
+  "explainer": { "kind": "sqli", "why": "Here is the heart of it. Watch a normal login turn against its own database when the input is treated as code instead of data." },
   "title": "SQL injection",
   "track": "Web attacks",
   "level": "Beginner",
@@ -1941,6 +1961,7 @@
    }
   ],
   "diagram": {
+   "why": "Step through an injected login to see how untrusted input becomes a command the database runs.",
    "title": "How SQL injection turns a login form against its database",
    "nodes": [
     {
@@ -2012,6 +2033,7 @@
  },
  {
   "id": "web-xss",
+  "explainer": { "kind": "xss", "why": "See the difference one step makes: the same review shown escaped, then raw, and how the raw version runs in every visitor's browser." },
   "title": "Cross-site scripting (XSS)",
   "track": "Web attacks",
   "level": "Beginner",
@@ -2076,6 +2098,7 @@
    }
   ],
   "diagram": {
+   "why": "Step through the attack to see how a script saved on the site ends up running in a visitor's browser.",
    "title": "How stored XSS steals a visitor's session",
    "nodes": [
     {
@@ -2148,6 +2171,7 @@
  },
  {
   "id": "web-access",
+  "explainer": { "kind": "idor", "why": "See it happen. Changing one order number in the address opens another customer's data, because the server never checks whose record it is." },
   "title": "Broken access control & IDOR",
   "track": "Web attacks",
   "level": "Beginner",
@@ -2210,6 +2234,7 @@
    }
   ],
   "concept": {
+   "why": "Access control fails in a handful of ways. Here they are before you meet them in the wild.",
    "type": "cards",
    "title": "Ways access control breaks",
    "items": [
@@ -2319,6 +2344,7 @@
    }
   ],
   "diagram": {
+   "why": "Step through a single request to follow each hop it takes out of your network and back.",
    "title": "How a request leaves your network and comes back",
    "nodes": [
     {
@@ -2455,6 +2481,7 @@
    }
   ],
   "concept": {
+   "why": "Wi-Fi protection has improved over the years. Here it is, weakest to strongest.",
    "type": "cards",
    "title": "Wi-Fi security, weakest to strongest",
    "items": [
@@ -2569,6 +2596,7 @@
    }
   ],
   "concept": {
+   "why": "Recovery planning has its own vocabulary. Here are the terms you will meet, in short.",
    "type": "cards",
    "title": "Disaster recovery in a few words",
    "items": [
@@ -2624,7 +2652,7 @@
   "level": "Beginner",
   "minutes": 7,
   "hook": "IPv6, software-defined networks, zero trust and SASE, without the buzzwords.",
-  "explainer": {"kind": "zero-trust"},
+  "explainer": {"kind": "zero-trust", "why": "Old networks trusted anyone inside the walls. Compare that with zero trust, which checks every request on its own, wherever it comes from."},
   "what": "IPv4 has about 4.3 billion addresses, which ran out; NAT stretched them. IPv6 addresses are 128 bits, written as eight groups of four hex digits, such as 2001:db8:4a1:10::25. Leading zeros can be dropped, and :: replaces one run of all-zero groups. Every IPv6 interface has a link-local address starting fe80, which only works on its own segment, and most get a global address too, often set up automatically with SLAAC. There are so many addresses that NAT isn't needed, though a firewall still decides what gets in. While both versions are in use, devices run dual stack (IPv4 and IPv6 side by side), and tunnelling or NAT64 joins IPv6-only and IPv4-only networks. Software-defined networking (SDN) splits the control plane (deciding where traffic goes) from the data plane (forwarding it), so one controller programs many devices. SD-WAN applies that to links between sites, choosing the best of several internet connections for each application. VXLAN carries layer 2 networks over layer 3, with about 16 million segment IDs instead of 4,094 VLANs. Zero trust drops the idea of a trusted inside network: every request is checked (who, which device, is it healthy) and given the least access needed. SASE delivers networking and security (secure web gateway, cloud access security broker, zero trust network access, firewall) as a cloud service close to the user. Infrastructure as code (IaC) keeps device and cloud settings as version-controlled files, so changes are reviewed and repeatable.",
   "example": {
    "title": "Google's BeyondCorp",
@@ -2684,6 +2712,7 @@
    }
   ],
   "concept": {
+   "why": "Modern networking is full of new names. Here is each one in a line.",
    "type": "cards",
    "title": "The new names, in one line each",
    "items": [
@@ -2734,6 +2763,7 @@
  },
  {
   "id": "encryption",
+  "explainer": { "kind": "hashing", "why": "See a hash in action. The same input always gives the same fingerprint, one small change rewrites it completely, and that is why passwords are hashed, not stored." },
   "title": "Encryption & hashing",
   "track": "Foundations",
   "level": "Beginner",
@@ -2798,6 +2828,7 @@
    }
   ],
   "diagram": {
+   "why": "Step through a request on open Wi-Fi to see what HTTPS hides, and what it does not.",
    "title": "How HTTPS (TLS) protects you on shared Wi-Fi",
    "nodes": [
     {
@@ -2873,7 +2904,7 @@
   "level": "Beginner",
   "minutes": 5,
   "hook": "How your browser knows a site is real.",
-  "explainer": {"kind": "cert"},
+  "explainer": {"kind": "cert", "why": "See what your browser checks before it trusts a site: the right name, a valid date, and a signature it recognises. Break each one and watch what happens."},
   "what": "A certificate ties a public key to a name, like shop.example.com. A certificate authority (CA) checks that the requester controls the name, then signs the certificate. Your device trusts a short list of root CAs, built into the operating system or browser. Roots sign intermediate CAs, which sign site certificates, so your browser follows the chain up to a root it already trusts. To get a certificate, a server sends the CA a certificate signing request (CSR) holding its public key; the private key never leaves the server. If that key is stolen, the certificate is revoked: CAs publish revocation lists (CRLs) and can answer single questions over OCSP, though many browsers now get revocation data pushed to them by the browser maker instead. This whole system of CAs, certificates and trust is called PKI.",
   "example": {
    "title": "DigiNotar",
@@ -2933,6 +2964,7 @@
    }
   ],
   "concept": {
+   "why": "Trust runs along a chain. Here is each link your browser checks.",
    "type": "cards",
    "title": "The chain your browser checks",
    "items": [
@@ -3038,6 +3070,7 @@
    }
   ],
   "concept": {
+   "why": "The commands group by what you are trying to do. Here they are, by job.",
    "type": "cards",
    "title": "Commands by job",
    "items": [
@@ -3152,6 +3185,7 @@
    }
   ],
   "diagram": {
+   "why": "Step through how scattered log lines become one alert a SOC can act on.",
    "title": "How a SOC turns logs into a response",
    "nodes": [
     {
@@ -3220,6 +3254,7 @@
  },
  {
   "id": "incident-response",
+  "explainer": { "kind": "chain", "why": "This is what a SOC pieces together: separate events, an infected PC, stolen logins, a data transfer, joined into one attack story and caught before the damage was done." },
   "title": "Incident response",
   "track": "Defence",
   "level": "Intermediate",
@@ -3284,6 +3319,7 @@
    }
   ],
   "concept": {
+   "why": "Handling an incident follows a lifecycle. Here are its phases in order.",
    "type": "cycle",
    "title": "The response lifecycle",
    "items": [
@@ -3399,6 +3435,7 @@
    }
   ],
   "concept": {
+   "why": "Open-source intelligence has many sources. Here is where it comes from.",
    "type": "cards",
    "title": "Where open-source intel comes from",
    "items": [

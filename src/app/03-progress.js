@@ -1,7 +1,7 @@
 /* ---------- progress & XP (stored only in this browser) ---------- */
 const PKEY = "patch-notes-progress";
 const RANKS = [[0, "guest"], [100, "intern"], [300, "analyst"], [700, "hunter"], [1500, "responder"], [3000, "root"]];
-const FRESH = () => ({ xp: 0, done: {}, daily: null, streak: 0, lastDaily: null, best: {}, flags: {}, labs: {}, labSteps: {}, paths: {}, terms: {}, read: {}, badges: {}, stack: null, log: [], days: {}, missions: {}, exam: {}, mocks: {}, agency: {} });
+const FRESH = () => ({ xp: 0, done: {}, daily: null, streak: 0, lastDaily: null, best: {}, flags: {}, labs: {}, labSteps: {}, paths: {}, terms: {}, read: {}, badges: {}, stack: null, log: [], days: {}, missions: {}, exam: {}, mocks: {}, agency: {}, review: {} });
 // Progress is untrusted input: it lives in the browser (anyone can edit it) and can be restored from a file.
 // Keep only known fields of the right type, and coerce the XP history so nothing in it can become HTML.
 function cleanProgress(src) {
@@ -32,6 +32,10 @@ function cleanProgress(src) {
   out.missions = Object.fromEntries(Object.entries(out.missions).filter(([k, v]) => keyOk(k) && isMap(v)).map(([k, v]) => [k, record(v)]));
   out.exam = Object.fromEntries(Object.entries(out.exam).filter(([k, v]) => keyOk(k) && isMap(v)).slice(0, 5000)
     .map(([k, v]) => [k, { r: Math.max(0, Math.round(Number(v.r) || 0)), w: Math.max(0, Math.round(Number(v.w) || 0)), last: v.last === 1 ? 1 : 0 }]));
+  // Review deck (spaced repetition): each card is a schedule of plain numbers, so a damaged file can't inject HTML
+  // or absurd intervals. See static/js/review.js.
+  out.review = Object.fromEntries(Object.entries(out.review).filter(([k, v]) => keyOk(k) && isMap(v)).slice(0, 5000)
+    .map(([k, v]) => [k, { e: Math.min(3, Math.max(1.3, Number(v.e) || 2.5)), i: Math.min(365, Math.max(0, Math.round(Number(v.i) || 0))), due: Math.round(Number(v.due) || 0), reps: Math.min(9999, Math.max(0, Math.round(Number(v.reps) || 0))) }]));
   // Shapes the loop above can't check: the stack is a list of ids, lab steps are lists, best scores are numbers.
   out.stack = Array.isArray(out.stack) ? out.stack.filter(x => typeof x === "string").slice(0, 100) : null;
   out.labSteps = Object.fromEntries(Object.entries(out.labSteps).filter(([, v]) => Array.isArray(v)).map(([k, v]) => [k, v.filter(x => ["string", "number"].includes(typeof x)).slice(0, 100)]));
@@ -43,6 +47,21 @@ let P = FRESH();
 try { const saved = localStorage.getItem(PKEY); if (saved) P = cleanProgress(JSON.parse(saved)); } catch (e) {}
 const saveP = () => { try { localStorage.setItem(PKEY, JSON.stringify(P)); } catch (e) {} };
 const count = o => Object.keys(o || {}).length;
+// The run of consecutive days with any practice, counted back from today. A streak stays "alive" through today
+// until midnight as long as yesterday counted, so opening the site before doing anything doesn't instantly break it.
+// Pure and tested in tests/page.test.mjs; reads the P.days map { "YYYY-MM-DD": 1 }.
+function dayBack(str, n) { const d = new Date(str + "T00:00:00"); d.setDate(d.getDate() - n); return dateStr(d); }
+function streakInfo(days, today = todayStr()) {
+  const has = d => !!(days && days[d]);
+  const todayDone = has(today), aliveFrom = todayDone ? today : has(dayBack(today, 1)) ? dayBack(today, 1) : null;
+  let streak = 0;
+  for (let d = aliveFrom; d && has(d); d = dayBack(d, 1)) streak++;
+  return { streak, todayDone, alive: !!aliveFrom };
+}
+// The last n days as { date, done, isToday }, oldest first, for the habit-tracker dot strip.
+function lastDays(days, n, today = todayStr()) {
+  return Array.from({ length: n }, (_, i) => { const date = dayBack(today, n - 1 - i); return { date, done: !!(days && days[date]), isToday: date === today }; });
+}
 function progressChanged() { checkProgress(); saveP(); renderXP(); if (typeof drawTrail === "function") drawTrail(); }  // ticks the route bar's dot
 function rank() {
   let i = 0; while (i + 1 < RANKS.length && P.xp >= RANKS[i + 1][0]) i++;
@@ -134,7 +153,7 @@ function celebrate(title, sub = "") {
   const wrap = document.createElement("div");
   wrap.className = "celebrate";
   wrap.setAttribute("role", "status");
-  wrap.innerHTML = `<canvas aria-hidden="true"></canvas><div class="cele-card"><b>${esc(title)}</b>${sub ? `<span>${esc(sub)}</span>` : ""}</div>`;
+  wrap.innerHTML = `<canvas aria-hidden="true"></canvas><div class="cele-card"><figure class="cele-patch" aria-hidden="true">${PATCH.svg("happy", { size: 76, id: "cele" })}</figure><b>${esc(title)}</b>${sub ? `<span>${esc(sub)}</span>` : ""}</div>`;
   document.body.appendChild(wrap);
   const stop = () => wrap.remove();
   wrap.addEventListener("click", stop);

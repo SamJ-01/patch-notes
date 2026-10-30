@@ -62,6 +62,7 @@ VIEWS.progress = () => {
       <p class="hint">Levels and badges show practice here. They aren't a qualification.</p></div>
     <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(prog * 100)}%;background:var(--sun)"></i></span><span class="mono">${RANKS.map(x => x[1]).join(" → ")}</span></div>
     <div class="stat-row">${stats.map(([k, v]) => `<div class="stat"><span class="eyebrow">${k}</span><b>${v}</b></div>`).join("")}</div>
+    ${reviewCardHtml()}
     <section class="stack"><h2 class="eyebrow" style="font-size:0.8rem">Badges</h2>
       <div class="badges">${BADGES.map(b => `<div class="badge ${P.badges[b.id] ? "got" : ""}"><span class="ico" aria-hidden="true">${P.badges[b.id] ? "★" : "☆"}</span><span class="stack" style="gap:2px"><b>${esc(b.name)}</b><span>${esc(b.desc)}</span>${P.badges[b.id] ? `<span class="mono" style="font-size:0.7rem;color:var(--good)">earned ${esc(P.badges[b.id])}</span>` : ""}</span></div>`).join("")}</div></section>
     <section class="stack"><h2 class="eyebrow" style="font-size:0.8rem">Learning paths</h2><div class="paths-grid">${DATA.paths.map(pathCard).join("")}</div></section>
@@ -83,8 +84,11 @@ VIEWS.progress = () => {
             <div class="row"><button class="btn" type="button" id="pcode-restore">Restore from code</button></div></div>
         </div></details>
       <div class="row"><button class="btn brand" type="button" id="export">Download a backup file</button><label class="btn ghost" for="import-file">Restore from a file</label><input type="file" id="import-file" accept="application/json,.json" class="sr-only"><button class="btn ghost" type="button" id="reset">Reset my progress</button></div>
-      <p class="muted" id="reset-msg" role="status"></p></section>
+      <p class="muted" id="reset-msg" role="status"></p>
+      <label class="pn-set"><input type="checkbox" id="patch-toggle"> Show Patch, the guide, in the corner</label></section>
   </div>`;
+  const pt = $("patch-toggle");
+  if (pt) { pt.checked = !patchHidden(); pt.addEventListener("change", () => { setPatchHidden(!pt.checked); pt.checked ? mountCompanion() : unmountCompanion(); }); }
   // A compact, copy-pasteable backup that works on any device (handy on phones, where downloading a file is fiddly).
   const encodeProgress = () => btoa(unescape(encodeURIComponent(JSON.stringify({ app: "patch-notes", version: 1, progress: P }))));
   const pcodeEl = $("pcode"); if (pcodeEl) pcodeEl.value = encodeProgress();
@@ -118,6 +122,100 @@ VIEWS.progress = () => {
     resetArmed = Date.now(); $("reset").textContent = "Click again to confirm"; $("reset-msg").textContent = "This clears XP, badges and progress in this browser.";
   });
 };
+
+/* REVIEW: spaced repetition (static/js/review.js). The deck is the glossary terms a learner has met (tapped an
+   underlined word) or whose topic they've finished; a short daily recall keeps them for the exam, and the ones
+   found hard come back sooner. Everything stays in the browser. */
+const revDay = () => { const d = new Date(); return Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000); };
+// Every single-answer exam question, by id, so a missed one can become a review card. (Multi-answer questions
+// need a different input and stay in the exam page for now.)
+const Q_BY_ID = (() => { const m = {}; (DATA.certs || []).forEach(c => (c.questions || []).forEach(q => { if ((q.options || []).filter(o => o.correct).length === 1) m[q.id] = { q, cert: c.name }; })); return m; })();
+const parseCard = id => id.startsWith("q:") ? { kind: "q", key: id.slice(2) } : { kind: "t", key: id.startsWith("t:") ? id.slice(2) : id };
+function reviewDeckIds() {
+  const ids = new Set(Object.keys(P.review || {}));                       // anything already scheduled stays in the deck
+  const gids = new Set(DATA.glossary.map(g => g.id)), done = new Set(Object.keys(P.done || {}));
+  Object.keys(P.terms || {}).filter(id => gids.has(id)).forEach(id => ids.add("t:" + id));          // terms you've tapped
+  DATA.glossary.filter(g => g.lesson && done.has(g.lesson)).forEach(g => ids.add("t:" + g.id));      // terms from topics you've finished
+  for (const qid in Q_BY_ID) if (P.exam[qid] && P.exam[qid].last === 0) ids.add("q:" + qid);         // questions you got wrong
+  return [...ids].filter(id => { const p = parseCard(id); return p.kind === "q" ? Q_BY_ID[p.key] : GLOSS[p.key]; });
+}
+// A quick synchronous due count for the home-page nudge (no scheduling, just the comparison).
+function reviewDueCount() { const t = revDay(), r = P.review || {}; return reviewDeckIds().filter(id => !r[id] || r[id].due <= t).length; }
+function reviewCardHtml() {
+  const ids = reviewDeckIds();
+  if (!ids.length) return `<section class="panel rev-cta"><div class="eyebrow">New · spaced repetition</div><h2>Review</h2>
+    <p class="muted" style="max-width:66ch">Lock in what you learn. The terms you meet and the exam questions you get wrong are added to a review deck that brings them back on the right day, so they stick.</p>
+    <a class="btn ghost" href="#review" style="justify-self:start">How it works</a></section>`;
+  const due = reviewDueCount();
+  return `<section class="panel rev-cta"><div class="eyebrow">Spaced repetition</div><h2>Review${due ? ` · ${due} due` : ""}</h2>
+    <p class="muted" style="max-width:66ch">${due ? `${due} card${due === 1 ? "" : "s"} ready to review. A few minutes keeps them for the exam, and the ones you find hard come back sooner.` : `All caught up. ${ids.length} card${ids.length === 1 ? "" : "s"} in your deck.`}</p>
+    <a class="btn ${due ? "brand" : "ghost"}" href="#review" style="justify-self:start">${due ? "Review now →" : "Open review"}</a></section>`;
+}
+VIEWS.review = () => {
+  main.innerHTML = `<div class="view"><div class="view-head"><a class="link-btn" href="#progress">← You</a><div class="eyebrow">Spaced repetition</div><h1>Review</h1>
+    <p>A short daily recall of the terms you've met and the exam questions you got wrong, so they actually stick. The ones you find hard come back sooner, the easy ones later.</p></div>
+    <div id="rev-root"><div class="empty">Loading your deck…</div></div></div>`;
+  import("./js/review.js").then(R => { if (parseRoute().path === "review" && $("rev-root")) mountReview(R); })
+    .catch(() => { const e = $("rev-root"); if (e) e.innerHTML = `<div class="empty">Couldn't load the review deck.</div>`; });
+};
+function revStats(R) { const ids = reviewDeckIds(), s = R.deckStats(ids, P.review, R.dayNum());
+  return `<div class="rev-stats"><span><b>${s.total}</b> in deck</span><span><b>${s.due}</b> due</span><span><b>${s.learning}</b> learning</span></div>`; }
+function mountReview(R) {
+  const root = $("rev-root"); if (!root) return;
+  const ids = reviewDeckIds(), today = R.dayNum();
+  if (!ids.length) { root.innerHTML = `<section class="panel"><h2>Your deck fills as you learn</h2>
+    <p class="muted">Tap an underlined term, finish a topic, or get an exam question wrong, and it's added here. Then come back daily to lock it in.</p>
+    <a class="btn brand" href="#learn" style="justify-self:start">Start a lesson →</a></section>`; return; }
+  const queue = R.dueCards(ids, P.review, today);
+  if (!queue.length) { const nd = R.nextDue(ids, P.review, today), d = nd == null ? null : nd - today;
+    root.innerHTML = `<section class="panel rev-done"><div class="eyebrow">Spaced repetition</div><h2>All caught up ✓</h2>
+      <p class="muted">Nothing to review right now. Next review ${d === 0 || d == null ? "later today" : d === 1 ? "tomorrow" : "in " + d + " days"}.</p></section>${revStats(R)}`; return; }
+  let i = 0, reviewed = 0, awarded = false;
+  const grade = g => {
+    const id = queue[i];
+    P.review[id] = R.schedule(P.review[id] || R.freshCard(today), g, today);
+    if (!awarded) { award(3, "Daily review", { quiet: true }); awarded = true; } else saveP();  // one log entry, marks the day
+    reviewed++; i++; draw();
+  };
+  const head = kind => `<div class="rev-top"><span class="eyebrow">Card ${i + 1} of ${queue.length}</span><span class="muted mono">${kind}</span></div>`;
+  const draw = () => {
+    if (i >= queue.length) { root.innerHTML = `<section class="panel rev-done"><div class="eyebrow">Nice work</div><h2>Session done ✓</h2>
+      <p class="muted">You reviewed <b>${reviewed}</b> card${reviewed === 1 ? "" : "s"}. The ones you found hard come back soon; the easy ones later.</p>
+      <div class="row"><a class="btn ghost" href="#learn">Keep learning</a><a class="link-btn" href="#progress">Your progress</a></div></section>${revStats(R)}`; return; }
+    const p = parseCard(queue[i]);
+    if (p.kind === "q") return drawQuestion(p.key);
+    const g = GLOSS[p.key];
+    root.innerHTML = `<section class="panel rev-card">${head(esc(g.kind || "Term"))}
+      <h2 class="rev-term">${esc(g.term)}</h2>
+      <div class="rev-ans" id="rev-ans" aria-live="polite"><button type="button" class="btn brand" id="rev-show">Show the meaning</button></div></section>`;
+    $("rev-show").addEventListener("click", () => {
+      $("rev-ans").innerHTML = `<p class="rev-short">${gloss(g.short, 2)}</p><p class="rev-q muted">How well did you remember it?</p>
+        <div class="row rev-grades"><button type="button" class="btn ghost" data-g="again">Again</button>
+          <button type="button" class="btn" data-g="good">Good</button><button type="button" class="btn brand" data-g="easy">Easy</button></div>`;
+      $("rev-ans").querySelectorAll("[data-g]").forEach(b => b.addEventListener("click", () => grade(b.dataset.g)));
+    });
+    $("rev-show").focus();
+  };
+  // A missed exam question: answer it again. Right first time counts as "good" (comes back later), wrong as
+  // "again" (comes back soon). The answer also updates the objective's exam stats, so readiness reflects it.
+  const drawQuestion = qid => {
+    const q = Q_BY_ID[qid].q, correctIdx = q.options.findIndex(o => o.correct);
+    root.innerHTML = `<section class="panel rev-card rev-qcard">${head("Exam question")}
+      <p class="q rev-stem">${gloss(q.stem, 3)}</p>
+      <div class="opts" id="rev-opts">${q.options.map((o, j) => `<button class="opt" data-j="${j}">${esc(o.text)}</button>`).join("")}</div>
+      <div class="fb" id="rev-fb" aria-live="polite"></div></section>`;
+    root.querySelectorAll("#rev-opts .opt").forEach(b => b.addEventListener("click", () => {
+      const j = Number(b.dataset.j), correct = !!q.options[j].correct;
+      root.querySelectorAll("#rev-opts .opt").forEach((btn, k) => { btn.disabled = true; if (q.options[k].correct) btn.classList.add("right"); else if (k === j) btn.classList.add("wrong"); });
+      const s = P.exam[qid] || (P.exam[qid] = { r: 0, w: 0, last: 0 }); if (correct) { s.r++; s.last = 1; } else { s.w++; s.last = 0; }
+      $("rev-fb").innerHTML = `<div class="feedback">${correct ? '<b class="ok">Correct.</b>' : '<b class="no">Not quite.</b>'} ${gloss(q.options[j].why || q.options[correctIdx].why, 3)}</div>
+        <div class="row"><button type="button" class="btn brand" id="rev-next">Next →</button></div>`;
+      $("rev-next").addEventListener("click", () => grade(correct ? "good" : "again"));
+      $("rev-next").focus();
+    }));
+  };
+  draw();
+}
 
 /* PLAY */
 const GS = { mode: "phish", phish: null, quiz: null };

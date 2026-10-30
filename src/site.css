@@ -342,6 +342,7 @@ footer { padding-inline: 16px; border-top: 1px solid var(--line); }
 .cele-card { position: relative; display: grid; gap: 4px; text-align: center; background: var(--surface); border: 2px solid var(--sun); border-radius: var(--radius-sm); padding: 16px 26px; box-shadow: 0 0 60px rgba(var(--sun-rgb), 0.35), 0 20px 60px rgba(0, 0, 0, 0.6); }
 .cele-card b { font: 700 1.6rem var(--font-display); text-transform: uppercase; color: var(--sun); letter-spacing: 0.03em; }
 .cele-card span { color: var(--ink); font-family: var(--font-mono); font-size: 0.9rem; }
+.cele-patch { margin: 0 auto 2px; width: 76px; }
 @media (prefers-reduced-motion: no-preference) { .cele-card { animation: cele-pop 0.45s cubic-bezier(.2, 1.4, .4, 1); } @keyframes cele-pop { from { transform: scale(0.6); opacity: 0; } } }
 .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--sun); color: var(--sun-ink); font-weight: 700; padding: 10px 18px; border-radius: 999px; box-shadow: 0 6px 24px rgb(0 0 0 / 0.18); z-index: 20; }
 
@@ -667,6 +668,106 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .im-node.bad .im-ic { stroke: var(--bad); }
 .infra-map figcaption { font-size: 0.82rem; margin-top: 6px; }
 
+/* Graph charts (static/js/chart.js): a table of numbers drawn as bars or a line, so a learner reads it at a glance.
+   Namespaced gchart/ch- so it never collides with the CVE radar's own .chart. */
+.gchart { margin: 0; min-width: 0; }
+.gchart-title { font-weight: 700; margin: 0 0 8px; }
+.ch-svg { width: 100%; max-width: 100%; height: auto; display: block; }
+.ch-grid { stroke: var(--line); stroke-width: 1; opacity: 0.5; }
+.ch-ytick, .ch-xtick { fill: var(--muted); font: 10px var(--font-mono, ui-monospace, monospace); }
+.ch-bar { transition: opacity 0.15s; }
+.ch-line { stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.ch-threshold { stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 5 4; }
+.ch-thlbl { fill: var(--muted); font: 10px var(--font-mono, ui-monospace, monospace); }
+.gchart-key { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 10px 0 0; padding: 0; }
+.gchart-key li { display: flex; align-items: center; gap: 7px; font-size: 0.84rem; color: var(--muted); }
+.ch-swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: none; }
+.gchart-cap { font-size: 0.82rem; margin: 8px 0 0; }
+
+/* Bespoke case drawings (static/js/caseart.js): permission grid, crypto lock states, Wi-Fi rogue-AP map. */
+.caseart { margin: 0; text-align: center; }
+.ca-svg { width: 100%; max-width: 340px; height: auto; display: block; margin: 0 auto; }
+.caseart figcaption { font-size: 0.82rem; margin-top: 8px; }
+.ca-cell { fill: var(--surface-2, var(--surface)); stroke: var(--line); stroke-width: 1.2; }
+.ca-cell.on { fill: rgba(var(--brand-rgb), 0.18); stroke: rgba(var(--brand-rgb), 0.5); }
+.ca-cell.bad { fill: rgba(var(--bad-rgb), 0.22); stroke: var(--bad); }
+.ca-bit { fill: var(--ink); font: 700 13px var(--font-mono, ui-monospace, monospace); }
+.ca-rlbl, .ca-clbl { fill: var(--muted); font: 9px var(--font-mono, ui-monospace, monospace); }
+.ca-lock { fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.ca-lock.open { stroke: var(--bad); } .ca-lock.weak { stroke: var(--sun); } .ca-lock.strong { stroke: var(--good); }
+.ca-llbl { fill: var(--ink); font: 700 9px var(--font-mono, ui-monospace, monospace); }
+.ca-lsub { font: 8px var(--font-body); }
+.ca-lsub.open { fill: var(--bad); } .ca-lsub.weak { fill: var(--sun); } .ca-lsub.strong { fill: var(--good); }
+.ca-dev { fill: var(--surface); stroke: var(--ink); stroke-width: 1.4; }
+.ca-dev-l { stroke: var(--ink); stroke-width: 1.4; }
+.ca-ap circle { fill: var(--surface); stroke-width: 1.6; }
+.ca-ap.good circle { stroke: var(--good); } .ca-ap.bad circle { stroke: var(--bad); } .ca-ap.muted circle { stroke: var(--muted); }
+.ca-ap-ic { fill: none; stroke: var(--ink); stroke-width: 1.3; stroke-linecap: round; }
+.ca-aplbl { fill: var(--ink); font: 700 9px var(--font-mono, ui-monospace, monospace); }
+.ca-apsub { fill: var(--muted); font: 8px var(--font-body); }
+.ca-link { stroke-width: 1.6; } .ca-link.trust { stroke: var(--good); } .ca-link.danger { stroke: var(--bad); stroke-dasharray: 4 3; } .ca-link.ignore { stroke: var(--muted); opacity: 0.4; }
+
+/* --- Ambient life --------------------------------------------------------------------------------------------
+   A slow-drifting glow behind every page and data that flows along diagram links, so the site feels alive
+   rather than static. Everything here is purely decorative, GPU-cheap (transform / stroke-dashoffset only), and
+   switched off entirely under prefers-reduced-motion. */
+body::before {
+  content: ""; position: fixed; inset: -25vmax; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(38vmax 38vmax at 22% 18%, rgba(var(--brand-rgb), 0.12), transparent 60%),
+    radial-gradient(30vmax 30vmax at 82% 72%, rgba(var(--sun-rgb), 0.10), transparent 62%);
+}
+:root[data-theme="light"] body::before, :root:not([data-theme="dark"]) body::before { opacity: 0.8; }
+@media (prefers-reduced-motion: no-preference) {
+  body::before { animation: aurora 26s ease-in-out infinite alternate; will-change: transform; }
+  @keyframes aurora { from { transform: translate3d(-4%, -3%, 0) scale(1); } to { transform: translate3d(4%, 4%, 0) scale(1.16); } }
+  /* The grid gently drifts one cell on a loop, so the whole page has slow, continuous motion. */
+  body { animation: grid-drift 32s linear infinite; }
+  @keyframes grid-drift { to { background-position: 0 0, 0 0, 32px 32px, 32px 32px; } }
+  /* Flow: little dashes marching along a link read as live traffic, on the infra and Wi-Fi maps only.
+     (No bare .flow selector: stroke-dasharray/offset are inherited, so it would dash every stroke inside
+     a lesson's flow diagram, which also uses class "flow".) */
+  .im-link, .ca-link.trust, .ca-link.danger { stroke-dasharray: 5 7; animation: flow-dash 1.5s linear infinite; }
+  .im-link.watch { animation-duration: 2.4s; opacity: 0.5; }
+  .ca-link.trust { animation-duration: 1.2s; } .ca-link.danger { animation-duration: 0.9s; stroke-dasharray: 5 5; }
+  @keyframes flow-dash { to { stroke-dashoffset: -24; } }
+  /* The "you're here" step gently breathes, so the current stage of the loop draws the eye. */
+  .loop-node.here .loop-dot { animation: here-pulse 2.4s ease-in-out infinite; }
+  @keyframes here-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(var(--brand-rgb), 0.5); } 55% { box-shadow: 0 0 0 6px rgba(var(--brand-rgb), 0); } }
+  /* Each page eases in as you navigate, so moving around the site feels fluid. */
+  .view { animation: view-rise 0.34s ease-out both; }
+  @keyframes view-rise { from { opacity: 0; transform: translateY(10px); } }
+  /* Charts build themselves on open: bars grow from the axis, the line draws left to right, dots arrive. */
+  .ch-bar { transform-box: fill-box; transform-origin: bottom; animation: bar-grow 0.6s cubic-bezier(.2, .8, .3, 1) both; }
+  .gchart svg:hover .ch-bar { filter: brightness(1.12); }
+  @keyframes bar-grow { from { transform: scaleY(0); } }
+  .ch-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: line-draw 0.9s ease-out 0.1s forwards; }
+  @keyframes line-draw { to { stroke-dashoffset: 0; } }
+  .ch-dot { opacity: 0; animation: dot-in 0.3s ease-out forwards; }
+  .ch-dot:nth-of-type(1) { animation-delay: 0.5s; } .ch-dot:nth-of-type(2) { animation-delay: 0.6s; }
+  .ch-dot:nth-of-type(3) { animation-delay: 0.7s; } .ch-dot:nth-of-type(4) { animation-delay: 0.8s; }
+  .ch-dot:nth-of-type(n+5) { animation-delay: 0.9s; }
+  @keyframes dot-in { from { opacity: 0; } to { opacity: 1; } }
+
+  /* Home: the completed route road draws itself in from GO to where you are. */
+  .route-road.done { stroke-dasharray: 1; stroke-dashoffset: 1; animation: route-draw 1.2s ease-out 0.2s forwards; }
+  @keyframes route-draw { to { stroke-dashoffset: 0; } }
+  /* Route stops lift a touch on hover. */
+  .route-stop .route-dot { transition: transform 0.15s ease; transform-box: fill-box; transform-origin: center; }
+  .route-stop:hover .route-dot, .route-stop:focus-visible .route-dot { transform: scale(1.12); }
+  /* The briefing command types out with a caret. */
+  .changelog .ver .cmd.typing::after { content: "\2588"; margin-left: 1px; color: var(--brand); animation: blink 1.1s steps(1) infinite; }
+  /* The actively-exploited CVEs quietly pulse their red stripe. */
+  .kev-list .kev-item { animation: kev-glow 2.8s ease-in-out infinite; }
+  @keyframes kev-glow { 0%, 100% { box-shadow: -4px 0 0 -3px transparent; } 50% { box-shadow: -4px 0 9px -3px var(--exploited); } }
+  /* The XP bar fills in on load and refills when you earn. */
+  #xp .bar i { animation: xp-grow 0.9s cubic-bezier(.2, .8, .3, 1); }
+  @keyframes xp-grow { from { width: 0; } }
+  /* A correct quiz answer gives a little pop. */
+  .opt.right { animation: opt-pop 0.4s cubic-bezier(.2, 1.4, .4, 1); }
+  @keyframes opt-pop { from { transform: scale(0.96); } 50% { transform: scale(1.03); } }
+}
+
 /* The alert's work is split into two labelled cards: Investigate (logs, findings) and Decide (ask a team, close).
    They stack on narrow screens and sit side by side on a wide one, so the panel reads as steps, not one long scroll. */
 .ag-worksplit { display: grid; gap: 14px; min-width: 0; }
@@ -687,6 +788,7 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 /* The "See it at work" diagrams themselves (static/js/explainers.js). SVG in currentColor, legible in both themes. */
 .xpl { display: grid; gap: 12px; margin: 0; }
 .xpl-head b { font-size: 1rem; }
+.xpl-why { margin: -2px 0 2px; max-width: 70ch; }
 .xpl-toggle { align-items: center; gap: 12px; }
 .xpl-stage { display: grid; gap: 10px; }
 .xpl-svg { width: 100%; height: auto; max-width: 540px; margin: 0 auto; display: block; }
@@ -2113,3 +2215,93 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 /* Keyboard accessibility: let visitors bypass repeated navigation and jump straight to the current view. */
 .skip-link { position: fixed; z-index: 10000; top: 8px; left: 8px; padding: 10px 14px; border: 2px solid var(--brand); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); font-weight: 600; text-decoration: none; transform: translateY(calc(-100% - 12px)); }
 .skip-link:focus { transform: translateY(0); outline: 3px solid var(--sun); outline-offset: 3px; }
+
+/* Review (spaced repetition, static/js/review.js + 08-you.js): the daily recall card, the home nudge and the
+   dashboard bits. Plain, calm, keyboard friendly. */
+.rev-nudge { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid rgba(var(--sun-rgb), 0.5); border-radius: var(--radius); background: var(--brand-soft); color: var(--ink); text-decoration: none; }
+.rev-nudge .eyebrow { color: var(--brand); }
+.rev-nudge > span:nth-child(2) { flex: 1 1 auto; min-width: 0; }
+.rev-nudge b { color: var(--brand); }
+.rev-nudge-go { font: 0.8rem var(--font-mono); color: var(--brand); white-space: nowrap; }
+.rev-nudge:hover { border-color: var(--brand); }
+
+/* Streak + daily goal strip (home). Flame lights up once a streak is running; a week of dots tracks the habit. */
+.streak-strip { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); }
+.streak-strip.lit { border-color: rgba(var(--sun-rgb), 0.55); background: linear-gradient(100deg, rgba(var(--sun-rgb), 0.1), var(--card) 60%); }
+.sl-flame { position: relative; width: 44px; height: 44px; flex: 0 0 auto; display: grid; place-items: center; }
+.sl-flame svg { width: 44px; height: 44px; }
+.sl-flame .fl-outer { fill: var(--line); transition: fill 0.3s; }
+.sl-flame .fl-inner { fill: var(--card); transition: fill 0.3s; }
+.streak-strip.lit .fl-outer { fill: var(--sun); }
+.streak-strip.lit .fl-inner { fill: #ff8a3c; }
+.sl-n { position: absolute; bottom: 1px; font: 700 0.8rem var(--font-mono); color: var(--bg); }
+.streak-strip:not(.lit) .sl-n { color: var(--muted); }
+.sl-main { flex: 1 1 auto; min-width: 0; display: grid; gap: 4px; }
+.sl-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.sl-head b { font-size: 1.02rem; }
+.sl-week { display: inline-flex; gap: 5px; }
+.sl-dot { width: 10px; height: 10px; border-radius: 3px; background: var(--line); }
+.sl-dot.on { background: var(--sun); }
+.sl-dot.today { outline: 2px solid var(--brand); outline-offset: 1px; }
+.sl-goal { font-size: 0.9rem; color: var(--muted); }
+.sl-goal.on { color: var(--ok); }
+.sl-cta { flex: 0 0 auto; white-space: nowrap; }
+@media (max-width: 560px) { .streak-strip { flex-wrap: wrap; } .sl-cta { width: 100%; justify-content: center; } }
+@media (prefers-reduced-motion: no-preference) {
+  .streak-strip.lit .sl-flame svg { transform-origin: 50% 85%; animation: sl-flicker 2.6s ease-in-out infinite; }
+  @keyframes sl-flicker { 0%, 100% { transform: scale(1) rotate(0deg); } 30% { transform: scale(1.06, 0.96) rotate(-1.5deg); } 65% { transform: scale(0.97, 1.05) rotate(1.5deg); } }
+}
+
+/* Patch, the site guide. Drawn in the device-library style (hw.js), so it shares the hw-* tokens and themes for free. */
+.patch { display: block; overflow: visible; }
+.pn-body { stroke: var(--hw-stroke); stroke-width: 1.6; }
+.pn-body.pn-top { fill: var(--hw-face-top); stroke: none; }
+.pn-body.pn-side { fill: var(--hw-face-side); stroke: none; }
+.pn-screen { fill: var(--hw-screen); stroke: rgba(var(--brand-rgb), 0.7); stroke-width: 1.4; }
+.pn-eye { fill: var(--brand); }
+.pn-arc, .pn-mouth { fill: none; stroke: var(--brand); stroke-width: 4; stroke-linecap: round; }
+.pn-caret { fill: var(--sun); }
+.pn-prompt { fill: none; stroke: rgba(var(--brand-rgb), 0.65); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.pn-ant { fill: none; stroke: var(--hw-stroke); stroke-width: 5; stroke-linecap: round; }
+.pn-dot, .pn-plate { fill: var(--sun); }
+.pn-plus { fill: var(--bg); }
+.pn-think circle { fill: var(--brand); opacity: 0.8; }
+.pn-shadow { fill: var(--hw-shadow); }
+@media (prefers-reduced-motion: no-preference) {
+  .pn-live { animation: pn-bob 4.6s ease-in-out infinite; transform-origin: 50% 100%; }
+  @keyframes pn-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  .pn-live .pn-caret { animation: blink 1.1s steps(1) infinite; }
+  .pn-live .pn-dot { animation: hw-blink 2.6s steps(1) infinite; }
+  .pn-live .pn-dot:nth-of-type(2n) { animation-delay: -1.1s; }
+  .pn-wave-arm { transform-box: fill-box; transform-origin: 20% 62%; animation: pn-wave 0.62s ease-in-out 3; }
+  @keyframes pn-wave { 0%, 100% { transform: rotate(0deg); } 30% { transform: rotate(-20deg); } 70% { transform: rotate(15deg); } }
+}
+
+/* Patch the companion: a small corner guide that sits just above the status bar and pops the occasional nudge. */
+.pn-companion { position: fixed; right: 28px; bottom: calc(58px + env(safe-area-inset-bottom, 0px)); z-index: 15; display: grid; justify-items: end; gap: 10px; pointer-events: none; }
+.pn-companion > * { pointer-events: auto; }
+.pn-co-figure { background: none; border: 0; padding: 0; cursor: pointer; line-height: 0; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.4)); }
+.pn-co-figure .patch { width: 66px; height: auto; }
+.pn-co-figure:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; border-radius: 12px; }
+.pn-co-bubble { max-width: min(264px, calc(100vw - 56px)); background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 14px 14px 4px 14px; padding: 10px 14px; font: 0.92rem/1.5 var(--font-body); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }
+.pn-co-bubble a { color: var(--brand); font-weight: 600; white-space: nowrap; }
+.pn-co-close { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font: 700 0.9rem/1 var(--font-body); cursor: pointer; display: grid; place-items: center; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); }
+.pn-co-close:hover { color: var(--ink); border-color: var(--brand); }
+@media (max-width: 520px) { .pn-co-figure .patch { width: 56px; } .pn-companion { right: 18px; bottom: calc(52px + env(safe-area-inset-bottom, 0px)); } }
+@media (prefers-reduced-motion: no-preference) { .pn-co-bubble { animation: pn-co-in 0.25s ease-out; } @keyframes pn-co-in { from { opacity: 0; transform: translateY(6px); } } }
+.pn-set { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 0.9rem; color: var(--muted); cursor: pointer; }
+.pn-set input { width: 16px; height: 16px; accent-color: var(--brand); }
+.rev-cta { display: grid; gap: 8px; }
+.rev-card { display: grid; gap: 14px; text-align: center; }
+.rev-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.rev-term { font-size: clamp(1.4rem, 5vw, 2rem); overflow-wrap: anywhere; }
+.rev-ans { display: grid; gap: 12px; justify-items: center; min-height: 72px; align-content: center; }
+.rev-short { margin: 0; font-size: 1.05rem; max-width: 60ch; line-height: 1.5; }
+.rev-q { margin: 0; font-size: 0.9rem; }
+.rev-grades { justify-content: center; gap: 10px; }
+.rev-stats { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 12px; font: 0.82rem var(--font-mono); color: var(--muted); }
+.rev-stats b { color: var(--ink); }
+.rev-done { text-align: center; }
+.rev-qcard { text-align: left; }
+.rev-qcard .rev-stem { font-size: 1.05rem; margin: 0; }
+.rev-qcard .opts { margin-top: 4px; }

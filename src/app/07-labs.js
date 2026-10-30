@@ -150,7 +150,12 @@ const CARD_PHOTOS = new Set(["dhcp", "dns", "phish-triage", "ssh-brute", "hashin
   "cia-triad", "frameworks", "phishing", "ransomware", "malware", "zero-day",
   "vuln-management", "supply-chain", "data-breach", "nation-state", "ddos", "ai-security",
   "cloud", "identity", "iot-ot", "web-sqli", "web-xss", "web-access",
-  "networking", "encryption", "linux", "soc", "incident-response", "osint", "wireless", "certificates", "security-controls", "network-ops", "network-modern"]);
+  "networking", "encryption", "linux", "soc", "incident-response", "osint", "wireless", "certificates", "security-controls", "network-ops", "network-modern",
+  // Diagnose cases
+  "cia-which-pillar", "frameworks-which-fits", "controls-what-was-missing",
+  "ddos-who-stops-it", "apt-or-smash-grab", "which-dependency", "patch-first", "zero-day-or-known",
+  "trust-the-ai-output", "ot-patch-window", "rogue-or-misconfig", "change-broke-it", "zero-trust-decision",
+  "encrypted-but-readable", "why-untrusted", "who-touched-the-file", "what-did-we-leak"]);
 // Tools reuse the picture of the lab they belong with.
 const PHOTO_ALIAS = { "subnet-calc": "subnetting" };
 const cardPhoto = (src, w = 506, h = 253) => `<span class="card-art photo"><img class="card-img" src="${esc(src)}" alt="" width="${w}" height="${h}" loading="lazy" decoding="async"></span>`;
@@ -393,7 +398,7 @@ function moduleLab(l) {
       onComplete: () => completeLab(l),
       onReset: () => resetLab(l.id),
     });
-    topicTop($("lab-root"), pageTopic(l), "experiment");
+    topicTop($("lab-root"), pageTopic(l), labStage(l));
   }).catch(() => { $("lab-root").innerHTML = `<div class="empty">Couldn't load this lab. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
 }
 function completeLab(l) {
@@ -404,6 +409,20 @@ function completeLab(l) {
 // Clear a lab's answers so it can be practised again (XP is only ever awarded once).
 function resetLab(id) { P.labSteps[id] = []; saveP(); route(); }
 const norm = v => String(v || "").trim().toLowerCase().replace(/^["'<]+|[">']+$/g, "");
+// A lab's "picture first" panel. `visual.kind` picks the renderer (all are loaded on demand, like a lesson's
+// concept/explainer): a chart from numbers, a concept graphic, one of the interactive explainers, or a bespoke
+// case drawing in caseart.js. `here` guards against the learner having navigated away before the import resolves.
+function mountVisual(v, here) {
+  if (!$("lab-visual")) return;
+  const done = render => { const t = $("lab-visual"); if (here() && t) render(t); };
+  const fail = () => { const t = $("lab-visual"); if (t) t.innerHTML = `<div class="empty">Couldn't load the picture.</div>`; };
+  const dispatch = {
+    concept: () => import("./js/concept.js").then(c => done(t => c.mount(t, v.concept))),
+    explainer: () => import("./js/explainers.js").then(x => done(t => x.mount(t, v.name, { ...(v.opts || {}), head: false }))),
+    chart: () => import("./js/chart.js").then(ch => done(t => ch.mount(t, v.chart))),
+  };
+  (dispatch[v.kind] || (() => import("./js/caseart.js").then(a => done(t => a.mount(t, v)))))().catch(fail);
+}
 function labView(id) {
   const l = LAB[id]; if (!l) return VIEWS.missions();
   if (l.kind === "cvss") return cvssLab(l);
@@ -412,7 +431,8 @@ function labView(id) {
   main.innerHTML = `<div class="view"${bannerAttr(id)}><article class="article" style="max-width:900px">
     <a class="link-btn" href="#missions">← Missions</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${l.minutes} min · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${gloss(l.intro, 4)}</p></div>
-    ${loopStrip(pageTopic(l), "experiment")}
+    ${loopStrip(pageTopic(l), labStage(l))}
+    ${l.visual ? `<section class="panel">${l.visual.why ? `<p class="muted xpl-why">${gloss(l.visual.why, 2)}</p>` : ""}<div id="lab-visual"><div class="empty">Loading the picture…</div></div></section>` : ""}
     ${l.primer ? `<section class="panel"><h2>${esc(l.primer.title)}</h2><ul class="keys">${l.primer.keys.map(k => `<li>${keyIcon(k.icon)}<b>${gloss(k.label, 1)}</b><span>${esc(k.text)}</span></li>`).join("")}</ul>
       ${l.primer.results ? `<p class="muted" style="margin:10px 0 4px">What each result means:</p><ul class="results">${l.primer.results.map(([w, m, tone]) => `<li class="${esc(tone)}"><b class="mono">${esc(w)}</b>${esc(m)}</li>`).join("")}</ul>` : ""}</section>` : ""}
     ${l.artifact.kind === "headers" ? `<section class="panel"><div class="panel-title"><h2>The email</h2><span class="sim-tag">Simulated email</span></div>
@@ -428,6 +448,7 @@ function labView(id) {
     </div>`).join("")}</section>
     <div class="row"><button class="btn ghost" data-reset-lab="${esc(id)}">↺ Reset answers</button><span class="muted">${P.labs[id] ? `Completed ${esc(P.labs[id])}.` : ""} Related: <a href="#lesson-${esc(l.lesson)}">${esc(LESSON[l.lesson]?.title || l.lesson)}</a></span></div>
   </article></div>`;
+  if (l.visual) mountVisual(l.visual, () => parseRoute().path === "missions/" + id);
   const lines = l.artifact.text.split("\n");
   const drawLog = () => {
     const f = ($("lab-f")?.value || "").trim().toLowerCase();
@@ -563,7 +584,7 @@ function cvssLab(l) {
     main.innerHTML = `<div class="view"${bannerAttr(l.id)}><article class="article" style="max-width:900px">
       <a class="link-btn" href="#missions">← Missions</a>
       <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${done.size}/${l.scenarios.length} scenarios · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.intro)}</p></div>
-      ${loopStrip(pageTopic(l), "experiment")}
+      ${loopStrip(pageTopic(l), labStage(l))}
       <div class="row">${l.scenarios.map((x, i) => `<button class="chip" data-sc="${i}" aria-pressed="${i === cur}">${done.has(i) ? "✓ " : ""}${esc(x.title)}</button>`).join("")}</div>
       <section class="case"><h2 class="eyebrow">Scenario ${cur + 1}</h2><h3>${esc(sc.title)}</h3><p>${esc(sc.text)}</p></section>
       <div class="cvss-grid">${CVSS_METRICS.map(([k, label, opts]) => `<fieldset class="metric"><legend>${esc(label)}</legend><div class="row">${opts.map(([v, t]) => `<button class="chip" data-m="${k}" data-v="${v}" aria-pressed="${pick[k] === v}">${esc(t)}</button>`).join("")}</div></fieldset>`).join("")}</div>

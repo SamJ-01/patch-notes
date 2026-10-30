@@ -30,6 +30,10 @@
       {
        "type": "lab",
        "id": "name-the-control"
+      },
+      {
+       "type": "lab",
+       "id": "controls-what-was-missing"
       }
      ],
      "gap": "Categories and types are taught, and the 'Name that control' lab sorts a real register; practice questions cover the rest."
@@ -54,6 +58,10 @@
       {
        "type": "lab",
        "id": "cia-incidents"
+      },
+      {
+       "type": "lab",
+       "id": "cia-which-pillar"
       }
      ],
      "gap": "The CIA triad, authentication and zero trust are taught; gap analysis, physical security and deception (honeypots) aren't covered yet."
@@ -70,6 +78,10 @@
       {
        "type": "lab",
        "id": "slow-network"
+      },
+      {
+       "type": "lab",
+       "id": "change-broke-it"
       }
      ],
      "gap": "Change management is taught, and a change record is the clue in the slow network lab; approval processes are only in questions."
@@ -94,6 +106,14 @@
       {
        "type": "lab",
        "id": "cert-check"
+      },
+      {
+       "type": "lab",
+       "id": "encrypted-but-readable"
+      },
+      {
+       "type": "lab",
+       "id": "why-untrusted"
       }
      ]
     }
@@ -124,6 +144,10 @@
       {
        "type": "lab",
        "id": "advisory-hunt"
+      },
+      {
+       "type": "lab",
+       "id": "apt-or-smash-grab"
       }
      ],
      "gap": "Nation-state and criminal actors are covered through real cases, and a lab turns a state-actor advisory into a log hunt; hacktivists, insiders and shadow IT are only in questions."
@@ -219,6 +243,14 @@
       {
        "type": "lab",
        "id": "prompt-injection"
+      },
+      {
+       "type": "lab",
+       "id": "zero-day-or-known"
+      },
+      {
+       "type": "lab",
+       "id": "trust-the-ai-output"
       }
      ],
      "gap": "Web, zero-day and AI-related flaws are taught, and three labs read the evidence SQL injection, XSS and IDOR leave behind; memory-safety bugs and hardware flaws aren't covered, and there's no hands-on exploitation (deliberately)."
@@ -340,6 +372,14 @@
       {
        "type": "lab",
        "id": "factory-scan"
+      },
+      {
+       "type": "lab",
+       "id": "ot-patch-window"
+      },
+      {
+       "type": "lab",
+       "id": "zero-trust-decision"
       }
      ],
      "gap": "Cloud responsibility, IoT/OT and software-defined networking are taught; containers, virtualisation and serverless aren't covered yet."
@@ -450,6 +490,10 @@
       {
        "type": "lesson",
        "id": "linux"
+      },
+      {
+       "type": "lab",
+       "id": "who-touched-the-file"
       }
      ]
     },
@@ -484,6 +528,10 @@
       {
        "type": "lab",
        "id": "zero-day-advisory"
+      },
+      {
+       "type": "lab",
+       "id": "patch-first"
       }
      ]
     },
@@ -708,6 +756,10 @@
       {
        "type": "lab",
        "id": "map-the-attack"
+      },
+      {
+       "type": "lab",
+       "id": "frameworks-which-fits"
       }
      ],
      "gap": "Frameworks are introduced and NIST CSF 2.0 functions are practised in a lab; policies, standards, procedures and roles are only in practice questions."
@@ -740,6 +792,10 @@
       {
        "type": "lab",
        "id": "typosquat-pr"
+      },
+      {
+       "type": "lab",
+       "id": "which-dependency"
       }
      ],
      "gap": "Supply chain attacks are taught and a typosquatted dependency is caught in a lab; vendor assessment and agreements are only in practice questions."

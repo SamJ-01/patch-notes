@@ -3178,7 +3178,8 @@
   "kind": "Concept",
   "aliases": [
    "MAC address",
-   "MAC addresses"
+   "MAC addresses",
+   "MAC"
   ],
   "short": "A hardware address built into each network card, like 00:00:5e:00:53:24. It only matters on the local network.",
   "lesson": "networking",
@@ -4832,9 +4833,267 @@
   "kind": "Concept",
   "aliases": [
    "NIST CSF",
-   "CSF 2.0"
+   "CSF 2.0",
+   "CSF"
   ],
   "short": "A widely used framework with six functions: Govern, Identify, Protect, Detect, Respond, Recover.",
   "lesson": "frameworks"
+ },
+ {
+  "id": "http",
+  "term": "HTTP",
+  "kind": "Protocol",
+  "aliases": [
+   "HTTP",
+   "HyperText Transfer Protocol"
+  ],
+  "auto": true,
+  "short": "The language web browsers and servers use to request and send pages. Plain HTTP is unencrypted; HTTPS adds encryption.",
+  "lesson": "web-sqli",
+  "see": [
+   "tcp"
+  ]
+ },
+ {
+  "id": "url",
+  "term": "URL",
+  "kind": "Concept",
+  "aliases": [
+   "URL"
+  ],
+  "auto": true,
+  "short": "A web address: where something lives, like https://example.com/page. What counts is the host in the link, not the words shown.",
+  "see": [
+   "http"
+  ]
+ },
+ {
+  "id": "operating-system",
+  "term": "Operating system",
+  "kind": "Concept",
+  "aliases": [
+   "operating system",
+   "OS"
+  ],
+  "auto": true,
+  "short": "The core software that runs a device and its apps, such as Windows, macOS, Linux, Android or iOS."
+ },
+ {
+  "id": "isp",
+  "term": "ISP",
+  "kind": "Networking",
+  "aliases": [
+   "ISP",
+   "internet service provider"
+  ],
+  "auto": true,
+  "short": "Internet service provider: the company that connects you to the internet. Only they, or an upstream service, can stop a flood that fills your link.",
+  "lesson": "ddos",
+  "see": [
+   "ddos"
+  ]
+ },
+ {
+  "id": "lan",
+  "term": "LAN",
+  "kind": "Networking",
+  "aliases": [
+   "LAN",
+   "local area network"
+  ],
+  "auto": true,
+  "short": "Local area network: the network inside one site, like an office or a home.",
+  "lesson": "networking"
+ },
+ {
+  "id": "wan",
+  "term": "WAN",
+  "kind": "Networking",
+  "aliases": [
+   "WAN",
+   "wide area network"
+  ],
+  "auto": true,
+  "short": "Wide area network: a network that spans sites or cities, such as the link from an office to the internet.",
+  "lesson": "networking"
+ },
+ {
+  "id": "ico",
+  "term": "ICO",
+  "kind": "Governance",
+  "aliases": [
+   "ICO"
+  ],
+  "auto": true,
+  "short": "The UK's Information Commissioner's Office, the data-protection regulator. Serious personal-data breaches must be reported to it within 72 hours.",
+  "lesson": "data-breach"
+ },
+ {
+  "id": "pci-dss",
+  "term": "PCI DSS",
+  "kind": "Governance",
+  "aliases": [
+   "PCI DSS",
+   "PCI-DSS"
+  ],
+  "auto": true,
+  "short": "A mandatory security standard for any organisation that stores, processes or transmits payment card data.",
+  "lesson": "frameworks"
+ },
+ {
+  "id": "iso-27001",
+  "term": "ISO 27001",
+  "kind": "Governance",
+  "aliases": [
+   "ISO 27001",
+   "ISO/IEC 27001",
+   "ISMS"
+  ],
+  "auto": true,
+  "short": "An international standard for an information security management system (ISMS) that an organisation can be certified against.",
+  "lesson": "frameworks"
+ },
+ {
+  "id": "aes",
+  "term": "AES",
+  "kind": "Cryptography",
+  "aliases": [
+   "AES",
+   "AES-256",
+   "AES-GCM"
+  ],
+  "auto": true,
+  "short": "Advanced Encryption Standard: a strong, widely used symmetric cipher. AES-GCM also checks the data has not been tampered with.",
+  "lesson": "encryption",
+  "see": [
+   "encryption"
+  ]
+ },
+ {
+  "id": "hsm",
+  "term": "HSM",
+  "kind": "Cryptography",
+  "aliases": [
+   "HSM",
+   "hardware security module"
+  ],
+  "auto": true,
+  "short": "Hardware security module: a tamper-resistant device that stores and uses encryption keys so they never sit in plain software.",
+  "lesson": "encryption"
+ },
+ {
+  "id": "sha",
+  "term": "SHA",
+  "kind": "Cryptography",
+  "aliases": [
+   "SHA",
+   "SHA-256",
+   "SHA-1"
+  ],
+  "auto": true,
+  "short": "Secure Hash Algorithm: a family of one-way hash functions. SHA-256 is standard today; SHA-1 is broken for security use.",
+  "lesson": "encryption"
+ },
+ {
+  "id": "syn-flood",
+  "term": "SYN flood",
+  "kind": "Attack",
+  "aliases": [
+   "SYN flood"
+  ],
+  "auto": true,
+  "short": "A denial-of-service attack that opens many half-finished TCP connections to use up a server's resources.",
+  "lesson": "ddos",
+  "see": [
+   "dos",
+   "tcp"
+  ]
+ },
+ {
+  "id": "ntp",
+  "term": "NTP",
+  "kind": "Protocol",
+  "aliases": [
+   "NTP",
+   "Network Time Protocol"
+  ],
+  "auto": true,
+  "short": "Network Time Protocol keeps clocks in sync. Its servers can be abused to reflect and amplify traffic in a volumetric DDoS.",
+  "lesson": "ddos",
+  "see": [
+   "ddos"
+  ]
+ },
+ {
+  "id": "cdn",
+  "term": "CDN",
+  "kind": "Networking",
+  "aliases": [
+   "CDN",
+   "content delivery network"
+  ],
+  "auto": true,
+  "short": "Content delivery network: servers spread worldwide that cache a site close to users, which also helps absorb traffic floods."
+ },
+ {
+  "id": "tld",
+  "term": "TLD",
+  "kind": "Networking",
+  "aliases": [
+   "TLD",
+   "top-level domain"
+  ],
+  "auto": true,
+  "short": "The last part of a domain name, such as .com, .uk or .org."
+ },
+ {
+  "id": "dependency-confusion",
+  "term": "Dependency confusion",
+  "kind": "Attack",
+  "aliases": [
+   "dependency confusion"
+  ],
+  "auto": true,
+  "short": "A supply-chain attack where a public package with the same name as a private one, and a higher version, is pulled into a build instead.",
+  "lesson": "supply-chain",
+  "see": [
+   "supply-chain"
+  ]
+ },
+ {
+  "id": "base64",
+  "term": "Base64",
+  "kind": "Concept",
+  "aliases": [
+   "Base64"
+  ],
+  "auto": true,
+  "short": "A way to write binary data as text. It is encoding, not encryption: anyone can reverse it, so on its own it protects nothing.",
+  "lesson": "encryption",
+  "see": [
+   "encryption"
+  ]
+ },
+ {
+  "id": "ping",
+  "term": "Ping",
+  "kind": "Networking",
+  "aliases": [
+   "ping"
+  ],
+  "auto": true,
+  "short": "A basic test that sends a small packet to a host and times the reply, to check it is reachable and how fast it responds.",
+  "lesson": "networking"
+ },
+ {
+  "id": "rclone",
+  "term": "rclone",
+  "kind": "Tool",
+  "aliases": [
+   "rclone"
+  ],
+  "auto": true,
+  "short": "A legitimate command-line tool for copying files to and from cloud storage. Attackers abuse it to exfiltrate stolen data.",
+  "lesson": "data-breach"
  }
 ]

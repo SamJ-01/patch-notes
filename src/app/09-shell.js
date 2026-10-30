@@ -38,7 +38,7 @@ try {
 /* ---------- command palette ---------- */
 const cmdk = $("cmdk"), cmdIn = $("cmdk-input"), cmdOut = $("cmdk-out");
 let cmdLog = [], cmdSel = 0, cmdItems = [], sudoTried = false;
-const SECTIONS = [["today", "Daily briefing"], ["news", "Security news, explained"], ["cves", "CVE Radar"], ["learn", "Lessons & paths"], ["exams", "Exam prep: Network+, Security+ and PenTest+"], ["glossary", "Glossary A–Z"], ["missions", "Practise: missions & labs"], ["agency", "PATCH//AGENCY: SOC shifts"], ["play", "Games & flag hunt"], ["careers", "Career paths & resources"], ["progress", "Your XP, badges & level"], ["stack", "Am I affected? (your tech)"]];
+const SECTIONS = [["today", "Daily briefing"], ["news", "Security news, explained"], ["cves", "CVE Radar"], ["learn", "Lessons & paths"], ["exams", "Exam prep: Network+, Security+ and PenTest+"], ["glossary", "Glossary A–Z"], ["missions", "Practise: missions & labs"], ["agency", "PATCH//AGENCY: SOC shifts"], ["play", "Games & flag hunt"], ["careers", "Career paths & resources"], ["progress", "Your XP, badges & level"], ["review", "Review: spaced repetition"], ["stack", "Am I affected? (your tech)"]];
 const HELP = [
   ["help", "show this list"], ["ls", "list sections"], ["cd <section>", "go to a section, e.g. cd news"],
   ["open <lesson>", "open a lesson, e.g. open ransomware"], ["define <term>", "explain a term, e.g. define rce"],
@@ -198,7 +198,7 @@ document.addEventListener("keydown", e => {
 // Which tab each route lives under, and what draws it.
 const CVE_VIEWS = ["cves", "today/stack"];
 // Sections without their own nav tab, and the tab that's highlighted for them.
-const NAV_PARENT = { play: "missions", careers: "progress" };
+const NAV_PARENT = { play: "missions", careers: "progress", review: "progress" };
 function parseRoute() {
   const h = (location.hash || "#today").slice(1);
   if (h.startsWith("lesson-")) return { tab: "learn", path: "learn/" + h.slice(7), draw: () => lessonView(h.slice(7)) };
@@ -351,5 +351,74 @@ function loadCves() {
     .catch(() => { CVES_FAILED = true; })
     .finally(() => { if (CVE_VIEWS.includes(parseRoute().path)) rerender(); renderStatus(); });
 }
+/* ---------- Patch, the companion ----------
+   A small guide in the corner that waves hello and, now and then, offers one useful nudge. Tasteful by design:
+   the off switch is remembered, it never pops while you're typing or mid-celebration, and it stays quiet (no
+   wave, no bob) under reduced motion. The hidden flag is a plain per-browser preference, not scored progress. */
+const PATCH_KEY = "pn-patch";
+const patchHidden = () => { try { return localStorage.getItem(PATCH_KEY) === "off"; } catch (e) { return false; } };
+const setPatchHidden = off => { try { off ? localStorage.setItem(PATCH_KEY, "off") : localStorage.removeItem(PATCH_KEY); } catch (e) {} };
+// Patch earns each pop instead of running on a timer. Does he have a reason to speak right now? Pure, so it's
+// tested: the review nudge when cards are due, else a gentle home nudge if you've not practised today, else
+// nothing (he stays quiet rather than fill the silence). `path` is parseRoute().path.
+function patchReasonFor({ due, path, streak, todayDone }) {
+  if (due > 0) return { text: `${due} card${due === 1 ? "" : "s"} ready to review. Keep it fresh?`, href: "#review", cta: "Review" };
+  if ((path === "today" || path === "") && !todayDone) return { text: streak ? `Do one thing today to keep your ${streak}-day streak.` : "A few minutes today is enough to make a start.", href: "#learn", cta: "Pick up" };
+  return null;
+}
+function patchReason() {
+  const due = typeof reviewDueCount === "function" ? reviewDueCount() : 0, s = streakInfo(P.days);
+  return patchReasonFor({ due, path: parseRoute().path, streak: s.streak, todayDone: s.todayDone });
+}
+// Pops happen only in the "hallways" (the hub and overview pages), never inside a lesson, lab, mission, exam,
+// shift, tool or the review itself, where focus matters.
+const PATCH_HALLWAY = new Set(["today", "learn", "missions", "agency", "exams", "news", "cves", "progress", "careers"]);
+let patchEl = null, patchBubbleTimer = null, patchIdleTimer = null, patchPops = 0, patchLastActive = Date.now(), patchQuietUntil = 0, patchListening = false;
+const patchBump = () => { patchLastActive = Date.now(); };
+const patchHeloed = () => { try { return sessionStorage.getItem("pn-hello") === "1"; } catch (e) { return false; } };
+function patchCanPop() {
+  if (!patchEl || patchPops >= 2 || document.hidden || document.querySelector(".celebrate")) return false;
+  const ae = document.activeElement;
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(ae?.tagName || "") || ae?.isContentEditable) return false;
+  return PATCH_HALLWAY.has(parseRoute().path);
+}
+function patchSay(tip, hold = 8000) {
+  if (!patchEl) return;
+  const fig = patchEl.querySelector(".pn-co-figure"), bubble = patchEl.querySelector(".pn-co-bubble");
+  fig.innerHTML = PATCH.svg(prefersReduced() ? "happy" : "wave", { size: 66, id: "co" });
+  bubble.innerHTML = `${gloss(tip.text, 1)}${tip.href ? ` <a href="${esc(tip.href)}">${esc(tip.cta)} →</a>` : ""}`;
+  bubble.hidden = false;
+  clearTimeout(patchBubbleTimer);
+  patchBubbleTimer = setTimeout(() => { if (!patchEl) return; bubble.hidden = true; fig.innerHTML = PATCH.svg("idle", { size: 66, id: "co" }); }, hold);
+}
+// Every five seconds, pop only if you've been idle a while, there's a reason, and we're under the cap; then stay
+// quiet for a good while. A tap on Patch always answers (and never counts towards the cap or the hallway rule).
+function patchTick() {
+  if (!patchEl) return;
+  const now = Date.now();
+  if (now < patchQuietUntil || now - patchLastActive < 20000 || !patchCanPop()) return;
+  const r = patchReason();
+  if (!r) return;
+  patchPops++; patchQuietUntil = now + 180000; patchLastActive = now;
+  patchSay(r);
+}
+function mountCompanion() {
+  if (patchHidden() || patchEl) return;
+  patchEl = document.createElement("div");
+  patchEl.className = "pn-companion";
+  patchEl.innerHTML = `<button class="pn-co-close" aria-label="Hide Patch" title="Hide Patch">×</button>
+    <div class="pn-co-bubble" role="status" aria-live="polite" hidden></div>
+    <button class="pn-co-figure" aria-label="Patch — say hello">${PATCH.svg("idle", { size: 66, id: "co" })}</button>`;
+  document.body.appendChild(patchEl);
+  patchEl.querySelector(".pn-co-close").addEventListener("click", () => { setPatchHidden(true); unmountCompanion(); toast("Patch hidden. Turn back on in You."); });
+  patchEl.querySelector(".pn-co-figure").addEventListener("click", () => { patchSay(patchReason() || { text: "All set. I'm here if you need me." }, 6500); patchLastActive = Date.now(); });
+  // Wave hello once a session, shortly after you arrive.
+  if (!patchHeloed()) setTimeout(() => { if (patchEl && !document.hidden) { patchSay({ text: "Hey, I'm Patch. I'll keep you company while you learn." }, 7000); try { sessionStorage.setItem("pn-hello", "1"); } catch (e) {} } }, prefersReduced() ? 1500 : 6000);
+  if (!patchListening) { patchListening = true; ["pointerdown", "keydown", "scroll"].forEach(ev => addEventListener(ev, patchBump, { passive: true })); document.addEventListener("visibilitychange", () => { if (!document.hidden) patchBump(); }); }
+  patchIdleTimer = setInterval(patchTick, 5000);
+}
+function unmountCompanion() { clearInterval(patchIdleTimer); clearTimeout(patchBubbleTimer); patchEl?.remove(); patchEl = null; }
+
 renderXP();
 route();
+mountCompanion();

