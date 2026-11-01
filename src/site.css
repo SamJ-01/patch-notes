@@ -708,22 +708,44 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .ca-link { stroke-width: 1.6; } .ca-link.trust { stroke: var(--good); } .ca-link.danger { stroke: var(--bad); stroke-dasharray: 4 3; } .ca-link.ignore { stroke: var(--muted); opacity: 0.4; }
 
 /* --- Ambient life --------------------------------------------------------------------------------------------
-   A slow-drifting glow behind every page and data that flows along diagram links, so the site feels alive
-   rather than static. Everything here is purely decorative, GPU-cheap (transform / stroke-dashoffset only), and
-   switched off entirely under prefers-reduced-motion. */
-body::before {
-  content: ""; position: fixed; inset: -25vmax; z-index: -1; pointer-events: none;
+   The glow, the drifting grid, the packets and the scan line live on .ambience, which sits behind the page
+   (see site_template.html). An earlier version painted the glow on body::before at z-index -1, so it sat
+   behind the solid page background and never showed, and tried to drift the grid by animating
+   background-position on a fixed background, which browsers ignore. This layer uses transform only.
+   The shell adds body.life on ordinary pages and leaves it off during an exam or a review. */
+.ambience { display: none; }
+body.life .ambience { display: block; position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+#main, footer, nav.trail { position: relative; z-index: 1; }
+.amb-glow, .amb-grid, .amb-scan, .amb-pkts { position: absolute; inset: 0; }
+.amb-glow {
+  inset: -20vmax;
   background:
-    radial-gradient(38vmax 38vmax at 22% 18%, rgba(var(--brand-rgb), 0.12), transparent 60%),
-    radial-gradient(30vmax 30vmax at 82% 72%, rgba(var(--sun-rgb), 0.10), transparent 62%);
+    radial-gradient(42vmax 36vmax at 18% 8%, rgba(var(--brand-rgb), 0.22), transparent 62%),
+    radial-gradient(38vmax 32vmax at 88% 90%, rgba(var(--sun-rgb), 0.16), transparent 64%);
 }
-:root[data-theme="light"] body::before, :root:not([data-theme="dark"]) body::before { opacity: 0.8; }
+.amb-grid {
+  inset: -40px;
+  background-image:
+    linear-gradient(rgba(var(--brand-rgb), 0.11) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--brand-rgb), 0.11) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.amb-pkts { width: 100%; height: 100%; }
+.amb-pkt { fill: var(--brand); }
+.amb-pkt.sun { fill: var(--sun); } .amb-pkt.good { fill: var(--good); }
+.amb-scan { inset: auto 0 auto 0; height: 22%; top: -22%;
+  background: linear-gradient(180deg, transparent, rgba(var(--brand-rgb), 0.09), transparent); }
+body.life { background-image: none; }
 @media (prefers-reduced-motion: no-preference) {
-  body::before { animation: aurora 26s ease-in-out infinite alternate; will-change: transform; }
-  @keyframes aurora { from { transform: translate3d(-4%, -3%, 0) scale(1); } to { transform: translate3d(4%, 4%, 0) scale(1.16); } }
-  /* The grid gently drifts one cell on a loop, so the whole page has slow, continuous motion. */
-  body { animation: grid-drift 32s linear infinite; }
-  @keyframes grid-drift { to { background-position: 0 0, 0 0, 32px 32px, 32px 32px; } }
+  body.life .amb-glow { animation: aurora 18s ease-in-out infinite alternate; }
+  @keyframes aurora { from { transform: translate3d(-6%, -4%, 0) scale(1); } to { transform: translate3d(6%, 5%, 0) scale(1.12); } }
+  body.life .amb-grid { animation: grid-pan 7s linear infinite; }
+  @keyframes grid-pan { to { transform: translate3d(32px, 32px, 0); } }
+  body.life .amb-scan { animation: amb-scan 9s linear infinite; }
+  @keyframes amb-scan { from { top: -22%; } to { top: 100%; } }
+}
+@media (prefers-reduced-motion: reduce) { .amb-pkts, .amb-scan { display: none; } }
+@media (prefers-reduced-motion: no-preference) {
   /* Flow: little dashes marching along a link read as live traffic, on the infra and Wi-Fi maps only.
      (No bare .flow selector: stroke-dasharray/offset are inherited, so it would dash every stroke inside
      a lesson's flow diagram, which also uses class "flow".) */
@@ -757,9 +779,11 @@ body::before {
   .route-stop:hover .route-dot, .route-stop:focus-visible .route-dot { transform: scale(1.12); }
   /* The briefing command types out with a caret. */
   .changelog .ver .cmd.typing::after { content: "\2588"; margin-left: 1px; color: var(--brand); animation: blink 1.1s steps(1) infinite; }
-  /* The actively-exploited CVEs quietly pulse their red stripe. */
-  .kev-list .kev-item { animation: kev-glow 2.8s ease-in-out infinite; }
-  @keyframes kev-glow { 0%, 100% { box-shadow: -4px 0 0 -3px transparent; } 50% { box-shadow: -4px 0 9px -3px var(--exploited); } }
+  /* The actively-exploited rows keep a visible red edge. A 4px shadow was too faint to read as motion. */
+  .kev-list .kev-item { border-left: 3px solid transparent; animation: kev-glow 2.2s ease-in-out infinite; }
+  @keyframes kev-glow { 0%, 100% { border-left-color: transparent; } 50% { border-left-color: var(--exploited); } }
+  .mk.warn { animation: warn-pulse 2.2s ease-in-out infinite; }
+  @keyframes warn-pulse { 0%, 100% { box-shadow: none; } 50% { box-shadow: 0 0 0 3px rgba(var(--bad-rgb), 0.45); } }
   /* The XP bar fills in on load and refills when you earn. */
   #xp .bar i { animation: xp-grow 0.9s cubic-bezier(.2, .8, .3, 1); }
   @keyframes xp-grow { from { width: 0; } }
@@ -994,6 +1018,9 @@ body::before {
 .term-ps { color: var(--good); white-space: nowrap; }
 .term-in { display: flex; gap: 8px; align-items: center; padding: 8px 12px; border-top: 1px solid var(--line); font: 0.84rem var(--font-mono); }
 .term-in input { flex: 1; min-width: 0; background: transparent; border: 0; outline: none; color: var(--ink); font: inherit; caret-color: var(--sun); }
+.term-listen { margin: 0; padding: 0 12px 8px; font: 0.75rem var(--font-mono); color: var(--muted); }
+.ag-queue h2 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ag-radar { flex: none; overflow: visible; --cat: var(--brand); }
 .term-tasks ol { margin: 0; padding-left: 20px; display: grid; gap: 7px; font-size: 0.9rem; }
 .term-tasks li.got { color: var(--good); }
 .term-tasks li.now { color: var(--ink); font-weight: 600; }
@@ -1521,7 +1548,9 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .nv-tint.seg4 { fill: var(--seg4); } .nv-tint.seg5 { fill: var(--seg5); } .nv-tint.seg6 { fill: var(--seg6); } .nv-tint.seg7 { fill: var(--seg7); }
 .nv-stripe.seg0 { fill: var(--seg0); } .nv-stripe.seg1 { fill: var(--seg1); } .nv-stripe.seg2 { fill: var(--seg2); } .nv-stripe.seg3 { fill: var(--seg3); }
 .nv-stripe.seg4 { fill: var(--seg4); } .nv-stripe.seg5 { fill: var(--seg5); } .nv-stripe.seg6 { fill: var(--seg6); } .nv-stripe.seg7 { fill: var(--seg7); }
-.nv-dev.dim .nv-stripe { opacity: 0.25; }
+@media (prefers-reduced-motion: no-preference) {
+  .nv-wire:not(.dead) { stroke-dasharray: 3 14; animation: flow-dash 1.6s linear infinite; }
+}
 .nv-name { font: 600 12px var(--font-mono); fill: var(--ink); }
 .nv-sub, .nv-port, .nv-tag { font: 10.5px var(--font-mono); fill: var(--muted); }
 .nv-tag { font-weight: 600; fill: var(--ink); paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
@@ -1646,7 +1675,8 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .route-stop:focus-visible .route-lbl { text-decoration: underline; }
 .route-pulse { fill: none; stroke: var(--sun); stroke-width: 3; opacity: 0.6; transform-box: fill-box; transform-origin: center; animation: route-pulse 1.8s ease-out infinite; }
 @keyframes route-pulse { from { transform: scale(0.75); opacity: 0.8; } to { transform: scale(1.25); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .route-pulse { animation: none; opacity: 0.6; } }
+.route-walker { fill: var(--sun); }
+@media (prefers-reduced-motion: reduce) { .route-pulse { animation: none; opacity: 0.6; } .route-walker { display: none; } }
 .route-start rect, .route-finish rect { fill: var(--surface-2); stroke: var(--dg-strong); stroke-width: 2; }
 .route-start text, .route-finish text { font: 700 11px var(--font-mono); fill: var(--ink); letter-spacing: 0.08em; }
 .route-finish.done rect { fill: var(--sun); stroke: var(--sun); } .route-finish.done text { fill: var(--bg); font-size: 20px; }

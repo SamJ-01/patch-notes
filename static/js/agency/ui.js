@@ -67,7 +67,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         </div>
       </div>
       <div class="ag-grid" id="ag-grid" data-tab="queue">
-        <nav class="panel ag-queue" aria-labelledby="ag-q-h"><h2 id="ag-q-h">Alert queue</h2><ol id="ag-queue"></ol></nav>
+        <nav class="panel ag-queue" aria-labelledby="ag-q-h"><h2 id="ag-q-h">Alert queue <svg class="ag-radar radar" viewBox="-16 -16 32 32" width="26" height="26" aria-hidden="true"><circle r="14"/><circle r="8"/><path class="sweep" d="M0 0 L14 0 A14 14 0 0 1 7 12 Z"/></svg></h2><ol id="ag-queue"></ol></nav>
         <section class="panel ag-alert" id="ag-alert"></section>
         <section class="panel ag-comms" aria-labelledby="ag-c-h" tabindex="0"><h2 id="ag-c-h">Team chat</h2>${DESK.channel(`${shift.client.split(/\s+/)[0].toLowerCase()}-soc`, "you, your lead and the teams you ask", 'id="ag-inbox" aria-live="polite"')}</section>
       </div>

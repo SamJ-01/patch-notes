@@ -67,6 +67,7 @@ function drawRoute() {
     <svg class="route-map" viewBox="0 0 ${W} ${L.height}" role="group" aria-label="${esc(`${p.title}: ${steps.length} stops, ${done} done.`)}">
       <path class="route-road" d="${routePath([L.start, ...L.stops, L.finish], L.R)}"/>
       <path class="route-road done" pathLength="1" d="${routePath(reached, L.R)}"/>
+      ${next === -1 ? "" : `<circle class="route-walker" r="5"><animateMotion dur="3.4s" repeatCount="indefinite" path="${routePath([next <= 0 ? L.start : L.stops[next - 1], L.stops[next]], L.R)}"/></circle>`}
       <g class="route-start" transform="translate(${L.start.x},${L.start.y})" aria-hidden="true"><rect x="-22" y="-22" width="44" height="44" rx="10"/><text y="5" text-anchor="middle">GO</text></g>
       ${steps.map((st, i) => { const s = L.stops[i], state = st.done ? "done" : i === next ? "next" : "todo";
         return `<a href="${st.href}" class="route-stop ${state}" aria-label="${esc(`Stop ${i + 1} of ${steps.length}: ${st.label} (${KIND_WORD[st.kind] || st.kind})${st.done ? ", done" : i === next ? ", next" : ""}`)}">

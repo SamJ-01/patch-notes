@@ -238,7 +238,24 @@ function relabelBack() {
     a.dataset.back = "1"; a.setAttribute("href", prev); a.textContent = "← " + name;
   });
 }
-new MutationObserver(relabelBack).observe(main, { childList: true, subtree: true });
+new MutationObserver(() => { relabelBack(); armListening(); }).observe(main, { childList: true, subtree: true });
+// A quiet "listening…" under a lab prompt once the learner has stopped typing. It clears as soon as they type.
+function armListening() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  main.querySelectorAll(".term-in").forEach(form => {
+    if (form.dataset.listen) return;
+    form.dataset.listen = "1";
+    const note = document.createElement("p");
+    note.className = "term-listen"; note.hidden = true; note.textContent = "listening…";
+    form.insertAdjacentElement("afterend", note);
+    const input = form.querySelector("input");
+    let timer = 0;
+    const bump = () => { note.hidden = true; clearTimeout(timer); timer = setTimeout(() => { if (input && !input.value) note.hidden = false; }, 7000); };
+    input?.addEventListener("input", bump);
+    form.addEventListener("submit", bump);
+    bump();
+  });
+}
 function route() {
   if (agencyShift?.inProgress && $("agency-root") && location.hash !== lastHash) {
     if (!confirm(LEAVE_SHIFT)) { history.replaceState(null, "", lastHash || "#today"); return; }
@@ -250,6 +267,7 @@ function route() {
   closePop();
   main.onclick = null;
   $("cwd").textContent = "~/" + r.path;
+  document.body.classList.toggle("life", !(r.tab === "exams" || r.path === "review" || r.path.startsWith("exam")));
   renderStatus();
   window.scrollTo(0, 0);
   if (CVE_VIEWS.includes(r.path)) loadCves();

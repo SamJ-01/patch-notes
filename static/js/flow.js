@@ -81,6 +81,7 @@ export function mount(el, d) {
     box.style.minHeight = max + "px";
     box.innerHTML = caption(i);
   }
+  clearInterval(el._flowIdle);
   function draw(animate = true) {
     const s = d.steps[i], t = describe(d, i);
     stage.dataset.tone = t.tone;
@@ -91,6 +92,8 @@ export function mount(el, d) {
     next.disabled = i === d.steps.length - 1;
     next.textContent = i === d.steps.length - 1 ? "End of the flow" : "Next step ›";
     place(animate);
+    clearInterval(el._flowIdle);
+    if (!reduced) el._flowIdle = setInterval(() => { if (!el.isConnected) { clearInterval(el._flowIdle); return; } place(true); }, 4200);
   }
   el.querySelector(".flow-ctl").addEventListener("click", e => {
     const b = e.target.closest("[data-go]"); if (!b) return;
