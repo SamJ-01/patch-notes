@@ -2225,33 +2225,6 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .rev-nudge-go { font: 0.8rem var(--font-mono); color: var(--brand); white-space: nowrap; }
 .rev-nudge:hover { border-color: var(--brand); }
 
-/* Streak + daily goal strip (home). Flame lights up once a streak is running; a week of dots tracks the habit. */
-.streak-strip { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); }
-.streak-strip.lit { border-color: rgba(var(--sun-rgb), 0.55); background: linear-gradient(100deg, rgba(var(--sun-rgb), 0.1), var(--card) 60%); }
-.sl-flame { position: relative; width: 44px; height: 44px; flex: 0 0 auto; display: grid; place-items: center; }
-.sl-flame svg { width: 44px; height: 44px; }
-.sl-flame .fl-outer { fill: var(--line); transition: fill 0.3s; }
-.sl-flame .fl-inner { fill: var(--card); transition: fill 0.3s; }
-.streak-strip.lit .fl-outer { fill: var(--sun); }
-.streak-strip.lit .fl-inner { fill: #ff8a3c; }
-.sl-n { position: absolute; bottom: 1px; font: 700 0.8rem var(--font-mono); color: var(--bg); }
-.streak-strip:not(.lit) .sl-n { color: var(--muted); }
-.sl-main { flex: 1 1 auto; min-width: 0; display: grid; gap: 4px; }
-.sl-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.sl-head b { font-size: 1.02rem; }
-.sl-week { display: inline-flex; gap: 5px; }
-.sl-dot { width: 10px; height: 10px; border-radius: 3px; background: var(--line); }
-.sl-dot.on { background: var(--sun); }
-.sl-dot.today { outline: 2px solid var(--brand); outline-offset: 1px; }
-.sl-goal { font-size: 0.9rem; color: var(--muted); }
-.sl-goal.on { color: var(--ok); }
-.sl-cta { flex: 0 0 auto; white-space: nowrap; }
-@media (max-width: 560px) { .streak-strip { flex-wrap: wrap; } .sl-cta { width: 100%; justify-content: center; } }
-@media (prefers-reduced-motion: no-preference) {
-  .streak-strip.lit .sl-flame svg { transform-origin: 50% 85%; animation: sl-flicker 2.6s ease-in-out infinite; }
-  @keyframes sl-flicker { 0%, 100% { transform: scale(1) rotate(0deg); } 30% { transform: scale(1.06, 0.96) rotate(-1.5deg); } 65% { transform: scale(0.97, 1.05) rotate(1.5deg); } }
-}
-
 /* Patch, the site guide. Drawn in the device-library style (hw.js), so it shares the hw-* tokens and themes for free. */
 .patch { display: block; overflow: visible; }
 .pn-body { stroke: var(--hw-stroke); stroke-width: 1.6; }

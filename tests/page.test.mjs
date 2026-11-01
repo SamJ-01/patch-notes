@@ -204,12 +204,11 @@ vm.createContext(pcx);
 vm.runInContext(fn("function patchReasonFor({ due, path") + "\nthis.f = patchReasonFor;", pcx);
 const patchReasonFor = pcx.f;
 test("Patch: pops for review cards, nudges on the home page, stays silent otherwise", () => {
-  assert.equal(patchReasonFor({ due: 3, path: "learn/passwords", streak: 0, todayDone: true }).href, "#review");
-  assert.match(patchReasonFor({ due: 1, path: "today", streak: 0, todayDone: false }).text, /1 card ready/);
-  assert.match(patchReasonFor({ due: 0, path: "today", streak: 4, todayDone: false }).text, /4-day streak/);
-  assert.match(patchReasonFor({ due: 0, path: "today", streak: 0, todayDone: false }).text, /make a start/);
-  assert.equal(patchReasonFor({ due: 0, path: "today", streak: 4, todayDone: true }), null);  // already practised
-  assert.equal(patchReasonFor({ due: 0, path: "learn/passwords", streak: 0, todayDone: false }), null);  // not a hallway reason
+  assert.equal(patchReasonFor({ due: 3, path: "learn/passwords", todayDone: true }).href, "#review");
+  assert.match(patchReasonFor({ due: 1, path: "today", todayDone: false }).text, /1 card ready/);
+  assert.match(patchReasonFor({ due: 0, path: "today", todayDone: false }).text, /make a start/);
+  assert.equal(patchReasonFor({ due: 0, path: "today", todayDone: true }), null);  // already practised
+  assert.equal(patchReasonFor({ due: 0, path: "learn/passwords", todayDone: false }), null);  // not a hallway reason
 });
 
 test("week strip: last 7 days oldest first, today flagged, practised days marked", () => {

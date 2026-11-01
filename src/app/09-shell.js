@@ -361,14 +361,14 @@ const setPatchHidden = off => { try { off ? localStorage.setItem(PATCH_KEY, "off
 // Patch earns each pop instead of running on a timer. Does he have a reason to speak right now? Pure, so it's
 // tested: the review nudge when cards are due, else a gentle home nudge if you've not practised today, else
 // nothing (he stays quiet rather than fill the silence). `path` is parseRoute().path.
-function patchReasonFor({ due, path, streak, todayDone }) {
+function patchReasonFor({ due, path, todayDone }) {
   if (due > 0) return { text: `${due} card${due === 1 ? "" : "s"} ready to review. Keep it fresh?`, href: "#review", cta: "Review" };
-  if ((path === "today" || path === "") && !todayDone) return { text: streak ? `Do one thing today to keep your ${streak}-day streak.` : "A few minutes today is enough to make a start.", href: "#learn", cta: "Pick up" };
+  if ((path === "today" || path === "") && !todayDone) return { text: "A few minutes today is enough to make a start.", href: "#learn", cta: "Pick up" };
   return null;
 }
 function patchReason() {
   const due = typeof reviewDueCount === "function" ? reviewDueCount() : 0, s = streakInfo(P.days);
-  return patchReasonFor({ due, path: parseRoute().path, streak: s.streak, todayDone: s.todayDone });
+  return patchReasonFor({ due, path: parseRoute().path, todayDone: s.todayDone });
 }
 // Pops happen only in the "hallways" (the hub and overview pages), never inside a lesson, lab, mission, exam,
 // shift, tool or the review itself, where focus matters.
