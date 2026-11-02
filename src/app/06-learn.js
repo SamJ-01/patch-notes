@@ -417,7 +417,12 @@ function lessonView(id) {
     ...DATA.labs.filter(ours).map(x => ({ kind: "Lab", href: "#lab-" + x.id, title: x.title, sub: x.card || x.skill, min: x.minutes, done: !!P.labs[x.id] }))];
   const lseen = new Set([id]);
   const lede = ledeOf(l.what);
-  const picture = l.explainer || l.diagram || l.concept;
+  const scene = l.diagram?.scene === "stage" || l.diagram?.scene === "screens";
+  const both = l.id === "identity" || l.id === "encryption";
+  const showDiagram = !!l.diagram && (scene || !l.explainer);
+  const showExplainer = !!l.explainer && (!showDiagram || both);
+  const showConcept = !!l.concept && !showExplainer && !showDiagram;
+  const picture = showDiagram || showExplainer || showConcept;
   main.innerHTML = `<div class="view"${bannerAttr(id)}><article class="article lesson">
     <a class="link-btn" href="#learn">← All lessons</a>
     <header class="lesson-open"><p class="eyebrow">${esc(l.track)} · ${esc(l.level)} · ${l.minutes} min</p><h1>${esc(l.title)}</h1></header>
@@ -426,9 +431,9 @@ function lessonView(id) {
       ${lede.more ? `<details class="more-what" id="l-what-more"><summary>Read the full explanation</summary><p>${gloss(l.what, 6, lseen)}</p></details>` : ""}</section>
     ${l.tip ? `<aside class="qtip"><span class="qtip-k">★ Quick tip</span><p>${gloss(l.tip, 3, lseen)}</p></aside>` : ""}
     ${picture ? `<section class="panel wide screen" id="l-see"><div class="panel-title"><h2>See it</h2></div>
-      ${l.explainer ? `<div id="l-xpl" tabindex="-1">${l.explainer.why ? `<p class="muted xpl-why">${gloss(l.explainer.why, 2)}</p>` : ""}<div id="lxpl"><div class="empty">Loading…</div></div></div>` : ""}
-      ${l.diagram ? `<div id="l-diagram" tabindex="-1">${l.diagram.why ? `<p class="muted xpl-why">${gloss(l.diagram.why, 2)}</p>` : ""}<div id="lflow"><div class="empty">Loading the diagram…</div></div></div>` : ""}
-      ${l.concept ? `<div id="l-concept" tabindex="-1">${l.concept.why ? `<p class="muted xpl-why">${gloss(l.concept.why, 2)}</p>` : ""}<div id="lconcept"><div class="empty">Loading the diagram…</div></div></div>` : ""}
+      ${showExplainer ? `<div id="l-xpl" tabindex="-1">${l.explainer.why ? `<p class="muted xpl-why">${gloss(l.explainer.why, 2)}</p>` : ""}<div id="lxpl"><div class="empty">Loading…</div></div></div>` : ""}
+      ${showDiagram ? `<div id="l-diagram" tabindex="-1">${l.diagram.why ? `<p class="muted xpl-why">${gloss(l.diagram.why, 2)}</p>` : ""}<div id="lflow"><div class="empty">Loading the diagram…</div></div></div>` : ""}
+      ${showConcept ? `<div id="l-concept" tabindex="-1">${l.concept.why ? `<p class="muted xpl-why">${gloss(l.concept.why, 2)}</p>` : ""}<div id="lconcept"><div class="empty">Loading the diagram…</div></div></div>` : ""}
     </section>` : ""}
     <section class="case" id="l-example" tabindex="-1"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h3>${esc(l.example.title)}</h3><p>${gloss(l.example.text, 4, lseen)}</p>${l.example.source ? `<p class="muted" style="font-size:0.85rem">Source: <a href="${esc(l.example.source.url)}" target="_blank" rel="noopener">${esc(l.example.source.label)} ↗</a></p>` : ""}</section>
     <section id="l-defend" tabindex="-1"><h2>How defenders stop it</h2><ul class="checklist">${l.defend.map(d => `<li>${esc(d)}</li>`).join("")}</ul></section>
@@ -441,11 +446,11 @@ function lessonView(id) {
     <div id="lnext">${nextStepCard("lesson", id)}</div>
     ${toTopButton()}
   </article></div>`;
-  if (l.diagram) import("./js/flow.js").then(f => { if (parseRoute().path === "learn/" + id && $("lflow")) f.mount($("lflow"), l.diagram); })
+  if (showDiagram) import("./js/flow.js").then(f => { if (parseRoute().path === "learn/" + id && $("lflow")) f.mount($("lflow"), l.diagram); })
     .catch(() => { if ($("lflow")) $("lflow").innerHTML = `<div class="empty">Couldn't load the diagram.</div>`; });
-  if (l.concept) { const el = $("lconcept"); if (el) el.id = "lconcept-" + id; import("./js/concept.js").then(c => { const t = $("lconcept-" + id); if (parseRoute().path === "learn/" + id && t) c.mount(t, l.concept); })
+  if (showConcept) { const el = $("lconcept"); if (el) el.id = "lconcept-" + id; import("./js/concept.js").then(c => { const t = $("lconcept-" + id); if (parseRoute().path === "learn/" + id && t) c.mount(t, l.concept); })
     .catch(() => { const t = $("lconcept-" + id); if (t) t.innerHTML = `<div class="empty">Couldn't load the diagram.</div>`; }); }
-  if (l.explainer) import("./js/explainers.js").then(x => { if (parseRoute().path === "learn/" + id && $("lxpl")) x.mount($("lxpl"), l.explainer.kind, { ...(l.explainer.opts || {}), head: false }); })
+  if (showExplainer) import("./js/explainers.js").then(x => { if (parseRoute().path === "learn/" + id && $("lxpl")) x.mount($("lxpl"), l.explainer.kind, { ...(l.explainer.opts || {}), head: false }); })
     .catch(() => { if ($("lxpl")) $("lxpl").innerHTML = `<div class="empty">Couldn't load the explainer.</div>`; });
   lessonChecks(l, id);
 }

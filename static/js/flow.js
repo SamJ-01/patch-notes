@@ -70,6 +70,7 @@ export function describe(d, i) {
 
 export function mount(el, d) {
   if (d.scene === "stage") return mountStage(el, d);
+  if (d.scene === "screens") return mountPhone(el, d);
   let i = 0;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   el.innerHTML = `<figure class="flow${d.scene === "screens" ? " is-screens" : ""}">
@@ -176,6 +177,72 @@ export function mount(el, d) {
   if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => { place(false); if (el.clientWidth !== lastW) { lastW = el.clientWidth; reserve(); } }).observe(el);
   reserve();
   draw(false);
+}
+
+// The MFA lesson is one object: the sign-in, then the phone, then what the owner chose.
+function mountPhone(el, d) {
+  let i = 0, choice = null;
+  const askStep = d.steps.findIndex(s => s.screens?.p?.tone === "ask");
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  el.innerHTML = `<figure class="flow is-stage">
+    <figcaption class="flow-title">${esc(d.title)}</figcaption>
+    <div class="stage-card" data-stage></div>
+    <div class="flow-step" aria-live="polite"></div>
+    <div class="row flow-ctl">
+      <button class="btn ghost" type="button" data-go="-1">‹ Back</button>
+      <button class="btn brand" type="button" data-go="1">Next step ›</button>
+      <button class="btn ghost" type="button" data-go="0">↺ Start again</button>
+    </div>
+    <details class="flow-text"><summary>All steps as text</summary><ol>${d.steps.map((_, k) => { const s = describe(d, k); return `<li><b>${esc(s.who)}</b>: ${esc(s.msg)}. ${esc(s.text)}${s.stop ? ` <em>Stopped by: ${esc(s.stop)}</em>` : ""}</li>`; }).join("")}</ol></details>
+  </figure>`;
+  const card = el.querySelector("[data-stage]");
+  const box = el.querySelector(".flow-step");
+  const view = () => {
+    if (choice === "deny") return { tone: "stop", kicker: "Phone", line: "Denied", sub: "No session was created." };
+    if (choice === "approve") return { tone: "bad", kicker: "Phone", line: "Approved", sub: "The attacker has a session." };
+    const s = d.steps[i], phone = s.screens?.p, login = s.screens?.a;
+    if (phone?.tone === "ask") return { tone: "", kicker: "Phone", line: phone.line, sub: "The password was not enough.", ask: true };
+    if (i === 0) return { tone: "bad", kicker: "Sign in", line: login?.line || s.msg, sub: s.screens?.l?.line || "" };
+    const dest = s.screens?.[s.to] || login;
+    const tone = dest?.tone === "stop" || dest?.tone === "good" ? "stop" : (s.tone || "");
+    return { tone, kicker: dest?.kicker || "Sign in", line: dest?.line || s.msg, sub: s.stop ? "" : "" };
+  };
+  function draw(dir) {
+    const v = view();
+    card.className = "stage-card" + (v.tone ? " " + v.tone : "");
+    const buttons = (v.ask || choice) ? `<span class="flow-choice"><button type="button" data-act="deny" aria-pressed="${choice === "deny"}">Deny</button><button type="button" data-act="approve" aria-pressed="${choice === "approve"}">Approve</button></span>` : "";
+    card.innerHTML = `<div class="obj field"><span class="mech-k">${esc(v.kicker)}</span><p class="stage-line">${esc(v.line)}</p>${v.sub ? `<p class="obj-out">${esc(v.sub)}</p>` : ""}${buttons}</div>`;
+    const t = describe(d, choice ? askStep : i);
+    box.innerHTML = choice
+      ? `<div class="eyebrow">Path: ${choice}</div><p>${choice === "deny" ? "The owner refuses. The password was not enough." : "The owner approves. That is the path the second factor is there to stop."}</p>`
+      : `<div class="eyebrow">Step ${i + 1} of ${d.steps.length}</div><p>${gl(t.text, 2)}</p>${t.stop ? `<p class="flow-stop"><b>How it's stopped here:</b> ${esc(t.stop)}</p>` : ""}`;
+    if (!reduced && dir) {
+      card.classList.remove("is-in");
+      card.dataset.dir = dir > 0 ? "next" : "back";
+      void card.offsetWidth;
+      card.classList.add("is-in");
+    }
+    el.querySelector('[data-go="-1"]').disabled = i === 0 && !choice;
+    const next = el.querySelector('[data-go="1"]');
+    next.disabled = i === d.steps.length - 1;
+    next.textContent = i === d.steps.length - 1 ? "End of the flow" : "Next step ›";
+  }
+  el.addEventListener("click", e => {
+    const act = e.target.closest("[data-act]")?.dataset.act;
+    if (act !== "deny" && act !== "approve") return;
+    i = askStep < 0 ? i : askStep;
+    choice = act;
+    draw(1);
+  });
+  el.querySelector(".flow-ctl").addEventListener("click", e => {
+    const b = e.target.closest("[data-go]"); if (!b) return;
+    const go = Number(b.dataset.go);
+    const prev = i;
+    if (go === 0) { i = 0; choice = null; }
+    else { choice = null; i = Math.max(0, Math.min(d.steps.length - 1, i + go)); }
+    draw(i === prev ? 0 : 1);
+  });
+  draw(0);
 }
 
 // A sequence drawn as one object that changes, not a row of devices. The step's `stage` is the picture.
