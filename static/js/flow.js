@@ -91,19 +91,41 @@ export function mount(el, d) {
     box.innerHTML = caption(i);
   }
   clearInterval(el._flowIdle);
+  let choice = null;
+  const askStep = d.steps.findIndex(s => s.screens?.p?.tone === "ask");
+  const paths = {
+    deny: {
+      a: { kicker: "Sign in", line: "Access denied", tone: "stop" },
+      l: { kicker: "Login service", line: "No session created", tone: "good" },
+      p: { kicker: "Sign-in attempt", line: "Denied", tone: "stop" },
+      cap: `<div class="eyebrow">Path: deny</div><p class="flow-msg good">The owner refuses. No session is created.</p><p>The password was not enough. Press Approve to see the other path.</p>`,
+    },
+    approve: {
+      a: { kicker: "Sign in", line: "Signed in", tone: "bad" },
+      l: { kicker: "Login service", line: "Session created", tone: "bad" },
+      p: { kicker: "Sign-in attempt", line: "Approved", tone: "bad" },
+      cap: `<div class="eyebrow">Path: approve</div><p class="flow-msg bad">The owner approves. The attacker has a session.</p><p>That is the path MFA is there to stop. Press Deny to see it refused.</p>`,
+    },
+  };
   function draw(animate = true) {
     const s = d.steps[i], t = describe(d, i);
-    stage.dataset.tone = t.tone;
+    const onAsk = i === askStep;
+    if (!onAsk) choice = null;
+    const chosen = onAsk ? paths[choice] : null;
+    stage.dataset.tone = chosen ? (choice === "approve" ? "bad" : "good") : t.tone;
     stage.querySelectorAll(".flow-node").forEach(n => {
       n.classList.toggle("send", n.dataset.id === s.from);
       n.classList.toggle("recv", n.dataset.id === s.to);
       const card = n.querySelector("[data-screen]");
       if (!card) return;
-      const sc = s.screens?.[n.dataset.id];
+      const sc = chosen?.[n.dataset.id] || s.screens?.[n.dataset.id];
       card.className = "flow-screen" + (sc?.tone ? " " + sc.tone : "");
-      card.innerHTML = sc ? `<span class="k">${esc(sc.kicker || "")}</span><span class="ln">${esc(sc.line)}</span>${sc.tone === "ask" ? `<span class="flow-choice"><button type="button" data-act="deny">Deny</button><button type="button" data-act="approve">Approve</button></span>` : ""}` : "";
+      const buttons = onAsk && n.dataset.id === "p"
+        ? `<span class="flow-choice"><button type="button" data-act="deny" aria-pressed="${choice === "deny"}">Deny</button><button type="button" data-act="approve" aria-pressed="${choice === "approve"}">Approve</button></span>`
+        : "";
+      card.innerHTML = sc ? `<span class="k">${esc(sc.kicker || "")}</span><span class="ln">${esc(sc.line)}</span>${buttons}` : "";
     });
-    box.innerHTML = caption(i);
+    box.innerHTML = chosen ? chosen.cap : caption(i);
     el.querySelector('[data-go="-1"]').disabled = i === 0;
     const next = el.querySelector('[data-go="1"]');
     next.disabled = i === d.steps.length - 1;
@@ -114,16 +136,11 @@ export function mount(el, d) {
   }
   el.addEventListener("click", e => {
     const act = e.target.closest("[data-act]")?.dataset.act;
-    if (!act) return;
-    const phone = d.steps[i].screens?.p;
-    if (act === "deny") { i = Math.min(d.steps.length - 1, i + 1); draw(); return; }
-    // Approving is the failure. Show it on the screens, and leave Deny as the way back to the real ending.
-    const card = id => stage.querySelector(`.flow-node[data-id="${id}"] [data-screen]`);
-    const fail = (id, kicker, line, tone) => { const c = card(id); if (!c) return; c.className = "flow-screen " + tone; c.innerHTML = `<span class="k">${esc(kicker)}</span><span class="ln">${esc(line)}</span>`; };
-    fail("p", "Sign-in attempt", "Approved", "bad");
-    fail("a", "Sign in", "Signed in. The attacker has a session.", "bad");
-    fail("l", "Login service", "Second factor accepted", "bad");
-    box.innerHTML = `<div class="eyebrow">If the owner approves</div><p class="flow-msg bad">The password plus a tap is enough. Deny is what stops this.</p><p><button type="button" class="btn ghost" data-act="deny">Deny instead</button></p>`;
+    if (act !== "deny" && act !== "approve") return;
+    if (askStep < 0) return;
+    i = askStep;
+    choice = act;
+    draw(false);
   });
   el.querySelector(".flow-ctl").addEventListener("click", e => {
     const b = e.target.closest("[data-go]"); if (!b) return;

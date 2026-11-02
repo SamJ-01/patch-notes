@@ -830,12 +830,15 @@ body.life { background-image: none; }
 .xpl-vpn .xpl-svg { max-width: 760px; }
 .vpn-sea { fill: #07131d; }
 .vpn-graticule path { fill: none; stroke: rgba(var(--brand-rgb), 0.08); stroke-width: 1; }
-.vpn-land { fill: #163044; stroke: #4d6d8c; stroke-width: 1.5; }
+.vpn-land { fill: #163044; stroke: #7fa4c4; stroke-width: 1.2; }
+.vpn-ie { fill: #102636; stroke: #5d7e98; }
+.vpn-near { fill: var(--faint); font: 600 11px var(--font-mono, monospace); text-anchor: middle; }
+.vpn-clear, .vpn-tube, .vpn-tube-in, .vpn-locks, .vpn-hop { stroke-linejoin: round; }
 .vpn-landname { fill: var(--ink); font: 700 15px var(--font-display, sans-serif); text-anchor: middle; }
 .vpn-sea-name { fill: var(--faint); font: 600 11px var(--font-mono, monospace); letter-spacing: 0.22em; text-anchor: middle; }
 .vpn-city { fill: var(--ink); font: 700 13px var(--font-body, sans-serif); }
 .vpn-sub { fill: var(--muted); font: 11px var(--font-mono, monospace); }
-.vpn-pin { fill: var(--sun); }
+.vpn-pin { fill: var(--sun); stroke: var(--bg); stroke-width: 1.5; }
 .vpn-pin-hole { fill: var(--bg); }
 .vpn-bldg, .vpn-server, .vpn-badge { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; }
 .vpn-badge.on { stroke: var(--brand); }
@@ -1373,6 +1376,8 @@ body.life { background-image: none; }
 .flow-choice button { font: 700 10px var(--font-mono); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); cursor: pointer; }
 .flow-choice button[data-act="deny"] { border-color: var(--bad); color: var(--bad); }
 .flow-choice button[data-act="approve"] { border-color: var(--good); color: var(--good); }
+.flow-choice button[aria-pressed="true"][data-act="deny"] { background: var(--bad); color: #fff; }
+.flow-choice button[aria-pressed="true"][data-act="approve"] { background: var(--good); color: #06281c; }
 .flow-node.send span, .flow-node.recv span { color: var(--ink); }  /* colour only: bold would re-wrap labels and shift the layout */
 .flow-node.send svg, .flow-node.recv svg { filter: drop-shadow(0 0 10px rgba(var(--brand-rgb), 0.55)); }
 .flow-stage[data-tone="bad"] .flow-node.send svg { filter: drop-shadow(0 0 10px rgba(var(--bad-rgb), 0.6)); }
