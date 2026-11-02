@@ -1732,20 +1732,31 @@
      "label": "Owner's phone"
     }
    ],
+   "scene": "screens",
    "steps": [
     {
      "from": "a",
      "to": "l",
      "msg": "Correct username and password",
      "text": "The password was leaked in a breach or captured by phishing.",
-     "tone": "bad"
+     "tone": "bad",
+     "screens": {
+      "a": { "kicker": "Sign in", "line": "Password accepted", "tone": "bad" },
+      "l": { "kicker": "Login service", "line": "Password alone is not enough", "tone": "good" },
+      "p": { "kicker": "Owner's phone", "line": "No prompt yet", "tone": "idle" }
+     }
     },
     {
      "from": "l",
      "to": "p",
      "msg": "Asks for a second factor",
      "text": "The service sends a push prompt, or asks for a code or passkey, to the real owner's device.",
-     "tone": "good"
+     "tone": "good",
+     "screens": {
+      "a": { "kicker": "Sign in", "line": "Waiting for the phone", "tone": "wait" },
+      "l": { "kicker": "Login service", "line": "Prompt sent to the owner", "tone": "good" },
+      "p": { "kicker": "Sign-in attempt", "line": "Was this you?", "tone": "ask" }
+     }
     },
     {
      "from": "p",
@@ -1753,7 +1764,12 @@
      "msg": "Owner doesn't approve",
      "text": "The owner wasn't signing in, so they ignore or deny the request.",
      "tone": "good",
-     "stop": "Number matching stops 'just tap Approve' fatigue attacks."
+     "stop": "Number matching stops 'just tap Approve' fatigue attacks.",
+     "screens": {
+      "a": { "kicker": "Sign in", "line": "Still waiting", "tone": "wait" },
+      "l": { "kicker": "Login service", "line": "Owner refused", "tone": "good" },
+      "p": { "kicker": "Sign-in attempt", "line": "Denied", "tone": "stop" }
+     }
     },
     {
      "from": "l",
@@ -1761,7 +1777,12 @@
      "msg": "Access denied",
      "text": "Without the second factor, the password alone gets the attacker nowhere.",
      "tone": "good",
-     "stop": "Passkeys go further: they only work on the real site, so a fake page gets nothing to replay."
+     "stop": "Passkeys go further: they only work on the real site, so a fake page gets nothing to replay.",
+     "screens": {
+      "a": { "kicker": "Sign in", "line": "Access denied", "tone": "stop" },
+      "l": { "kicker": "Login service", "line": "No session created", "tone": "good" },
+      "p": { "kicker": "Owner's phone", "line": "Request denied", "tone": "stop" }
+     }
     }
    ]
   },

@@ -20,11 +20,20 @@ export function validate(d) {
     if (!HW[n.kind]) errors.push(`node ${n.id}: no drawing for kind "${n.kind}"`);
     if (!n.label) errors.push(`node ${n.id}: missing label`);
   }
+  if (d?.scene && d.scene !== "screens") errors.push(`unknown scene "${d.scene}"`);
   (d?.steps || []).forEach((s, i) => {
     if (!ids.has(s.from) || !ids.has(s.to)) errors.push(`step ${i + 1}: unknown node`);
     if (s.from === s.to) errors.push(`step ${i + 1}: from and to are the same`);
     if (!s.msg || !s.text) errors.push(`step ${i + 1}: needs msg and text`);
     if (s.tone && !["bad", "good"].includes(s.tone)) errors.push(`step ${i + 1}: tone must be bad or good`);
+    if (d?.scene === "screens") {
+      if (!s.screens) errors.push(`step ${i + 1}: a screens scene needs a screen for each step`);
+      else for (const [id, sc] of Object.entries(s.screens)) {
+        if (!ids.has(id)) errors.push(`step ${i + 1}: screen for unknown node ${id}`);
+        if (!sc?.line) errors.push(`step ${i + 1}: screen ${id} needs a line`);
+        if (sc?.tone && !["bad", "good", "wait", "ask", "stop", "idle"].includes(sc.tone)) errors.push(`step ${i + 1}: screen ${id} has a bad tone`);
+      }
+    }
   });
   if (!(d?.steps || []).length) errors.push("no steps");
   return errors;
@@ -39,11 +48,11 @@ export function describe(d, i) {
 export function mount(el, d) {
   let i = 0;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  el.innerHTML = `<figure class="flow">
+  el.innerHTML = `<figure class="flow${d.scene === "screens" ? " is-screens" : ""}">
     <figcaption class="flow-title">${esc(d.title)}</figcaption>
     <div class="flow-stage" style="--n:${d.nodes.length}">
       <svg class="flow-wire" aria-hidden="true"><defs><marker id="flow-arrow-${el.id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z"/></marker></defs><line/></svg>
-      ${d.nodes.map(n => `<div class="flow-node" data-id="${esc(n.id)}"><svg viewBox="-36 -27 72 54" aria-hidden="true">${hw(n.kind)}</svg><span>${esc(n.label)}</span></div>`).join("")}
+      ${d.nodes.map(n => `<div class="flow-node" data-id="${esc(n.id)}"><svg viewBox="-36 -27 72 54" aria-hidden="true">${hw(n.kind)}</svg><span>${esc(n.label)}</span>${d.scene === "screens" ? `<div class="flow-screen" data-screen></div>` : ""}</div>`).join("")}
       <span class="flow-pkt" aria-hidden="true"></span>
     </div>
     <div class="flow-step" aria-live="polite"></div>
@@ -85,7 +94,15 @@ export function mount(el, d) {
   function draw(animate = true) {
     const s = d.steps[i], t = describe(d, i);
     stage.dataset.tone = t.tone;
-    stage.querySelectorAll(".flow-node").forEach(n => { n.classList.toggle("send", n.dataset.id === s.from); n.classList.toggle("recv", n.dataset.id === s.to); });
+    stage.querySelectorAll(".flow-node").forEach(n => {
+      n.classList.toggle("send", n.dataset.id === s.from);
+      n.classList.toggle("recv", n.dataset.id === s.to);
+      const card = n.querySelector("[data-screen]");
+      if (!card) return;
+      const sc = s.screens?.[n.dataset.id];
+      card.className = "flow-screen" + (sc?.tone ? " " + sc.tone : "");
+      card.innerHTML = sc ? `<span class="k">${esc(sc.kicker || "")}</span><span class="ln">${esc(sc.line)}</span>${sc.tone === "ask" ? `<span class="flow-choice"><i class="on">Deny</i><i>Approve</i></span>` : ""}` : "";
+    });
     box.innerHTML = caption(i);
     el.querySelector('[data-go="-1"]').disabled = i === 0;
     const next = el.querySelector('[data-go="1"]');
@@ -93,7 +110,7 @@ export function mount(el, d) {
     next.textContent = i === d.steps.length - 1 ? "End of the flow" : "Next step ›";
     place(animate);
     clearInterval(el._flowIdle);
-    if (!reduced) el._flowIdle = setInterval(() => { if (!el.isConnected) { clearInterval(el._flowIdle); return; } place(true); }, 4200);
+    if (!reduced && d.scene !== "screens") el._flowIdle = setInterval(() => { if (!el.isConnected) { clearInterval(el._flowIdle); return; } place(true); }, 4200);
   }
   el.querySelector(".flow-ctl").addEventListener("click", e => {
     const b = e.target.closest("[data-go]"); if (!b) return;

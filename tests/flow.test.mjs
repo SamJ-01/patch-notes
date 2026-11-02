@@ -30,6 +30,13 @@ test("describe names both ends of each step", () => {
   assert.ok(s.stop.includes("Parameterised"));
 });
 
+test("the MFA diagram shows the login and the phone, not just a moving dot", () => {
+  const d = diagrams.find(l => l.id === "identity").diagram;
+  assert.equal(d.scene, "screens");
+  assert.equal(d.steps.at(-1).screens.a.line, "Access denied");
+  assert.equal(d.steps[1].screens.p.tone, "ask");
+});
+
 test("questions pointing at the diagram are answered by it", () => {
   for (const l of lessons) for (const c of l.checks) if (c.see === "diagram") assert.ok(l.diagram, l.id);
 });
