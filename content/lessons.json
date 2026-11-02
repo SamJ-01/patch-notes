@@ -1966,7 +1966,7 @@
     ],
     "answer": 0,
     "why": "The input closes the quote and adds OR '1'='1, which is always true, so the query returns users without a valid password.",
-    "see": "diagram"
+    "see": "xpl"
    },
    {
     "q": "What does a least-privilege database account limit?",
@@ -1981,59 +1981,6 @@
     "see": "defend"
    }
   ],
-  "diagram": {
-   "why": "Step through an injected login to see how untrusted input becomes a command the database runs.",
-   "title": "How SQL injection turns a login form against its database",
-   "nodes": [
-    {
-     "id": "u",
-     "kind": "laptop",
-     "label": "Attacker's browser"
-    },
-    {
-     "id": "w",
-     "kind": "server",
-     "label": "Website"
-    },
-    {
-     "id": "d",
-     "kind": "db",
-     "label": "Database"
-    }
-   ],
-   "steps": [
-    {
-     "from": "u",
-     "to": "w",
-     "msg": "Username: ' OR '1'='1",
-     "text": "Instead of a name, the attacker types text that includes SQL.",
-     "tone": "bad"
-    },
-    {
-     "from": "w",
-     "to": "d",
-     "msg": "SELECT * FROM users WHERE name = '' OR '1'='1'",
-     "text": "The site pastes the input straight into its query, so the attacker's text becomes part of the SQL. '1'='1' is always true.",
-     "tone": "bad",
-     "stop": "Parameterised queries keep input as data, never as code. This is the real fix."
-    },
-    {
-     "from": "d",
-     "to": "w",
-     "msg": "Returns every user",
-     "text": "The database does exactly what the changed query asks.",
-     "tone": "bad",
-     "stop": "A least-privilege database account limits what an injection can reach."
-    },
-    {
-     "from": "w",
-     "to": "u",
-     "msg": "Logged in as the first user, often an admin",
-     "text": "The site treats the result as a successful login.",
-     "tone": "bad"
-    }
-   ]
-  },
   "keys": [
    {
     "icon": "db",

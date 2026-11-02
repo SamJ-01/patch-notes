@@ -460,7 +460,7 @@ function mountSqli(el, opts = {}) {
       const out = root.querySelector("#xpl-sqli-out");
       out.className = "mech-out " + (on ? "good" : "bad");
       out.textContent = on ? "Login fails. That text is only a password." : "Logged in as admin. The typed text became part of the query.";
-      root.querySelector("#xpl-cap").innerHTML = esc(v.note); },
+      root.querySelector("#xpl-cap").innerHTML = `${esc(v.note)} If the query does return every row, a database account that can only read what it needs limits the damage.`; },
   });
 }
 

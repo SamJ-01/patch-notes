@@ -404,7 +404,7 @@ function showDoneCard(type, item, title) {
 
 // A key idea's picture: a device drawing (hw.js) or one of the small line icons (GLYPH in 07-labs).
 const keyIcon = k => `<svg class="key-ic" viewBox="-22 -18 44 36" aria-hidden="true">${HW[k] ? hw(k, 0, 0, 0.62) : `<g class="gl">${GLYPH[k] || GLYPH.shield}</g>`}</svg>`;
-const SECTION_NAME = { what: "What it is", diagram: "See it", concept: "See it", example: "Real case", defend: "How defenders stop it" };
+const SECTION_NAME = { what: "What it is", diagram: "See it", concept: "See it", xpl: "See it", example: "Real case", defend: "How defenders stop it" };
 function lessonView(id) {
   const l = LESSON[id]; if (!l) return VIEWS.learn();
   const related = DATA.news.filter(n => n.topics.includes(id)).slice(0, 5);

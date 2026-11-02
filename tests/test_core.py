@@ -484,9 +484,11 @@ class ContentIntegrity(unittest.TestCase):
                 self.assertTrue(c["q"] and c["why"], l["id"])
                 self.assertEqual(len(set(c["options"])), len(c["options"]), f"{l['id']}: duplicate options")
                 self.assertTrue(0 <= c["answer"] < len(c["options"]), l["id"])
-                self.assertIn(c.get("see"), {"what", "example", "defend", "diagram", "concept"}, l["id"])
+                self.assertIn(c.get("see"), {"what", "example", "defend", "diagram", "concept", "xpl"}, l["id"])
                 if c["see"] == "diagram":
                     self.assertIn("diagram", l, f"{l['id']}: a question points to a diagram the lesson doesn't have")
+                if c["see"] == "xpl":
+                    self.assertIn("explainer", l, f"{l['id']}: a question points to a picture the lesson doesn't have")
                 if c["see"] == "concept":
                     self.assertIn("concept", l, f"{l['id']}: a question points to a concept visual the lesson doesn't have")
             if "tip" in l:
@@ -500,7 +502,7 @@ class ContentIntegrity(unittest.TestCase):
         import re
         kinds = set(re.findall(r"^  (\w+): `", (ROOT / "static" / "js" / "hw.js").read_text(), re.M))
         with_diagram = [l for l in self.lessons.values() if "diagram" in l]
-        self.assertGreaterEqual(len(with_diagram), 8)
+        self.assertGreaterEqual(len(with_diagram), 7)
         for l in with_diagram:
             d = l["diagram"]; ids = {n["id"] for n in d["nodes"]}
             self.assertTrue(2 <= len(d["nodes"]) <= 5, l["id"])
