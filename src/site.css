@@ -1768,6 +1768,9 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 /* ---------- home: the route map ---------- */
 .home-head { gap: 8px; } .home-head p { max-width: 62ch; }
 .route-panel { gap: 10px; }
+.route-now { display: grid; justify-items: start; gap: 8px; margin: 0 0 14px; }
+.route-now h1 { font: 700 2.1rem/1.15 var(--font-display); letter-spacing: 0.03em; margin: 0; }
+.home-note { margin: 4px 0 0; }
 .route-top { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; justify-content: space-between; }
 .route-top h2 { font: 600 1.25rem/1.25 var(--font-display); }
 .route-paths { gap: 6px; }

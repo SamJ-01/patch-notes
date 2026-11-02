@@ -62,7 +62,10 @@ function drawRoute() {
   routeWidth = box.clientWidth;
   const reached = next === -1 ? [L.start, ...L.stops, L.finish] : [L.start, ...L.stops.slice(0, next + 1)];
   const short = t => t.replace(/^Path to /, "");
-  box.innerHTML = `<div class="route-top"><h2 id="route-h">Your route: ${esc(short(p.title))}</h2><span class="muted">${done} of ${steps.length} stops · finish for +${PATH_XP} XP</span></div>
+  const now = next === -1
+    ? `<header class="route-now"><h1 id="route-h">Route complete</h1><p class="muted">${esc(short(p.title))}. Pick another below.</p></header>`
+    : `<header class="route-now"><p class="eyebrow">${esc(short(p.title))} · ${done} of ${steps.length}</p><h1 id="route-h">${esc(steps[next].label)}</h1><a class="btn brand" href="${steps[next].href}">${done ? "Continue" : "Start"} →</a></header>`;
+  box.innerHTML = `${now}
     ${isNewcomer() ? "" : `<div class="row route-paths" role="group" aria-label="Choose a route">${DATA.paths.map(x => `<button type="button" class="chip" data-route="${esc(x.id)}" aria-pressed="${x.id === p.id}">${esc(short(x.title))}</button>`).join("")}</div>`}
     <svg class="route-map" viewBox="0 0 ${W} ${L.height}" role="group" aria-label="${esc(`${p.title}: ${steps.length} stops, ${done} done.`)}">
       <path class="route-road" d="${routePath([L.start, ...L.stops, L.finish], L.R)}"/>
@@ -76,8 +79,7 @@ function drawRoute() {
           ${routeWrap(st.label, maxCh).map((ln, k) => `<text class="route-lbl" y="${56 + k * 17}" text-anchor="middle">${esc(ln)}</text>`).join("")}</g></a>`; }).join("")}
       <g class="route-finish${next === -1 ? " done" : ""}" transform="translate(${L.finish.x},${L.finish.y})" aria-hidden="true"><rect x="-26" y="-22" width="52" height="44" rx="10"/><text y="5" text-anchor="middle">${next === -1 ? "★" : "FINISH"}</text></g>
     </svg>
-    <div class="row route-next">${next === -1 ? `<span><b>Route complete.</b> Pick another route above.</span>` : `<span>Next stop: <b>${esc(steps[next].label)}</b> <span class="muted">(${esc(KIND_WORD[steps[next].kind] || steps[next].kind)})</span></span><a class="btn brand" href="${steps[next].href}">${done ? "Continue" : "Start"} →</a>`}
-      <a class="link-btn" href="#path-${esc(p.id)}">Route details</a>${isNewcomer() ? "" : '<a class="link-btn" href="#news">Just here for the news?</a>'}</div>`;
+    <p class="muted"><a href="#path-${esc(p.id)}">All ${steps.length} stops</a></p>`;
   box.querySelectorAll("[data-route]").forEach(b => b.addEventListener("click", () => {
     routeId = b.dataset.route; try { localStorage.setItem("pn-route", routeId); } catch (e) {}
     drawRoute(); box.querySelector(`[data-route="${routeId}"]`)?.focus();
@@ -113,12 +115,12 @@ VIEWS.today = () => {
   const top = trend[0];
   const featured = news.filter(n => n.topics.length);
 
-  const head = `<div class="view-head home-head"><h1>Learn it. Break it. <em class="accent">Understand it.</em></h1>
-      <p>Hands-on cyber security and IT: see how attacks work, learn how to defend against them, and understand the news behind every headline. Free, visual, and built for real exams.</p></div>`;
+  const head = `<p class="muted home-note">Lessons, practice, and this week's news.</p>`;
   if (isNewcomer()) {
     main.innerHTML = `<div class="view">
       <section class="panel route-panel" aria-labelledby="route-h"><div id="route"></div></section>
-      ${head}${startCards(news, kev)}
+      ${startCards(news, kev)}
+      ${head}
       <div class="split"><section class="panel" id="daily"></section>
         <aside class="panel news-line"><div class="eyebrow">This week</div><p><b>${news.length} stories</b> from ${sources} outlets, each linked to a lesson that explains it.</p><a class="btn ghost" href="#news">Read the news →</a></aside></div>
     </div>`;
