@@ -20,7 +20,7 @@ export function validate(d) {
     if (!HW[n.kind]) errors.push(`node ${n.id}: no drawing for kind "${n.kind}"`);
     if (!n.label) errors.push(`node ${n.id}: missing label`);
   }
-  if (d?.scene && d.scene !== "screens") errors.push(`unknown scene "${d.scene}"`);
+  if (d?.scene && d.scene !== "screens" && d.scene !== "stage") errors.push(`unknown scene "${d.scene}"`);
   (d?.steps || []).forEach((s, i) => {
     if (!ids.has(s.from) || !ids.has(s.to)) errors.push(`step ${i + 1}: unknown node`);
     if (s.from === s.to) errors.push(`step ${i + 1}: from and to are the same`);
@@ -34,6 +34,10 @@ export function validate(d) {
         if (sc?.tone && !["bad", "good", "wait", "ask", "stop", "idle"].includes(sc.tone)) errors.push(`step ${i + 1}: screen ${id} has a bad tone`);
       }
     }
+    if (d?.scene === "stage") {
+      if (!s.stage?.line) errors.push(`step ${i + 1}: a stage needs a line`);
+      if (s.stage?.tone && !["bad", "good", "wait", "stop"].includes(s.stage.tone)) errors.push(`step ${i + 1}: stage has a bad tone`);
+    }
   });
   if (!(d?.steps || []).length) errors.push("no steps");
   return errors;
@@ -46,6 +50,7 @@ export function describe(d, i) {
 }
 
 export function mount(el, d) {
+  if (d.scene === "stage") return mountStage(el, d);
   let i = 0;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   el.innerHTML = `<figure class="flow${d.scene === "screens" ? " is-screens" : ""}">
@@ -152,4 +157,41 @@ export function mount(el, d) {
   if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => { place(false); if (el.clientWidth !== lastW) { lastW = el.clientWidth; reserve(); } }).observe(el);
   reserve();
   draw(false);
+}
+
+// A sequence drawn as one object that changes, not a row of devices. The step's `stage` is the picture.
+function mountStage(el, d) {
+  let i = 0;
+  el.innerHTML = `<figure class="flow is-stage">
+    <figcaption class="flow-title">${esc(d.title)}</figcaption>
+    <div class="stage-card" data-stage></div>
+    <div class="flow-step" aria-live="polite"></div>
+    <div class="row flow-ctl">
+      <button class="btn ghost" type="button" data-go="-1">‹ Back</button>
+      <button class="btn brand" type="button" data-go="1">Next step ›</button>
+      <button class="btn ghost" type="button" data-go="0">↺ Start again</button>
+    </div>
+    <details class="flow-text"><summary>All steps as text</summary><ol>${d.steps.map((_, k) => { const s = describe(d, k); return `<li><b>${esc(s.who)}</b>: ${esc(s.msg)}. ${esc(s.text)}${s.stop ? ` <em>Stopped by: ${esc(s.stop)}</em>` : ""}</li>`; }).join("")}</ol></details>
+  </figure>`;
+  const card = el.querySelector("[data-stage]");
+  const box = el.querySelector(".flow-step");
+  const caption = k => { const t = describe(d, k); return `<div class="eyebrow">Step ${k + 1} of ${d.steps.length}</div>
+      <p>${gl(t.text, 2)}</p>${t.stop ? `<p class="flow-stop"><b>How it's stopped here:</b> ${esc(t.stop)}</p>` : ""}`; };
+  function draw() {
+    const s = d.steps[i], g = s.stage || {};
+    card.className = "stage-card" + (g.tone ? " " + g.tone : "");
+    card.innerHTML = `<span class="mech-k">${esc(g.kicker || "")}</span><p class="stage-line">${esc(g.line)}</p>${g.sub ? `<p class="stage-sub">${esc(g.sub)}</p>` : ""}`;
+    box.innerHTML = caption(i);
+    el.querySelector('[data-go="-1"]').disabled = i === 0;
+    const next = el.querySelector('[data-go="1"]');
+    next.disabled = i === d.steps.length - 1;
+    next.textContent = i === d.steps.length - 1 ? "End of the flow" : "Next step ›";
+  }
+  el.querySelector(".flow-ctl").addEventListener("click", e => {
+    const b = e.target.closest("[data-go]"); if (!b) return;
+    const go = Number(b.dataset.go);
+    i = go === 0 ? 0 : Math.max(0, Math.min(d.steps.length - 1, i + go));
+    draw();
+  });
+  draw();
 }
