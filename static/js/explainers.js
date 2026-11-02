@@ -91,33 +91,61 @@ function mountVpn(el, opts = {}) {
   const t = toggle(el, {
     cls: "xpl-vpn", title: "How a VPN changes your sign-in location", start: opts.start, head: opts.head,
     foot: "Addresses are documentation ranges and the picture is simplified.",
-    stage: `<svg viewBox="0 0 360 150" class="xpl-svg" role="img" aria-hidden="true">
-        <g class="xpl-node xpl-home" transform="translate(44,75)">
-          <rect x="-34" y="-30" width="68" height="60" rx="8"/>
-          <g transform="translate(0,-8)"><circle cx="0" cy="-6" r="7"/><path d="M-11 12a11 11 0 0 1 22 0"/></g>
-          <text class="xpl-lbl" y="26">London office</text></g>
-        <g class="xpl-node xpl-exit" id="xpl-exit" transform="translate(180,75)">
-          <rect x="-36" y="-30" width="72" height="60" rx="8"/>
-          <g class="xpl-glyph" transform="translate(0,-6)"></g>
-          <text class="xpl-lbl" id="xpl-exit-lbl" y="26"></text></g>
-        <g class="xpl-node xpl-site" transform="translate(316,75)">
-          <rect x="-34" y="-30" width="68" height="60" rx="8"/>
-          <g transform="translate(0,-8)"><path d="M-9-7h18v14h-18z"/><path d="M-9-2h18"/></g>
-          <text class="xpl-lbl" y="26">Website</text></g>
-        <g class="xpl-link xpl-link-a"><line x1="80" y1="75" x2="142" y2="75"/><circle class="xpl-dot" r="3" cx="80" cy="75"/></g>
-        <g class="xpl-link xpl-link-b"><line x1="218" y1="75" x2="280" y2="75"/><circle class="xpl-dot" r="3" cx="218" cy="75"/></g>
+    stage: `<svg viewBox="0 0 760 330" class="xpl-svg vpn-map" role="img" aria-hidden="true">
+        <rect width="760" height="330" class="vpn-sea"/>
+        <g class="vpn-graticule" aria-hidden="true">
+          <path d="M0 80H760M0 160H760M0 240H760M160 0V330M320 0V330M480 0V330M640 0V330"/>
+        </g>
+        <path class="vpn-land" d="M132,34c28-10 62-4 74,18 16,6 30,26 22,46 16,12 20,36 6,54 12,18 4,46-16,60-8,24-32,36-52,28-18,12-42,2-48-22-22-8-36-32-26-54-16-14-18-42 0-60-4-22 16-46 40-52z"/>
+        <path class="vpn-land" d="M58,168c-14,18-8,46 12,52 14-12 8-40-4-50z"/>
+        <text class="vpn-landname" x="158" y="128">United Kingdom</text>
+        <path class="vpn-land" d="M500,96c42-20 112-14 142,12 18,24 10,66-24,84-48,22-108,8-132-22-18-26-16-58 14-74z"/>
+        <text class="vpn-landname" x="578" y="70">Netherlands</text>
+        <text class="vpn-sea-name" x="370" y="156">NORTH SEA</text>
+        <g class="vpn-maya" transform="translate(196,198)">
+          <path class="vpn-pin" d="M0 2C-12-14-18-24 0-40 18-24 12-14 0 2Z"/>
+          <circle class="vpn-pin-hole" cx="0" cy="-26" r="5"/>
+          <text class="vpn-city" y="18" text-anchor="middle">London</text>
+          <text class="vpn-sub" y="32" text-anchor="middle">Maya stays at her desk</text>
+        </g>
+        <g class="vpn-dc" transform="translate(545,158)">
+          <path class="vpn-roof" d="M-18-22 0-34 18-22"/>
+          <rect class="vpn-bldg" x="-16" y="-22" width="32" height="26" rx="2"/>
+          <path class="vpn-win" d="M-8-14h6M4-14h6M-8-6h6M4-6h6"/>
+          <text class="vpn-city" y="20" text-anchor="middle">Amsterdam</text>
+          <text class="vpn-sub" y="34" text-anchor="middle">company VPN exit</text>
+        </g>
+        <g transform="translate(688,188)">
+          <rect class="vpn-server" x="-26" y="-28" width="52" height="32" rx="4"/>
+          <path class="vpn-win" d="M-16-18h32M-16-10h32M-16-2h32"/>
+          <text class="vpn-city" y="20" text-anchor="middle">Website</text>
+        </g>
+        <g class="vpn-off">
+          <path class="vpn-clear" d="M204,176 C300,48 560,48 676,168"/>
+          <text class="vpn-route-lbl" x="430" y="42" text-anchor="middle">In the clear, on her own broadband</text>
+          <g transform="translate(560,250)">
+            <rect class="vpn-badge" width="178" height="36" rx="8"/>
+            <text class="vpn-badge-t" x="89" y="23" text-anchor="middle">Website sees the UK</text>
+          </g>
+        </g>
+        <g class="vpn-on">
+          <path class="vpn-tube" d="M204,210 C300,292 450,286 528,164"/>
+          <path class="vpn-tube-in" d="M204,210 C300,292 450,286 528,164"/>
+          <path class="vpn-locks" d="M204,210 C300,292 450,286 528,164"/>
+          <path class="vpn-hop" d="M562,150 C610,142 650,150 668,170"/>
+          <text class="vpn-route-lbl" x="360" y="312" text-anchor="middle">Encrypted until it leaves Amsterdam</text>
+          <text class="vpn-sub" x="300" y="268">Other staff use this same exit</text>
+          <g transform="translate(548,250)">
+            <rect class="vpn-badge on" width="196" height="36" rx="8"/>
+            <text class="vpn-badge-t" x="98" y="23" text-anchor="middle">Website sees the Netherlands</text>
+          </g>
+        </g>
       </svg>`,
     label: on => ({ btn: on ? "Turn the VPN off" : "Turn the VPN on", state: vpnView(on).label }),
     render: (on, root) => {
       const v = vpnView(on);
       root.querySelector(".xpl-vpn").classList.toggle("is-reduced", reduced());
-      // The middle node is the VPN exit only when on; off, it's just a hop on the open internet. Keep it short
-      // enough to sit in the box; the city is in the caption.
-      root.querySelector("#xpl-exit-lbl").textContent = on ? "VPN exit" : "Internet";
-      root.querySelector(".xpl-exit .xpl-glyph").innerHTML = on
-        ? '<rect x="-6" y="-2" width="12" height="9" rx="1.5"/><path d="M-3.5-2v-3a3.5 3.5 0 0 1 7 0v3"/>'
-        : '<circle cx="0" cy="0" r="8"/><path d="M-8 0h16M0-8v16M-5-5c3 3 7 3 10 0M-5 5c3-3 7-3 10 0"/>';
-      root.querySelector("#xpl-cap").innerHTML = `<b>Website sees:</b> ${esc(v.country)} <span class="mono">(${esc(v.ip)})</span>. ${esc(v.seen)}`;
+      root.querySelector("#xpl-cap").innerHTML = `<b>Website sees:</b> ${esc(v.country)} <span class="mono">(${esc(v.ip)})</span>. ${esc(v.seen)} ${esc(VPN.home.note)}`;
     },
   });
   return t;

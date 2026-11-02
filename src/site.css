@@ -827,22 +827,42 @@ body.life { background-image: none; }
 .xpl-toggle { align-items: center; gap: 12px; }
 .xpl-stage { display: grid; gap: 10px; }
 .xpl-svg { width: 100%; height: auto; max-width: 540px; margin: 0 auto; display: block; }
+.xpl-vpn .xpl-svg { max-width: 760px; }
+.vpn-sea { fill: #07131d; }
+.vpn-graticule path { fill: none; stroke: rgba(var(--brand-rgb), 0.08); stroke-width: 1; }
+.vpn-land { fill: #163044; stroke: #4d6d8c; stroke-width: 1.5; }
+.vpn-landname { fill: var(--ink); font: 700 15px var(--font-display, sans-serif); text-anchor: middle; }
+.vpn-sea-name { fill: var(--faint); font: 600 11px var(--font-mono, monospace); letter-spacing: 0.22em; text-anchor: middle; }
+.vpn-city { fill: var(--ink); font: 700 13px var(--font-body, sans-serif); }
+.vpn-sub { fill: var(--muted); font: 11px var(--font-mono, monospace); }
+.vpn-pin { fill: var(--sun); }
+.vpn-pin-hole { fill: var(--bg); }
+.vpn-bldg, .vpn-server, .vpn-badge { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; }
+.vpn-badge.on { stroke: var(--brand); }
+.vpn-roof, .vpn-win { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linecap: round; }
+.vpn-clear { fill: none; stroke: var(--sun); stroke-width: 2.2; stroke-dasharray: 6 7; stroke-linecap: round; }
+.vpn-route-lbl { fill: var(--sun); font: 600 12px var(--font-mono, monospace); }
+.vpn-tube { fill: none; stroke: #050a10; stroke-width: 22; stroke-linecap: round; }
+.vpn-tube-in { fill: none; stroke: rgba(var(--brand-rgb), 0.35); stroke-width: 12; stroke-linecap: round; }
+.vpn-locks { fill: none; stroke: var(--brand); stroke-width: 4; stroke-linecap: butt; stroke-dasharray: 8 20; }
+.vpn-hop { fill: none; stroke: var(--brand); stroke-width: 2.2; stroke-linecap: round; }
+.vpn-badge-t { fill: var(--ink); font: 700 12px var(--font-mono, monospace); }
+.xpl-vpn:not(.is-on) .vpn-on { display: none; }
+.xpl-vpn.is-on .vpn-off { display: none; }
+.xpl-vpn:not(.is-on) .vpn-dc { opacity: 0.38; }
+:root[data-theme="light"] .vpn-sea { fill: #d7e6f2; }
+:root[data-theme="light"] .vpn-land { fill: #f4f8fb; stroke: #7f93ae; }
+:root[data-theme="light"] .vpn-tube { stroke: #b7c8da; }
 .xpl-node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
 .xpl-node .xpl-lbl { fill: var(--muted); font: 600 9px var(--font-mono, ui-monospace, monospace); text-anchor: middle; }
 .xpl-node g path, .xpl-node g circle { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .xpl-node g rect { fill: none; stroke: var(--ink); stroke-width: 1.4; }
 .xpl-link line { stroke: var(--line); stroke-width: 2; }
-.xpl-link .xpl-dot { fill: var(--brand); opacity: 0; }
-.xpl-exit { opacity: 0.5; }
-.xpl-vpn.is-on .xpl-exit { opacity: 1; }
-.xpl-vpn.is-on .xpl-exit rect:first-child { stroke: var(--brand); }
-.xpl-vpn.is-on .xpl-link-a line { stroke: var(--brand); stroke-dasharray: 5 3; }
 .xpl-caption { margin: 0; font-size: 0.92rem; line-height: 1.5; }
 .xpl-caption .mono { color: var(--muted); }
 .xpl-foot { font-size: 0.78rem; }
 @media (prefers-reduced-motion: no-preference) {
-  .xpl-vpn:not(.is-reduced) .xpl-link .xpl-dot { opacity: 1; animation: xpl-travel 1.8s linear infinite; }
-  @keyframes xpl-travel { from { transform: translateX(0); } to { transform: translateX(62px); } }
+  .xpl-vpn.is-on:not(.is-reduced) .vpn-locks { animation: flow-dash 3.2s linear infinite; }
 }
 
 /* Request/response explainers (IDOR, cloud): a request line, then a card that flips allowed (a leak) to denied. */
