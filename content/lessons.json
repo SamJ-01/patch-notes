@@ -438,10 +438,12 @@
      "tone": "bad",
      "stop": "Email filtering and SPF, DKIM and DMARC catch many spoofed senders.",
      "stage": {
-      "kicker": "Email",
+      "kind": "mail",
+      "tone": "bad",
       "line": "Your mailbox is full. Sign in to keep it.",
-      "sub": "From: it-support@company-mail.example",
-      "tone": "bad"
+      "from": "it-support@company-mail.example",
+      "subject": "Your mailbox is full",
+      "body": "Sign in within the hour or the mailbox stops receiving mail."
      }
     },
     {
@@ -452,10 +454,10 @@
      "tone": "bad",
      "stop": "Check the address; report it. Never punish people who click.",
      "stage": {
-      "kicker": "Address bar",
+      "kind": "url",
+      "tone": "bad",
       "line": "https://company-mail.signin-example.com",
-      "sub": "The real site is not this address.",
-      "tone": "bad"
+      "sub": "The real site is not this address."
      }
     },
     {
@@ -465,10 +467,11 @@
      "text": "Whatever is typed into the fake page goes straight to the attacker.",
      "tone": "bad",
      "stage": {
+      "kind": "field",
+      "tone": "bad",
       "kicker": "Password",
-      "line": "Sent to the attacker",
-      "sub": "The page looks right. The address does not.",
-      "tone": "bad"
+      "line": "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022",
+      "sub": "Sent to the attacker. The page never checked it."
      }
     },
     {
@@ -479,10 +482,11 @@
      "tone": "bad",
      "stop": "Phishing-resistant MFA (passkeys) blocks this step: the password alone isn't enough.",
      "stage": {
+      "kind": "field",
+      "tone": "bad",
       "kicker": "Real mailbox",
       "line": "Signed in as the employee",
-      "sub": "The password alone opened the real account.",
-      "tone": "bad"
+      "sub": "The password alone opened it."
      }
     }
    ],
@@ -605,10 +609,11 @@
      "tone": "bad",
      "stop": "MFA on every remote access point; patch internet-facing systems first.",
      "stage": {
+      "kind": "field",
+      "tone": "bad",
       "kicker": "VPN sign-in",
       "line": "Stolen password accepted",
-      "sub": "Remote access. No second factor.",
-      "tone": "bad"
+      "sub": "Remote access. No second factor."
      }
     },
     {
@@ -619,10 +624,16 @@
      "tone": "bad",
      "stop": "Segment networks and give accounts only the access they need.",
      "stage": {
+      "kind": "log",
+      "tone": "bad",
       "kicker": "The next few days",
       "line": "Admin rights. The network is mapped.",
-      "sub": "Nothing is encrypted yet.",
-      "tone": "bad"
+      "lines": [
+       "Day 1  VPN login accepted",
+       "Day 2  local admin",
+       "Day 4  file servers listed",
+       "Day 6  nothing encrypted yet"
+      ]
      }
     },
     {
@@ -633,10 +644,15 @@
      "tone": "bad",
      "stop": "Watch for unusual large outbound transfers.",
      "stage": {
+      "kind": "log",
+      "tone": "bad",
       "kicker": "Outbound transfer",
       "line": "41 GB copied out",
-      "sub": "The files leave before they are locked.",
-      "tone": "bad"
+      "lines": [
+       "03:20  rclone.exe copy D:\\Shares",
+       "03:48  41.7 GB sent",
+       "03:48  connection closed"
+      ]
      }
     },
     {
@@ -647,10 +663,11 @@
      "tone": "bad",
      "stop": "Keep offline or immutable backups and test restoring them.",
      "stage": {
+      "kind": "file",
+      "tone": "bad",
       "kicker": "Backups",
-      "line": "Reachable backups deleted",
-      "sub": "A copy on the same network does not survive.",
-      "tone": "bad"
+      "line": "nightly.bak  deleted",
+      "sub": "The copy was on the same network."
      }
     },
     {
@@ -661,10 +678,11 @@
      "tone": "bad",
      "stop": "EDR that spots mass file changes can stop encryption early.",
      "stage": {
+      "kind": "file",
+      "tone": "bad",
       "kicker": "File server",
       "line": "report.xlsx.lockd",
-      "sub": "The ransom note is in the folders.",
-      "tone": "bad"
+      "sub": "It was report.xlsx. The note is in the folder."
      }
     }
    ],
@@ -2414,9 +2432,24 @@
      "msg": "Frame for the router",
      "text": "Your PC knows the site is on another network, so it sends the traffic to its default gateway, the router.",
      "stage": {
+      "kind": "packet",
+      "tone": "",
       "kicker": "Your PC",
-      "line": "To the router, not the website",
-      "sub": "10.0.0.5 \u2192 default gateway"
+      "line": "To the router",
+      "rows": [
+       {
+        "k": "From",
+        "v": "10.0.0.5"
+       },
+       {
+        "k": "To",
+        "v": "default gateway"
+       },
+       {
+        "k": "Not",
+        "v": "the website, yet"
+       }
+      ]
      }
     },
     {
@@ -2425,9 +2458,23 @@
      "msg": "Forwarded to the right port",
      "text": "The switch delivers the frame only to the port the router is on.",
      "stage": {
+      "kind": "packet",
       "kicker": "Switch",
-      "line": "Frame sent to the router's port",
-      "sub": "Only that port. Not every device."
+      "line": "One port",
+      "rows": [
+       {
+        "k": "Frame",
+        "v": "for the router"
+       },
+       {
+        "k": "Sent to",
+        "v": "the router's port only"
+       },
+       {
+        "k": "Not",
+        "v": "every device on the switch"
+       }
+      ]
      }
     },
     {
@@ -2437,9 +2484,23 @@
      "text": "The router swaps your private IP for its public one (NAT) and sends the packet towards the website's IP, found with DNS.",
      "stop": "A firewall here decides which traffic may pass.",
      "stage": {
+      "kind": "packet",
       "kicker": "Router",
-      "line": "10.0.0.5 becomes 198.51.100.20",
-      "sub": "Private address swapped for the public one."
+      "line": "Address swapped",
+      "rows": [
+       {
+        "k": "Was",
+        "v": "10.0.0.5"
+       },
+       {
+        "k": "Now",
+        "v": "198.51.100.20"
+       },
+       {
+        "k": "Toward",
+        "v": "the website's address"
+       }
+      ]
      }
     },
     {
@@ -2449,10 +2510,24 @@
      "text": "The website answers to the router's public IP, and the router hands it back to your PC.",
      "tone": "good",
      "stage": {
+      "kind": "packet",
+      "tone": "good",
       "kicker": "Reply",
-      "line": "The answer comes back to your PC",
-      "sub": "The router hands it to 10.0.0.5.",
-      "tone": "good"
+      "line": "Back to the PC",
+      "rows": [
+       {
+        "k": "From",
+        "v": "the website"
+       },
+       {
+        "k": "To",
+        "v": "198.51.100.20"
+       },
+       {
+        "k": "Handed to",
+        "v": "10.0.0.5"
+       }
+      ]
      }
     }
    ],
@@ -2921,10 +2996,24 @@
      "msg": "Hello: let's talk securely",
      "text": "Your browser starts a TLS connection and offers the encryption methods it supports.",
      "stage": {
+      "kind": "packet",
+      "tone": "good",
       "kicker": "Browser",
-      "line": "Hello. Let's talk securely.",
-      "sub": "The methods it can use. Nothing secret yet.",
-      "tone": "good"
+      "line": "Hello",
+      "rows": [
+       {
+        "k": "Says",
+        "v": "let's talk securely"
+       },
+       {
+        "k": "Offers",
+        "v": "the methods it can use"
+       },
+       {
+        "k": "Secret",
+        "v": "nothing yet"
+       }
+      ]
      }
     },
     {
@@ -2934,10 +3023,24 @@
      "text": "The server sends a certificate signed by a trusted authority, so you know it's the real site.",
      "tone": "good",
      "stage": {
+      "kind": "cert",
+      "tone": "good",
       "kicker": "Certificate",
-      "line": "This is bank.example",
-      "sub": "Signed by an authority the browser already trusts.",
-      "tone": "good"
+      "line": "bank.example",
+      "rows": [
+       {
+        "k": "Name",
+        "v": "bank.example"
+       },
+       {
+        "k": "Signed by",
+        "v": "an authority the browser trusts"
+       },
+       {
+        "k": "Checked",
+        "v": "before anything secret is sent"
+       }
+      ]
      }
     },
     {
@@ -2947,10 +3050,20 @@
      "text": "Both sides work out the same secret key using public-key maths, without ever sending the key itself.",
      "tone": "good",
      "stage": {
+      "kind": "packet",
+      "tone": "good",
       "kicker": "Key exchange",
-      "line": "A shared secret, never sent",
-      "sub": "Both sides work it out. The key is not on the wire.",
-      "tone": "good"
+      "line": "Shared secret",
+      "rows": [
+       {
+        "k": "Both sides",
+        "v": "work out the same key"
+       },
+       {
+        "k": "The key",
+        "v": "is never on the wire"
+       }
+      ]
      }
     },
     {
@@ -2961,10 +3074,11 @@
      "tone": "good",
      "stop": "Use TLS everywhere, and never click through certificate warnings.",
      "stage": {
+      "kind": "bytes",
+      "tone": "good",
       "kicker": "What the Wi-Fi sees",
-      "line": "a9 3f 10 c2 \u2026",
-      "sub": "The password and the balance are inside. They are not readable.",
-      "tone": "good"
+      "line": "a9 3f 10 c2  88 1b e4 07",
+      "sub": "The password and the balance are inside. They are not readable."
      }
     }
    ],
@@ -3306,10 +3420,15 @@
      "msg": "Logs: 30 failed logins, then a success",
      "text": "Laptops, servers and cloud services send their logs to the SIEM.",
      "stage": {
+      "kind": "log",
+      "tone": "bad",
       "kicker": "Log",
       "line": "30 failures, then one success",
-      "sub": "Same account. Same address. Four minutes.",
-      "tone": "bad"
+      "lines": [
+       "09:12  j.cole  failed",
+       "09:14  j.cole  failed  \u00d728",
+       "09:16  j.cole  success  203.0.113.10"
+      ]
      }
     },
     {
@@ -3318,10 +3437,10 @@
      "msg": "Alert: possible password guessing",
      "text": "A detection rule matches the pattern and raises an alert.",
      "stage": {
-      "kicker": "Alert",
+      "kind": "alert",
+      "tone": "bad",
       "line": "Possible password guessing",
-      "sub": "A rule matched the pattern.",
-      "tone": "bad"
+      "sub": "A rule matched the pattern."
      }
     },
     {
@@ -3331,10 +3450,15 @@
      "text": "Which account? From where? What happened after the login? Most alerts are false positives, so triage is quick.",
      "tone": "good",
      "stage": {
-      "kicker": "The question",
-      "line": "Which account, from where, and what happened next?",
-      "sub": "Most alerts are not an incident.",
-      "tone": "good"
+      "kind": "log",
+      "tone": "good",
+      "kicker": "Open questions",
+      "line": "Which account, from where, then what?",
+      "lines": [
+       "Account   j.cole",
+       "From      203.0.113.10",
+       "After     a new inbox rule"
+      ]
      }
     },
     {
@@ -3345,10 +3469,10 @@
      "tone": "good",
      "stop": "Playbooks make the response fast and consistent.",
      "stage": {
-      "kicker": "Response",
+      "kind": "alert",
+      "tone": "good",
       "line": "Account disabled. Laptop isolated.",
-      "sub": "Contained first. Evidence kept.",
-      "tone": "good"
+      "sub": "Contained first. The evidence stays."
      }
     }
    ],

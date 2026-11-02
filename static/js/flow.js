@@ -8,6 +8,20 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 // Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
 const gl = (t, n = 3, seen) => (globalThis.PN_gloss ? globalThis.PN_gloss(t, n, seen) : esc(t));
 export const MAX_NODES = 5;
+export const STAGE_KINDS = ["mail", "url", "field", "log", "file", "packet", "cert", "alert", "bytes"];
+
+export function stageHtml(g = {}) {
+  const row = (k, v) => `<p class="obj-row"><span>${esc(k)}</span><b>${esc(v)}</b></p>`;
+  if (g.kind === "mail") return `<div class="obj mail"><span class="mech-k">Email</span>${row("From", g.from)}${row("Subject", g.subject)}<p class="obj-body">${esc(g.body || "")}</p></div>`;
+  if (g.kind === "url") return `<div class="obj url"><span class="mech-k">Address bar</span><p class="stage-line">${esc(g.line)}</p>${g.sub ? `<p class="stage-sub">${esc(g.sub)}</p>` : ""}</div>`;
+  if (g.kind === "field") return `<div class="obj field"><span class="mech-k">${esc(g.kicker || "")}</span><p class="stage-line">${esc(g.line)}</p>${g.sub ? `<p class="obj-out">${esc(g.sub)}</p>` : ""}</div>`;
+  if (g.kind === "log") return `<div class="obj log"><span class="mech-k">${esc(g.kicker || "Log")}</span><pre>${(g.lines || []).map(esc).join("\n")}</pre></div>`;
+  if (g.kind === "file") return `<div class="obj file"><span class="mech-k">${esc(g.kicker || "File")}</span><p class="stage-line">${esc(g.line)}</p>${g.sub ? `<p class="stage-sub">${esc(g.sub)}</p>` : ""}</div>`;
+  if (g.kind === "packet" || g.kind === "cert") return `<div class="obj ${g.kind}"><span class="mech-k">${esc(g.kicker || "")}</span>${(g.rows || []).map(r => row(r.k, r.v)).join("")}</div>`;
+  if (g.kind === "alert") return `<div class="obj alert"><span class="mech-k">Alert</span><p class="stage-line">${esc(g.line)}</p>${g.sub ? `<p class="stage-sub">${esc(g.sub)}</p>` : ""}</div>`;
+  if (g.kind === "bytes") return `<div class="obj bytes"><span class="mech-k">${esc(g.kicker || "On the wire")}</span><p class="stage-line">${esc(g.line)}</p>${g.sub ? `<p class="stage-sub">${esc(g.sub)}</p>` : ""}</div>`;
+  return `<p class="stage-line">${esc(g.line || "")}</p>`;
+}
 
 // Problems with a diagram's data, as readable messages (empty when it's fine).
 export function validate(d) {
@@ -35,8 +49,13 @@ export function validate(d) {
       }
     }
     if (d?.scene === "stage") {
-      if (!s.stage?.line) errors.push(`step ${i + 1}: a stage needs a line`);
-      if (s.stage?.tone && !["bad", "good", "wait", "stop"].includes(s.stage.tone)) errors.push(`step ${i + 1}: stage has a bad tone`);
+      const g = s.stage || {};
+      if (!STAGE_KINDS.includes(g.kind)) errors.push(`step ${i + 1}: stage kind must be one of ${STAGE_KINDS.join(", ")}`);
+      if (!g.line && g.kind !== "packet" && g.kind !== "cert" && g.kind !== "log") errors.push(`step ${i + 1}: a stage needs a line`);
+      if (g.kind === "mail" && (!g.from || !g.subject)) errors.push(`step ${i + 1}: a mail stage needs from and subject`);
+      if (g.kind === "log" && !(g.lines || []).length) errors.push(`step ${i + 1}: a log stage needs lines`);
+      if ((g.kind === "packet" || g.kind === "cert") && !(g.rows || []).length) errors.push(`step ${i + 1}: ${g.kind} needs rows`);
+      if (g.tone && !["bad", "good", "wait", "stop"].includes(g.tone)) errors.push(`step ${i + 1}: stage has a bad tone`);
     }
   });
   if (!(d?.steps || []).length) errors.push("no steps");
@@ -175,12 +194,19 @@ function mountStage(el, d) {
   </figure>`;
   const card = el.querySelector("[data-stage]");
   const box = el.querySelector(".flow-step");
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const caption = k => { const t = describe(d, k); return `<div class="eyebrow">Step ${k + 1} of ${d.steps.length}</div>
       <p>${gl(t.text, 2)}</p>${t.stop ? `<p class="flow-stop"><b>How it's stopped here:</b> ${esc(t.stop)}</p>` : ""}`; };
-  function draw() {
+  function draw(dir) {
     const s = d.steps[i], g = s.stage || {};
     card.className = "stage-card" + (g.tone ? " " + g.tone : "");
-    card.innerHTML = `<span class="mech-k">${esc(g.kicker || "")}</span><p class="stage-line">${esc(g.line)}</p>${g.sub ? `<p class="stage-sub">${esc(g.sub)}</p>` : ""}`;
+    card.innerHTML = stageHtml(g);
+    if (!reduced && dir) {
+      card.classList.remove("is-in");
+      card.dataset.dir = dir > 0 ? "next" : "back";
+      void card.offsetWidth;
+      card.classList.add("is-in");
+    }
     box.innerHTML = caption(i);
     el.querySelector('[data-go="-1"]').disabled = i === 0;
     const next = el.querySelector('[data-go="1"]');
@@ -190,8 +216,9 @@ function mountStage(el, d) {
   el.querySelector(".flow-ctl").addEventListener("click", e => {
     const b = e.target.closest("[data-go]"); if (!b) return;
     const go = Number(b.dataset.go);
+    const prev = i;
     i = go === 0 ? 0 : Math.max(0, Math.min(d.steps.length - 1, i + go));
-    draw();
+    draw(i === prev ? 0 : i > prev || go === 0 ? 1 : -1);
   });
-  draw();
+  draw(0);
 }

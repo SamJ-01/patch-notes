@@ -74,12 +74,20 @@ function toggle(el, { cls, title, stage, label, render, start = false, head = tr
     <p class="muted xpl-foot">Simplified and fictional: documentation data only, and a real system records more than this.</p>
   </figure>`;
   const btn = el.querySelector("#xpl-btn"), fig = el.querySelector("." + cls);
+  let primed = false;
   const paint = () => {
     fig.classList.toggle("is-on", on);
     const l = label(on);
     btn.textContent = l.btn; btn.setAttribute("aria-pressed", String(on));
     el.querySelector("#xpl-state").textContent = l.state;
     render(on, el);
+    const stage = el.querySelector(".xpl-stage");
+    if (primed && stage && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      stage.classList.remove("is-flip");
+      void stage.offsetWidth;
+      stage.classList.add("is-flip");
+    }
+    primed = true;
   };
   paint();
   btn.addEventListener("click", () => { on = !on; paint(); });
