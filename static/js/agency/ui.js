@@ -31,26 +31,20 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
 
   root.innerHTML = `<div class="agency">
     <section class="ag-in" id="ag-in" aria-labelledby="ag-in-h">
-      <div class="ag-in-head"><a class="link-btn" href="#agency">← The Agency</a><div class="eyebrow">PATCH//AGENCY · ${esc(shift.agency)}</div>
-        <h1 id="ag-in-h">${esc(shift.title)}</h1></div>
-      <div class="ag-in-grid">
-        <div class="ag-tc" id="ag-tc">
-          <div class="ag-tc-screen" aria-hidden="true"><span>${esc(day)}</span><b>${esc(shift.startsAt)}</b><span id="ag-tc-msg">TAP YOUR BADGE</span></div>
-          <button type="button" class="ag-tc-badge" id="ag-tap"><span class="ag-tc-card" aria-hidden="true"><span class="ag-tc-logo">LANTERNFIELD</span><span class="ag-tc-chip"></span></span><span class="ag-tc-text">Tap your badge to clock in</span></button>
-          <p class="ag-stamp" id="ag-stamp" hidden></p>
-        </div>
-        <div class="ag-in-side">
-          <ol class="dk-msgs ag-chat" id="ag-chat" aria-live="polite" aria-label="Messages from ${esc(leadName)}"></ol>
-          <div class="ag-dossier" id="ag-dossier" hidden>${DESK.scene(shift.clientImage)}<div class="eyebrow">Client file</div><h2>${esc(shift.client)}</h2>
-            <dl class="fields"><div><dt>Alerts waiting</dt><dd>${waiting}, with more likely</dd></div><div><dt>Logs you can search</dt><dd>${Object.keys(shift.sources).length}</dd></div><div><dt>Shift length</dt><dd>about ${shift.minutes} min</dd></div>${done ? `<div><dt>Your record</dt><dd>✓ worked before</dd></div>` : ""}</dl>
-            ${shift.infra ? `<div class="ag-infra"><div class="eyebrow">What you're watching</div>${INFRA.svg(shift.infra)}</div>` : ""}
-            <fieldset class="ag-level"><legend>How do you want to work?</legend>
-              <label class="ag-lv"><input type="radio" name="ag-level" value="shadow"><span><b>Shadow</b> Watch ${esc(leadName)} work this shift, step by step and explained, then take your turn.</span></label>
-              <label class="ag-lv"><input type="radio" name="ag-level" value="guided"${done ? "" : " checked"}><span><b>Guided</b> ${esc(leadName)} gives hints, suggests searches and checks each alert as you close it.</span></label>
-              <label class="ag-lv"><input type="radio" name="ag-level" value="standard"${done ? " checked" : ""}><span><b>On your own</b> No hints. Everything is marked at the handover, as on a real shift.</span></label></fieldset>
-            <button class="btn brand" type="button" id="ag-desk-go">Take the desk</button></div>
-        </div>
-      </div>
+      <a class="link-btn" href="#agency">← Agency</a>
+      <header class="lesson-open"><p class="eyebrow">${esc(shift.client)} · ${esc(day)} · ${esc(shift.startsAt)}</p><h1 id="ag-in-h">${esc(shift.title)}</h1></header>
+      <section class="panel screen" id="ag-dossier"><div class="obj">
+        <p class="obj-row"><span>Client</span><b>${esc(shift.client)}</b></p>
+        <p class="obj-row"><span>Waiting</span><b>${waiting} ${waiting === 1 ? "alert" : "alerts"}</b></p>
+        <p class="obj-row"><span>Logs</span><b>${Object.keys(shift.sources).length}</b></p>
+      </div></section>
+      <section><h2>From ${esc(leadName)}</h2><p>${gl(briefing.slice(0, 2).join(" "), 2)}</p></section>
+      <fieldset class="ag-level"><legend>How do you want to work?</legend>
+        <label class="ag-lv"><input type="radio" name="ag-level" value="shadow"><span><b>Shadow</b> Watch ${esc(leadName)} work this shift, then take your turn.</span></label>
+        <label class="ag-lv"><input type="radio" name="ag-level" value="guided"${done ? "" : " checked"}><span><b>Guided</b> Hints as you go.</span></label>
+        <label class="ag-lv"><input type="radio" name="ag-level" value="standard"${done ? " checked" : ""}><span><b>On your own</b> Marked at the handover.</span></label>
+      </fieldset>
+      <button class="btn brand" type="button" id="ag-desk-go">Take the desk</button>
       <details class="tbl simplification"><summary>How this simulation differs from a real shift</summary><p>${esc(shift.simplification)}</p></details>
     </section>
     <div class="ag-desk" id="ag-desk" hidden>
@@ -67,7 +61,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         </div>
       </div>
       <div class="ag-grid" id="ag-grid" data-tab="queue">
-        <nav class="panel ag-queue" aria-labelledby="ag-q-h"><h2 id="ag-q-h">Alert queue <svg class="ag-radar radar" viewBox="-16 -16 32 32" width="26" height="26" aria-hidden="true"><circle r="14"/><circle r="8"/><path class="sweep" d="M0 0 L14 0 A14 14 0 0 1 7 12 Z"/></svg></h2><ol id="ag-queue"></ol></nav>
+        <nav class="panel ag-queue" aria-labelledby="ag-q-h"><h2 id="ag-q-h">Alert queue</h2><ol id="ag-queue"></ol></nav>
         <section class="panel ag-alert" id="ag-alert"></section>
         <section class="panel ag-comms" aria-labelledby="ag-c-h" tabindex="0"><h2 id="ag-c-h">Team chat</h2>${DESK.channel(`${shift.client.split(/\s+/)[0].toLowerCase()}-soc`, "you, your lead and the teams you ask", 'id="ag-inbox" aria-live="polite"')}</section>
       </div>
@@ -420,29 +414,6 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     select(state.arrived[0], false);
   }
 
-  // ---------- clocking in: tap the badge, the clock stamps the time, the lead briefs you, then the desk.
-  const pause = ms => new Promise(res => setTimeout(res, reduced ? 0 : ms));
-  $("ag-tap").addEventListener("click", async () => {
-    const tap = $("ag-tap");
-    if (tap.disabled) return;
-    tap.disabled = true; $("ag-tc").classList.add("tapped");
-    $("ag-tc-msg").textContent = "READING…";
-    await pause(650);
-    $("ag-tc-msg").textContent = "CLOCKED IN";
-    $("ag-stamp").textContent = `IN ${shift.startsAt} · ${day}`; $("ag-stamp").hidden = false;
-    tap.querySelector(".ag-tc-text").textContent = "Clocked in";
-    for (const line of briefing) {
-      const t = document.createElement("template");
-      t.innerHTML = DESK.message({ from: leadName, role: leadRole || "Shift lead", at: shift.startsAt, photo: shift.leadPhoto, typing: true });
-      const li = t.content.firstElementChild;
-      $("ag-chat").appendChild(li);
-      await pause(500 + line.length * 6);
-      li.classList.remove("typing"); li.querySelector(".dk-text").innerHTML = `<p>${gl(line, 2)}</p>`;
-    }
-    await pause(250);
-    $("ag-dossier").hidden = false;
-    $("ag-desk-go").focus();
-  });
   root.querySelectorAll(".ag-tab").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
   $("ag-desk-go").addEventListener("click", () => {
     const level = root.querySelector('[name="ag-level"]:checked')?.value || "standard";

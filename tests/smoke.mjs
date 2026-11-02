@@ -104,9 +104,7 @@ await journey("lab slow-network", async () => {
 // 3. Shadow an Agency shift from clocking in to "Your turn", then start working it.
 await journey("shadow shift-01", async () => {
   const page = await open("#agency-shift-01", 390, "light");
-  await page.waitForSelector("#ag-tap");
-  await page.evaluate(() => document.querySelector("#ag-tap").click());
-  await page.waitForSelector("#ag-dossier:not([hidden])", { timeout: 20000 });
+  await page.waitForSelector("#ag-desk-go");
   await page.evaluate(() => { document.querySelector('[name="ag-level"][value="shadow"]').click(); document.querySelector("#ag-desk-go").click(); });
   await page.waitForSelector("#ag-sh-h");
   let steps = 1;
@@ -124,9 +122,7 @@ await journey("shadow shift-01", async () => {
 // form and the debrief. The engine is unit-tested; this checks the desk's form wiring actually drives it.
 await journey("work shift-01", async () => {
   const page = await open("#agency-shift-01", 390, "light");
-  await page.waitForSelector("#ag-tap");
-  await page.evaluate(() => document.querySelector("#ag-tap").click());
-  await page.waitForSelector("#ag-dossier:not([hidden])", { timeout: 20000 });
+  await page.waitForSelector("#ag-desk-go");
   await page.evaluate(() => document.querySelector("#ag-desk-go").click());  // guided is the default
   await page.waitForSelector("#ag-desk:not([hidden])", { timeout: 10000 });
   for (let guard = 0; guard < 12; guard++) {
