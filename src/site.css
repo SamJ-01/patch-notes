@@ -1370,8 +1370,9 @@ body.life { background-image: none; }
 .flow-screen.stop { border-color: var(--bad); background: var(--bad-tint); }
 .flow-screen.stop .ln { color: var(--bad); }
 .flow-choice { display: flex; gap: 4px; margin-top: 2px; }
-.flow-choice i { font: 700 10px var(--font-mono); font-style: normal; padding: 3px 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
-.flow-choice i.on { border-color: var(--bad); color: var(--bad); }
+.flow-choice button { font: 700 10px var(--font-mono); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); cursor: pointer; }
+.flow-choice button[data-act="deny"] { border-color: var(--bad); color: var(--bad); }
+.flow-choice button[data-act="approve"] { border-color: var(--good); color: var(--good); }
 .flow-node.send span, .flow-node.recv span { color: var(--ink); }  /* colour only: bold would re-wrap labels and shift the layout */
 .flow-node.send svg, .flow-node.recv svg { filter: drop-shadow(0 0 10px rgba(var(--brand-rgb), 0.55)); }
 .flow-stage[data-tone="bad"] .flow-node.send svg { filter: drop-shadow(0 0 10px rgba(var(--bad-rgb), 0.6)); }
