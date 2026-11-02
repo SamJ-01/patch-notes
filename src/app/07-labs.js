@@ -192,22 +192,21 @@ VIEWS.missions = () => {
   const items = practiseItems();
   const cats = [...new Set([...CATEGORY_ORDER, ...items.map(i => i.cat)])].filter(c => items.some(i => i.cat === c));
   if (PS.track !== "All" && !cats.includes(PS.track)) PS.track = "All";
-  const picks = PRACTISE_PICKS.map(k => items.find(i => i.key === k)).filter(Boolean)
-    .map(p => (p.done ? items.find(i => i.cat === p.cat && !i.done && !PRACTISE_PICKS.includes(i.key)) || p : p));
-  main.innerHTML = `<div class="view">
-    <div class="view-head with-art">${headArt("missions")}<h1>Practise by doing</h1><p>Missions, labs, the Agency shift and games. Start with one from each track, or pick what you want to get better at.</p></div>
-    <section class="stack pr-start"${PS.track === "All" ? "" : " hidden"}><h2 class="cat-h">Start here: one from each track</h2><div class="lessons">${picks.map(p => p.html).join("")}</div></section>
-    <div class="row pr-tracks" role="group" aria-label="Show a track">${["All", ...cats].map(c => `<button type="button" class="chip" data-t="${esc(c)}" aria-pressed="${PS.track === c}">${esc(c)} <span class="n">${c === "All" ? items.length : items.filter(i => i.cat === c).length}</span></button>`).join("")}</div>
-    <div class="stack" id="pr-grid" style="gap:30px"></div>
+  const countable = items.filter(i => i.key !== "games" && !i.key.startsWith("tool:"));
+  const doneCount = countable.filter(i => i.done).length;
+  main.innerHTML = `<div class="view learn-index">
+    <header class="lesson-open"><h1>Practise</h1><p class="muted">${doneCount} of ${countable.length} done</p></header>
+    <div class="row pr-tracks" role="group" aria-label="Show a track">${["All", ...cats].map(c => `<button type="button" class="chip" data-t="${esc(c)}" aria-pressed="${PS.track === c}">${esc(c)}</button>`).join("")}</div>
+    <div id="pr-grid"></div>
   </div>`;
-  const SHOW = 4;
+  const SHOW = 8;
   const draw = () => {
     const shown = PS.track === "All" ? cats : [PS.track];
-    main.querySelector(".pr-start").hidden = PS.track !== "All";  // the picks only repeat cards once a track is chosen
     $("pr-grid").innerHTML = shown.map(c => {
       const list = items.filter(i => i.cat === c), all = PS.track !== "All" || PS.open[c] || list.length <= SHOW + 1;
-      return `<section class="stack"><h2 class="cat-h">${esc(c)}</h2><div class="lessons">${(all ? list : list.slice(0, SHOW)).map(i => i.html).join("")}</div>
-        ${all ? "" : `<button type="button" class="btn ghost pr-more" data-more="${esc(c)}">Show all ${list.length} in ${esc(c)}</button>`}</section>`;
+      const rows = (all ? list : list.slice(0, SHOW)).map(i => i.html).join("");
+      return `<section class="stack" style="gap:0"><h2 class="cat-h">${esc(c)}</h2><div class="learn-list">${rows}</div>
+        ${all ? "" : `<button type="button" class="btn ghost pr-more" data-more="${esc(c)}">Show all ${list.length}</button>`}</section>`;
     }).join("");
   };
   main.querySelector(".pr-tracks").addEventListener("click", e => {
@@ -218,25 +217,24 @@ VIEWS.missions = () => {
     const b = e.target.closest("[data-more]"); if (!b) return;
     PS.open[b.dataset.more] = true; draw();
     const sec = [...$("pr-grid").querySelectorAll(".cat-h")].find(h => h.textContent === b.dataset.more)?.parentElement;
-    sec?.querySelectorAll(".lcard")[SHOW]?.focus();  // keep keyboard users where they were
+    sec?.querySelectorAll(".learn-row")[SHOW]?.focus();  // keep keyboard users where they were
   });
   draw();
 };
+function practiseRow(href, kind, title, meta, done) {
+  return `<a class="learn-row" href="${href}"><b>${esc(title)}</b><span>${esc(kind)}${meta ? ` · ${esc(meta)}` : ""}</span>${done ? '<span class="done-mark">Done</span>' : "<span></span>"}</a>`;
+}
 function gamesCard() {
-  return `<a class="lcard art-card" href="#play">${cardArt("play")}
-    <span class="eyebrow">Games</span><h3>Phish or Legit, quizzes and a flag hunt</h3><p>Quick rounds to sharpen your instincts: spot the scam, test what you know, find hidden flags</p><span class="lmeta"><span>A few minutes</span><span>XP for every round</span></span></a>`;
+  return practiseRow("#play", "Games", "Phish or Legit, quizzes and a flag hunt", "a few minutes", false);
 }
 function toolCard() {
-  return `<a class="lcard art-card" href="#subnet-calc">${cardArt("subnet-calc")}
-    <span class="eyebrow">Tool</span><h3>Subnet calculator</h3><p>Type any address and watch the network change: class, CIDR, mask, hosts, ranges and a live diagram</p><span class="lmeta"><span>Use any time</span><span>Shareable links</span></span></a>`;
+  return practiseRow("#subnet-calc", "Tool", "Subnet calculator", "any time", false);
 }
 function logToolCard() {
-  return `<a class="lcard art-card" href="#log-search">${cardArt("log-detective")}
-    <span class="eyebrow">Tool · your own evidence</span><h3>Log search</h3><p>Paste a real log; spot guessing and scanning</p><span class="lmeta"><span>Use any time</span><span>Stays on your device</span></span></a>`;
+  return practiseRow("#log-search", "Tool", "Log search", "any time", false);
 }
 function cvssToolCard() {
-  return `<a class="lcard art-card" href="#cvss-decode">${cardArt("cvss-builder")}
-    <span class="eyebrow">Tool · your own evidence</span><h3>CVSS decoder</h3><p>Paste a vector; see the score and what it means</p><span class="lmeta"><span>Use any time</span><span>3.0, 3.1 and 4.0</span></span></a>`;
+  return practiseRow("#cvss-decode", "Tool", "CVSS decoder", "any time", false);
 }
 // Log search: paste or open a real log (static/js/tools/logs.js).
 function logToolView() {
@@ -247,8 +245,7 @@ function logToolView() {
     .catch(() => { $("lg-root").innerHTML = `<div class="empty">Couldn't load the log search. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
 }
 function headerToolCard() {
-  return `<a class="lcard art-card" href="#headers-check">${cardArt("header-inspector")}
-    <span class="eyebrow">Tool · your own evidence</span><h3>Email header checker</h3><p>Paste a real email's headers and see who sent it</p><span class="lmeta"><span>Use any time</span><span>Stays on your device</span></span></a>`;
+  return practiseRow("#headers-check", "Tool", "Email header checker", "any time", false);
 }
 // "Bring your own evidence": paste real email headers and get them explained (static/js/tools/headers.js).
 function headersToolView() {
@@ -276,24 +273,18 @@ function calcView(h) {
   }).catch(() => { $("calc-root").innerHTML = `<div class="empty">Couldn't load the calculator. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
 }
 function labCard(l) {
-  return `<a class="lcard art-card" href="#lab-${esc(l.id)}">${cardArt(l.id)}${P.labs[l.id] ? '<span class="done">DONE</span>' : ""}
-    <span class="eyebrow">Lab</span><h3>${esc(l.title)}</h3><p>${esc(l.card || l.skill)}</p><span class="lmeta"><span>${l.minutes} min</span><span>+${LAB_XP} XP</span></span></a>`;
+  return practiseRow(`#lab-${esc(l.id)}`, "Lab", l.title, `${l.minutes} min`, !!P.labs[l.id]);
 }
 function missionCard(m) {
   const done = Object.keys((P.missions || {})[m.id] || {});
   const all = Object.keys(m.modes);
-  return `<a class="lcard mission-card art-card" href="#mission-${esc(m.id)}">${cardArt(m.id)}${done.length === all.length ? '<span class="done">DONE</span>' : ""}
-    <span class="eyebrow">Mission</span><h3>${esc(m.title)}</h3><p>${esc(m.card || m.summary)}</p>
-    <span class="lmeta"><span>${m.minutes} min</span>${all.map(k => `<span>${done.includes(k) ? "✓ " : ""}${esc(m.modes[k].label)}</span>`).join("")}</span></a>`;
+  return practiseRow(`#mission-${esc(m.id)}`, "Mission", m.title, `${m.minutes} min`, done.length === all.length);
 }
 const MISSION = id => DATA.missions.find(x => x.id === id);
 const SHIFT = id => (DATA.agency || []).find(x => x.id === id);
 function shiftCard(sh) {
   const rec = (P.agency || {})[sh.id];
-  const pic = sh.clientImage ? cardPhoto(sh.clientImage.small || sh.clientImage.src, 800, Math.round(800 * sh.clientImage.height / sh.clientImage.width)) : cardArt("agency");
-  return `<a class="lcard mission-card art-card" href="#agency-${esc(sh.id)}">${pic}${rec ? '<span class="done">DONE</span>' : ""}
-    <span class="eyebrow">PATCH//AGENCY</span><h3>${esc(sh.title)}</h3><p>${esc(sh.card || sh.summary)}</p>
-    <span class="lmeta"><span>${sh.minutes} min</span><span>${rec ? `Best: ${rec.best} of ${rec.total} checks` : `+${sh.xp} XP`}</span></span></a>`;
+  return practiseRow(`#agency-${esc(sh.id)}`, "Shift", sh.title, `${sh.minutes} min`, !!rec);
 }
 // The Agency's own section: the agency, your staff badge, the time clock and the rota. Clocking in opens a shift.
 VIEWS.agency = () => {
@@ -428,15 +419,12 @@ function labView(id) {
   if (l.kind === "cvss") return cvssLab(l);
   if (MODULE_LABS.includes(l.kind)) return moduleLab(l);
   const solved = new Set(P.labSteps[id] || []);
-  main.innerHTML = `<div class="view"${bannerAttr(id)}><article class="article" style="max-width:900px">
-    <a class="link-btn" href="#missions">← Missions</a>
-    <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${l.minutes} min · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${gloss(l.intro, 4)}</p></div>
+  main.innerHTML = `<div class="view"${bannerAttr(id)}><article class="article lesson">
+    <a class="link-btn" href="#missions">← Practise</a>
+    <header class="lesson-open"><p class="eyebrow">Lab · ${esc(l.track)} · ${l.minutes} min</p><h1>${esc(l.title)}</h1></header>
     ${loopStrip(pageTopic(l), labStage(l))}
-    ${l.visual ? `<section class="panel">${l.visual.why ? `<p class="muted xpl-why">${gloss(l.visual.why, 2)}</p>` : ""}<div id="lab-visual"><div class="empty">Loading the picture…</div></div></section>` : ""}
-    ${l.primer ? `<section class="panel"><h2>${esc(l.primer.title)}</h2><ul class="keys">${l.primer.keys.map(k => `<li>${keyIcon(k.icon)}<b>${gloss(k.label, 1)}</b><span>${esc(k.text)}</span></li>`).join("")}</ul>
-      ${l.primer.results ? `<p class="muted" style="margin:10px 0 4px">What each result means:</p><ul class="results">${l.primer.results.map(([w, m, tone]) => `<li class="${esc(tone)}"><b class="mono">${esc(w)}</b>${esc(m)}</li>`).join("")}</ul>` : ""}</section>` : ""}
-    ${l.artifact.kind === "headers" ? `<section class="panel"><div class="panel-title"><h2>The email</h2><span class="sim-tag">Simulated email</span></div>
-      ${MAIL.card({ headers: l.artifact.text, body: l.artifact.body, links: l.artifact.links }, { id: "lab-mail", views: ["message", "original"] })}</section>` : `<section class="panel"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
+    ${l.artifact.kind === "headers" ? `<section class="panel screen"><div class="panel-title"><h2>The email</h2><span class="sim-tag">Simulated email</span></div>
+      ${MAIL.card({ headers: l.artifact.text, body: l.artifact.body, links: l.artifact.links }, { id: "lab-mail", views: ["message", "original"] })}</section>` : `<section class="panel screen"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
       ${l.artifact.kind === "log" ? `<div class="row"><label class="sr" for="lab-f">Filter lines</label><span class="mono" style="color:var(--sun)">grep</span><input id="lab-f" type="search" placeholder="${esc(l.artifact.placeholder || "e.g. Failed password")}" autocomplete="off" spellcheck="false"></div>` : ""}
       <pre class="evidence" id="lab-pre" tabindex="0" aria-label="Evidence"></pre></section>`}
     <section class="stack" id="lab-steps">${l.steps.map((st, i) => `<div class="panel lab-step ${solved.has(i) ? "got" : ""}" data-i="${i}">
@@ -446,6 +434,11 @@ function labView(id) {
         : `<form class="flag-form" data-form="${i}"><label class="sr" for="ans-${i}">Answer</label><input id="ans-${i}" autocomplete="off" spellcheck="false" ${solved.has(i) ? `value="${esc(st.answers[0])}" disabled` : ""}><button class="btn" type="submit" ${solved.has(i) ? "disabled" : ""}>Check</button></form>`}
       <div class="fb">${solved.has(i) ? `<div class="feedback"><b class="ok">Correct.</b> ${gloss(st.explain, 3)}</div>` : ""}</div>
     </div>`).join("")}</section>
+    ${(l.visual || l.primer) ? `<details class="more-what"><summary>How to read this</summary>
+      ${l.visual ? `<div id="lab-visual"><div class="empty">Loading…</div></div>` : ""}
+      ${l.primer ? `<h2>${esc(l.primer.title)}</h2><ul class="keys">${l.primer.keys.map(k => `<li>${keyIcon(k.icon)}<b>${gloss(k.label, 1)}</b><span>${esc(k.text)}</span></li>`).join("")}</ul>
+        ${l.primer.results ? `<ul class="results">${l.primer.results.map(([w, m, tone]) => `<li class="${esc(tone)}"><b class="mono">${esc(w)}</b>${esc(m)}</li>`).join("")}</ul>` : ""}` : ""}
+    </details>` : ""}
     <div class="row"><button class="btn ghost" data-reset-lab="${esc(id)}">↺ Reset answers</button><span class="muted">${P.labs[id] ? `Completed ${esc(P.labs[id])}.` : ""} Related: <a href="#lesson-${esc(l.lesson)}">${esc(LESSON[l.lesson]?.title || l.lesson)}</a></span></div>
   </article></div>`;
   if (l.visual) mountVisual(l.visual, () => parseRoute().path === "missions/" + id);
