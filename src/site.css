@@ -1391,7 +1391,8 @@ body.life { background-image: none; }
 .obj { display: grid; gap: 8px; }
 .obj-row { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 10px; margin: 0; align-items: baseline; }
 .obj-row span { font: 600 10px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-.obj-row b { font: 600 0.95rem/1.4 var(--font-mono); font-weight: 600; overflow-wrap: anywhere; }
+.obj-row b { font: 600 0.95rem/1.4 var(--font-mono); overflow-wrap: anywhere; }
+.obj-row.bad b { color: var(--bad); }
 .obj-body, .obj pre { margin: 0; color: var(--ink); }
 .obj pre { font: 500 0.85rem/1.55 var(--font-mono); white-space: pre-wrap; }
 .obj-out { margin: 0; font-weight: 650; }

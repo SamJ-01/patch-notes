@@ -440,8 +440,9 @@
      "stage": {
       "kind": "mail",
       "tone": "bad",
-      "line": "Your mailbox is full. Sign in to keep it.",
-      "from": "it-support@company-mail.example",
+      "line": "Your mailbox is full",
+      "from": "IT Support <it-support@company-mail.example>",
+      "reply": "bounce@mail-x7-delivery.biz",
       "subject": "Your mailbox is full",
       "body": "Sign in within the hour or the mailbox stops receiving mail."
      }
@@ -457,7 +458,17 @@
       "kind": "url",
       "tone": "bad",
       "line": "https://company-mail.signin-example.com",
-      "sub": "The real site is not this address."
+      "rows": [
+       {
+        "k": "This bar",
+        "v": "company-mail.signin-example.com",
+        "bad": true
+       },
+       {
+        "k": "Real site",
+        "v": "company-mail.example"
+       }
+      ]
      }
     },
     {
@@ -470,8 +481,23 @@
       "kind": "field",
       "tone": "bad",
       "kicker": "Password",
-      "line": "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022",
-      "sub": "Sent to the attacker. The page never checked it."
+      "line": "posted",
+      "rows": [
+       {
+        "k": "Typed on",
+        "v": "signin-example.com",
+        "bad": true
+       },
+       {
+        "k": "Password",
+        "v": "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+       },
+       {
+        "k": "Posted to",
+        "v": "203.0.113.50",
+        "bad": true
+       }
+      ]
      }
     },
     {
@@ -484,9 +510,23 @@
      "stage": {
       "kind": "field",
       "tone": "bad",
-      "kicker": "Real mailbox",
-      "line": "Signed in as the employee",
-      "sub": "The password alone opened it."
+      "kicker": "Mailbox",
+      "line": "open",
+      "rows": [
+       {
+        "k": "Site",
+        "v": "company-mail.example"
+       },
+       {
+        "k": "Account",
+        "v": "alex@company.example"
+       },
+       {
+        "k": "Password",
+        "v": "the one posted to 203.0.113.50",
+        "bad": true
+       }
+      ]
      }
     }
    ],
@@ -611,9 +651,23 @@
      "stage": {
       "kind": "field",
       "tone": "bad",
-      "kicker": "VPN sign-in",
-      "line": "Stolen password accepted",
-      "sub": "Remote access. No second factor."
+      "kicker": "VPN",
+      "line": "accepted",
+      "rows": [
+       {
+        "k": "Host",
+        "v": "remote.company.example"
+       },
+       {
+        "k": "Password",
+        "v": "accepted"
+       },
+       {
+        "k": "Second factor",
+        "v": "none",
+        "bad": true
+       }
+      ]
      }
     },
     {
@@ -626,13 +680,13 @@
      "stage": {
       "kind": "log",
       "tone": "bad",
-      "kicker": "The next few days",
-      "line": "Admin rights. The network is mapped.",
+      "kicker": "Days 1 to 6",
+      "line": "quiet",
       "lines": [
        "Day 1  VPN login accepted",
        "Day 2  local admin",
        "Day 4  file servers listed",
-       "Day 6  nothing encrypted yet"
+       "Day 6  nothing encrypted"
       ]
      }
     },
@@ -646,8 +700,8 @@
      "stage": {
       "kind": "log",
       "tone": "bad",
-      "kicker": "Outbound transfer",
-      "line": "41 GB copied out",
+      "kicker": "Outbound",
+      "line": "41 GB",
       "lines": [
        "03:20  rclone.exe copy D:\\Shares",
        "03:48  41.7 GB sent",
@@ -666,8 +720,22 @@
       "kind": "file",
       "tone": "bad",
       "kicker": "Backups",
-      "line": "nightly.bak  deleted",
-      "sub": "The copy was on the same network."
+      "line": "deleted",
+      "rows": [
+       {
+        "k": "Name",
+        "v": "nightly.bak"
+       },
+       {
+        "k": "State",
+        "v": "deleted",
+        "bad": true
+       },
+       {
+        "k": "Location",
+        "v": "\\\\files\\backups"
+       }
+      ]
      }
     },
     {
@@ -681,8 +749,23 @@
       "kind": "file",
       "tone": "bad",
       "kicker": "File server",
-      "line": "report.xlsx.lockd",
-      "sub": "It was report.xlsx. The note is in the folder."
+      "line": "locked",
+      "rows": [
+       {
+        "k": "Was",
+        "v": "report.xlsx"
+       },
+       {
+        "k": "Now",
+        "v": "report.xlsx.lockd",
+        "bad": true
+       },
+       {
+        "k": "Added",
+        "v": "README_RESTORE.txt",
+        "bad": true
+       }
+      ]
      }
     }
    ],
@@ -2433,21 +2516,20 @@
      "text": "Your PC knows the site is on another network, so it sends the traffic to its default gateway, the router.",
      "stage": {
       "kind": "packet",
-      "tone": "",
-      "kicker": "Your PC",
-      "line": "To the router",
+      "kicker": "Leaving the PC",
+      "line": "next hop",
       "rows": [
        {
         "k": "From",
         "v": "10.0.0.5"
        },
        {
-        "k": "To",
-        "v": "default gateway"
+        "k": "Next",
+        "v": "192.168.1.1"
        },
        {
-        "k": "Not",
-        "v": "the website, yet"
+        "k": "Website",
+        "v": "203.0.113.10"
        }
       ]
      }
@@ -2460,19 +2542,19 @@
      "stage": {
       "kind": "packet",
       "kicker": "Switch",
-      "line": "One port",
+      "line": "one port",
       "rows": [
        {
-        "k": "Frame",
-        "v": "for the router"
+        "k": "In",
+        "v": "port 7"
        },
        {
-        "k": "Sent to",
-        "v": "the router's port only"
+        "k": "Out",
+        "v": "port 1"
        },
        {
-        "k": "Not",
-        "v": "every device on the switch"
+        "k": "Port 1",
+        "v": "192.168.1.1"
        }
       ]
      }
@@ -2486,19 +2568,19 @@
      "stage": {
       "kind": "packet",
       "kicker": "Router",
-      "line": "Address swapped",
+      "line": "swapped",
       "rows": [
        {
-        "k": "Was",
+        "k": "Inside",
         "v": "10.0.0.5"
        },
        {
-        "k": "Now",
+        "k": "On the wire",
         "v": "198.51.100.20"
        },
        {
-        "k": "Toward",
-        "v": "the website's address"
+        "k": "To",
+        "v": "203.0.113.10"
        }
       ]
      }
@@ -2513,18 +2595,18 @@
       "kind": "packet",
       "tone": "good",
       "kicker": "Reply",
-      "line": "Back to the PC",
+      "line": "back",
       "rows": [
        {
         "k": "From",
-        "v": "the website"
+        "v": "203.0.113.10"
        },
        {
         "k": "To",
         "v": "198.51.100.20"
        },
        {
-        "k": "Handed to",
+        "k": "Delivered",
         "v": "10.0.0.5"
        }
       ]
@@ -2998,20 +3080,20 @@
      "stage": {
       "kind": "packet",
       "tone": "good",
-      "kicker": "Browser",
-      "line": "Hello",
+      "kicker": "Hello",
+      "line": "ClientHello",
       "rows": [
        {
-        "k": "Says",
-        "v": "let's talk securely"
+        "k": "Record",
+        "v": "ClientHello"
        },
        {
-        "k": "Offers",
-        "v": "the methods it can use"
+        "k": "Host",
+        "v": "bank.example"
        },
        {
         "k": "Secret",
-        "v": "nothing yet"
+        "v": "none"
        }
       ]
      }
@@ -3033,12 +3115,12 @@
         "v": "bank.example"
        },
        {
-        "k": "Signed by",
-        "v": "an authority the browser trusts"
+        "k": "Issuer",
+        "v": "a trusted authority"
        },
        {
-        "k": "Checked",
-        "v": "before anything secret is sent"
+        "k": "Valid",
+        "v": "yes"
        }
       ]
      }
@@ -3053,15 +3135,15 @@
       "kind": "packet",
       "tone": "good",
       "kicker": "Key exchange",
-      "line": "Shared secret",
+      "line": "not sent",
       "rows": [
        {
-        "k": "Both sides",
-        "v": "work out the same key"
+        "k": "On the wire",
+        "v": "ClientKeyExchange"
        },
        {
-        "k": "The key",
-        "v": "is never on the wire"
+        "k": "Shared key",
+        "v": "not included"
        }
       ]
      }
@@ -3076,9 +3158,14 @@
      "stage": {
       "kind": "bytes",
       "tone": "good",
-      "kicker": "What the Wi-Fi sees",
+      "kicker": "On the Wi-Fi",
       "line": "a9 3f 10 c2  88 1b e4 07",
-      "sub": "The password and the balance are inside. They are not readable."
+      "rows": [
+       {
+        "k": "Readable",
+        "v": "no"
+       }
+      ]
      }
     }
    ],
@@ -3423,7 +3510,7 @@
       "kind": "log",
       "tone": "bad",
       "kicker": "Log",
-      "line": "30 failures, then one success",
+      "line": "failures then success",
       "lines": [
        "09:12  j.cole  failed",
        "09:14  j.cole  failed  \u00d728",
@@ -3440,7 +3527,20 @@
       "kind": "alert",
       "tone": "bad",
       "line": "Possible password guessing",
-      "sub": "A rule matched the pattern."
+      "rows": [
+       {
+        "k": "Name",
+        "v": "Possible password guessing"
+       },
+       {
+        "k": "Rule",
+        "v": "30 failures, then a success"
+       },
+       {
+        "k": "Account",
+        "v": "j.cole"
+       }
+      ]
      }
     },
     {
@@ -3452,8 +3552,8 @@
      "stage": {
       "kind": "log",
       "tone": "good",
-      "kicker": "Open questions",
-      "line": "Which account, from where, then what?",
+      "kicker": "Triage",
+      "line": "notes",
       "lines": [
        "Account   j.cole",
        "From      203.0.113.10",
@@ -3471,8 +3571,17 @@
      "stage": {
       "kind": "alert",
       "tone": "good",
-      "line": "Account disabled. Laptop isolated.",
-      "sub": "Contained first. The evidence stays."
+      "line": "contained",
+      "rows": [
+       {
+        "k": "Account",
+        "v": "j.cole  disabled"
+       },
+       {
+        "k": "Laptop",
+        "v": "LAPTOP-4  isolated"
+       }
+      ]
      }
     }
    ],

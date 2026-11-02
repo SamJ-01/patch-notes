@@ -11,15 +11,16 @@ export const MAX_NODES = 5;
 export const STAGE_KINDS = ["mail", "url", "field", "log", "file", "packet", "cert", "alert", "bytes"];
 
 export function stageHtml(g = {}) {
-  const row = (k, v) => `<p class="obj-row"><span>${esc(k)}</span><b>${esc(v)}</b></p>`;
-  if (g.kind === "mail") return `<div class="obj mail"><span class="mech-k">Email</span>${row("From", g.from)}${row("Subject", g.subject)}<p class="obj-body">${esc(g.body || "")}</p></div>`;
-  if (g.kind === "url") return `<div class="obj url"><span class="mech-k">Address bar</span><p class="stage-line">${esc(g.line)}</p>${g.sub ? `<p class="stage-sub">${esc(g.sub)}</p>` : ""}</div>`;
-  if (g.kind === "field") return `<div class="obj field"><span class="mech-k">${esc(g.kicker || "")}</span><p class="stage-line">${esc(g.line)}</p>${g.sub ? `<p class="obj-out">${esc(g.sub)}</p>` : ""}</div>`;
+  const row = (k, v, bad) => `<p class="obj-row${bad ? " bad" : ""}"><span>${esc(k)}</span><b>${esc(v)}</b></p>`;
+  const rows = (g.rows || []).map(r => row(r.k, r.v, r.bad)).join("");
+  if (g.kind === "mail") return `<div class="obj mail"><span class="mech-k">Email</span>${row("From", g.from)}${g.reply ? row("Reply-To", g.reply, true) : ""}${row("Subject", g.subject)}<p class="obj-body">${esc(g.body || "")}</p></div>`;
+  if (g.kind === "url") return `<div class="obj url"><span class="mech-k">Address bar</span>${g.rows ? rows : `<p class="stage-line">${esc(g.line)}</p>`}</div>`;
+  if (g.kind === "field") return `<div class="obj field"><span class="mech-k">${esc(g.kicker || "")}</span>${g.rows ? rows : `<p class="stage-line">${esc(g.line)}</p>`}</div>`;
   if (g.kind === "log") return `<div class="obj log"><span class="mech-k">${esc(g.kicker || "Log")}</span><pre>${(g.lines || []).map(esc).join("\n")}</pre></div>`;
-  if (g.kind === "file") return `<div class="obj file"><span class="mech-k">${esc(g.kicker || "File")}</span><p class="stage-line">${esc(g.line)}</p>${g.sub ? `<p class="stage-sub">${esc(g.sub)}</p>` : ""}</div>`;
-  if (g.kind === "packet" || g.kind === "cert") return `<div class="obj ${g.kind}"><span class="mech-k">${esc(g.kicker || "")}</span>${(g.rows || []).map(r => row(r.k, r.v)).join("")}</div>`;
-  if (g.kind === "alert") return `<div class="obj alert"><span class="mech-k">Alert</span><p class="stage-line">${esc(g.line)}</p>${g.sub ? `<p class="stage-sub">${esc(g.sub)}</p>` : ""}</div>`;
-  if (g.kind === "bytes") return `<div class="obj bytes"><span class="mech-k">${esc(g.kicker || "On the wire")}</span><p class="stage-line">${esc(g.line)}</p>${g.sub ? `<p class="stage-sub">${esc(g.sub)}</p>` : ""}</div>`;
+  if (g.kind === "file") return `<div class="obj file"><span class="mech-k">${esc(g.kicker || "File")}</span>${g.rows ? rows : `<p class="stage-line">${esc(g.line)}</p>`}</div>`;
+  if (g.kind === "packet" || g.kind === "cert") return `<div class="obj ${g.kind}"><span class="mech-k">${esc(g.kicker || "")}</span>${rows}</div>`;
+  if (g.kind === "alert") return `<div class="obj alert"><span class="mech-k">Alert</span>${g.rows ? rows : `<p class="stage-line">${esc(g.line)}</p>`}</div>`;
+  if (g.kind === "bytes") return `<div class="obj bytes"><span class="mech-k">${esc(g.kicker || "On the wire")}</span><p class="stage-line">${esc(g.line)}</p>${g.rows ? rows : ""}</div>`;
   return `<p class="stage-line">${esc(g.line || "")}</p>`;
 }
 
@@ -198,11 +199,11 @@ function mountPhone(el, d) {
   const card = el.querySelector("[data-stage]");
   const box = el.querySelector(".flow-step");
   const view = () => {
-    if (choice === "deny") return { tone: "stop", kicker: "Phone", line: "Denied", sub: "No session was created." };
-    if (choice === "approve") return { tone: "bad", kicker: "Phone", line: "Approved", sub: "The attacker has a session." };
+    if (choice === "deny") return { tone: "stop", kicker: "Phone", rows: [{ k: "Prompt", v: "Denied" }, { k: "Session", v: "none" }] };
+    if (choice === "approve") return { tone: "bad", kicker: "Phone", rows: [{ k: "Prompt", v: "Approved" }, { k: "Session", v: "created" }] };
     const s = d.steps[i], phone = s.screens?.p, login = s.screens?.a;
-    if (phone?.tone === "ask") return { tone: "", kicker: "Phone", line: phone.line, sub: "The password was not enough.", ask: true };
-    if (i === 0) return { tone: "bad", kicker: "Sign in", line: login?.line || s.msg, sub: s.screens?.l?.line || "" };
+    if (phone?.tone === "ask") return { tone: "", kicker: "Phone", line: phone.line, ask: true };
+    if (i === 0) return { tone: "bad", kicker: "Sign in", rows: [{ k: "Password", v: "accepted" }, { k: "Second factor", v: "still required", bad: true }] };
     const dest = s.screens?.[s.to] || login;
     const tone = dest?.tone === "stop" || dest?.tone === "good" ? "stop" : (s.tone || "");
     return { tone, kicker: dest?.kicker || "Sign in", line: dest?.line || s.msg, sub: s.stop ? "" : "" };
@@ -211,7 +212,8 @@ function mountPhone(el, d) {
     const v = view();
     card.className = "stage-card" + (v.tone ? " " + v.tone : "");
     const buttons = (v.ask || choice) ? `<span class="flow-choice"><button type="button" data-act="deny" aria-pressed="${choice === "deny"}">Deny</button><button type="button" data-act="approve" aria-pressed="${choice === "approve"}">Approve</button></span>` : "";
-    card.innerHTML = `<div class="obj field"><span class="mech-k">${esc(v.kicker)}</span><p class="stage-line">${esc(v.line)}</p>${v.sub ? `<p class="obj-out">${esc(v.sub)}</p>` : ""}${buttons}</div>`;
+    const body = v.rows ? v.rows.map(r => `<p class="obj-row${r.bad ? " bad" : ""}"><span>${esc(r.k)}</span><b>${esc(r.v)}</b></p>`).join("") : `<p class="stage-line">${esc(v.line || "")}</p>`;
+    card.innerHTML = `<div class="obj field"><span class="mech-k">${esc(v.kicker)}</span>${body}${buttons}</div>`;
     const t = describe(d, choice ? askStep : i);
     box.innerHTML = choice
       ? `<div class="eyebrow">Path: ${choice}</div><p>${choice === "deny" ? "The owner refuses. The password was not enough." : "The owner approves. That is the path the second factor is there to stop."}</p>`
