@@ -716,7 +716,7 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .ambience { display: none; }
 body.life .ambience { display: block; position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
 #main, footer, nav.trail { position: relative; z-index: 1; }
-.amb-glow, .amb-grid, .amb-scan, .amb-pkts { position: absolute; inset: 0; }
+.amb-glow, .amb-grid, .amb-scan { position: absolute; inset: 0; }
 .amb-glow {
   inset: -20vmax;
   background:
@@ -730,21 +730,32 @@ body.life .ambience { display: block; position: fixed; inset: 0; z-index: 0; poi
     linear-gradient(90deg, rgba(var(--brand-rgb), 0.11) 1px, transparent 1px);
   background-size: 32px 32px;
 }
-.amb-pkts { width: 100%; height: 100%; }
-.amb-pkt { fill: var(--brand); }
-.amb-pkt.sun { fill: var(--sun); } .amb-pkt.good { fill: var(--good); }
-.amb-scan { inset: auto 0 auto 0; height: 22%; top: -22%;
+.amb-scan { inset: auto 0 auto 0; height: 18%; top: -18%;
   background: linear-gradient(180deg, transparent, rgba(var(--brand-rgb), 0.09), transparent); }
+.amb-scan-x { inset: 0 auto 0 -18%; width: 18%; height: auto; top: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(var(--brand-rgb), 0.09), transparent); }
 body.life { background-image: none; }
 @media (prefers-reduced-motion: no-preference) {
   body.life .amb-glow { animation: aurora 18s ease-in-out infinite alternate; }
   @keyframes aurora { from { transform: translate3d(-6%, -4%, 0) scale(1); } to { transform: translate3d(6%, 5%, 0) scale(1.12); } }
   body.life .amb-grid { animation: grid-pan 7s linear infinite; }
   @keyframes grid-pan { to { transform: translate3d(32px, 32px, 0); } }
-  body.life .amb-scan { animation: amb-scan 9s linear infinite; }
-  @keyframes amb-scan { from { top: -22%; } to { top: 100%; } }
+  /* One pass down, then one pass across. Each pass takes 18s, so a full cycle is 36s. */
+  body.life .amb-scan { animation: amb-scan-y 36s linear infinite; }
+  body.life .amb-scan-x { animation: amb-scan-x 36s linear infinite; }
+  @keyframes amb-scan-y {
+    0% { top: -18%; opacity: 1; }
+    45% { top: 100%; opacity: 1; }
+    50%, 100% { top: 100%; opacity: 0; }
+  }
+  @keyframes amb-scan-x {
+    0%, 50% { left: -18%; opacity: 0; }
+    55% { left: -18%; opacity: 1; }
+    95% { left: 100%; opacity: 1; }
+    100% { left: 100%; opacity: 0; }
+  }
 }
-@media (prefers-reduced-motion: reduce) { .amb-pkts, .amb-scan { display: none; } }
+@media (prefers-reduced-motion: reduce) { .amb-scan { display: none; } }
 @media (prefers-reduced-motion: no-preference) {
   /* Flow: little dashes marching along a link read as live traffic, on the infra and Wi-Fi maps only.
      (No bare .flow selector: stroke-dasharray/offset are inherited, so it would dash every stroke inside

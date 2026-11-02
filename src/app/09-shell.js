@@ -267,7 +267,7 @@ function route() {
   closePop();
   main.onclick = null;
   $("cwd").textContent = "~/" + r.path;
-  document.body.classList.toggle("life", !(r.tab === "exams" || r.path === "review" || r.path.startsWith("exam")));
+  document.body.classList.toggle("life", r.path !== "review");
   renderStatus();
   window.scrollTo(0, 0);
   if (CVE_VIEWS.includes(r.path)) loadCves();
