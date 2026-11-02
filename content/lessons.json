@@ -2065,60 +2065,6 @@
     "see": "defend"
    }
   ],
-  "diagram": {
-   "why": "Step through the attack to see how a script saved on the site ends up running in a visitor's browser.",
-   "title": "How stored XSS steals a visitor's session",
-   "nodes": [
-    {
-     "id": "a",
-     "kind": "attacker",
-     "label": "Attacker"
-    },
-    {
-     "id": "w",
-     "kind": "server",
-     "label": "Website"
-    },
-    {
-     "id": "v",
-     "kind": "laptop",
-     "label": "Visitor"
-    }
-   ],
-   "steps": [
-    {
-     "from": "a",
-     "to": "w",
-     "msg": "Posts a comment containing <script>…</script>",
-     "text": "The site saves the comment without making it safe.",
-     "tone": "bad",
-     "stop": "Encode output for where it appears; use frameworks that escape by default."
-    },
-    {
-     "from": "w",
-     "to": "v",
-     "msg": "Serves the page, script included",
-     "text": "Everyone who views the comment gets the attacker's script as part of the real page.",
-     "tone": "bad",
-     "stop": "A strict Content Security Policy stops inline scripts from running."
-    },
-    {
-     "from": "v",
-     "to": "a",
-     "msg": "Browser runs it and sends the session cookie",
-     "text": "The script runs in the visitor's browser with the site's permissions.",
-     "tone": "bad",
-     "stop": "HttpOnly cookies can't be read by scripts."
-    },
-    {
-     "from": "a",
-     "to": "w",
-     "msg": "Uses the cookie to act as the visitor",
-     "text": "With the session cookie, the attacker is logged in as the victim.",
-     "tone": "bad"
-    }
-   ]
-  },
   "keys": [
    {
     "icon": "attacker",

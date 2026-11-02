@@ -9,7 +9,7 @@ const lessons = JSON.parse(readFileSync(new URL("../content/lessons.json", impor
 const diagrams = lessons.filter(l => l.diagram);
 
 test("every lesson diagram is valid", () => {
-  assert.ok(diagrams.length >= 7);
+  assert.ok(diagrams.length >= 6);
   for (const l of diagrams) assert.deepEqual(flow.validate(l.diagram), [], l.id);
 });
 

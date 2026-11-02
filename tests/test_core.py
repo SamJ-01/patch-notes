@@ -502,7 +502,7 @@ class ContentIntegrity(unittest.TestCase):
         import re
         kinds = set(re.findall(r"^  (\w+): `", (ROOT / "static" / "js" / "hw.js").read_text(), re.M))
         with_diagram = [l for l in self.lessons.values() if "diagram" in l]
-        self.assertGreaterEqual(len(with_diagram), 7)
+        self.assertGreaterEqual(len(with_diagram), 6)
         for l in with_diagram:
             d = l["diagram"]; ids = {n["id"] for n in d["nodes"]}
             self.assertTrue(2 <= len(d["nodes"]) <= 5, l["id"])

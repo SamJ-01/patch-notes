@@ -67,11 +67,10 @@ function drawRoute() {
     <svg class="route-map" viewBox="0 0 ${W} ${L.height}" role="group" aria-label="${esc(`${p.title}: ${steps.length} stops, ${done} done.`)}">
       <path class="route-road" d="${routePath([L.start, ...L.stops, L.finish], L.R)}"/>
       <path class="route-road done" pathLength="1" d="${routePath(reached, L.R)}"/>
-      ${next === -1 ? "" : `<circle class="route-walker" r="5"><animateMotion dur="3.4s" repeatCount="indefinite" path="${routePath([next <= 0 ? L.start : L.stops[next - 1], L.stops[next]], L.R)}"/></circle>`}
       <g class="route-start" transform="translate(${L.start.x},${L.start.y})" aria-hidden="true"><rect x="-22" y="-22" width="44" height="44" rx="10"/><text y="5" text-anchor="middle">GO</text></g>
       ${steps.map((st, i) => { const s = L.stops[i], state = st.done ? "done" : i === next ? "next" : "todo";
         return `<a href="${st.href}" class="route-stop ${state}" aria-label="${esc(`Stop ${i + 1} of ${steps.length}: ${st.label} (${KIND_WORD[st.kind] || st.kind})${st.done ? ", done" : i === next ? ", next" : ""}`)}">
-          <g transform="translate(${s.x},${s.y})">${state === "next" ? '<circle class="route-pulse" r="27"/>' : ""}<circle class="route-dot" r="19"/>
+          <g transform="translate(${s.x},${s.y})"><circle class="route-dot" r="19"/>
           <text class="route-n" y="5" text-anchor="middle">${i + 1}</text>${st.done ? '<g class="route-tick" transform="translate(14,-14)"><circle r="8"/><path d="M-3.5 0 l2.5 2.5 l4.5 -5"/></g>' : ""}
           <text class="route-kind" y="38" text-anchor="middle">${esc((KIND_WORD[st.kind] || st.kind).toUpperCase())}</text>
           ${routeWrap(st.label, maxCh).map((ln, k) => `<text class="route-lbl" y="${56 + k * 17}" text-anchor="middle">${esc(ln)}</text>`).join("")}</g></a>`; }).join("")}
@@ -117,16 +116,18 @@ VIEWS.today = () => {
   const head = `<div class="view-head home-head"><h1>Learn it. Break it. <em class="accent">Understand it.</em></h1>
       <p>Hands-on cyber security and IT: see how attacks work, learn how to defend against them, and understand the news behind every headline. Free, visual, and built for real exams.</p></div>`;
   if (isNewcomer()) {
-    main.innerHTML = `<div class="view">${head}${startCards(news, kev)}
+    main.innerHTML = `<div class="view">
       <section class="panel route-panel" aria-labelledby="route-h"><div id="route"></div></section>
+      ${head}${startCards(news, kev)}
       <div class="split"><section class="panel" id="daily"></section>
         <aside class="panel news-line"><div class="eyebrow">This week</div><p><b>${news.length} stories</b> from ${sources} outlets, each linked to a lesson that explains it.</p><a class="btn ghost" href="#news">Read the news →</a></aside></div>
     </div>`;
     renderDaily(); drawRoute(); animateBriefing();
     return;
   }
-  main.innerHTML = `<div class="view">${head}
+  main.innerHTML = `<div class="view">
     <section class="panel route-panel" aria-labelledby="route-h"><div id="route"></div></section>
+    ${head}
     <div class="split">
       <div class="stack" style="gap:18px">
         <section class="changelog" aria-labelledby="today-h">

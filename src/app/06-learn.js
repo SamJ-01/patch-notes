@@ -402,40 +402,44 @@ function showDoneCard(type, item, title) {
   setTimeout(() => { const c = root.querySelector("#done-card"); c?.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); c?.focus({ preventScroll: true }); }, 400);
 }
 
-// A key idea's picture: a device drawing (hw.js) or one of the small line icons (GLYPH in 07-labs).
-const keyIcon = k => `<svg class="key-ic" viewBox="-22 -18 44 36" aria-hidden="true">${HW[k] ? hw(k, 0, 0, 0.62) : `<g class="gl">${GLYPH[k] || GLYPH.shield}</g>`}</svg>`;
 const SECTION_NAME = { what: "What it is", diagram: "See it", concept: "See it", xpl: "See it", example: "Real case", defend: "How defenders stop it" };
+// The first two sentences are the lesson. The rest stays one click away. A picture never shares the page with a second "See it".
+const ledeOf = text => {
+  const parts = String(text).match(/[^.!?]+[.!?]+(?:\s|$)/g) || [text];
+  return { lede: parts.slice(0, 2).join(" ").trim(), more: parts.length > 2 };
+};
 function lessonView(id) {
   const l = LESSON[id]; if (!l) return VIEWS.learn();
-  const related = DATA.news.filter(n => n.topics.includes(id)).slice(0, 5);
   const internal = l.practice.url.startsWith("#");
   const ours = x => x.lesson === id || (x.also || []).includes(id);
   const practice = [...DATA.missions.filter(ours).map(m => ({ kind: "Mission", href: "#mission-" + m.id, title: m.title, sub: m.card || m.summary, min: m.minutes, done: count((P.missions || {})[m.id]) > 0 })),
     ...(DATA.agency || []).filter(sh => (sh.lessons || []).includes(id)).map(sh => ({ kind: "Agency shift", href: "#agency-" + sh.id, title: sh.title, sub: sh.card || sh.summary, min: sh.minutes, done: !!(P.agency || {})[sh.id] })),
     ...DATA.labs.filter(ours).map(x => ({ kind: "Lab", href: "#lab-" + x.id, title: x.title, sub: x.card || x.skill, min: x.minutes, done: !!P.labs[x.id] }))];
   const lseen = new Set([id]);
+  const lede = ledeOf(l.what);
+  const picture = l.explainer || l.diagram || l.concept;
   main.innerHTML = `<div class="view"${bannerAttr(id)}><article class="article lesson">
     <a class="link-btn" href="#learn">← All lessons</a>
-    <div class="stack" style="gap:8px"><div class="eyebrow">${esc(l.track)} · ${esc(l.level)} · ${l.minutes} min</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.hook)}</p></div>
+    <header class="lesson-open"><p class="eyebrow">${esc(l.track)} · ${esc(l.level)} · ${l.minutes} min</p><h1>${esc(l.title)}</h1></header>
     ${loopStrip(id, "understand")}
-    <section id="l-what" tabindex="-1"><h2>What it is</h2>
-      ${l.keys ? `<ul class="keys">${l.keys.map(k => `<li>${keyIcon(k.icon)}<b>${esc(k.label)}</b><span>${gloss(k.text, 1, lseen)}</span></li>`).join("")}</ul>
-      <details class="more-what" id="l-what-more"><summary>Read the full explanation</summary><p>${gloss(l.what, 6, lseen)}</p></details>` : `<p>${gloss(l.what, 6, lseen)}</p>`}</section>
+    <section id="l-what" tabindex="-1"><p class="hook">${esc(l.hook)}</p><p>${gloss(lede.lede, 2, lseen)}</p>
+      ${lede.more ? `<details class="more-what" id="l-what-more"><summary>Read the full explanation</summary><p>${gloss(l.what, 6, lseen)}</p></details>` : ""}</section>
     ${l.tip ? `<aside class="qtip"><span class="qtip-k">★ Quick tip</span><p>${gloss(l.tip, 3, lseen)}</p></aside>` : ""}
-    ${l.explainer ? `<section class="panel wide" id="l-xpl" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">Try the toggle</span></div>${l.explainer.why ? `<p class="muted xpl-why">${gloss(l.explainer.why, 2)}</p>` : ""}<div id="lxpl"><div class="empty">Loading…</div></div></section>` : ""}
-    ${l.diagram ? `<section class="panel wide" id="l-diagram" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">Step through it</span></div>${l.diagram.why ? `<p class="muted xpl-why">${gloss(l.diagram.why, 2)}</p>` : ""}<div id="lflow"><div class="empty">Loading the diagram…</div></div></section>` : ""}
-    ${l.concept ? `<section class="panel wide" id="l-concept" tabindex="-1"><div class="panel-title"><h2>See it</h2><span class="eyebrow">${l.concept.type === "cards" ? "At a glance" : "Select a part"}</span></div>${l.concept.why ? `<p class="muted xpl-why">${gloss(l.concept.why, 2)}</p>` : ""}<div id="lconcept"><div class="empty">Loading the diagram…</div></div></section>` : ""}
+    ${picture ? `<section class="panel wide screen" id="l-see"><div class="panel-title"><h2>See it</h2></div>
+      ${l.explainer ? `<div id="l-xpl" tabindex="-1">${l.explainer.why ? `<p class="muted xpl-why">${gloss(l.explainer.why, 2)}</p>` : ""}<div id="lxpl"><div class="empty">Loading…</div></div></div>` : ""}
+      ${l.diagram ? `<div id="l-diagram" tabindex="-1">${l.diagram.why ? `<p class="muted xpl-why">${gloss(l.diagram.why, 2)}</p>` : ""}<div id="lflow"><div class="empty">Loading the diagram…</div></div></div>` : ""}
+      ${l.concept ? `<div id="l-concept" tabindex="-1">${l.concept.why ? `<p class="muted xpl-why">${gloss(l.concept.why, 2)}</p>` : ""}<div id="lconcept"><div class="empty">Loading the diagram…</div></div></div>` : ""}
+    </section>` : ""}
     <section class="case" id="l-example" tabindex="-1"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h3>${esc(l.example.title)}</h3><p>${gloss(l.example.text, 4, lseen)}</p>${l.example.source ? `<p class="muted" style="font-size:0.85rem">Source: <a href="${esc(l.example.source.url)}" target="_blank" rel="noopener">${esc(l.example.source.label)} ↗</a></p>` : ""}</section>
     <section id="l-defend" tabindex="-1"><h2>How defenders stop it</h2><ul class="checklist">${l.defend.map(d => `<li>${esc(d)}</li>`).join("")}</ul></section>
-    <section class="panel${practice.length > 1 ? " wide" : ""}"><h2>Try it</h2>
+    <section class="doc panel${practice.length > 1 ? " wide" : ""}"><h2>Try it</h2>
       ${practice.length ? `<div class="try-list">${practice.map(x => `<a class="try-row" href="${x.href}"><span class="eyebrow">${x.kind} · ${x.min} min${x.done ? ' · <span style="color:var(--good)">✓ done</span>' : ""}</span><b>${esc(x.title)}</b><span class="muted">${esc(x.sub)}</span></a>`).join("")}</div>` : ""}
       ${internal ? (practice.length ? "" : `<a class="btn brand" href="${esc(l.practice.url)}" style="justify-self:start">${esc(l.practice.label)}</a>`)
         : `<p class="muted try-else">${practice.length ? "More practice elsewhere" : "Practise elsewhere"}: <a href="${esc(l.practice.url)}" target="_blank" rel="noopener">${esc(l.practice.label)} ↗</a></p>`}
     </section>
-    <section class="panel" id="lcheck"><div class="panel-title"><h2>Check yourself</h2><span class="eyebrow" id="lcheck-n">${P.done[id] ? '<span style="color:var(--good)">Completed</span>' : `${l.checks.length} questions · +25 XP`}</span></div><div class="stack" id="lcheck-body"></div></section>
+    <section class="doc panel" id="lcheck"><div class="panel-title"><h2>Check yourself</h2><span class="eyebrow" id="lcheck-n">${P.done[id] ? '<span style="color:var(--good)">Completed</span>' : `${l.checks.length} questions`}</span></div><div class="stack" id="lcheck-body"></div></section>
     <div id="lnext">${nextStepCard("lesson", id)}</div>
     ${toTopButton()}
-    ${related.length ? `<section class="panel wide"><h2>In the news this week</h2><ul class="news-lines">${related.slice(0, 3).map(n => `<li><a href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.title)} ↗</a><span class="muted">${esc(n.source)} · ${ago(n.date)}</span></li>`).join("")}</ul></section>` : ""}
   </article></div>`;
   if (l.diagram) import("./js/flow.js").then(f => { if (parseRoute().path === "learn/" + id && $("lflow")) f.mount($("lflow"), l.diagram); })
     .catch(() => { if ($("lflow")) $("lflow").innerHTML = `<div class="empty">Couldn't load the diagram.</div>`; });

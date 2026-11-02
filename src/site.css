@@ -81,14 +81,7 @@
 html { background: var(--bg); scrollbar-gutter: stable; }  /* the page doesn't shift sideways when the scrollbar comes and goes */
 body {
   margin: 0; color: var(--ink); font: 16px/1.6 var(--font-body);
-  background-color: var(--bg);
-  background-image:
-    radial-gradient(1200px 500px at 85% -10%, rgba(var(--brand-rgb), 0.07), transparent 60%),
-    radial-gradient(900px 400px at -10% 10%, rgba(var(--sun-rgb), 0.05), transparent 60%),
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: auto, auto, 32px 32px, 32px 32px;
-  background-attachment: fixed;
+  background: var(--bg);
 }
 h1, h2, h3, h4 { margin: 0; text-wrap: balance; }
 h1, h2 { font-family: var(--font-display); letter-spacing: 0.01em; }
@@ -713,8 +706,8 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
    behind the solid page background and never showed, and tried to drift the grid by animating
    background-position on a fixed background, which browsers ignore. This layer uses transform only.
    The shell adds body.life on ordinary pages and leaves it off during an exam or a review. */
-.ambience { display: none; }
-body.life .ambience { display: block; position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+/* The page is flat. The grid lives inside a picture, not behind the writing. */
+.ambience, body.life .ambience { display: none; }
 #main, footer, nav.trail { position: relative; z-index: 1; }
 .amb-glow, .amb-grid, .amb-scan { position: absolute; inset: 0; }
 .amb-glow {
@@ -765,8 +758,7 @@ body.life { background-image: none; }
   .ca-link.trust { animation-duration: 1.2s; } .ca-link.danger { animation-duration: 0.9s; stroke-dasharray: 5 5; }
   @keyframes flow-dash { to { stroke-dashoffset: -24; } }
   /* The "you're here" step gently breathes, so the current stage of the loop draws the eye. */
-  .loop-node.here .loop-dot { animation: here-pulse 2.4s ease-in-out infinite; }
-  @keyframes here-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(var(--brand-rgb), 0.5); } 55% { box-shadow: 0 0 0 6px rgba(var(--brand-rgb), 0); } }
+  .loop-node.here .loop-dot { box-shadow: 0 0 0 1px rgba(var(--brand-rgb), 0.7); }
   /* Each page eases in as you navigate, so moving around the site feels fluid. */
   .view { animation: view-rise 0.34s ease-out both; }
   @keyframes view-rise { from { opacity: 0; transform: translateY(10px); } }
@@ -825,7 +817,10 @@ body.life { background-image: none; }
 .xpl-head b { font-size: 1rem; }
 .xpl-why { margin: -2px 0 2px; max-width: 70ch; }
 .xpl-toggle { align-items: center; gap: 12px; }
-.xpl-stage { display: grid; gap: 10px; background: var(--slab); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03); }
+.lesson-open h1 { font: 700 2.1rem/1.15 var(--font-display); letter-spacing: 0.04em; margin: 10px 0 0; }
+.lesson .doc, .lesson .case { background: transparent; box-shadow: none; }
+.lesson .screen { background: var(--panel-bg); }
+.xpl-stage { display: grid; gap: 10px; background-color: var(--slab); background-image: linear-gradient(rgba(var(--brand-rgb), 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--brand-rgb), 0.07) 1px, transparent 1px); background-size: 24px 24px; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 14px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03); }
 :root[data-theme="light"] .panel, :root[data-theme="light"] .case { box-shadow: var(--elev); }
 :root[data-theme="light"] .xpl-stage, :root[data-theme="light"] .flow-stage { background: var(--surface-2); }
 .xpl-svg { width: 100%; height: auto; max-width: 540px; margin: 0 auto; display: block; }
@@ -1759,10 +1754,6 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .route-stop { cursor: pointer; text-decoration: none; outline: none; }
 .route-stop:hover .route-dot, .route-stop:focus-visible .route-dot { stroke: var(--brand); stroke-width: 5; }
 .route-stop:focus-visible .route-lbl { text-decoration: underline; }
-.route-pulse { fill: none; stroke: var(--sun); stroke-width: 3; opacity: 0.6; transform-box: fill-box; transform-origin: center; animation: route-pulse 1.8s ease-out infinite; }
-@keyframes route-pulse { from { transform: scale(0.75); opacity: 0.8; } to { transform: scale(1.25); opacity: 0; } }
-.route-walker { fill: var(--sun); }
-@media (prefers-reduced-motion: reduce) { .route-pulse { animation: none; opacity: 0.6; } .route-walker { display: none; } }
 .route-start rect, .route-finish rect { fill: var(--surface-2); stroke: var(--dg-strong); stroke-width: 2; }
 .route-start text, .route-finish text { font: 700 11px var(--font-mono); fill: var(--ink); letter-spacing: 0.08em; }
 .route-finish.done rect { fill: var(--sun); stroke: var(--sun); } .route-finish.done text { fill: var(--bg); font-size: 20px; }
