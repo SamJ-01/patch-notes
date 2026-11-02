@@ -879,6 +879,33 @@ body.life { background-image: none; }
 .xpl-resp.ok { background: var(--good-tint); border-color: rgba(var(--good-rgb), 0.5); }
 .xpl-resp.ok .xpl-status { color: var(--good); }
 
+/* The mechanism pictures: the query, the comment, the order number. The caption only confirms them. */
+.mech { display: grid; gap: 12px; }
+.mech-form, .mech-bar, .mech-page, .mech-query, .order { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 12px 14px; }
+.mech-k { font: 600 10px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.mech-input { display: block; margin-top: 6px; font: 600 1.05rem var(--font-mono); color: var(--bad); }
+.mech-query { font: 600 0.95rem/1.5 var(--font-mono); overflow-wrap: anywhere; }
+.sql-code { color: var(--bad); background: var(--bad-tint); border-radius: 4px; padding: 0 4px; }
+.sql-slot { color: var(--good); }
+.sql-aside { display: block; margin-top: 8px; color: var(--muted); font-size: 0.82rem; }
+.sql-aside b { color: var(--ink); }
+.mech-out { margin: 0; font-weight: 650; }
+.mech-out.bad { color: var(--bad); }
+.mech-out.good { color: var(--good); }
+.mech-page .as-text, .mech-page .ran { margin: 6px 0 0; }
+.mech-page .as-text { font-family: var(--font-mono); overflow-wrap: anywhere; }
+.mech-page .ran { color: var(--bad); font-weight: 650; }
+.cookie-leave, .cookie-stay { padding: 8px 10px; border-radius: var(--radius-sm); font: 600 0.85rem var(--font-mono); }
+.cookie-leave { display: flex; justify-content: space-between; gap: 8px; border: 1px solid rgba(var(--bad-rgb), 0.5); color: var(--bad); }
+.cookie-stay { border: 1px solid rgba(var(--good-rgb), 0.45); color: var(--good); }
+.mech-addr { margin-top: 6px; font: 600 1.05rem var(--font-mono); }
+.mech-addr .was { color: var(--faint); text-decoration: line-through; margin-right: 8px; }
+.mech-addr .now { color: var(--sun); }
+.order { display: grid; gap: 4px; }
+.order.open { border-color: rgba(var(--bad-rgb), 0.55); background: var(--bad-tint); }
+.order.shut { border-color: rgba(var(--good-rgb), 0.5); background: var(--good-tint); }
+.order b { font-size: 1.05rem; }
+
 /* Inbox-rule explainer: a small mailbox; the supplier mail vanishes from the Inbox when the hidden rule is on. */
 .xpl-folder { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; }
 .xpl-maillist { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }

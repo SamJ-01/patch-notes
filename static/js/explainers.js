@@ -159,15 +159,19 @@ export function idorView(check) { return check ? IDOR.on : IDOR.off; }
 function mountIdor(el, { start = false, head = true } = {}) {
   return toggle(el, {
     cls: "xpl-idor", title: "How changing an order number leaks another customer's data", start, head,
-    stage: `<div class="xpl-req"><span class="muted">Signed in as customer A · requesting</span>
-        <div class="xpl-url mono">GET /account/orders/<b id="xpl-idor-id"></b></div></div>
-      <div id="xpl-idor-resp"></div>`,
+    stage: `<div class="mech">
+        <div class="mech-bar"><span class="mech-k">Signed in as customer A</span>
+          <div class="mech-addr" id="xpl-idor-addr"></div></div>
+        <div id="xpl-idor-resp"></div>
+      </div>`,
     label: on => ({ btn: on ? "Turn the ownership check off" : "Turn the ownership check on",
       state: on ? "Server checks ownership: on" : "Server checks ownership: off" }),
     render: (on, root) => {
       const v = idorView(on);
-      root.querySelector("#xpl-idor-id").textContent = IDOR.target;
-      root.querySelector("#xpl-idor-resp").innerHTML = respCard(on, v.status, v.shows);
+      root.querySelector("#xpl-idor-addr").innerHTML = `<span class="was">/orders/${esc(IDOR.yours)}</span><span class="now">/orders/${esc(IDOR.target)}</span>`;
+      root.querySelector("#xpl-idor-resp").innerHTML = on
+        ? `<div class="order shut"><span class="mech-k">Order ${esc(IDOR.target)}</span><b>Not your order</b><span>The page does not open.</span></div>`
+        : `<div class="order open"><span class="mech-k">Order ${esc(IDOR.target)} · customer B</span><b>14 North Road</b><span>Kettle, paid. This is not your order.</span></div>`;
       root.querySelector("#xpl-cap").innerHTML = `${esc(v.note)}`;
     },
   });
@@ -428,13 +432,20 @@ export function sqliView(paramised) { return paramised ? SQLI.on : SQLI.off; }
 function mountSqli(el, opts = {}) {
   return toggle(el, {
     cls: "xpl-sqli", title: "SQL injection: input as code vs input as data", start: opts.start, head: opts.head,
-    stage: `<div class="xpl-req"><span class="muted">Login where the password box contains <span class="mono">' OR '1'='1</span></span>
-        <div class="xpl-url mono" id="xpl-sqli-q"></div></div><div id="xpl-sqli-resp"></div>`,
+    stage: `<div class="mech">
+        <div class="mech-form"><span class="mech-k">Password</span><span class="mech-input">' OR '1'='1</span></div>
+        <div class="mech-query" id="xpl-sqli-q"></div>
+        <p class="mech-out" id="xpl-sqli-out"></p>
+      </div>`,
     label: on => ({ btn: on ? "Turn parameterised queries off" : "Turn parameterised queries on",
       state: on ? "Defence: parameterised query" : "Defence: none (string-built query)" }),
     render: (on, root) => { const v = sqliView(on);
-      root.querySelector("#xpl-sqli-q").textContent = v.query;
-      root.querySelector("#xpl-sqli-resp").innerHTML = respCard(on, v.status, v.body);
+      root.querySelector("#xpl-sqli-q").innerHTML = on
+        ? `<span class="sql">SELECT * FROM users WHERE name = </span><span class="sql-data">'admin'</span><span class="sql"> AND pass = </span><span class="sql-slot">?</span><span class="sql-aside">Held as data, not code: <b>' OR '1'='1</b></span>`
+        : `<span class="sql">SELECT * FROM users WHERE name = </span><span class="sql-data">'admin'</span><span class="sql"> AND pass = </span><span class="sql-code">'' OR '1'='1'</span>`;
+      const out = root.querySelector("#xpl-sqli-out");
+      out.className = "mech-out " + (on ? "good" : "bad");
+      out.textContent = on ? "Login fails. That text is only a password." : "Logged in as admin. The typed text became part of the query.";
       root.querySelector("#xpl-cap").innerHTML = esc(v.note); },
   });
 }
@@ -453,13 +464,19 @@ export function xssView(escaped) { return escaped ? XSS.on : XSS.off; }
 function mountXss(el, opts = {}) {
   return toggle(el, {
     cls: "xpl-xss", title: "Stored XSS: escaped output vs raw output", start: opts.start, head: opts.head,
-    stage: `<div class="xpl-req"><span class="muted">A review is saved containing a &lt;script&gt; tag</span>
-        <div class="xpl-url mono" id="xpl-xss-c"></div></div><div id="xpl-xss-resp"></div>`,
+    stage: `<div class="mech">
+        <div class="mech-page" id="xpl-xss-view"></div>
+        <div id="xpl-xss-cookie"></div>
+      </div>`,
     label: on => ({ btn: on ? "Turn output escaping off" : "Turn output escaping on",
       state: on ? "Defence: output escaped" : "Defence: none (raw HTML)" }),
     render: (on, root) => { const v = xssView(on);
-      root.querySelector("#xpl-xss-c").textContent = XSS.comment;
-      root.querySelector("#xpl-xss-resp").innerHTML = respCard(on, v.status, v.body);
+      root.querySelector("#xpl-xss-view").innerHTML = on
+        ? `<span class="mech-k">Review</span><p class="as-text">${esc(XSS.comment)}</p>`
+        : `<span class="mech-k">Review</span><p class="ran">The comment is not shown. The browser ran it.</p>`;
+      root.querySelector("#xpl-xss-cookie").innerHTML = on
+        ? `<div class="cookie-stay">Session cookie stays in the browser</div>`
+        : `<div class="cookie-leave"><span>session cookie</span><span>sent to the attacker</span></div>`;
       root.querySelector("#xpl-cap").innerHTML = esc(v.note); },
   });
 }
