@@ -120,7 +120,8 @@ VIEWS.today = () => {
     main.innerHTML = `<div class="view">
       <section class="panel route-panel" aria-labelledby="route-h"><div id="route"></div></section>
       ${head}
-${startCards(news, kev)}      <div class="split"><section class="panel" id="daily"></section>
+      ${startCards(news, kev)}
+      <div class="split"><section class="panel" id="daily"></section>
         <aside class="panel news-line"><div class="eyebrow">This week</div><p><b>${news.length} stories</b> from ${sources} outlets, each linked to a lesson that explains it.</p><a class="btn ghost" href="#news">Read the news →</a></aside></div>
     </div>`;
     renderDaily(); drawRoute(); animateBriefing();
