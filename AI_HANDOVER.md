@@ -70,6 +70,22 @@ The owner uses multiple AI assistants and wants them to share a reliable source 
 - Updated `src/app/04-home.js`; latest commit: `fc07505249de87f9ea72bd1b46c89f1b2dc52b35`.
 - Automated tests and visual comparison have not yet been run. Not deployed.
 
+### 2026-11-03 — Practise catalogue restoration
+
+- Traced the simplified catalogue to commit `b8336dd226fc0e03fc9f6c42bf8218496628e529`.
+- Restored the illustrated card catalogue, category groupings, start-here recommendations, and richer card descriptions for labs, missions, tools, games, and Agency shifts.
+- Preserved the newer evidence-first lab screen changes; this recovery only restores the catalogue presentation and cards.
+- Updated `src/app/07-labs.js`; commit: `a98fe3074eb510fd65f5a9b97cd08a8e9323c103`.
+
+### 2026-11-03 — Agency experience restoration
+
+- Traced the simplified Agency hub and clock-in flow to commit `9c7e96da4eeb3cf00095be6c07a32a1a06303707`.
+- Restored the richer Agency hub with staff identity card, shift stats, client scene, lead briefing, rota, and shift guidance.
+- Restored the badge-based clock-in sequence and animated lead briefing before revealing the client dossier. Preserved the newer desk/alert-handling work after clock-in.
+- Updated `src/app/07-labs.js`, `static/js/agency/ui.js`, and `tests/smoke.mjs` so both Agency smoke journeys exercise the badge and briefing flow.
+- Commits: `8270263bd94c7efef32d4307aa942aecf8e46eaa`, `bf479c7f30b74e94305fddb792c3fae56f30bc52`, `bf58c606bf315c3632707faaa9376ff845bc42e3`.
+- Automated tests and visual comparison have not yet been run. Not deployed.
+
 ## Session log
 
 ### 2026-11-03 — Learn catalogue restoration
