@@ -2,14 +2,14 @@
 
 > **This is the living status document.** Every AI session should read it first after `AI_START_HERE.md`, then update it before finishing. Keep the current status near the top; append dated notes below when useful.
 >
-> Last updated: 2026-11-02
+> Last updated: 2026-11-03
 
 ## Current status
 
 **Phase:** Visual recovery in progress  
 **Current recovery branch:** `recovery/learn-catalogue`  
 **Production status:** No production changes made by this handover setup.  
-**Recovery implementation status:** First targeted restoration committed on `recovery/learn-catalogue`; not deployed.
+**Recovery implementation status:** Selective restoration committed across Home, Learn, Practise, Agency and Exams on `recovery/learn-catalogue`; awaiting build, automated tests and visual review. Not deployed.
 
 ### Owner's reported problem
 
@@ -23,7 +23,7 @@ The owner uses multiple AI assistants and wants them to share a reliable source 
 - A historical `site_template.html` version at commit `131c864b2a7c2385bd0f4c68b49f0c6cb9325d1e` contains ambience elements and accessibility additions that are absent from the `main` version inspected in the same review. This is evidence of a template difference, **not by itself proof that this commit is the correct original production design**.
 - Recent commit descriptions suggest simplifications to Learn, lessons, Home, Practise, Agency, and Exams. Each suspected regression must be verified against rendered output and file history.
 - The project documentation says the build/deploy workflow can publish on pushes to `main`; inspect the actual current workflow before any deployment decision.
-- No source code, production configuration, or live website has been modified as part of setting up this shared documentation.
+- At the initial shared-documentation setup, no application code or live website was changed. Subsequent recovery commits are isolated on `recovery/learn-catalogue`; `main` and production remain unchanged.
 
 ### Not yet verified
 
@@ -35,14 +35,13 @@ The owner uses multiple AI assistants and wants them to share a reliable source 
 
 ## Next actions — in order
 
-1. **Confirm deployment boundaries.** Read `.github/workflows/daily.yml`, `CLAUDE.md`, and any branch/deployment configuration. Determine how development is previewed and ensure recovery work cannot publish to production accidentally.
-2. **Establish visual ground truth.** Open the production URL and the exact development preview. Capture the same routes at matching desktop/mobile viewports. If the dev URL is not known or accessible, ask the owner for it rather than guessing.
-3. **Find the correct historical reference.** Use Git history, diffs, assets, and available screenshots to identify the commit/version matching the preferred original. Do not use `audit/glossary-agency-clarity` as a blanket rollback.
-4. **Create a recovery branch from the appropriate base** and document the chosen base commit and rationale.
-5. **Recover the Learn catalogue first**, one focused change at a time. Compare rendered results, test interactions and mobile layout, and preserve existing learning content.
-6. **Run the relevant tests/build**, inspect the diff, and document any failures or limitations.
-7. **Review the result before expanding recovery** to lessons, Home, Practise, Agency, and Exams.
-8. Only after the owner approves the preview should a pull request/controlled deployment be considered.
+1. **Validate the recovery branch.** Run `python3 build.py --offline`, Python unit tests, Node tests and `node tests/smoke.mjs` in a local environment. Follow `CLAUDE.md` for the required data stubs and exact test commands.
+2. **Review the rendered pages.** Compare Home, Learn, Practise, Agency and Exams at desktop and 390px mobile widths against the production reference and owner screenshots. Check both dark and light themes.
+3. **Fix any regressions found by testing.** In particular, verify the restored Agency badge/briefing flow and the two updated smoke journeys.
+4. **Continue lesson-page recovery.** Audit removed lesson diagrams and key visual summaries. Restore only content that can be traced to a known-good earlier revision, while retaining the current single-picture/sequence behaviour where it improves clarity.
+5. **Review remaining visual changes.** Inspect animation, ambience, lesson diagrams and page framing against the owner's screenshots before deciding what to restore.
+6. **Keep the recovery PR draft** until the owner has reviewed the preview and test results. Do not merge or deploy without explicit approval.
+7. **Update this handover** after each further change with commit SHAs, test outcomes, unverified items and the next action.
 
 ## Decisions and working assumptions
 
