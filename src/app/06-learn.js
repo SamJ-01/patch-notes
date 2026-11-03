@@ -5,21 +5,30 @@ const LESSON_TRACKS = [...new Set(["Foundations", "Threats", "Defence", "Web att
 VIEWS.learn = () => {
   const tracks = ["All", ...LESSON_TRACKS.filter(t => DATA.lessons.some(l => l.track === t))];
   const doneCount = DATA.lessons.filter(l => P.done[l.id]).length;
-  const pathRow = p => {
-    const steps = pathSteps(p), done = steps.filter(s => s.done).length;
-    return `<a class="learn-row" href="#path-${esc(p.id)}"><b>${esc(p.title.replace(/^Path to /, ""))}</b><span>${done} of ${steps.length}</span>${P.paths[p.id] ? '<span class="done-mark">Done</span>' : "<span></span>"}</a>`;
-  };
-  main.innerHTML = `<div class="view learn-index">
-    <header class="lesson-open"><h1>Learn</h1><p class="muted">${doneCount} of ${DATA.lessons.length} done</p></header>
-    <div class="row" id="ltracks">${tracks.map(t => `<button class="chip" data-t="${esc(t)}" aria-pressed="${LS.track === t}">${esc(t)}</button>`).join("")}</div>
-    <section class="stack" style="gap:0"><h2 class="cat-h">Paths</h2><div class="learn-list">${DATA.paths.map(pathRow).join("")}</div></section>
-    <div id="lgrid"></div>
-    <p class="muted"><a href="#glossary">Glossary</a> · ${DATA.glossary.length + Object.keys(DATA.cwe).length} terms</p>
+  main.innerHTML = `<div class="view">
+    <div class="view-head with-art">${headArt("learn")}<h1>The concepts behind the headlines</h1>
+      <p>Build your understanding through visual lessons, guided learning paths and practical examples.</p>
+    </div>
+    <div class="row" style="justify-content:space-between">
+      <div class="row" id="ltracks" role="group" aria-label="Filter lessons by track">${tracks.map(t => `<button class="chip" data-t="${esc(t)}" aria-pressed="${LS.track === t}">${esc(t)}</button>`).join("")}</div>
+      <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(doneCount / Math.max(1, DATA.lessons.length) * 100)}%"></i></span><span>${doneCount} of ${DATA.lessons.length} done</span></div>
+    </div>
+    <section class="stack" style="gap:12px"><div class="panel-title"><h2 class="eyebrow" style="font-size:0.8rem">Learning paths</h2><span class="muted" style="font-size:0.85rem">Finish a path for +${PATH_XP} XP and a badge</span></div>
+      <div class="paths-grid">${DATA.paths.map(pathCard).join("")}</div></section>
+    <div class="stack" id="lgrid" style="gap:30px"></div>
+    <section class="panel" style="grid-template-columns:minmax(0,1fr) auto;align-items:center">
+      <div class="stack" style="gap:6px"><h2>Glossary</h2><p class="muted">${DATA.glossary.length + Object.keys(DATA.cwe).length} terms in plain English. Dotted words anywhere on the site open them.</p></div>
+      <a class="btn brand" href="#glossary">Open glossary</a>
+    </section>
   </div>`;
-  const row = l => `<a class="learn-row" href="#lesson-${esc(l.id)}"><b>${esc(l.title)}</b><span>${l.minutes} min · ${esc(l.level)}</span>${P.done[l.id] ? '<span class="done-mark">Done</span>' : "<span></span>"}</a>`;
+  const card = l => `
+    <a class="lcard art-card" href="#lesson-${esc(l.id)}">${cardArt(l.id)}${P.done[l.id] ? '<span class="done">DONE</span>' : ""}
+      <h3>${esc(l.title)}</h3><p>${esc(l.hook)}</p>
+      <span class="lmeta"><span>${l.minutes} min</span><span>${esc(l.level)}</span></span></a>`;
   const drawGrid = () => {
+    // Keep the original visual catalogue: each track is a section of illustrated lesson cards.
     const shown = LESSON_TRACKS.filter(t => (LS.track === "All" || LS.track === t) && DATA.lessons.some(l => l.track === t));
-    $("lgrid").innerHTML = shown.map(t => `<section class="stack" style="gap:0">${LS.track === "All" ? `<h2 class="cat-h">${esc(t)}</h2>` : ""}<div class="learn-list">${DATA.lessons.filter(l => l.track === t).map(row).join("")}</div></section>`).join("");
+    $("lgrid").innerHTML = shown.map(t => `<section class="stack" style="gap:12px">${LS.track === "All" ? `<h2 class="cat-h">${esc(t)}</h2>` : ""}<div class="lessons">${DATA.lessons.filter(l => l.track === t).map(card).join("")}</div></section>`).join("");
   };
   $("ltracks").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; LS.track = b.dataset.t;
     $("ltracks").querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b)); drawGrid(); });
