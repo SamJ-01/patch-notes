@@ -115,13 +115,12 @@ VIEWS.today = () => {
   const top = trend[0];
   const featured = news.filter(n => n.topics.length);
 
-  const head = `<p class="muted home-note">Lessons, practice, and this week's news.</p>`;
+  const head = `<div class="view-head home-head"><h1>Learn it. Break it. <em class="accent">Understand it.</em></h1>\n      <p>Hands-on cyber security and IT: see how attacks work, learn how to defend against them, and understand the news behind every headline. Free, visual, and built for real exams.</p></div>`;
   if (isNewcomer()) {
     main.innerHTML = `<div class="view">
       <section class="panel route-panel" aria-labelledby="route-h"><div id="route"></div></section>
-      ${startCards(news, kev)}
       ${head}
-      <div class="split"><section class="panel" id="daily"></section>
+${startCards(news, kev)}      <div class="split"><section class="panel" id="daily"></section>
         <aside class="panel news-line"><div class="eyebrow">This week</div><p><b>${news.length} stories</b> from ${sources} outlets, each linked to a lesson that explains it.</p><a class="btn ghost" href="#news">Read the news →</a></aside></div>
     </div>`;
     renderDaily(); drawRoute(); animateBriefing();
