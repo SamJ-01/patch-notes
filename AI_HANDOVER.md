@@ -52,6 +52,16 @@ The owner uses multiple AI assistants and wants them to share a reliable source 
 - The preferred outcome is a rich, distinctive, immersive learning platform with clear usability—not decoration at the expense of learning.
 - Ask the owner to decide when evidence cannot resolve a design preference.
 
+### 2026-11-03 — Exam prep dashboard restoration
+
+- Traced the dashboard removal to commit `24a330a5bb8de143b557e789eec25ca3148fb451` ("Make an exam a list of objectives.").
+- Restored the previous exam landing-page overview and certification detail layout from its parent revision, including the progress summary, coverage breakdown, objective-level mastery indicators, practice controls, and the `Am I ready?` readiness panel.
+- Reused the existing readiness calculation and exam module; no question banks, progress storage, or exam data were changed.
+- Commit: `d172f521194a1a5b0fa54c9aa2f3431978b050f6`.
+- Verification: reviewed the restored code and confirmed the readiness panel implementation remains present. Automated tests, build, and visual comparison have not yet been run.
+- Not deployed; branch remains `recovery/learn-catalogue`.
+- Next: validate the restored Learn and Exams pages in a local build, then proceed to Agency and Practise after comparing their earlier interfaces and preserving the latest functional improvements.
+
 ## Session log
 
 ### 2026-11-03 — Learn catalogue restoration
