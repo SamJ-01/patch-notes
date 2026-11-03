@@ -108,3 +108,13 @@ The owner uses multiple AI assistants and wants them to share a reliable source 
 - No production or application code changed.
 - Tests not run: documentation-only change.
 - Next: verify deployment workflow and establish the exact live-vs-development visual comparison before modifying application code.
+
+
+### 2026-11-03 — Development preview identified
+
+- Owner confirmed the development preview URL: https://patch-notes-dev.samdjackson.workers.dev.
+- Production/live must remain unchanged unless the owner explicitly approves a production release.
+- Repository inspection shows the existing `.github/workflows/daily.yml` deploys GitHub Pages only on pushes to `main` (and its scheduled/manual runs). The repository root and code search did not reveal a `wrangler.toml`, Wrangler configuration, or a Cloudflare Workers deployment workflow.
+- Therefore, the recovery branch `recovery/learn-catalogue` is not yet known to deploy automatically to this Workers.dev URL. Do not assume that pushing this branch will update the preview, and do not merge it to `main` as a workaround.
+- Direct visual/network inspection of the Workers.dev page was unavailable from this session, so its current rendered state and deployment source remain unverified.
+- Next: establish the Cloudflare Worker deployment source (Cloudflare dashboard Git integration/build settings, or the existing external deployment workflow). Then deploy the recovery branch to the dev Worker only, or create a clearly isolated preview deployment, and verify Home, Learn, Practise, Agency, and Exams on desktop/mobile. Keep production untouched.
