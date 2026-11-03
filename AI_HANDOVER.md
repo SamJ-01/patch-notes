@@ -62,6 +62,14 @@ The owner uses multiple AI assistants and wants them to share a reliable source 
 - Not deployed; branch remains `recovery/learn-catalogue`.
 - Next: validate the restored Learn and Exams pages in a local build, then proceed to Agency and Practise after comparing their earlier interfaces and preserving the latest functional improvements.
 
+### 2026-11-03 — Home page introduction restoration
+
+- Traced the stripped-back home introduction to commit `e04fd500ef5733e196ce09f37cd066c0aabd3cc8`.
+- Restored the full `Learn it. Break it. Understand it.` headline and descriptive product introduction on the Home page.
+- Preserved the newer route-map behaviour that foregrounds the next learning stop; only the removed product introduction and its placement were restored.
+- Updated `src/app/04-home.js`; latest commit: `fc07505249de87f9ea72bd1b46c89f1b2dc52b35`.
+- Automated tests and visual comparison have not yet been run. Not deployed.
+
 ## Session log
 
 ### 2026-11-03 — Learn catalogue restoration
