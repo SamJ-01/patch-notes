@@ -192,21 +192,22 @@ VIEWS.missions = () => {
   const items = practiseItems();
   const cats = [...new Set([...CATEGORY_ORDER, ...items.map(i => i.cat)])].filter(c => items.some(i => i.cat === c));
   if (PS.track !== "All" && !cats.includes(PS.track)) PS.track = "All";
-  const countable = items.filter(i => i.key !== "games" && !i.key.startsWith("tool:"));
-  const doneCount = countable.filter(i => i.done).length;
-  main.innerHTML = `<div class="view learn-index">
-    <header class="lesson-open"><h1>Practise</h1><p class="muted">${doneCount} of ${countable.length} done</p></header>
-    <div class="row pr-tracks" role="group" aria-label="Show a track">${["All", ...cats].map(c => `<button type="button" class="chip" data-t="${esc(c)}" aria-pressed="${PS.track === c}">${esc(c)}</button>`).join("")}</div>
-    <div id="pr-grid"></div>
+  const picks = PRACTISE_PICKS.map(k => items.find(i => i.key === k)).filter(Boolean)
+    .map(p => (p.done ? items.find(i => i.cat === p.cat && !i.done && !PRACTISE_PICKS.includes(i.key)) || p : p));
+  main.innerHTML = `<div class="view">
+    <div class="view-head with-art">${headArt("missions")}<h1>Practise by doing</h1><p>Missions, labs, the Agency shift and games. Start with one from each track, or pick what you want to get better at.</p></div>
+    <section class="stack pr-start"${PS.track === "All" ? "" : " hidden"}><h2 class="cat-h">Start here: one from each track</h2><div class="lessons">${picks.map(p => p.html).join("")}</div></section>
+    <div class="row pr-tracks" role="group" aria-label="Show a track">${["All", ...cats].map(c => `<button type="button" class="chip" data-t="${esc(c)}" aria-pressed="${PS.track === c}">${esc(c)} <span class="n">${c === "All" ? items.length : items.filter(i => i.cat === c).length}</span></button>`).join("")}</div>
+    <div class="stack" id="pr-grid" style="gap:30px"></div>
   </div>`;
-  const SHOW = 8;
+  const SHOW = 4;
   const draw = () => {
     const shown = PS.track === "All" ? cats : [PS.track];
+    main.querySelector(".pr-start").hidden = PS.track !== "All";  // the picks only repeat cards once a track is chosen
     $("pr-grid").innerHTML = shown.map(c => {
       const list = items.filter(i => i.cat === c), all = PS.track !== "All" || PS.open[c] || list.length <= SHOW + 1;
-      const rows = (all ? list : list.slice(0, SHOW)).map(i => i.html).join("");
-      return `<section class="stack" style="gap:0"><h2 class="cat-h">${esc(c)}</h2><div class="learn-list">${rows}</div>
-        ${all ? "" : `<button type="button" class="btn ghost pr-more" data-more="${esc(c)}">Show all ${list.length}</button>`}</section>`;
+      return `<section class="stack"><h2 class="cat-h">${esc(c)}</h2><div class="lessons">${(all ? list : list.slice(0, SHOW)).map(i => i.html).join("")}</div>
+        ${all ? "" : `<button type="button" class="btn ghost pr-more" data-more="${esc(c)}">Show all ${list.length} in ${esc(c)}</button>`}</section>`;
     }).join("");
   };
   main.querySelector(".pr-tracks").addEventListener("click", e => {
@@ -217,24 +218,25 @@ VIEWS.missions = () => {
     const b = e.target.closest("[data-more]"); if (!b) return;
     PS.open[b.dataset.more] = true; draw();
     const sec = [...$("pr-grid").querySelectorAll(".cat-h")].find(h => h.textContent === b.dataset.more)?.parentElement;
-    sec?.querySelectorAll(".learn-row")[SHOW]?.focus();  // keep keyboard users where they were
+    sec?.querySelectorAll(".lcard")[SHOW]?.focus();  // keep keyboard users where they were
   });
   draw();
 };
-function practiseRow(href, kind, title, meta, done) {
-  return `<a class="learn-row" href="${href}"><b>${esc(title)}</b><span>${esc(kind)}${meta ? ` · ${esc(meta)}` : ""}</span>${done ? '<span class="done-mark">Done</span>' : "<span></span>"}</a>`;
-}
 function gamesCard() {
-  return practiseRow("#play", "Games", "Phish or Legit, quizzes and a flag hunt", "a few minutes", false);
+  return `<a class="lcard art-card" href="#play">${cardArt("play")}
+    <span class="eyebrow">Games</span><h3>Phish or Legit, quizzes and a flag hunt</h3><p>Quick rounds to sharpen your instincts: spot the scam, test what you know, find hidden flags</p><span class="lmeta"><span>A few minutes</span><span>XP for every round</span></span></a>`;
 }
 function toolCard() {
-  return practiseRow("#subnet-calc", "Tool", "Subnet calculator", "any time", false);
+  return `<a class="lcard art-card" href="#subnet-calc">${cardArt("subnet-calc")}
+    <span class="eyebrow">Tool</span><h3>Subnet calculator</h3><p>Type any address and watch the network change: class, CIDR, mask, hosts, ranges and a live diagram</p><span class="lmeta"><span>Use any time</span><span>Shareable links</span></span></a>`;
 }
 function logToolCard() {
-  return practiseRow("#log-search", "Tool", "Log search", "any time", false);
+  return `<a class="lcard art-card" href="#log-search">${cardArt("log-detective")}
+    <span class="eyebrow">Tool · your own evidence</span><h3>Log search</h3><p>Paste a real log; spot guessing and scanning</p><span class="lmeta"><span>Use any time</span><span>Stays on your device</span></span></a>`;
 }
 function cvssToolCard() {
-  return practiseRow("#cvss-decode", "Tool", "CVSS decoder", "any time", false);
+  return `<a class="lcard art-card" href="#cvss-decode">${cardArt("cvss-builder")}
+    <span class="eyebrow">Tool · your own evidence</span><h3>CVSS decoder</h3><p>Paste a vector; see the score and what it means</p><span class="lmeta"><span>Use any time</span><span>3.0, 3.1 and 4.0</span></span></a>`;
 }
 // Log search: paste or open a real log (static/js/tools/logs.js).
 function logToolView() {
@@ -245,7 +247,8 @@ function logToolView() {
     .catch(() => { $("lg-root").innerHTML = `<div class="empty">Couldn't load the log search. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
 }
 function headerToolCard() {
-  return practiseRow("#headers-check", "Tool", "Email header checker", "any time", false);
+  return `<a class="lcard art-card" href="#headers-check">${cardArt("header-inspector")}
+    <span class="eyebrow">Tool · your own evidence</span><h3>Email header checker</h3><p>Paste a real email's headers and see who sent it</p><span class="lmeta"><span>Use any time</span><span>Stays on your device</span></span></a>`;
 }
 // "Bring your own evidence": paste real email headers and get them explained (static/js/tools/headers.js).
 function headersToolView() {
@@ -273,39 +276,67 @@ function calcView(h) {
   }).catch(() => { $("calc-root").innerHTML = `<div class="empty">Couldn't load the calculator. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
 }
 function labCard(l) {
-  return practiseRow(`#lab-${esc(l.id)}`, "Lab", l.title, `${l.minutes} min`, !!P.labs[l.id]);
+  return `<a class="lcard art-card" href="#lab-${esc(l.id)}">${cardArt(l.id)}${P.labs[l.id] ? '<span class="done">DONE</span>' : ""}
+    <span class="eyebrow">Lab</span><h3>${esc(l.title)}</h3><p>${esc(l.card || l.skill)}</p><span class="lmeta"><span>${l.minutes} min</span><span>+${LAB_XP} XP</span></span></a>`;
 }
 function missionCard(m) {
   const done = Object.keys((P.missions || {})[m.id] || {});
   const all = Object.keys(m.modes);
-  return practiseRow(`#mission-${esc(m.id)}`, "Mission", m.title, `${m.minutes} min`, done.length === all.length);
+  return `<a class="lcard mission-card art-card" href="#mission-${esc(m.id)}">${cardArt(m.id)}${done.length === all.length ? '<span class="done">DONE</span>' : ""}
+    <span class="eyebrow">Mission</span><h3>${esc(m.title)}</h3><p>${esc(m.card || m.summary)}</p>
+    <span class="lmeta"><span>${m.minutes} min</span>${all.map(k => `<span>${done.includes(k) ? "✓ " : ""}${esc(m.modes[k].label)}</span>`).join("")}</span></a>`;
 }
 const MISSION = id => DATA.missions.find(x => x.id === id);
 const SHIFT = id => (DATA.agency || []).find(x => x.id === id);
 function shiftCard(sh) {
   const rec = (P.agency || {})[sh.id];
-  return practiseRow(`#agency-${esc(sh.id)}`, "Shift", sh.title, `${sh.minutes} min`, !!rec);
+  const pic = sh.clientImage ? cardPhoto(sh.clientImage.small || sh.clientImage.src, 800, Math.round(800 * sh.clientImage.height / sh.clientImage.width)) : cardArt("agency");
+  return `<a class="lcard mission-card art-card" href="#agency-${esc(sh.id)}">${pic}${rec ? '<span class="done">DONE</span>' : ""}
+    <span class="eyebrow">PATCH//AGENCY</span><h3>${esc(sh.title)}</h3><p>${esc(sh.card || sh.summary)}</p>
+    <span class="lmeta"><span>${sh.minutes} min</span><span>${rec ? `Best: ${rec.best} of ${rec.total} checks` : `+${sh.xp} XP`}</span></span></a>`;
 }
 // The Agency's own section: the agency, your staff badge, the time clock and the rota. Clocking in opens a shift.
 VIEWS.agency = () => {
   const shifts = DATA.agency || [], rec = id => (P.agency || {})[id];
-  const next = shifts.find(sh => !rec(sh.id)) || shifts[0];
+  const worked = shifts.filter(sh => rec(sh.id)).length, next = shifts.find(sh => !rec(sh.id)) || shifts[0];
   if (!next) { main.innerHTML = `<div class="view"><div class="empty">No shifts yet.</div></div>`; return; }
+  const rank = worked ? "Analyst, tier 1" : "Trainee analyst";
+  const best = shifts.map(sh => rec(sh.id)).filter(Boolean).reduce((a, r) => Math.max(a, r.total ? r.best / r.total : 0), 0);
   const day = d => d.replace(/^(\w{3})\w*\s+(\d+)\s+(\w{3}).*$/, "$1 $2 $3").toUpperCase();
-  const lead = next.lead.split(",")[0];
-  const note = (next.briefing.match(/[^.!?]+[.!?]+/g) || [next.briefing]).slice(0, 2).join(" ").trim();
-  main.innerHTML = `<div class="view learn-index">
-    <header class="lesson-open"><p class="eyebrow">${esc(next.agency)} · ${esc(day(next.date))} · ${esc(next.startsAt)}</p><h1>${esc(next.title)}</h1></header>
-    <section class="panel screen"><div class="obj">
-      <p class="obj-row"><span>Client</span><b>${esc(next.client)}</b></p>
-      <p class="obj-row"><span>Length</span><b>${next.minutes} min</b></p>
-      <p class="obj-row"><span>Lead</span><b>${esc(lead)}</b></p>
-    </div><a class="btn brand" href="#agency-${esc(next.id)}">Clock in</a></section>
-    <section><h2>From ${esc(lead)}</h2><p>${gloss(note, 2)}</p></section>
-    <section class="stack" style="gap:0"><h2 class="cat-h">Rota</h2><div class="learn-list">${shifts.map(sh => {
-      const r = rec(sh.id);
-      return `<a class="learn-row" href="#agency-${esc(sh.id)}"><b>${esc(sh.title)}</b><span>${esc(day(sh.date))} · ${sh.minutes} min</span>${r ? '<span class="done-mark">Done</span>' : "<span></span>"}</a>`;
-    }).join("")}</div></section>
+  main.innerHTML = `<div class="view ag-hub">
+    <header class="ag-hero"><div class="ag-logo" aria-hidden="true">PATCH<b>//</b>AGENCY</div>
+      <h1>${esc(next.agency)}</h1>
+      <p>A security operations centre (SOC) watching its clients' systems around the clock. You take the desk: read the alerts, work out what's real, get other teams to act, and hand over to the next shift.</p></header>
+    <div class="ag-hubgrid">
+      <section class="ag-idcard" aria-label="Your staff badge">
+        <div class="ag-id-top"><span class="ag-logo sm" aria-hidden="true">LANTERNFIELD</span><span class="ag-id-no mono">LF-${String(1000 + worked * 37).padStart(4, "0")}</span></div>
+        <svg class="ag-id-face" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="22" r="11"/><path d="M9 57c2-12 10-19 21-19s19 7 21 19z"/></svg>
+        <div class="ag-id-name">You</div><div class="ag-id-rank">${rank}</div>
+        <dl class="ag-id-stats"><div><dt>Shifts worked</dt><dd>${worked} of ${shifts.length}</dd></div><div><dt>Best report</dt><dd>${worked ? `${Math.round(best * 100)}%` : "–"}</dd></div></dl>
+      </section>
+      <section class="ag-tc ag-tc-hub" aria-labelledby="ag-next-h">
+        ${DESK.scene(next.clientImage, { lazy: true })}
+        <div class="ag-tc-screen" aria-hidden="true"><span>${esc(day(next.date))}</span><b>${esc(next.startsAt)}</b><span>${rec(next.id) ? "WORKED BEFORE" : "NEXT SHIFT"}</span></div>
+        <h2 id="ag-next-h">${esc(next.title)}</h2>
+        <p>${esc(next.card || next.summary)}</p>
+        <a class="btn brand ag-clockin" href="#agency-${esc(next.id)}">Clock in</a>
+        <p class="muted">About ${next.minutes} minutes. The clock only moves when you act, so take your time reading. New to this? Choose Shadow on the client file to watch your lead work it first.</p>
+      </section>
+    </div>
+    <section class="panel ag-pinned" aria-labelledby="ag-pin-h"><h2 id="ag-pin-h">Pinned by your lead</h2>
+      <ol class="dk-msgs">${DESK.message({ from: next.lead.split(",")[0], role: (next.lead.split(",")[1] || "Shift lead").trim(), at: next.startsAt, photo: next.leadPhoto, html: `<p>${gloss((next.briefing.match(/[^.!?]+[.!?]+/g) || [next.briefing]).slice(0, 2).join(" ").trim(), 2)}</p>` })}</ol></section>
+    <section class="panel"><h2>The rota</h2>
+      <ol class="ag-rota">${shifts.map(sh => `<li><span class="mono ag-rota-when">${esc(day(sh.date))} · ${esc(sh.startsAt)}</span><b>${esc(sh.client)}</b><span class="muted">${esc(sh.title.split(":")[0])}, ${sh.minutes} min</span>
+        <span class="ag-rota-st">${rec(sh.id) ? `✓ ${rec(sh.id).best} of ${rec(sh.id).total} checks${rec(sh.id).own ? "" : " (guided)"}` : "Open"}</span><a class="btn ghost" href="#agency-${esc(sh.id)}">${rec(sh.id) ? "Work it again" : "Clock in"}</a></li>`).join("")}
+        <li class="ag-rota-soon"><span class="mono ag-rota-when">COMING</span><b>More shifts are being written</b><span class="muted">Each one a new client and new alerts</span></li></ol></section>
+    <section class="panel"><h2>How a shift works</h2>
+      <ol class="ag-steps">
+        <li><b>Clock in</b><span>Tap your badge. Your shift lead briefs you and hands you the client file.</span></li>
+        <li><b>Choose how to work</b><span>Shadow (watch your lead do it, step by step), Guided (hints as you go) or On your own.</span></li>
+        <li><b>Work the queue</b><span>Open each alert and search the logs behind it. Most are noise; some aren't.</span></li>
+        <li><b>Ask other teams</b><span>You can't fix everything yourself. Ask, give a reason, and wait for replies.</span></li>
+        <li><b>Hand over and clock out</b><span>Close every alert with evidence, leave notes for the next shift, and get your report.</span></li></ol>
+      <p class="muted">${(fb => fb ? `The Agency is a pilot. <a href="${esc(fb)}"${fb.startsWith("#") ? "" : ' target="_blank" rel="noopener"'}>Tell us what you think${fb.startsWith("#") ? "" : " ↗"}</a>` : "")(feedbackHref("PATCH//AGENCY"))}</p></section>
   </div>`;
 };
 // A PATCH//AGENCY shift. Leaving mid-shift restarts it, so route() asks first (agencyShift.inProgress).
