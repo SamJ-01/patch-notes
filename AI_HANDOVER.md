@@ -131,3 +131,15 @@ The owner uses multiple AI assistants and wants them to share a reliable source 
 - Expected result: Cloudflare builds the static site with `python build.py --days 7`, then runs `npx wrangler preview` for `recovery/learn-catalogue`. Confirm the build result and preview URL in Cloudflare before claiming deployment success.
 - Important: no build/test result or preview URL has yet been confirmed. If the preview build fails, inspect the Cloudflare build log before changing commands or production settings.
 - Next: inspect the triggered Preview build and URL; then run automated tests and visual checks against the preview. Production/live remains untouched.
+
+## 2026-11-04 — Audit of older development commit 5a6d9c8
+
+- Reviewed https://github.com/SamJ-01/patch-notes-dev/commit/5a6d9c899b7b5a54db05b429d2372a294054353d from the separate private `patch-notes-dev` repository.
+- The commit changes only `src/app/07-labs.js` (80 additions, 72 deletions) and belongs to the older nine-module app layout.
+- Compared its key sections with `src/app/07-labs.js` on `recovery/learn-catalogue`:
+  - The illustrated Practise cards (games, tools, labs, missions and Agency shifts) are already present in the current recovery branch; the compared card section is identical.
+  - The Agency hub with staff badge, clock-in panel, lead briefing and rota is already present in the current branch, with a longer/current implementation.
+  - The current branch retains `mountVisual` and the lab visual panel/rendering path; the older commit deletes that renderer and its mount call. Do not port that deletion.
+  - The current branch uses modular lab renderers and the current mission/Agency modules; do not replace these with the older file.
+- Decision: no code transplant from this commit is needed. It is a useful historical reference, but its strongest presentation changes have already been incorporated in the current recovery branch, which also preserves newer visual-lab functionality.
+- No production branch, live site, Cloudflare production configuration, or old repository files were changed as part of this audit.
