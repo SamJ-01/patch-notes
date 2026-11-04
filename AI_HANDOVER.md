@@ -118,3 +118,16 @@ The owner uses multiple AI assistants and wants them to share a reliable source 
 - Therefore, the recovery branch `recovery/learn-catalogue` is not yet known to deploy automatically to this Workers.dev URL. Do not assume that pushing this branch will update the preview, and do not merge it to `main` as a workaround.
 - Direct visual/network inspection of the Workers.dev page was unavailable from this session, so its current rendered state and deployment source remain unverified.
 - Next: establish the Cloudflare Worker deployment source (Cloudflare dashboard Git integration/build settings, or the existing external deployment workflow). Then deploy the recovery branch to the dev Worker only, or create a clearly isolated preview deployment, and verify Home, Learn, Practise, Agency, and Exams on desktop/mobile. Keep production untouched.
+
+
+### 2026-11-04 — Cloudflare preview build configured
+
+- Owner confirmed the Cloudflare Worker `patch-notes-dev` is connected to `SamJ-01/patch-notes`, with `main` as its production branch.
+- Cloudflare dashboard screenshots confirm **Builds for Preview branches** is enabled.
+- Owner configured **Previews Base → Build command** as `python build.py --days 7`; the Preview command remains `npx wrangler preview`; root directory is `/`.
+- The production branch remains `main`. The recovery branch must only create/update its branch Preview; never change the production branch or use `wrangler deploy` for this recovery.
+- Cloudflare's current Workers Builds documentation confirms pushes to non-production branches trigger a build command followed by the Preview command, creating/updating that branch's isolated Preview. See https://developers.cloudflare.com/workers/ci-cd/builds/build-branches/ and https://developers.cloudflare.com/workers/ci-cd/builds/configuration/.
+- A new commit to `recovery/learn-catalogue` is required to trigger a fresh preview build after enabling/configuring previews. This handover update is intended to provide that trigger.
+- Expected result: Cloudflare builds the static site with `python build.py --days 7`, then runs `npx wrangler preview` for `recovery/learn-catalogue`. Confirm the build result and preview URL in Cloudflare before claiming deployment success.
+- Important: no build/test result or preview URL has yet been confirmed. If the preview build fails, inspect the Cloudflare build log before changing commands or production settings.
+- Next: inspect the triggered Preview build and URL; then run automated tests and visual checks against the preview. Production/live remains untouched.
