@@ -6,7 +6,6 @@
 // trunk) and Windows (ping, ipconfig). Simplifications are listed in the lab's "simplification" text.
 
 import * as M from "../net/model.js";
-import * as V from "../net/view.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const pad = (s, n) => String(s).padEnd(n);
@@ -729,18 +728,30 @@ export function createNet(lab) {
 export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = () => {}, onReset = () => {} } = {}) {
   const net = createNet(lab);
   const done = new Set(solved), devices = [...Object.keys(lab.switches), ...Object.keys(lab.routers || {}), ...Object.keys(lab.pcs)];
-  const gw = Object.values(lab.pcs).some(pc => pc.gw);
   const outs = Object.fromEntries(devices.map(d => [d, ""]));
   let dev = Object.keys(lab.switches)[0], histI = null, finished = lab.tasks.every(t => done.has(t.id));
 
   root.innerHTML = `<div class="term-lab vlan-lab">
     <div class="view-head"><a class="link-btn" href="#missions">← Missions</a>
       <div class="eyebrow">Lab · ${esc(lab.track)} · ${lab.minutes} min</div><h1>${esc(lab.title)}</h1><p>${esc(lab.intro)}</p></div>
-    <section class="panel"><div class="panel-title"><h2>The network</h2><span class="sim-tag">Simulation</span></div>
-      <div class="vl-diagram" id="v-diagram"></div>
-      <div class="vl-table" role="region" aria-label="Addressing table" tabindex="0"><table class="tbl"><caption class="sr-only">Addressing table</caption><thead><tr><th scope="col">PC</th><th scope="col">IP address</th><th scope="col">Mask</th>${gw ? '<th scope="col">Gateway</th>' : ""}<th scope="col">Connected to</th><th scope="col">Planned VLAN</th></tr></thead>
-        <tbody>${Object.entries(lab.pcs).map(([id, pc]) => `<tr><th scope="row">${id}</th><td class="mono">${pc.ip}</td><td class="mono">${pc.mask}</td>${gw ? `<td class="mono">${esc(pc.gw || "")}</td>` : ""}<td>${pc.sw} ${pc.port}${pc.phone ? " (through an IP phone)" : ""}</td><td>${pc.vlan} (${esc(lab.vlans[pc.vlan])})</td></tr>`).join("")}</tbody></table></div>
-      <details class="tbl simplification"><summary>How this simulation differs from real switches</summary><p>${esc(lab.simplification)}</p></details></section>
+    <section class="vn-scene" id="v-scene" aria-label="Two rooms on one switch">
+      <div class="vn-chassis"><span>Switch</span><b>one network, two rooms</b></div>
+      <div class="vn-floor" id="vn-floor">
+        <div class="vn-room staff"><span class="vn-tag">Staff · VLAN 10</span><span class="vn-host" id="vn-a">PC-A</span><span class="vn-host" id="vn-b">PC-B</span></div>
+        <div class="vn-wall" id="vn-wall" aria-hidden="true"></div>
+        <div class="vn-room students"><span class="vn-tag">Students · VLAN 20</span><span class="vn-host" id="vn-c">PC-C</span></div>
+        <div class="vn-trunk" id="vn-trunk" aria-hidden="true"></div>
+        <div class="vn-far" id="vn-far"><span>Next switch</span><b>Staff</b></div>
+        <span class="vn-pkt" id="v-pkt">packet <em id="v-stamp" hidden>10</em></span>
+      </div>
+      <div class="vn-controls">
+        <button type="button" class="btn ghost" data-vn="same">Send to the other Staff PC</button>
+        <button type="button" class="btn ghost" data-vn="cross">Send into Students</button>
+        <button type="button" class="btn ghost" data-vn="trunk">Send across the trunk</button>
+      </div>
+      <p class="vn-say" id="v-say" aria-live="polite"></p>
+    </section>
+    <details class="tbl simplification"><summary>How this simulation differs from real switches</summary><p>${esc(lab.simplification)}</p></details>
     <div class="term-grid">
       <section class="term-shell" aria-label="Simulated consoles">
         <div class="term-bar vl-tabs" role="group" aria-label="Choose a device">${devices.map(d => `<button type="button" class="chip" data-dev="${d}" aria-pressed="${d === dev}">${d}</button>`).join("")}</div>
@@ -757,16 +768,33 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   </div>`;
   const $ = id => root.querySelector("#" + id);
   const out = $("v-out"), input = $("v-in");
-
-  // The live diagram: each broadcast domain in its own colour, trunks as bundles of the colours they carry.
-  let focus = null;
-  function drawDiagram() {
-    const seg = M.segments(net.topo);
-    if (focus != null && !seg.segments[focus]) focus = null;
-    $("v-diagram").innerHTML = V.svg(net.topo, { layout: lab.layout, width: 600, height: 320, seg, focus })
-      + `<h3 class="eyebrow">Who can talk to whom</h3>${V.legend(net.topo, seg, focus)}`;
-    $("v-diagram").querySelectorAll("[data-seg]").forEach(b => b.addEventListener("click", () => { focus = focus === Number(b.dataset.seg) ? null : Number(b.dataset.seg); drawDiagram(); $("v-diagram").querySelector(`[data-seg="${b.dataset.seg}"]`)?.focus(); }));
+  const reduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let vnBusy = false;
+  function vnMove(target, animate) {
+    const floor = $("vn-floor"), pkt = $("v-pkt");
+    const fr = floor.getBoundingClientRect(), tr = target.getBoundingClientRect();
+    pkt.style.transition = animate && !reduced ? "transform .7s cubic-bezier(.2,.7,.2,1)" : "none";
+    pkt.style.transform = `translate(${tr.left - fr.left + tr.width / 2 - pkt.offsetWidth / 2}px, ${tr.top - fr.top + tr.height / 2 - pkt.offsetHeight / 2}px)`;
   }
+  function vnGo(kind) {
+    if (vnBusy) return;
+    vnBusy = true;
+    const stamp = $("v-stamp"), wall = $("vn-wall"), say = $("v-say");
+    stamp.hidden = true; wall.classList.remove("hit");
+    vnMove($("vn-a"), false);
+    const target = kind === "same" ? $("vn-b") : kind === "cross" ? wall : $("vn-far");
+    requestAnimationFrame(() => vnMove(target, true));
+    setTimeout(() => {
+      if (kind === "same") say.textContent = "Same room. The packet arrives.";
+      if (kind === "cross") { wall.classList.add("hit"); say.textContent = "Stopped. Staff and Students cannot see each other."; }
+      if (kind === "trunk") { stamp.hidden = false; say.textContent = "The trunk stamps it VLAN 10, so the next switch still knows it is Staff."; }
+      vnBusy = false;
+    }, reduced ? 0 : 740);
+  }
+  root.querySelectorAll("[data-vn]").forEach(b => b.addEventListener("click", () => vnGo(b.dataset.vn)));
+  requestAnimationFrame(() => vnMove($("vn-a"), false));
+
+  function drawDiagram() {}
   const print = html => { outs[dev] += html; out.insertAdjacentHTML("beforeend", html); out.scrollTop = out.scrollHeight; };
   function renderTasks() {
     lab.tasks.forEach(t => { if (!done.has(t.id) && net.isDone(t.check)) { done.add(t.id); onPart(t.id); } });

@@ -1,6 +1,6 @@
 // Browser smoke test (runs in CI after the build, before deploy): serves site/, opens the key routes on a desktop
 // (dark theme) and a phone (light theme), and plays three journeys a learner takes: an evidence lab to the end,
-// a shadowed Agency shift to "Your turn", and a route from "Learn the basics" with its route bar.
+// a shadowed Agency shift to "Your turn", and a route started from a home role card with its route bar.
 // It fails on page errors, failed requests to the site and sideways scrolling. Deliberately small and quick: the
 // fuller checks (axe, screenshots) stay in tests/browser_check.mjs, run by hand. Writes nothing into site/.
 //
@@ -48,7 +48,7 @@ const overflow = async (page, where) => {
 
 // 1. Key routes: every tab, a cert page, and one of each kind of activity.
 const ROUTES = ["#today", "#learn", "#missions", "#agency", "#exams", "#progress", "#news", "#cves", "#cert-network-plus",
-  "#feedback", "#path-soc", "#lesson-phishing", "#lab-slow-network", "#lab-vlans", "#lab-network-builder", "#mission-dhcp", "#agency-shift-01", "#subnet-calc"];
+  "#feedback", "#path-soc", "#lesson-phishing", "#lab-slow-network", "#lab-vlans", "#lab-network-builder", "#mission-dhcp", "#agency-shift-01", "#subnet-calc", "#lab-port-corridor", "#lab-firewall-packet", "#lab-vishing-call"];
 for (const route of ROUTES) for (const [width, theme] of [[1280, "dark"], [390, "light"]]) {
   const page = await open(route, width, theme);
   if (!(await page.evaluate(() => (document.querySelector("main")?.innerText || "").trim().length > 40))) problems.push(`${route} @${width}: the page is empty`);
@@ -104,6 +104,9 @@ await journey("lab slow-network", async () => {
 // 3. Shadow an Agency shift from clocking in to "Your turn", then start working it.
 await journey("shadow shift-01", async () => {
   const page = await open("#agency-shift-01", 390, "light");
+  await page.waitForSelector("#ag-tap");
+  await page.evaluate(() => document.querySelector("#ag-tap").click());
+  await page.waitForSelector("#ag-dossier:not([hidden])", { timeout: 20000 });
   await page.waitForSelector("#ag-desk-go");
   await page.evaluate(() => { document.querySelector('[name="ag-level"][value="shadow"]').click(); document.querySelector("#ag-desk-go").click(); });
   await page.waitForSelector("#ag-sh-h");
@@ -122,6 +125,9 @@ await journey("shadow shift-01", async () => {
 // form and the debrief. The engine is unit-tested; this checks the desk's form wiring actually drives it.
 await journey("work shift-01", async () => {
   const page = await open("#agency-shift-01", 390, "light");
+  await page.waitForSelector("#ag-tap");
+  await page.evaluate(() => document.querySelector("#ag-tap").click());
+  await page.waitForSelector("#ag-dossier:not([hidden])", { timeout: 20000 });
   await page.waitForSelector("#ag-desk-go");
   await page.evaluate(() => document.querySelector("#ag-desk-go").click());  // guided is the default
   await page.waitForSelector("#ag-desk:not([hidden])", { timeout: 10000 });
@@ -148,7 +154,9 @@ await journey("work shift-01", async () => {
 // 4. "Learn the basics" puts you on a route: the bar shows the stop, going deeper keeps it, and Next stop moves along it.
 await journey("route", async () => {
   const page = await open("", 390, "dark");
-  await page.click(".start-card >> nth=0");
+  await page.click(".start-card >> nth=0");   // a role card on the home page opens that path's ladder
+  await page.waitForTimeout(400);
+  await page.click(".steps a >> nth=0");       // start the route at the ladder's first stop
   await page.waitForTimeout(400);
   const bar = async () => page.evaluate(() => { const t = document.getElementById("trail"); return t && !t.hidden ? t.innerText.replace(/\s+/g, " ") : ""; });
   if (!/Stop 1 of \d+/.test(await bar())) problems.push(`route: no route bar on the first stop (${await bar() || "hidden"})`);

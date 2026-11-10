@@ -192,6 +192,10 @@
       {
        "type": "lab",
        "id": "prompt-injection"
+      },
+      {
+       "type": "lab",
+       "id": "vishing-call"
       }
      ]
     },
@@ -420,6 +424,10 @@
       {
        "type": "lesson",
        "id": "wireless"
+      },
+      {
+       "type": "lab",
+       "id": "firewall-packet"
       }
      ]
     },
@@ -844,6 +852,10 @@
       {
        "type": "lesson",
        "id": "phishing"
+      },
+      {
+       "type": "lab",
+       "id": "vishing-call"
       }
      ]
     }

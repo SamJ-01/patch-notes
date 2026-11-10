@@ -349,3 +349,34 @@ test("found in review: file permissions apply to the owner too, and others use t
   sh.run("chmod 644 mine.txt");
   assert.doesNotMatch(sh.run("cat mine.txt").out, /denied/);
 });
+
+// The Port Corridor: ports-as-doors. gradeHost() is the pure judge.
+import * as corridor from "../static/js/labs/corridor.js";
+
+test("Port Corridor: grading rewards the doors a host actually needs", () => {
+  const L = lab("port-corridor");
+  assert.ok(L && L.kind === "corridor", "lab exists with its module kind");
+  const web = L.hosts.find(h => h.id === "web");
+  // Opening exactly the needed ports is a full pass.
+  const perfect = corridor.gradeHost(web, L.doors, web.open);
+  assert.equal(perfect.pass, true);
+  assert.equal(perfect.right, L.doors.length);
+  // Leaving a dangerous door open (445 on a public web server) is flagged as "should-close".
+  const leaky = corridor.gradeHost(web, L.doors, [...web.open, 445]);
+  assert.equal(leaky.pass, false);
+  assert.ok(leaky.wrongOpen.some(r => r.port === 445), "445 is flagged to lock");
+  // Forgetting a needed door (443) is flagged as "should-open".
+  const shut = corridor.gradeHost(web, L.doors, web.open.filter(p => p !== 443));
+  assert.ok(shut.wrongShut.some(r => r.port === 443), "443 is flagged to open");
+});
+
+test("Port Corridor: every host is winnable from its own content, and its open set is real ports", () => {
+  const L = lab("port-corridor");
+  const portSet = new Set(L.doors.map(d => d.port));
+  for (const h of L.hosts) {
+    assert.ok(h.open.length, `${h.id}: needs at least one open door`);
+    for (const p of h.open) assert.ok(portSet.has(p), `${h.id}: open port ${p} is a door in the corridor`);
+    assert.equal(corridor.gradeHost(h, L.doors, h.open).pass, true, `${h.id}: its own open set passes`);
+  }
+  assert.deepEqual(corridor.hostOrder(L), L.hosts.map(h => h.id));
+});

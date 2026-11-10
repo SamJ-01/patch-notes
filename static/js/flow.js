@@ -3,6 +3,7 @@
 //   { title, nodes: [{ id, kind, label }], steps: [{ from, to, msg, text, tone?: "bad"|"good", stop? }] }
 // The pure helpers (validate, describe) are tested in tests/flow.test.mjs; mount() draws it on the page.
 import { HW, hw } from "./hw.js";
+import { MAIL } from "./mail.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 // Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
@@ -13,7 +14,13 @@ export const STAGE_KINDS = ["mail", "url", "field", "log", "file", "packet", "ce
 export function stageHtml(g = {}) {
   const row = (k, v, bad) => `<p class="obj-row${bad ? " bad" : ""}"><span>${esc(k)}</span><b>${esc(v)}</b></p>`;
   const rows = (g.rows || []).map(r => row(r.k, r.v, r.bad)).join("");
-  if (g.kind === "mail") return `<div class="obj mail"><span class="mech-k">Email</span>${row("From", g.from)}${g.reply ? row("Reply-To", g.reply, true) : ""}${row("Subject", g.subject)}<p class="obj-body">${esc(g.body || "")}</p></div>`;
+  if (g.kind === "mail") {
+    // Render as a real email in the shared mail-app look (MAIL), not a flat field list. Build a minimal raw
+    // header block so MAIL parses the sender, flags a spoofed Reply-To and marks an outside sender.
+    const headers = [`From: ${g.from}`, g.reply ? `Reply-To: ${g.reply}` : "", `To: ${g.to || "you@company.example"}`, `Subject: ${g.subject || ""}`].filter(Boolean).join("\n");
+    const links = g.link ? [g.link] : [];
+    return MAIL.card({ headers, body: g.body || "", links, date: g.date || "" }, { id: "flow-em", views: [], org: g.org, client: true });
+  }
   if (g.kind === "url") return `<div class="obj url"><span class="mech-k">Address bar</span>${g.rows ? rows : `<p class="stage-line">${esc(g.line)}</p>`}</div>`;
   if (g.kind === "field") return `<div class="obj field"><span class="mech-k">${esc(g.kicker || "")}</span>${g.rows ? rows : `<p class="stage-line">${esc(g.line)}</p>`}</div>`;
   if (g.kind === "log") return `<div class="obj log"><span class="mech-k">${esc(g.kicker || "Log")}</span><pre>${(g.lines || []).map(esc).join("\n")}</pre></div>`;
@@ -244,10 +251,17 @@ function mountPhone(el, d) {
     else { choice = null; i = Math.max(0, Math.min(d.steps.length - 1, i + go)); }
     draw(i === prev ? 0 : 1);
   });
+  el.querySelector(".flow-ctl").addEventListener("click", e => {
+    const b = e.target.closest("[data-go]"); if (!b) return;
+    const go = Number(b.dataset.go);
+    const prev = i;
+    if (go === 0) { i = 0; choice = null; }
+    else { choice = null; i = Math.max(0, Math.min(d.steps.length - 1, i + go)); }
+    draw(i === prev ? 0 : 1);
+  });
   draw(0);
 }
 
-// A sequence drawn as one object that changes, not a row of devices. The step's `stage` is the picture.
 function mountStage(el, d) {
   let i = 0;
   el.innerHTML = `<figure class="flow is-stage">
@@ -289,5 +303,6 @@ function mountStage(el, d) {
     i = go === 0 ? 0 : Math.max(0, Math.min(d.steps.length - 1, i + go));
     draw(i === prev ? 0 : i > prev || go === 0 ? 1 : -1);
   });
+  MAIL.wire(el);
   draw(0);
 }

@@ -17,7 +17,10 @@ import datetime as dt
 import http.client
 import json
 import os
-import sqlite3
+try:
+    import sqlite3
+except ImportError:  # some build images (e.g. a Cloudflare asdf Python) ship without the _sqlite3 extension
+    sqlite3 = None   # the cves.db cross-run cache is then skipped; a fresh fetch still builds the site
 import subprocess
 import sys
 import time
@@ -262,7 +265,7 @@ NVD_FIELDS = ("id", "published", "status", "description", "cvss", "severity", "v
 
 def cached_cves(days=None, ids=()):
     """CVEs saved by earlier runs, as parse_nvd() returns them: those published within `days`, plus any in `ids`."""
-    if not DB_PATH.exists():
+    if sqlite3 is None or not DB_PATH.exists():
         return {}
     cutoff = (dt.date.today() - dt.timedelta(days=days)).isoformat() if days else None
     out = {}
@@ -275,7 +278,7 @@ def cached_cves(days=None, ids=()):
 
 def cached_extras():
     """KEV and EPSS details saved by earlier runs, keyed by CVE ID: the fallback when CISA or FIRST is down."""
-    if not DB_PATH.exists():
+    if sqlite3 is None or not DB_PATH.exists():
         return {}
     out = {}
     for (data,) in open_db().execute("SELECT data FROM cves"):
@@ -370,8 +373,10 @@ def collect(days):
 
     rows = sorted(cves.values(), key=lambda c: (c["priority"], -(c["epss"] or 0), -(c["cvss"] or 0)))
 
-    db = open_db()
-    new_ids = save(db, rows)
+    if sqlite3 is not None:
+        new_ids = save(open_db(), rows)
+    else:  # no cross-run cache without sqlite3: nothing can be marked "new since last run"
+        new_ids = set()
     for cve in rows:
         cve["new"] = cve["id"] in new_ids
 

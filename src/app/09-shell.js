@@ -409,6 +409,10 @@ function patchSay(tip, hold = 8000) {
   clearTimeout(patchBubbleTimer);
   patchBubbleTimer = setTimeout(() => { if (!patchEl) return; bubble.hidden = true; fig.innerHTML = PATCH.svg("idle", { size: 66, id: "co" }); }, hold);
 }
+// Bridge so on-demand lab modules (static/js/labs/*.js) can let Patch react in character to a moment in a lab.
+// No-ops when Patch is hidden or not mounted, so a lab never depends on it. Kept brief; the lab's own result
+// panel carries the real teaching, Patch just adds colour.
+globalThis.PN_patch = (text, hold = 7000) => { try { patchSay({ text: String(text) }, hold); } catch (e) {} };
 // Every five seconds, pop only if you've been idle a while, there's a reason, and we're under the cap; then stay
 // quiet for a good while. A tap on Patch always answers (and never counts towards the cap or the hallway rule).
 function patchTick() {

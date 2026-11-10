@@ -27,7 +27,10 @@ import html
 import json
 import re
 import shutil
-import sqlite3
+try:
+    import sqlite3
+except ImportError:  # build images without the _sqlite3 extension: the cves.db history chart is skipped
+    sqlite3 = None
 from pathlib import Path
 
 import cve_watch
@@ -145,7 +148,7 @@ def trends(rows, cwe_names, db_path=cve_watch.DB_PATH, days=30):
     start = today - dt.timedelta(days=days - 1)
     per_day = {start + dt.timedelta(days=i): collections.Counter() for i in range(days)}
     history = []
-    if Path(db_path).exists():
+    if sqlite3 is not None and Path(db_path).exists():
         with sqlite3.connect(db_path) as db:
             history = [json.loads(d) for (d,) in db.execute("SELECT data FROM cves")]
     for c in history or rows:

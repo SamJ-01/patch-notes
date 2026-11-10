@@ -1,28 +1,66 @@
 /* LEARN */
-const LS = { track: "All", gq: "" };
+const LS = { track: "All", level: "All", gq: "" };
 // Tracks in learning order; any new track in lessons.json is added at the end rather than dropped.
 const LESSON_TRACKS = [...new Set(["Foundations", "Threats", "Defence", "Web attacks", ...DATA.lessons.map(l => l.track)])];
+
+// How the Learn, Practise and Exams catalogues are shown: illustrated cards (default) or a compact one-line list.
+// A per-viewer convenience kept in this browser only, not scored progress (so no FRESH()/cleanProgress change).
+const viewMode = () => { try { return localStorage.getItem("pn-view") === "compact" ? "compact" : "cards"; } catch (e) { return "cards"; } };
+const setViewMode = m => { try { m === "compact" ? localStorage.setItem("pn-view", "compact") : localStorage.removeItem("pn-view"); } catch (e) {} };
+const viewToggle = () => `<div class="view-toggle" role="group" aria-label="How to show the catalogue">
+  <button type="button" class="vt" data-view="cards" aria-pressed="${viewMode() === "cards"}">Cards</button>
+  <button type="button" class="vt" data-view="compact" aria-pressed="${viewMode() === "compact"}">Compact</button></div>`;
+// A compact catalogue row (shared look with the list redesign): title, a short meta, and a done tick.
+const listRow = (href, label, sub, done) => `<a class="learn-row" href="${href}"><b>${esc(label)}</b><span>${esc(sub || "")}</span>${done ? '<span class="done-mark">Done</span>' : "<span></span>"}</a>`;
+// Switching Cards/Compact re-renders the current index view; the choice sticks for the visit and across the site.
+document.addEventListener("click", e => {
+  const b = e.target.closest?.(".vt"); if (!b || b.getAttribute("aria-pressed") === "true") return;
+  setViewMode(b.dataset.view); const r = parseRoute(); if (r && r.draw) r.draw();
+});
+
 VIEWS.learn = () => {
   const tracks = ["All", ...LESSON_TRACKS.filter(t => DATA.lessons.some(l => l.track === t))];
+  const LEVEL_ORDER = ["Beginner", "Intermediate", "Advanced"];
+  const levels = ["All", ...LEVEL_ORDER.filter(lv => DATA.lessons.some(l => l.level === lv))];
   const doneCount = DATA.lessons.filter(l => P.done[l.id]).length;
-  const pathRow = p => {
-    const steps = pathSteps(p), done = steps.filter(s => s.done).length;
-    return `<a class="learn-row" href="#path-${esc(p.id)}"><b>${esc(p.title.replace(/^Path to /, ""))}</b><span>${done} of ${steps.length}</span>${P.paths[p.id] ? '<span class="done-mark">Done</span>' : "<span></span>"}</a>`;
-  };
-  main.innerHTML = `<div class="view learn-index">
-    <header class="lesson-open"><h1>Learn</h1><p class="muted">${doneCount} of ${DATA.lessons.length} done</p></header>
-    <div class="row" id="ltracks">${tracks.map(t => `<button class="chip" data-t="${esc(t)}" aria-pressed="${LS.track === t}">${esc(t)}</button>`).join("")}</div>
-    <section class="stack" style="gap:0"><h2 class="cat-h">Paths</h2><div class="learn-list">${DATA.paths.map(pathRow).join("")}</div></section>
-    <div id="lgrid"></div>
-    <p class="muted"><a href="#glossary">Glossary</a> · ${DATA.glossary.length + Object.keys(DATA.cwe).length} terms</p>
+  const compact = viewMode() === "compact";
+  const pathRow = p => { const steps = pathSteps(p), done = steps.filter(s => s.done).length;
+    return listRow("#path-" + esc(p.id), p.title.replace(/^Path to /, ""), `${done} of ${steps.length}`, P.paths[p.id]); };
+  main.innerHTML = `<div class="view">
+    <div class="view-head with-art">${headArt("learn")}<h1>The concepts behind the headlines</h1>
+      <p>Build your understanding through visual lessons, guided learning paths and practical examples.</p>
+    </div>
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <div class="row" id="ltracks" role="group" aria-label="Filter lessons by track">${tracks.map(t => `<button class="chip" data-t="${esc(t)}" aria-pressed="${LS.track === t}">${esc(t)}</button>`).join("")}</div>
+      <div class="row" style="gap:12px;align-items:center">${viewToggle()}<div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(doneCount / Math.max(1, DATA.lessons.length) * 100)}%"></i></span><span>${doneCount} of ${DATA.lessons.length} done</span></div></div>
+    </div>
+    ${levels.length > 2 ? `<div class="row level-filter" id="llevels" role="group" aria-label="Filter lessons by level"><span class="eyebrow level-lead">Level</span>${levels.map(lv => `<button class="chip chip-sm" data-l="${esc(lv)}" aria-pressed="${LS.level === lv}">${esc(lv)}</button>`).join("")}</div>` : ""}
+    <section class="stack" style="gap:12px"><div class="panel-title"><h2 class="eyebrow" style="font-size:0.8rem">Learning paths</h2><span class="muted" style="font-size:0.85rem">Finish a path for +${PATH_XP} XP and a badge</span></div>
+      ${(ps => compact ? `<div class="learn-list">${ps.map(pathRow).join("")}</div>` : `<div class="paths-grid">${ps.map(pathCard).join("")}</div>`)(DATA.paths.filter(p => !p.exam))}
+      <p class="muted paths-foot">Going for a certificate? <a href="#exams">Network+, Security+ and PenTest+ routes live in Exams →</a></p></section>
+    <div class="stack" id="lgrid" style="gap:30px"></div>
+    <section class="panel" style="grid-template-columns:minmax(0,1fr) auto;align-items:center">
+      <div class="stack" style="gap:6px"><h2>Glossary</h2><p class="muted">${DATA.glossary.length + Object.keys(DATA.cwe).length} terms in plain English. Dotted words anywhere on the site open them.</p></div>
+      <a class="btn brand" href="#glossary">Open glossary</a>
+    </section>
   </div>`;
-  const row = l => `<a class="learn-row" href="#lesson-${esc(l.id)}"><b>${esc(l.title)}</b><span>${l.minutes} min · ${esc(l.level)}</span>${P.done[l.id] ? '<span class="done-mark">Done</span>' : "<span></span>"}</a>`;
+  const card = l => `
+    <a class="lcard art-card" href="#lesson-${esc(l.id)}">${cardArt(l.id)}${P.done[l.id] ? '<span class="done">DONE</span>' : ""}
+      <h3>${esc(l.title)}</h3><p>${esc(l.hook)}</p>
+      <span class="lmeta"><span>${l.minutes} min</span><span>${esc(l.level)}</span></span></a>`;
+  const row = l => listRow("#lesson-" + esc(l.id), l.title, `${l.minutes} min · ${esc(l.level)}`, P.done[l.id]);
+  const lvOK = l => LS.level === "All" || l.level === LS.level;
   const drawGrid = () => {
-    const shown = LESSON_TRACKS.filter(t => (LS.track === "All" || LS.track === t) && DATA.lessons.some(l => l.track === t));
-    $("lgrid").innerHTML = shown.map(t => `<section class="stack" style="gap:0">${LS.track === "All" ? `<h2 class="cat-h">${esc(t)}</h2>` : ""}<div class="learn-list">${DATA.lessons.filter(l => l.track === t).map(row).join("")}</div></section>`).join("");
+    // Cards keep the illustrated catalogue; compact is a dense one-line list per track. Filtered by track and level.
+    const shown = LESSON_TRACKS.filter(t => (LS.track === "All" || LS.track === t) && DATA.lessons.some(l => l.track === t && lvOK(l)));
+    $("lgrid").innerHTML = shown.length
+      ? shown.map(t => { const items = DATA.lessons.filter(l => l.track === t && lvOK(l));
+          return `<section class="stack" style="gap:${compact ? 0 : 12}px">${LS.track === "All" ? `<h2 class="cat-h">${esc(t)}</h2>` : ""}${compact ? `<div class="learn-list">${items.map(row).join("")}</div>` : `<div class="lessons">${items.map(card).join("")}</div>`}</section>`; }).join("")
+      : `<p class="muted" style="padding:6px 0">No ${LS.level === "All" ? "" : esc(LS.level.toLowerCase()) + " "}lessons in this track yet. Try another level or track.</p>`;
   };
-  $("ltracks").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; LS.track = b.dataset.t;
-    $("ltracks").querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b)); drawGrid(); });
+  const wire = (id, key) => { const el = $(id); if (!el) return; el.addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; LS[key] = b.dataset[key === "track" ? "t" : "l"];
+    el.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b)); drawGrid(); }); };
+  wire("ltracks", "track"); wire("llevels", "level");
   drawGrid();
 };
 function pathCard(p) {
@@ -62,20 +100,22 @@ const CERT_TOOLS = { "subnet-calc": "Subnet calculator", "headers-check": "Email
 const certObjectives = c => c.domains.flatMap(d => d.objectives.map(o => ({ ...o, domain: d })));
 // Exam prep has its own tab, so certification material doesn't crowd the lessons.
 VIEWS.exams = () => {
-  main.innerHTML = `<div class="view learn-index">
-    <header class="lesson-open"><h1>Exams</h1></header>
-    <div class="learn-list">${DATA.certs.map(c => {
-      const objs = certObjectives(c), practised = objs.filter(o => { const p = objectiveProgress(o); return p.total && p.done === p.total; }).length;
-      return `<a class="learn-row" href="#cert-${esc(c.id)}"><b>${esc(c.name)}</b><span>${practised} of ${objs.length}</span><span></span></a>`;
-    }).join("")}</div>
-    <p class="muted">The questions are original, not real exam questions.</p>
+  const compact = viewMode() === "compact";
+  const certRow = c => { const objs = certObjectives(c), practised = objs.filter(o => { const p = objectiveProgress(o); return p.total && p.done === p.total; }).length;
+    return listRow("#cert-" + esc(c.id), c.name, `${practised} of ${objs.length} practised`, false); };
+  main.innerHTML = `<div class="view">
+    <div class="view-head with-art">${headArt("exams")}<h1>Exam prep</h1>
+      <p>CompTIA objectives mapped to what you can practise here, with practice questions, mock exams and an honest "Am I ready?" check.</p></div>
+    <div class="row" style="justify-content:flex-end">${viewToggle()}</div>
+    ${compact ? `<div class="learn-list">${DATA.certs.map(certRow).join("")}</div>` : `<div class="paths">${DATA.certs.map(certCard).join("")}</div>`}
+    <p class="muted cert-note">The questions are original, not real exam questions. It's preparation, not a guarantee of passing.</p>
   </div>`;
 };
 function certCard(c) {
   const objs = certObjectives(c), practised = objs.filter(o => { const p = objectiveProgress(o); return p.total && p.done === p.total; }).length;
   const unit = objs.length === c.domains.length ? "domains" : "objectives";  // Security+ and PenTest+ are mapped by domain
   return `<a class="lcard" href="#cert-${esc(c.id)}"><span class="eyebrow">${esc(c.exam)} · ${objs.length} ${unit}</span><h3>${esc(c.name)}</h3>
-    <p>${c.questions.length} practice questions, timed mock exams and where to study the rest</p>
+    <p>${c.questions.length} practice questions, timed mock exams, a step-by-step route and where to study the rest</p>
     <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(practised / objs.length * 100)}%"></i></span><span>${practised} of ${objs.length} practised</span></div></a>`;
 }
 // Practice question results: { [questionId]: { r: times right, w: times wrong, last: 1|0 } }
@@ -144,22 +184,35 @@ function readinessPanel(c, progress) {
 }
 function certView(id) {
   const c = DATA.certs.find(x => x.id === id); if (!c) return VIEWS.exams();
-  const objs = certObjectives(c);
+  const objs = certObjectives(c), cov = k => objs.filter(o => o.coverage === k).length;
   const progress = new Map(objs.map(o => [o.id, objectiveProgress(o)]));
+  const practised = objs.filter(o => { const p = progress.get(o.id); return p.total && p.done === p.total; }).length;
   const qCount = oid => c.questions.filter(q => q.objective === oid).length;
+  const objMastery = oid => { const qs = c.questions.filter(q => q.objective === oid), seen = qs.filter(q => P.exam[q.id]), right = seen.filter(q => P.exam[q.id].last === 1).length;
+    return { answered: seen.length, right, total: qs.length, level: !seen.length ? "new" : right < seen.length ? "weak" : seen.length < qs.length ? "started" : "strong" }; };
   const reviewed = new Date(c.reviewed + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-  main.innerHTML = `<div class="view learn-index"><article class="article lesson">
-    <a class="link-btn" href="#exams">← Exams</a>
-    <header class="lesson-open"><p class="eyebrow">${esc(c.exam)}</p><h1>${esc(c.name)}</h1></header>
-    ${c.domains.map(d => `<section class="stack" style="gap:0"><h2 class="cat-h">${esc(d.id)} ${esc(d.name)}</h2><div class="learn-list">${d.objectives.map(o => {
-      const p = progress.get(o.id);
-      const mark = !p.total ? "Not covered here" : p.done === p.total ? "Practised" : `${p.done} of ${p.total}`;
-      const acts = p.acts.map(a => `<a href="${a.href}">${a.done ? "✓ " : ""}${esc(a.label)}</a>`).join(" · ");
-      return `<div class="learn-row"><span><b>${esc(o.id)} ${esc(o.title)}</b>${acts ? `<span class="muted" style="display:block;font:500 0.82rem var(--font-body);white-space:normal">${acts}</span>` : ""}</span><span class="${p.total && p.done === p.total ? "done-mark" : ""}">${mark}</span>${qCount(o.id) ? `<button class="link-btn" type="button" data-practice-obj="${esc(o.id)}">Questions</button>` : "<span></span>"}</div>`;
-    }).join("")}</div></section>`).join("")}
-    ${c.questions.length ? `<p><button class="btn ghost" type="button" data-practice="mock">Mock exam</button></p>` : ""}
-    <p class="muted">Objectives last checked ${esc(reviewed)} against <a href="${esc(c.source.url)}" target="_blank" rel="noopener">${esc(c.source.label)} ↗</a>.${c.study ? ` Elsewhere: <a href="${esc(c.study.url)}" target="_blank" rel="noopener">${esc(c.study.label)} ↗</a>.` : ""}</p>
+  main.innerHTML = `<div class="view"><article class="article lesson">
+    <a class="link-btn" href="#exams">← Exam prep</a>
+    <div class="stack" style="gap:8px"><div class="eyebrow">Exam prep · ${esc(c.exam)}</div><h1>${esc(c.name)}</h1>
+      <p class="hook">Every exam objective, mapped to what you can practise here, with honest gaps.</p></div>
+    <p class="muted cert-note">${esc(c.note)} Objectives last checked ${esc(reviewed)} against <a href="${esc(c.source.url)}" target="_blank" rel="noopener">${esc(c.source.label)} ↗</a>.</p>
+    ${(r => r ? `<a class="btn brand" href="#path-${esc(r.id)}" style="justify-self:start">Follow the ${esc(r.title.replace(/^Path to /, ""))} route: ${r.steps.length} stops →</a>` : "")(DATA.paths.find(p => p.exam === c.id))}
+    <section class="panel wide"><div class="panel-title"><h2>Your progress</h2><span class="eyebrow">${practised} of ${objs.length} objectives practised</span></div>
+      <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(practised / objs.length * 100)}%"></i></span></div>
+      <p class="muted" style="margin:0">Coverage on Patch Notes: ${cov("strong")} with hands-on practice · ${cov("partial")} partly covered · ${cov("none")} not covered yet.</p>
+    </section>
+    <section class="panel wide ready" id="cert-ready" aria-labelledby="ready-h"><div class="panel-title"><h2 id="ready-h">Am I ready?</h2></div><p class="muted" style="margin:0">Working it out…</p></section>
+    ${c.questions.length ? `<section class="panel wide"><div class="panel-title"><h2>Practice questions</h2><span class="eyebrow">${c.questions.length} original questions · not real exam questions</span></div>
+      <p class="muted" style="margin:0">Every answer explains why it's right or wrong. Your results mark each objective below as started, to revise, or all correct.</p>
+      <div class="row"><button class="btn brand" type="button" data-practice="weak">Revise weak spots</button><button class="btn ghost" type="button" data-practice="mock">Mock exam: 20 questions, 20 minutes</button></div></section>` : ""}
+    ${c.domains.map(d => `<section class="panel wide cert-domain"><div class="panel-title"><h2>${esc(d.id)} ${esc(d.name)}</h2><span class="eyebrow">${d.weight}% of the exam</span></div>
+      <ul class="cert-list">${d.objectives.map(o => { const p = progress.get(o.id), [label, tone] = COVERAGE[o.coverage];
+        return `<li class="cert-obj"><div class="cert-top"><b class="mono">${esc(o.id)}</b><span class="cert-title">${esc(o.title)}</span><span class="cert-badge ${tone}">${label}</span>${p.total ? `<span class="cert-done${p.done === p.total ? " ok" : ""}">${p.done}/${p.total} done</span>` : ""}${qCount(o.id) ? (() => { const m = objMastery(o.id), [ml, mt] = MASTERY_LABEL[m.level]; return `<span class="cert-badge ${mt}" title="${m.right} of ${m.total} questions right last time">Questions: ${ml}${m.answered ? ` ${m.right}/${m.total}` : ""}</span><button class="link-btn" type="button" data-practice-obj="${esc(o.id)}">Practise ${qCount(o.id)} ›</button>`; })() : ""}</div>
+          ${p.acts.length ? `<div class="row cert-acts">${p.acts.map(a => `<a class="topic" href="${a.href}">${a.done ? "✓ " : ""}${esc(a.label)}</a>`).join("")}</div>` : ""}
+          ${o.gap ? `<p class="muted cert-gap">${esc(o.gap)}</p>` : ""}</li>`; }).join("")}</ul></section>`).join("")}
+    ${c.study ? `<p class="muted cert-note">For the parts not covered here, <a href="${esc(c.study.url)}" target="_blank" rel="noopener">${esc(c.study.label)} ↗</a> follows the same objective numbers.</p>` : ""}
   </article></div>`;
+  readinessPanel(c, progress);
   main.querySelector("article").addEventListener("click", e => {
     const b = e.target.closest("[data-practice], [data-practice-obj]"); if (!b) return;
     const oid = b.dataset.practiceObj;

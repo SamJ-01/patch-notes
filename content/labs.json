@@ -2247,7 +2247,7 @@
      {
       "name": "Hopper's edge",
       "ip": "203.0.113.1",
-      "rtt": 44.0
+      "rtt": 44
      },
      {
       "name": "Hopper",
@@ -8082,7 +8082,7 @@
      },
      {
       "label": "B",
-      "value": 10.0,
+      "value": 10,
       "tone": "muted"
      },
      {
@@ -9154,6 +9154,345 @@
      }
     ]
    }
+  }
+ },
+ {
+  "id": "port-corridor",
+  "title": "The Port Corridor",
+  "kind": "corridor",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 8,
+  "lesson": "networking",
+  "card": "Ports as doors: open only what the job needs",
+  "skill": "Walk a corridor of port \"doors\" and open only the ones a host needs — ports as doors, so the list sticks.",
+  "intro": "Every open port is an unlocked door into a machine. Read each door’s service, open only the ones the host’s job needs, and lock the rest. The doors you leave open are your attack surface.",
+  "simplification": "A real host has 65,535 possible ports and a firewall rules on each; here the common ones are doors and your choices are judged against good practice, not a live scan.",
+  "doors": [
+   {
+    "port": 22,
+    "name": "SSH",
+    "icon": "terminal",
+    "transport": "TCP",
+    "secure": true,
+    "note": "Encrypted admin login — the safe way in for administrators."
+   },
+   {
+    "port": 23,
+    "name": "Telnet",
+    "icon": "terminal",
+    "transport": "TCP",
+    "secure": false,
+    "note": "Admin login in plain text. Never expose it; use SSH (22) instead."
+   },
+   {
+    "port": 25,
+    "name": "SMTP",
+    "icon": "mail",
+    "transport": "TCP",
+    "secure": false,
+    "note": "Sends email between mail servers. Only a mail server needs it."
+   },
+   {
+    "port": 53,
+    "name": "DNS",
+    "icon": "globe",
+    "transport": "UDP",
+    "secure": false,
+    "note": "Resolves names to IP addresses. Only a DNS server needs it open."
+   },
+   {
+    "port": 80,
+    "name": "HTTP",
+    "icon": "www",
+    "transport": "TCP",
+    "secure": false,
+    "note": "Web traffic in the clear — usually redirects to HTTPS."
+   },
+   {
+    "port": 110,
+    "name": "POP3",
+    "icon": "mail",
+    "transport": "TCP",
+    "secure": false,
+    "note": "Fetches email to one device (older). A mail server concern."
+   },
+   {
+    "port": 443,
+    "name": "HTTPS",
+    "icon": "lock",
+    "transport": "TCP",
+    "secure": true,
+    "note": "Encrypted web traffic — what a public website should answer on."
+   },
+   {
+    "port": 445,
+    "name": "SMB",
+    "icon": "folder",
+    "transport": "TCP",
+    "secure": false,
+    "note": "Windows file sharing. Fine inside a LAN, never exposed to the internet — this is how WannaCry spread."
+   },
+   {
+    "port": 3389,
+    "name": "RDP",
+    "icon": "screen",
+    "transport": "TCP",
+    "secure": false,
+    "note": "Remote desktop. A top ransomware entry point when exposed; keep it off the public internet."
+   }
+  ],
+  "hosts": [
+   {
+    "id": "web",
+    "name": "Public web server",
+    "brief": "This box serves your public website, and administrators connect in to manage it. Open only the doors it needs.",
+    "open": [
+     22,
+     80,
+     443
+    ],
+    "note": "A web server answers HTTP and HTTPS, and admins come in over SSH. Everything else is needless attack surface."
+   },
+   {
+    "id": "files",
+    "name": "Internal file server",
+    "brief": "This box shares files for staff on the internal network only. It is not on the public internet. Open what the job needs.",
+    "open": [
+     22,
+     445
+    ],
+    "note": "On the internal LAN, SMB (445) is how staff reach shared files and SSH (22) is for admins. That same SMB door would be a disaster facing the internet."
+   },
+   {
+    "id": "dns",
+    "name": "DNS resolver",
+    "brief": "This box answers name-lookup queries for the office. Open only the doors it needs.",
+    "open": [
+     22,
+     53
+    ],
+    "note": "A DNS resolver answers on 53 and is managed over SSH. Nothing else belongs open."
+   }
+  ]
+ },
+ {
+  "id": "firewall-packet",
+  "title": "You Are the Packet",
+  "kind": "firewall",
+  "category": "Networking",
+  "track": "Networking",
+  "minutes": 8,
+  "lesson": "networking",
+  "card": "Be a packet and meet a firewall’s rules",
+  "skill": "Embody a packet hitting a firewall and watch its rules decide allow or deny, top to bottom.",
+  "intro": "A firewall checks every packet against its rules from the top down, and the first rule that matches decides. Become the packet, travel to the firewall, and see which rule lets you in or shuts you out.",
+  "simplification": "Real firewalls track connection state and match on more fields; here each packet is judged on its own against a simple ordered allow/deny list (a stateless ACL), and addresses use documentation ranges.",
+  "server": {
+   "name": "Web server",
+   "ip": "10.0.0.5"
+  },
+  "rules": [
+   {
+    "action": "allow",
+    "proto": "tcp",
+    "src": "any",
+    "dst": "10.0.0.5",
+    "port": 443,
+    "note": "Let anyone reach the website over HTTPS."
+   },
+   {
+    "action": "allow",
+    "proto": "tcp",
+    "src": "any",
+    "dst": "10.0.0.5",
+    "port": 80,
+    "note": "Let anyone reach the website over HTTP."
+   },
+   {
+    "action": "allow",
+    "proto": "tcp",
+    "src": "10.0.0.0/24",
+    "dst": "10.0.0.5",
+    "port": 22,
+    "note": "SSH for admins, only from the internal network."
+   },
+   {
+    "action": "deny",
+    "proto": "any",
+    "src": "any",
+    "dst": "any",
+    "port": "any",
+    "note": "Default deny: block everything a rule above did not allow."
+   }
+  ],
+  "packets": [
+   {
+    "label": "A visitor loading the website",
+    "src": "203.0.113.9",
+    "dst": "10.0.0.5",
+    "port": 443,
+    "proto": "tcp",
+    "expected": "allow"
+   },
+   {
+    "label": "An admin on the office network opening SSH",
+    "src": "10.0.0.40",
+    "dst": "10.0.0.5",
+    "port": 22,
+    "proto": "tcp",
+    "expected": "allow"
+   },
+   {
+    "label": "An attacker on the internet trying SSH",
+    "src": "198.51.100.7",
+    "dst": "10.0.0.5",
+    "port": 22,
+    "proto": "tcp",
+    "expected": "deny",
+    "threat": true
+   },
+   {
+    "label": "A Telnet probe from the internet",
+    "src": "198.51.100.7",
+    "dst": "10.0.0.5",
+    "port": 23,
+    "proto": "tcp",
+    "expected": "deny",
+    "threat": true
+   },
+   {
+    "label": "Someone loading the site over plain HTTP",
+    "src": "203.0.113.50",
+    "dst": "10.0.0.5",
+    "port": 80,
+    "proto": "tcp",
+    "expected": "allow"
+   }
+  ]
+ },
+ {
+  "id": "vishing-call",
+  "title": "The Call",
+  "kind": "vishing",
+  "category": "Threats",
+  "track": "Security",
+  "minutes": 6,
+  "lesson": "phishing",
+  "card": "Take a scam IT support call and spot the tricks",
+  "skill": "Handle a vishing call: recognise urgency, authority and secrecy, and refuse to share passwords, one-time codes or remote access.",
+  "intro": "The phone rings. The screen says IT Service Desk. The voice is calm, helpful and in a hurry. Vishing is phishing over a call: the caller wants a password, a one-time code or control of your machine. Take the call and see where it tries to catch you.",
+  "simplification": "A scripted role-play with fixed choices, not a real call. Caller name and number are invented (Ofcom's reserved drama range) and caller ID can be faked in real life. The lesson is the tells and the safe reply, not these exact words.",
+  "call": {
+   "from": "IT Service Desk",
+   "number": "+44 20 7946 0117",
+   "note": "You did not ask for help today. The name and number on screen look familiar, but caller ID can be faked to show anything."
+  },
+  "beats": [
+   {
+    "id": "urgency",
+    "say": "Hi, it's Jordan from the IT Service Desk. We've had a security alert on your account overnight and it will lock in a few minutes. I just need to verify a couple of things to stop that. Is now okay?",
+    "flag": "Unsolicited call with urgency and a deadline",
+    "ask": "An out-of-the-blue call pushing you to act fast. What do you do?",
+    "options": [
+     {
+      "text": "Take their name, say you'll ring the service desk straight back on the number from the intranet.",
+      "safe": true,
+      "feedback": "Right. Pressure and a countdown are the tool. Calling back on a number you look up yourself defeats a spoofed caller ID."
+     },
+     {
+      "text": "Say yes and co-operate; they're from IT and it sounds urgent.",
+      "safe": false,
+      "feedback": "The urgency is the trick, not a real deadline.",
+      "risk": "It lets the caller set the pace and lead you through the next steps."
+     }
+    ],
+    "voice": "audio/vishing/01-urgency.mp3"
+   },
+   {
+    "id": "password",
+    "say": "No need, I can sort it right now and save you the wait. First, read me your password so I can confirm it matches what we hold on the account.",
+    "flag": "Asking for your password",
+    "ask": "They want your password to “confirm” it. Do you give it?",
+    "options": [
+     {
+      "text": "Refuse. IT never needs your password and would never ask for it.",
+      "safe": true,
+      "feedback": "Correct. No legitimate IT desk ever needs your password; they can reset it without knowing it."
+     },
+     {
+      "text": "Read out your password so they can check it.",
+      "safe": false,
+      "feedback": "That is exactly what the caller is after.",
+      "risk": "Your password, straight to the attacker, who can now sign in as you."
+     }
+    ],
+    "voice": "audio/vishing/02-password.mp3"
+   },
+   {
+    "id": "otp",
+    "say": "That's fine, we'll do it by text instead. I'm sending a 6 digit code to your phone now to verify the reset. Read the digits back to me as soon as they arrive.",
+    "flag": "Asking you to read out a one-time (MFA) code",
+    "ask": "A one-time code lands on your phone. They ask you to read it out. Do you?",
+    "options": [
+     {
+      "text": "Refuse. A one-time code is never read out to anyone, on any call.",
+      "safe": true,
+      "feedback": "Right. If they triggered the code, reading it back approves the attacker's login, not yours. Codes are for you to type, never to share."
+     },
+     {
+      "text": "Read the six digits back; it's only a short code.",
+      "safe": false,
+      "feedback": "The code is the second factor, and you just handed it over.",
+      "risk": "It approves the attacker's sign-in or their password reset on your account."
+     }
+    ],
+    "voice": "audio/vishing/03-otp.mp3"
+   },
+   {
+    "id": "remote",
+    "say": "Okay, to be safe I'll just connect to your PC and check it myself. Open your browser, go to the support site I'll read out, and install the little helper tool so I can take a look.",
+    "flag": "Asking you to install remote-access software",
+    "ask": "They want you to install a tool so they can control your machine. What now?",
+    "options": [
+     {
+      "text": "Refuse to install anything or grant remote access to an unexpected caller.",
+      "safe": true,
+      "feedback": "Correct. Remote-access tools hand over your whole screen and session. Never install one because a cold caller asked."
+     },
+     {
+      "text": "Install the tool so they can fix it quickly.",
+      "safe": false,
+      "feedback": "That gives a stranger the keys to your machine.",
+      "risk": "Full remote control of your PC, your files and any sessions you are signed in to."
+     }
+    ],
+    "voice": "audio/vishing/04-remote.mp3"
+   },
+   {
+    "id": "secrecy",
+    "say": "Last thing, this is a sensitive security matter so please keep it between us, don't mention it to your manager or the team. We're nearly done.",
+    "flag": "Pressure for secrecy; told not to tell anyone",
+    "ask": "They ask you to keep the call secret. How do you finish?",
+    "options": [
+     {
+      "text": "Hang up and report the call to IT on a channel you trust.",
+      "safe": true,
+      "feedback": "Right. Secrecy stops you checking with someone who would spot the scam. Reporting it warns colleagues the same caller may try next."
+     },
+     {
+      "text": "Agree to keep it quiet and carry on.",
+      "safe": false,
+      "feedback": "Secrecy is a manipulation, not a security measure.",
+      "risk": "It isolates you from the colleagues who would help you see the call for what it is."
+     }
+    ],
+    "voice": "audio/vishing/05-secrecy.mp3"
+   }
+  ],
+  "debrief": {
+   "title": "The red flags on this call",
+   "safeLine": "On any call like this: slow down, hang up, and call the organisation back on a number you look up yourself. A real service desk never needs your password, never needs a one-time code, and will not mind you ringing back to check."
   }
  }
 ]

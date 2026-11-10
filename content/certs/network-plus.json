@@ -97,6 +97,10 @@
       {
        "type": "lab",
        "id": "telnet-ssh"
+      },
+      {
+       "type": "lab",
+       "id": "port-corridor"
       }
      ],
      "gap": "Unicast, multicast, anycast and broadcast aren't covered yet."
@@ -488,6 +492,10 @@
       {
        "type": "lab",
        "id": "factory-scan"
+      },
+      {
+       "type": "lab",
+       "id": "firewall-packet"
       }
      ],
      "gap": "Extended ACLs are hands-on (the inter-VLAN routing lab), and a factory scan shows why OT needs its own zone; port security, NAC and screened subnets aren't covered yet."

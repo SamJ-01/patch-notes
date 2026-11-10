@@ -111,15 +111,16 @@ export const MAIL = (() => {
     const paras = (Array.isArray(m.body) ? m.body : String(m.body || "").split(/\n\s*\n/)).filter(Boolean);
     const links = (m.links || []).map(linkFacts);
     const flags = [
-      outside(domain, opts.org) ? `<span class="em-flag ext">External sender</span>` : "",
+      outside(domain, opts.org) ? `<span class="em-flag ext">${opts.client ? "This message was sent from outside your organisation." : "External sender"}</span>` : "",
       m.folder && m.folder !== "Inbox" ? `<span class="em-flag">In ${esc(m.folder)}</span>` : "",
       replyTo ? `<span class="em-flag warn">Replies go to ${showAddr(replyTo.address, replyTo.domain)}${pin(pins, "replyTo")}</span>` : "",
     ].join("");
     const tabs = h ? [["message", "Message"], ["details", "Details"], ["original", "Original"]].filter(([k]) => !opts.views || opts.views.includes(k)) : [];
     const tab = tabs.some(([k]) => k === opts.tab) ? opts.tab : "message";
-    return `<article class="em" id="${esc(id)}" data-em>
+    const article = `<article class="em" id="${esc(id)}" data-em>
       ${tabs.length ? `<div class="em-tabs" role="group" aria-label="View">${tabs.map(([k, l]) => `<button type="button" class="em-tab" data-em-tab="${k}" aria-pressed="${k === tab}">${l}${k === "details" ? pin(pins, "checks") + pin(pins, "route") : ""}</button>`).join("")}</div>` : ""}
       <div class="em-pane" data-em-pane="message"${tab === "message" ? "" : " hidden"}>
+        ${opts.client ? `<div class="em-tools"><span>Reply</span><span>Forward</span></div>` : ""}
         <header class="em-top"><span class="em-av" style="--em-h:${hue(fromAddr)}" aria-hidden="true">${esc(initials(fromName || fromAddr))}</span>
           <div class="em-who"><span class="em-name">${esc(fromName || fromAddr)}${pin(pins, "from")}</span> <span class="em-addr">&lt;${showAddr(fromAddr, domain)}&gt;</span>${to ? `<span class="em-to">to ${esc(to)}</span>` : ""}</div>
           ${date ? `<span class="em-date">${esc(date)}</span>` : ""}</header>
@@ -128,13 +129,32 @@ export const MAIL = (() => {
         <div class="em-body">${paras.map(p => `<p>${esc(p)}</p>`).join("")}${pin(pins, "body")}</div>
         ${links.length ? `<div class="em-links">${links.map((l, i) => `<div class="em-link"><button type="button" class="${l.shown ? "em-url" : "em-cta"}" data-em-link="${i}" data-em-href="${esc(l.href)}" aria-describedby="${esc(id)}-go-${i}">${esc(l.text)}</button>${i === 0 ? pin(pins, "link") : ""}
             <p class="em-go${l.mismatch ? " bad" : ""}" id="${esc(id)}-go-${i}"${opts.reveal ? "" : " hidden"}>${opts.reveal ? goes(l) : ""}</p></div>`).join("")}
-          ${opts.reveal ? "" : `<p class="em-aside">Links here never open. Tap one to see where it really goes.</p>`}</div>` : ""}
+          ${opts.client || opts.reveal ? "" : `<p class="em-aside">Links here never open. Tap one to see where it really goes.</p>`}</div>` : ""}
         ${(m.attachments || []).length ? `<ul class="em-files">${m.attachments.map(a => `<li><span aria-hidden="true">📎</span> ${esc(a.name)}${a.size ? ` <span class="em-aside">${esc(a.size)}</span>` : ""}</li>`).join("")}${pin(pins, "attachment")}</ul>` : ""}
       </div>
       ${tabs.some(([k]) => k === "details") ? `<div class="em-pane" data-em-pane="details"${tab === "details" ? "" : " hidden"}>${details(h, opts.org)}</div>` : ""}
       ${tabs.some(([k]) => k === "original") ? `<div class="em-pane" data-em-pane="original"${tab === "original" ? "" : " hidden"}><pre class="em-raw" tabindex="0" aria-label="Raw headers">${esc(m.headers)}</pre></div>` : ""}
       ${pins.length ? `<ol class="em-pins">${pins.map(p => `<li>${esc(p.text)}</li>`).join("")}</ol>` : ""}
     </article>`;
+    if (!opts.client) return article;
+    const when = date || "09:14";
+    const preview = (paras[0] || "").replace(/\s+/g, " ").slice(0, 64);
+    const row = (on, name, sub, snip, time) => `<div class="em-row${on ? " on" : ""}"><i${on ? "" : ' class="read"'}></i><b>${esc(name)}</b><span><strong>${esc(sub)}</strong>${snip ? ` — ${esc(snip)}` : ""}</span><time>${esc(time)}</time></div>`;
+    return `<div class="em-app">
+      <div class="em-bar"><span class="em-win" aria-hidden="true"></span><b>Mail</b><span class="em-search">Search</span></div>
+      <div class="em-split">
+        <nav class="em-folders" aria-label="Folders"><b class="on">Inbox <span>1</span></b><span>Junk Email</span><span>Drafts</span><span>Sent Items</span><span>Deleted Items</span></nav>
+        <div class="em-col">
+          <div class="em-list" aria-hidden="true">
+            ${row(true, fromName || fromAddr, subject, preview, when)}
+            ${row(false, "Facilities", "Door access from tomorrow", "The side entrance will be card-only.", "Yesterday")}
+            ${row(false, "People team", "Benefits window", "Choose your cover by Friday.", "Mon")}
+          </div>
+          ${article}
+        </div>
+      </div>
+      <div class="em-status" aria-live="polite"></div>
+    </div>`;
   }
   const goes = l => `<span class="em-k">Really goes to</span> <span class="mono">${showUrl(l.href, l.real)}</span>${l.mismatch ? ` <span class="em-flag warn">not the address it shows</span>` : !/^https:/i.test(l.href) ? ` <span class="em-flag warn">not encrypted (http)</span>` : ""}`;
 
@@ -152,6 +172,27 @@ export const MAIL = (() => {
         box.innerHTML = goes(l); box.hidden = false; box.classList.toggle("bad", l.mismatch);
         onLink(l);
       }
+    });
+    const status = k => k?.closest(".em-app")?.querySelector(".em-status");
+    root.addEventListener("pointerover", e => {
+      const k = e.target.closest("[data-em-link]"), bar = status(k);
+      if (bar && k) bar.textContent = k.dataset.emHref;
+    });
+    root.addEventListener("pointerout", e => {
+      const k = e.target.closest("[data-em-link]");
+      if (!k || k.contains(e.relatedTarget)) return;
+      const bar = status(k);
+      if (bar && document.activeElement !== k) bar.textContent = "";
+    });
+    root.addEventListener("focusin", e => {
+      const k = e.target.closest("[data-em-link]"), bar = status(k);
+      if (bar && k) bar.textContent = k.dataset.emHref;
+    });
+    root.addEventListener("focusout", e => {
+      const k = e.target.closest("[data-em-link]");
+      if (!k) return;
+      const bar = status(k);
+      if (bar) bar.textContent = "";
     });
   }
   // "Show me where": open an email's Original view and mark every header line containing `needle`.

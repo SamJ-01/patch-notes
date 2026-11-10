@@ -93,17 +93,27 @@ addEventListener("resize", () => { clearTimeout(routeTimer); routeTimer = setTim
 // Someone who hasn't done anything yet gets a calmer home page: four ways in, their route, a beginner question,
 // and the news as one line. Once they've earned any XP or finished anything, the full page returns.
 const isNewcomer = () => !P.xp && !count(P.done) && !count(P.labs) && !count(P.missions) && !count(P.agency);
-function startCards(news, kev) {
-  const basics = pathSteps(DATA.paths.find(p => p.id === "awareness") || DATA.paths[0])[0];
-  const shift = (DATA.agency || [])[0];
-  const card = (href, pic, eyebrow, title, text, cta, trail = "") => `<a class="lcard art-card start-card" href="${href}"${trail ? ` data-trail="${esc(trail)}"` : ""}>${pic}
-    <span class="eyebrow">${eyebrow}</span><h3>${title}</h3><p>${text}</p><span class="start-cta">${cta} →</span></a>`;
-  return `<section class="start" aria-labelledby="start-h"><h2 id="start-h">Where do you want to start?</h2><p class="muted start-note">No account needed. Your progress stays in this browser; open <a href="#progress">You</a> to back it up or move it to another device.</p><div class="start-grid">
-    ${card(esc(basics?.href || "#learn"), cardArt("cia-triad"), "New to security", "Learn the basics", "Short lessons with pictures, then a game. No experience needed.", "Start the basics", basics ? "awareness" : "")}
-    ${card("#exams", cardPhoto("img/heads/exams.webp", 494, 247), "Studying for an exam", "Network+, Security+ or PenTest+", "See what to practise for each objective, then take a mock exam.", "Open exam prep")}
-    ${shift?.clientImage ? card("#agency", cardPhoto(shift.clientImage.small || shift.clientImage.src, 800, Math.round(800 * shift.clientImage.height / shift.clientImage.width)), "PATCH//AGENCY", "Work a SOC shift", "Clock in at a security operations centre. Watch your shift lead work it first, then take the desk.", "Clock in") : ""}
-    ${card("#news", cardArt("nation-state"), "Just the news", "This week, explained", `${news.length} stories in plain English, and ${kev.length} ${kev.length === 1 ? "bug" : "bugs"} being exploited right now.`, "Read the news")}
-  </div></section>`;
+// The journey: pick a role (or start with the basics) and follow its ladder. Certs live under Exams, not here, so the
+// list answers one question — "who do you want to become?" — instead of mixing roles, exams and levels.
+const ROLES = [
+  { id: "awareness", eyebrow: "New here", title: "Start with the basics", text: "No experience needed. Spot scams, protect your accounts and build the base.", cta: "Start the basics", img: "cia-triad" },
+  { id: "soc", eyebrow: "Defender", title: "SOC Analyst", text: "The most common first job: watch alerts, investigate, respond. The Agency shift is your live taste.", cta: "Start the path", img: "soc" },
+  { id: "pentest", eyebrow: "Breaker", title: "Web Pentester", text: "How web apps break, and how testers score what they find.", cta: "Start the path", img: "sqli-log" },
+  { id: "cloud", eyebrow: "Defender", title: "Cloud Defender", text: "Identity, cloud settings and the software supply chain.", cta: "Start the path", img: "cloud" },
+];
+function roleCards() {
+  const card = r => {
+    const p = DATA.paths.find(x => x.id === r.id);
+    if (!p) return "";
+    const steps = (p.steps || []).length, done = P.paths[r.id];
+    return `<a class="lcard art-card start-card role-card" href="#path-${esc(r.id)}" data-trail="${esc(r.id)}">${cardArt(r.img)}
+      ${done ? '<span class="done">DONE</span>' : ""}<span class="eyebrow">${esc(r.eyebrow)}</span><h3>${esc(r.title)}</h3><p>${esc(r.text)}</p>
+      <span class="role-meta">${steps} stops</span><span class="start-cta">${esc(r.cta)} →</span></a>`;
+  };
+  return `<section class="start roles" aria-labelledby="roles-h"><h2 id="roles-h">Where are you headed?</h2>
+    <p class="muted start-note">Pick a direction and follow its ladder, one stop at a time. No account needed — your progress stays in this browser.</p>
+    <div class="start-grid">${ROLES.map(card).join("")}</div>
+    <p class="roles-foot">Chasing a certificate? <a href="#exams">Network+, Security+ and PenTest+ prep lives in Exams →</a></p></section>`;
 }
 VIEWS.today = () => {
   const news = DATA.news, m = DATA.meta;
@@ -115,21 +125,27 @@ VIEWS.today = () => {
   const top = trend[0];
   const featured = news.filter(n => n.topics.length);
 
-  const head = `<p class="muted home-note">Lessons, practice, and this week's news.</p>`;
+  const hero = `<section class="home-hero"><div class="hh-bg" aria-hidden="true"><img class="hh-img" src="img/hero-soc.webp" srcset="img/hero-soc-800.webp 800w, img/hero-soc.webp 1774w" sizes="100vw" alt="" width="1774" height="887" decoding="async" fetchpriority="high"><div class="hh-scrim"></div></div>
+    <div class="hh-inner">
+      <p class="hh-eyebrow">Hands-on cyber security &amp; IT</p>
+      <h1 class="hh-title">Learn it. Break it. <em class="accent">Understand it.</em></h1>
+      <p class="hh-sub">See how real attacks work, learn to defend against them, and understand the news behind every headline. Free, visual, and built for real exams.</p>
+      <div class="hh-cta"><a class="btn brand lg" href="#learn">Start learning →</a><a class="btn ghost lg" href="#agency">Work a SOC shift</a></div>
+      <p class="hh-trust">No account needed · progress stays in your browser · built for Network+, Security+ &amp; PenTest+</p>
+    </div></section>`;
   if (isNewcomer()) {
-    main.innerHTML = `<div class="view">
-      <section class="panel route-panel" aria-labelledby="route-h"><div id="route"></div></section>
-      ${startCards(news, kev)}
-      ${head}
+    main.innerHTML = `<div class="view home">
+      ${hero}
+      ${roleCards()}
       <div class="split"><section class="panel" id="daily"></section>
         <aside class="panel news-line"><div class="eyebrow">This week</div><p><b>${news.length} stories</b> from ${sources} outlets, each linked to a lesson that explains it.</p><a class="btn ghost" href="#news">Read the news →</a></aside></div>
     </div>`;
-    renderDaily(); drawRoute(); animateBriefing();
+    renderDaily(); animateBriefing();
     return;
   }
-  main.innerHTML = `<div class="view">
-    <section class="panel route-panel" aria-labelledby="route-h"><div id="route"></div></section>
-    ${head}
+  main.innerHTML = `<div class="view home">
+    ${hero}
+    ${roleCards()}
     <div class="split">
       <div class="stack" style="gap:18px">
         <section class="changelog" aria-labelledby="today-h">

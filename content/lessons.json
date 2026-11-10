@@ -433,7 +433,7 @@
     {
      "from": "a",
      "to": "u",
-     "msg": "Email: \u201cYour mailbox is full. Sign in to keep it.\u201d",
+     "msg": "Email: “Your mailbox is full. Sign in to keep it.”",
      "text": "The email looks like it comes from IT and adds urgency so the reader acts before thinking.",
      "tone": "bad",
      "stop": "Email filtering and SPF, DKIM and DMARC catch many spoofed senders.",
@@ -444,7 +444,14 @@
       "from": "IT Support <it-support@company-mail.example>",
       "reply": "bounce@mail-x7-delivery.biz",
       "subject": "Your mailbox is full",
-      "body": "Sign in within the hour or the mailbox stops receiving mail."
+      "date": "10 Nov 2026, 09:14",
+      "body": "Hello Alex,\n\nYour mailbox has reached its limit and will stop receiving mail within the hour.\n\nSign in to raise the limit and keep your mail.\n\nIT Support",
+      "link": {
+       "text": "Sign in to keep your mail",
+       "href": "https://company-mail.signin-example.com/login"
+      },
+      "org": "company.example",
+      "to": "alex@company.example"
      }
     },
     {
@@ -490,7 +497,7 @@
        },
        {
         "k": "Password",
-        "v": "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+        "v": "••••••••"
        },
        {
         "k": "Posted to",
@@ -1036,7 +1043,7 @@
   "level": "Beginner",
   "minutes": 5,
   "hook": "CVE, CVSS, EPSS, KEV: how teams decide what to fix first.",
-  "what": "Every public security bug gets a CVE ID. CVSS scores how bad it could be (0\u201310). EPSS estimates how likely it is to be exploited in the next 30 days. CISA's KEV list confirms which are being exploited right now. Tens of thousands of CVEs appear every year, far more than anyone can patch at once, so good teams prioritise by real-world risk: exploited first, likely next, then severity.",
+  "what": "Every public security bug gets a CVE ID. CVSS scores how bad it could be (0–10). EPSS estimates how likely it is to be exploited in the next 30 days. CISA's KEV list confirms which are being exploited right now. Tens of thousands of CVEs appear every year, far more than anyone can patch at once, so good teams prioritise by real-world risk: exploited first, likely next, then severity.",
   "example": {
    "title": "Equifax",
    "year": "2017",
@@ -2381,7 +2388,7 @@
     {
      "label": "IDOR",
      "icon": "key",
-     "text": "Change an id in the URL (/order/123 \u2192 /order/124) and see someone else's data."
+     "text": "Change an id in the URL (/order/123 → /order/124) and see someone else's data."
     },
     {
      "label": "Missing checks",
@@ -2513,107 +2520,29 @@
      "from": "p",
      "to": "s",
      "msg": "Frame for the router",
-     "text": "Your PC knows the site is on another network, so it sends the traffic to its default gateway, the router.",
-     "stage": {
-      "kind": "packet",
-      "kicker": "Leaving the PC",
-      "line": "next hop",
-      "rows": [
-       {
-        "k": "From",
-        "v": "10.0.0.5"
-       },
-       {
-        "k": "Next",
-        "v": "192.168.1.1"
-       },
-       {
-        "k": "Website",
-        "v": "203.0.113.10"
-       }
-      ]
-     }
+     "text": "Your PC (10.0.0.5) sees the site is on another network, so it sends the traffic to its default gateway, the router at 192.168.1.1."
     },
     {
      "from": "s",
      "to": "r",
      "msg": "Forwarded to the right port",
-     "text": "The switch delivers the frame only to the port the router is on.",
-     "stage": {
-      "kind": "packet",
-      "kicker": "Switch",
-      "line": "one port",
-      "rows": [
-       {
-        "k": "In",
-        "v": "port 7"
-       },
-       {
-        "k": "Out",
-        "v": "port 1"
-       },
-       {
-        "k": "Port 1",
-        "v": "192.168.1.1"
-       }
-      ]
-     }
+     "text": "The switch delivers the frame only to the port the router is on."
     },
     {
      "from": "r",
      "to": "w",
      "msg": "Routed onto the internet",
-     "text": "The router swaps your private IP for its public one (NAT) and sends the packet towards the website's IP, found with DNS.",
-     "stop": "A firewall here decides which traffic may pass.",
-     "stage": {
-      "kind": "packet",
-      "kicker": "Router",
-      "line": "swapped",
-      "rows": [
-       {
-        "k": "Inside",
-        "v": "10.0.0.5"
-       },
-       {
-        "k": "On the wire",
-        "v": "198.51.100.20"
-       },
-       {
-        "k": "To",
-        "v": "203.0.113.10"
-       }
-      ]
-     }
+     "text": "The router swaps your private 10.0.0.5 for its public 198.51.100.20 (NAT) and sends the packet to the website at 203.0.113.10, found with DNS.",
+     "stop": "A firewall here decides which traffic may pass."
     },
     {
      "from": "w",
      "to": "p",
      "msg": "Reply comes back",
-     "text": "The website answers to the router's public IP, and the router hands it back to your PC.",
-     "tone": "good",
-     "stage": {
-      "kind": "packet",
-      "tone": "good",
-      "kicker": "Reply",
-      "line": "back",
-      "rows": [
-       {
-        "k": "From",
-        "v": "203.0.113.10"
-       },
-       {
-        "k": "To",
-        "v": "198.51.100.20"
-       },
-       {
-        "k": "Delivered",
-        "v": "10.0.0.5"
-       }
-      ]
-     }
+     "text": "The website answers to the router's public IP, and the router translates it back to 10.0.0.5 and hands it to your PC.",
+     "tone": "good"
     }
-   ],
-   "scene": "stage"
+   ]
   },
   "keys": [
    {
@@ -3513,7 +3442,7 @@
       "line": "failures then success",
       "lines": [
        "09:12  j.cole  failed",
-       "09:14  j.cole  failed  \u00d728",
+       "09:14  j.cole  failed  ×28",
        "09:16  j.cole  success  203.0.113.10"
       ]
      }

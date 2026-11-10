@@ -61,7 +61,7 @@ VIEWS.progress = () => {
       <p>Where this leads: <a href="#careers">entry-level career paths</a>, what each job involves, and a learning path for each.</p>
       <p class="hint">Levels and badges show practice here. They aren't a qualification.</p></div>
     <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(prog * 100)}%;background:var(--sun)"></i></span><span class="mono">${RANKS.map(x => x[1]).join(" → ")}</span></div>
-    <div class="stat-row">${stats.map(([k, v]) => `<div class="stat"><span class="eyebrow">${k}</span><b>${v}</b></div>`).join("")}</div>
+    <div class="stat-row kpi">${stats.map(([k, v]) => `<div class="stat${k === "XP" ? " hl" : ""}"><span class="eyebrow">${k}</span><b>${v}</b></div>`).join("")}</div>
     ${reviewCardHtml()}
     <section class="stack"><h2 class="eyebrow" style="font-size:0.8rem">Badges</h2>
       <div class="badges">${BADGES.map(b => `<div class="badge ${P.badges[b.id] ? "got" : ""}"><span class="ico" aria-hidden="true">${P.badges[b.id] ? "★" : "☆"}</span><span class="stack" style="gap:2px"><b>${esc(b.name)}</b><span>${esc(b.desc)}</span>${P.badges[b.id] ? `<span class="mono" style="font-size:0.7rem;color:var(--good)">earned ${esc(P.badges[b.id])}</span>` : ""}</span></div>`).join("")}</div></section>
@@ -272,7 +272,7 @@ function drawPhish() {
   const mail = { fromName: m.fromName, fromAddr: m.fromAddr, subject: m.subject, body: m.body, links: m.link ? [m.link] : [] };
   box.innerHTML = `<div class="game-bar"><span>Email ${g.i + 1} of ${g.deck.length}</span><span>Score ${g.score}</span></div>
     ${answered ? `<p class="result ${ok ? "ok" : "no"}" role="status" tabindex="-1"><strong>${ok ? "Correct" : "Not this time"}: this one is ${m.verdict === "phish" ? "phishing" : "legitimate"}.</strong> The numbers show where to look.</p>` : ""}
-    ${MAIL.card(mail, { id: "pg-mail", reveal: answered, pins: answered ? m.clues : [] })}
+    ${MAIL.card(mail, { id: "pg-mail", reveal: answered, pins: answered ? m.clues : [], client: true })}
     <div id="pv"></div>`;
   if (!box.dataset.emWired) { MAIL.wire(box); box.dataset.emWired = "1"; }
   const pv = $("pv");
