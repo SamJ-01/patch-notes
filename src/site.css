@@ -1455,8 +1455,8 @@ body.life { background-image: none; }
 .pchip.ghost { background: transparent; color: var(--muted); }
 /* Vishing lab "The Call" (static/js/labs/vishing.js): a scam support call, captions-first, voice-ready. */
 .vp-lab { display: grid; gap: 16px; }
-.vp-stage { display: grid; grid-template-columns: minmax(0, 1.5fr) 1fr; gap: 14px; align-items: start; }
-@media (max-width: 760px) { .vp-stage { grid-template-columns: 1fr; } }
+.vp-stage { display: grid; justify-items: center; }
+.vp-phone { width: min(420px, 100%); }
 /* the handset: a gunmetal body with a recessed, glowing screen */
 .vp-phone { color-scheme: dark; position: relative; padding: 13px; border-radius: 30px; border: 1px solid #28374b;
   background: linear-gradient(158deg, #1b2636 0%, #0c131f 55%, #080c13 100%);
@@ -1487,7 +1487,13 @@ body.life { background-image: none; }
 .vp-btn { border: 0; border-radius: 999px; padding: 12px 20px; font: 700 0.92rem var(--font-display); cursor: pointer; color: #06121a; }
 .vp-btn.answer { background: #2fcf92; color: #052015; } .vp-btn.decline { background: #ff6b6e; color: #2a0608; }
 .vp-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-.vp-transcript { display: grid; gap: 10px; max-height: 420px; overflow-y: auto; padding-right: 4px; scroll-behavior: smooth; }
+.vp-line { margin: 8px 0 0; font-size: 1.08rem; line-height: 1.45; color: #f4f8fd; }
+.vp-youline { margin: 8px 0 0; color: #9fd7ff; line-height: 1.4; }
+.vp-verdict { margin: 0; line-height: 1.4; }
+.vp-verdict.ok { color: #8ef0c4; }
+.vp-verdict.bad { color: #ffc24d; }
+.vp-phone[data-speaking="1"] .vp-av { box-shadow: 0 0 0 6px rgba(63,224,232,.18); }
+.vp-options { margin-top: 8px; }
 .vp-row { display: grid; gap: 3px; max-width: 86%; }
 .vp-row.them { justify-items: start; } .vp-row.you { justify-items: end; margin-left: auto; }
 .vp-who { font: 700 0.6rem var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: #7f93a8; }
@@ -2279,6 +2285,7 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .em-app .em-cta::after { display: none; }
 .em-app .em-go { background: #f3f2f1; color: #323130; }
 .em-status { padding: 0 10px; display: flex; align-items: center; background: #f3f2f1; border-top: 1px solid #e1dfdd; color: #323130; font: 400 0.75rem ui-monospace, var(--font-mono), monospace; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.lesson-mail { margin: 4px 0 22px; }
 .flow.is-stage .stage-card:has(.em-app) { padding: 0; background: transparent; border: 0; }
 @media (max-width: 720px) {
   .em-split { grid-template-columns: 1fr; }

@@ -256,8 +256,9 @@ function mountPhone(el, d) {
 
 function mountStage(el, d) {
   let i = 0;
+  const leadMail = d.steps[0]?.stage?.kind === "mail";
   el.innerHTML = `<figure class="flow is-stage">
-    <figcaption class="flow-title">${esc(d.title)}</figcaption>
+    ${leadMail ? "" : `<figcaption class="flow-title">${esc(d.title)}</figcaption>`}
     <div class="stage-card" data-stage></div>
     <div class="flow-step" aria-live="polite"></div>
     <div class="row flow-ctl">

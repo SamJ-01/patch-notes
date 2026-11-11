@@ -29,31 +29,26 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
 
   root.innerHTML = `<div class="vp-lab">
     <div class="view-head"><a class="link-btn" href="#missions">← Missions</a>
-      <div class="eyebrow">Lab · ${esc(lab.track)} · ${lab.minutes} min</div><h1>${esc(lab.title)}</h1><p>${gl(lab.intro)}</p></div>
-    <div class="row osi-progress" id="vp-prog"></div>
+      <div class="eyebrow">Lab · ${esc(lab.track)} · ${lab.minutes} min</div><h1>${esc(lab.title)}</h1></div>
     <section class="vp-stage">
       <div class="vp-phone" id="vp-phone" data-phase="ringing">
         <div class="vp-screen" id="vp-screen"></div>
       </div>
-      <aside class="vp-side" id="vp-side"></aside>
     </section>
     <section class="panel vp-debrief" id="vp-debrief" hidden aria-live="polite"></section>
   </div>`;
   const $ = id => root.querySelector("#" + id);
-
-  function caughtSoFar() { return summary(beats, picks).spotted.filter(Boolean); }
-  function renderProg() {
-    const done = picks.filter(p => p != null).length;
-    $("vp-prog").innerHTML = beats.map((b, i) => `<span class="pchip">${picks[i] != null ? (beats[i].options[picks[i]].safe ? "✓" : "✕") : "○"} ${i + 1}</span>`).join("")
-      + `<span class="pchip ghost">${done}/${beats.length} answered</span>`;
+  let audio = null;
+  function stopAudio() { if (audio) { audio.pause(); audio = null; } }
+  function playLine(src, btn) {
+    stopAudio();
+    if (!src) return;
+    audio = new Audio(src);
+    const phone = $("vp-phone");
+    audio.onplay = () => phone?.setAttribute("data-speaking", "1");
+    audio.onended = () => phone?.removeAttribute("data-speaking");
+    audio.play().catch(() => { if (btn) btn.hidden = false; });
   }
-  function renderSide() {
-    const caught = caughtSoFar();
-    $("vp-side").innerHTML = `<div class="eyebrow">Red flags you caught</div>
-      ${caught.length ? `<ul class="vp-flags">${caught.map(f => `<li>${gl(f)}</li>`).join("")}</ul>` : `<p class="muted">Spot the manipulation as the call goes on. A safe reply catches the flag.</p>`}
-      <p class="vp-rule">Golden rule: hang up and call back on a number you look up yourself. Never read out a password or a one-time code.</p>`;
-  }
-  function bubble(kind, who, text, extra = "") { return `<div class="vp-row ${kind}"><span class="vp-who">${esc(who)}</span><div class="vp-bubble">${gl(text)}${extra}</div></div>`; }
 
   function renderRinging() {
     $("vp-phone").dataset.phase = "ringing";
@@ -80,35 +75,31 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     $("vp-phone").dataset.phase = "call";
     const b = beats[bi];
     answeredThis = picks[bi] != null;
-    const playBtn = b.voice ? `<button class="vp-play" type="button" aria-label="Play the caller's line"><span aria-hidden="true">▶</span> Play</button>
-      <audio preload="none" src="${esc(b.voice)}"></audio>` : "";
-    const transcript = beats.slice(0, bi).map((pb, i) => {
-      const chosen = pb.options[picks[i]];
-      return bubble("them", call.from || "Caller", pb.say) + (chosen ? bubble("you", "You", chosen.text) : "");
-    }).join("");
-    let ask = "";
+    const heard = b.voice ? `<button class="vp-play" type="button" id="vp-play"><span aria-hidden="true">▶</span> Hear it again</button>` : "";
+    let body;
     if (!answeredThis) {
-      ask = `<div class="vp-ask"><p class="vp-prompt">${gl(b.ask)}</p>
+      body = `<p class="vp-line">${gl(b.say)}</p>${heard}
         <div class="vp-options" role="group" aria-label="Your reply">${b.options.map((o, i) =>
-          `<button class="vp-opt" type="button" data-i="${i}">${gl(o.text)}</button>`).join("")}</div></div>`;
+          `<button class="vp-opt" type="button" data-i="${i}">${gl(o.text)}</button>`).join("")}</div>`;
     } else {
       const chosen = b.options[picks[bi]], r = beatResult(b, picks[bi]);
-      ask = bubble("you", "You", chosen.text)
-        + `<div class="vp-feedback ${r.safe ? "ok" : "bad"}" role="status"><span class="vp-fi" aria-hidden="true">${r.safe ? "✓" : "⚠"}</span>
-            <div><p>${gl(r.feedback)}</p>${r.safe ? `<p class="vp-flag">Red flag spotted: <b>${gl(b.flag)}</b></p>` : (r.risk ? `<p class="vp-risk">What that would give away: ${gl(r.risk)}</p>` : "")}</div></div>
-          <div class="vp-next"><button class="btn brand" type="button" id="vp-next">${bi < beats.length - 1 ? "Next →" : "End the call"}</button></div>`;
+      body = `<p class="vp-youline">You: ${gl(chosen.text)}</p>
+        <p class="vp-verdict ${r.safe ? "ok" : "bad"}">${gl(r.feedback)}</p>
+        <button class="btn brand" type="button" id="vp-next">${bi < beats.length - 1 ? "They continue" : "Hang up"}</button>`;
     }
-    $("vp-screen").innerHTML = `<div class="vp-call-head slim"><span class="vp-av sm" aria-hidden="true">${esc(initials)}</span>
-        <div class="vp-id"><b>${esc(call.from || "Caller")}</b><span class="vp-live">● on call · line ${bi + 1} of ${beats.length}</span></div></div>
-      <div class="vp-transcript" id="vp-transcript" aria-live="polite">${transcript}${bubble("them", call.from || "Caller", b.say, playBtn)}${ask}</div>`;
-    const pb = $("vp-screen").querySelector(".vp-play");
-    if (pb) pb.onclick = () => { const a = pb.parentElement.querySelector("audio"); if (a) { a.currentTime = 0; a.play().catch(() => {}); } };
-    $("vp-screen").querySelectorAll(".vp-opt").forEach(btn => btn.onclick = () => { picks[bi] = +btn.dataset.i; onPart(bi); renderProg(); renderSide(); renderCall(); });
+    $("vp-screen").innerHTML = `<div class="vp-call-head">
+        <span class="vp-av" aria-hidden="true">${esc(initials)}</span>
+        <div class="vp-id"><b>${esc(call.from || "Caller")}</b><span class="vp-live">● on the line</span></div></div>
+      ${body}`;
+    const play = $("vp-play");
+    if (play) play.onclick = () => playLine(b.voice, play);
+    if (!answeredThis && b.voice && !reduced) playLine(b.voice, play);
+    $("vp-screen").querySelectorAll(".vp-opt").forEach(btn => btn.onclick = () => { stopAudio(); picks[bi] = +btn.dataset.i; onPart(bi); renderCall(); });
     const nx = $("vp-next"); if (nx) nx.onclick = () => { if (bi < beats.length - 1) { bi++; renderCall(); } else { phase = "ended"; renderEnded(); } };
-    const tr = $("vp-transcript"); if (tr && !reduced) tr.scrollTop = tr.scrollHeight;
   }
 
   function renderEnded() {
+    stopAudio();
     $("vp-phone").dataset.phase = "ended";
     const s = summary(beats, picks);
     $("vp-screen").innerHTML = `<div class="vp-safe-end"><h2>${s.safe ? "Call handled safely ✓" : "Call ended"}</h2>
@@ -126,7 +117,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     $("vp-debrief").scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
   }
 
-  function reset() { phase = "ringing"; bi = 0; picks = []; onReset(); $("vp-debrief").hidden = true; renderProg(); renderSide(); renderRinging(); }
+  function reset() { stopAudio(); phase = "ringing"; bi = 0; picks = []; onReset(); $("vp-debrief").hidden = true; renderRinging(); }
 
-  renderProg(); renderSide(); renderRinging();
+  renderRinging();
 }

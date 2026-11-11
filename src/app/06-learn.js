@@ -457,18 +457,23 @@ function lessonView(id) {
   const showExplainer = !!l.explainer && (!showDiagram || both);
   const showConcept = !!l.concept && !showExplainer && !showDiagram;
   const picture = showDiagram || showExplainer || showConcept;
+  const leadMail = l.diagram?.steps?.[0]?.stage?.kind === "mail";
+  const seeBlock = picture ? (leadMail
+    ? `<section class="lesson-mail" id="l-see"><div id="l-diagram" tabindex="-1"><div id="lflow"><div class="empty">Loading the diagram…</div></div></div></section>`
+    : `<section class="panel wide screen" id="l-see"><div class="panel-title"><h2>See it</h2></div>
+      ${showExplainer ? `<div id="l-xpl" tabindex="-1">${l.explainer.why ? `<p class="muted xpl-why">${gloss(l.explainer.why, 2)}</p>` : ""}<div id="lxpl"><div class="empty">Loading…</div></div></div>` : ""}
+      ${showDiagram ? `<div id="l-diagram" tabindex="-1">${l.diagram.why ? `<p class="muted xpl-why">${gloss(l.diagram.why, 2)}</p>` : ""}<div id="lflow"><div class="empty">Loading the diagram…</div></div></div>` : ""}
+      ${showConcept ? `<div id="l-concept" tabindex="-1">${l.concept.why ? `<p class="muted xpl-why">${gloss(l.concept.why, 2)}</p>` : ""}<div id="lconcept"><div class="empty">Loading the diagram…</div></div></div>` : ""}
+    </section>`) : "";
   main.innerHTML = `<div class="view"${bannerAttr(id)}><article class="article lesson">
     <a class="link-btn" href="#learn">← All lessons</a>
     <header class="lesson-open"><p class="eyebrow">${esc(l.track)} · ${esc(l.level)} · ${l.minutes} min</p><h1>${esc(l.title)}</h1></header>
     ${loopStrip(id, "understand")}
+    ${leadMail ? seeBlock : ""}
     <section id="l-what" tabindex="-1"><p class="hook">${esc(l.hook)}</p><p>${gloss(lede.lede, 2, lseen)}</p>
       ${lede.more ? `<details class="more-what" id="l-what-more"><summary>Read the full explanation</summary><p>${gloss(l.what, 6, lseen)}</p></details>` : ""}</section>
     ${l.tip ? `<aside class="qtip"><span class="qtip-k">★ Quick tip</span><p>${gloss(l.tip, 3, lseen)}</p></aside>` : ""}
-    ${picture ? `<section class="panel wide screen" id="l-see"><div class="panel-title"><h2>See it</h2></div>
-      ${showExplainer ? `<div id="l-xpl" tabindex="-1">${l.explainer.why ? `<p class="muted xpl-why">${gloss(l.explainer.why, 2)}</p>` : ""}<div id="lxpl"><div class="empty">Loading…</div></div></div>` : ""}
-      ${showDiagram ? `<div id="l-diagram" tabindex="-1">${l.diagram.why ? `<p class="muted xpl-why">${gloss(l.diagram.why, 2)}</p>` : ""}<div id="lflow"><div class="empty">Loading the diagram…</div></div></div>` : ""}
-      ${showConcept ? `<div id="l-concept" tabindex="-1">${l.concept.why ? `<p class="muted xpl-why">${gloss(l.concept.why, 2)}</p>` : ""}<div id="lconcept"><div class="empty">Loading the diagram…</div></div></div>` : ""}
-    </section>` : ""}
+    ${leadMail ? "" : seeBlock}
     <section class="case" id="l-example" tabindex="-1"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h3>${esc(l.example.title)}</h3><p>${gloss(l.example.text, 4, lseen)}</p>${l.example.source ? `<p class="muted" style="font-size:0.85rem">Source: <a href="${esc(l.example.source.url)}" target="_blank" rel="noopener">${esc(l.example.source.label)} ↗</a></p>` : ""}</section>
     <section id="l-defend" tabindex="-1"><h2>How defenders stop it</h2><ul class="checklist">${l.defend.map(d => `<li>${esc(d)}</li>`).join("")}</ul></section>
     <section class="doc panel${practice.length > 1 ? " wide" : ""}"><h2>Try it</h2>
