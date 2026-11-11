@@ -251,14 +251,6 @@ function mountPhone(el, d) {
     else { choice = null; i = Math.max(0, Math.min(d.steps.length - 1, i + go)); }
     draw(i === prev ? 0 : 1);
   });
-  el.querySelector(".flow-ctl").addEventListener("click", e => {
-    const b = e.target.closest("[data-go]"); if (!b) return;
-    const go = Number(b.dataset.go);
-    const prev = i;
-    if (go === 0) { i = 0; choice = null; }
-    else { choice = null; i = Math.max(0, Math.min(d.steps.length - 1, i + go)); }
-    draw(i === prev ? 0 : 1);
-  });
   draw(0);
 }
 
