@@ -102,7 +102,7 @@ export function mount(root, { samples = [] } = {}) {
         ${r.warnings ? "" : `<p class="muted hc-small">That isn't the same as safe: a lookalike domain can pass every check. Look at the sender's domain and where links go.</p>`}
         <ul class="hc-find">${r.findings.map((x, i) => `<li class="${x.level}"><span class="hc-ic" aria-hidden="true">${icon[x.level]}</span><div><b>${gl(x.title, 1)}</b><p>${gl(x.text, 2)}</p>
           ${x.where && $("hc-raw").value.toLowerCase().includes(x.where.toLowerCase()) ? `<button type="button" class="link-btn" data-hc-where="${i}">Show me where</button>` : ""}</div></li>`).join("")}</ul></section>
-      <section class="panel"><h2>The email, explained</h2>${MAIL.card({ headers: $("hc-raw").value }, { id: "hc-mail", org, tab: "details", views: ["details", "original"] })}</section>
+      <section class="lesson-mail"><h2>The email, explained</h2>${MAIL.card({ headers: $("hc-raw").value }, { id: "hc-mail", org, tab: "details", views: ["details", "original"], client: true })}</section>
       <p class="muted hc-small">Want to practise? Try the <a href="#lab-header-inspector">header inspector lab</a> or the <a href="#mission-phish-triage">phishing mission</a>.</p>`;
     $("hc-out").querySelectorAll("[data-hc-where]").forEach(b => b.addEventListener("click", () => {
       const em = $("hc-mail"); MAIL.highlight(em, r.findings[Number(b.dataset.hcWhere)].where);

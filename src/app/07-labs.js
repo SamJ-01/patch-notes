@@ -444,8 +444,7 @@ function labView(id) {
     <a class="link-btn" href="#missions">← Practise</a>
     <header class="lesson-open"><p class="eyebrow">Lab · ${esc(l.track)} · ${l.minutes} min</p><h1>${esc(l.title)}</h1></header>
     ${loopStrip(pageTopic(l), labStage(l))}
-    ${l.artifact.kind === "headers" ? `<section class="panel screen"><div class="panel-title"><h2>The email</h2><span class="sim-tag">Simulated email</span></div>
-      ${MAIL.card({ headers: l.artifact.text, body: l.artifact.body, links: l.artifact.links }, { id: "lab-mail", views: ["message", "original"] })}</section>` : `<section class="panel screen"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
+    ${l.artifact.kind === "headers" ? `<section class="lesson-mail">${MAIL.card({ headers: l.artifact.text, body: l.artifact.body, links: l.artifact.links }, { id: "lab-mail", views: ["message", "original"], org: "halcyonlabs.com", client: true })}</section>` : `<section class="panel screen"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
       ${l.artifact.kind === "log" ? `<div class="row"><label class="sr" for="lab-f">Filter lines</label><span class="mono" style="color:var(--sun)">grep</span><input id="lab-f" type="search" placeholder="${esc(l.artifact.placeholder || "e.g. Failed password")}" autocomplete="off" spellcheck="false"></div>` : ""}
       <pre class="evidence" id="lab-pre" tabindex="0" aria-label="Evidence"></pre></section>`}
     <section class="stack" id="lab-steps">${l.steps.map((st, i) => `<div class="panel lab-step ${solved.has(i) ? "got" : ""}" data-i="${i}">

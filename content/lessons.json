@@ -462,20 +462,12 @@
      "tone": "bad",
      "stop": "Check the address; report it. Never punish people who click.",
      "stage": {
-      "kind": "url",
+      "kind": "login",
       "tone": "bad",
-      "line": "https://company-mail.signin-example.com",
-      "rows": [
-       {
-        "k": "This bar",
-        "v": "company-mail.signin-example.com",
-        "bad": true
-       },
-       {
-        "k": "Real site",
-        "v": "company-mail.example"
-       }
-      ]
+      "line": "https://company-mail.signin-example.com/login",
+      "url": "https://company-mail.signin-example.com/login",
+      "brand": "Company Mail",
+      "user": "alex@company.example"
      }
     },
     {
@@ -485,26 +477,13 @@
      "text": "Whatever is typed into the fake page goes straight to the attacker.",
      "tone": "bad",
      "stage": {
-      "kind": "field",
+      "kind": "sent",
       "tone": "bad",
-      "kicker": "Password",
-      "line": "posted",
-      "rows": [
-       {
-        "k": "Typed on",
-        "v": "signin-example.com",
-        "bad": true
-       },
-       {
-        "k": "Password",
-        "v": "••••••••"
-       },
-       {
-        "k": "Posted to",
-        "v": "203.0.113.50",
-        "bad": true
-       }
-      ]
+      "line": "Posted to 203.0.113.50",
+      "url": "https://company-mail.signin-example.com/login",
+      "brand": "Company Mail",
+      "user": "alex@company.example",
+      "posted": "203.0.113.50"
      }
     },
     {
@@ -515,25 +494,15 @@
      "tone": "bad",
      "stop": "Phishing-resistant MFA (passkeys) blocks this step: the password alone isn't enough.",
      "stage": {
-      "kind": "field",
+      "kind": "mail",
       "tone": "bad",
-      "kicker": "Mailbox",
-      "line": "open",
-      "rows": [
-       {
-        "k": "Site",
-        "v": "company-mail.example"
-       },
-       {
-        "k": "Account",
-        "v": "alex@company.example"
-       },
-       {
-        "k": "Password",
-        "v": "the one posted to 203.0.113.50",
-        "bad": true
-       }
-      ]
+      "line": "Mailbox open",
+      "from": "Priya Shah <priya@company.example>",
+      "subject": "Q4 numbers for Friday",
+      "date": "10 Nov 2026, 09:21",
+      "body": "Alex,\n\nThe Q4 pack is in the shared drive. Can you send the board version before Friday?\n\nPriya",
+      "org": "company.example",
+      "to": "alex@company.example"
      }
     }
    ],
@@ -2493,6 +2462,7 @@
   "diagram": {
    "why": "Step through a single request to follow each hop it takes out of your network and back.",
    "title": "How a request leaves your network and comes back",
+   "scene": "route",
    "nodes": [
     {
      "id": "p",
@@ -2520,19 +2490,22 @@
      "from": "p",
      "to": "s",
      "msg": "Frame for the router",
-     "text": "Your PC (10.0.0.5) sees the site is on another network, so it sends the traffic to its default gateway, the router at 192.168.1.1."
+     "text": "Your PC (10.0.0.5) sees the site is on another network, so it sends the traffic to its default gateway, the router at 192.168.1.1.",
+     "packet": { "from": "10.0.0.5", "to": "192.168.1.1", "at": 0, "note": "For the router" }
     },
     {
      "from": "s",
      "to": "r",
      "msg": "Forwarded to the right port",
-     "text": "The switch delivers the frame only to the port the router is on."
+     "text": "The switch delivers the frame only to the port the router is on.",
+     "packet": { "from": "10.0.0.5", "to": "192.168.1.1", "at": 1, "note": "Same frame" }
     },
     {
      "from": "r",
      "to": "w",
      "msg": "Routed onto the internet",
      "text": "The router swaps your private 10.0.0.5 for its public 198.51.100.20 (NAT) and sends the packet to the website at 203.0.113.10, found with DNS.",
+     "packet": { "from": "10.0.0.5", "fromNow": "198.51.100.20", "to": "203.0.113.10", "at": 2, "note": "NAT", "patch": "Your address just changed." },
      "stop": "A firewall here decides which traffic may pass."
     },
     {
@@ -2540,6 +2513,7 @@
      "to": "p",
      "msg": "Reply comes back",
      "text": "The website answers to the router's public IP, and the router translates it back to 10.0.0.5 and hands it to your PC.",
+     "packet": { "from": "203.0.113.10", "to": "198.51.100.20", "toNow": "10.0.0.5", "at": 1, "back": true, "note": "Back to your PC" },
      "tone": "good"
     }
    ]

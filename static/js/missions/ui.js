@@ -417,7 +417,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     const e = ev.email;
     $("m-mailview").querySelectorAll("[data-email]").forEach(b => b.setAttribute("aria-pressed", b.dataset.email === e.id));
     $("m-mail").innerHTML = `${e.note ? `<p class="m-mailnote"><b>${esc(e.reportedBy)}</b> reported it from ${esc(e.folder)}: ${esc(e.note.replace(/^[^:]+:\s*/, ""))}</p>` : ""}
-      ${MAIL.card({ headers: e.headers, body: e.body, links: e.links, folder: e.folder }, { id: `m-em-${e.id}`, org: scenario.emails.org })}`;
+      ${MAIL.card({ headers: e.headers, body: e.body, links: e.links, folder: e.folder }, { id: `m-em-${e.id}`, org: scenario.emails.org, client: true })}`;
     logLine(`You inspected <strong>${esc(e.label)}</strong> (reported by ${esc(e.reportedBy)})${ev.found.length ? ` → ${ev.found.map(esc).join(" ")}` : ""}`);
     renderFindings();
   }

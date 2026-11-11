@@ -261,7 +261,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
   function showMail(src, id) {
     const e = src.emails.find(x => x.id === id);
     $("ag-log").querySelectorAll("[data-mail]").forEach(b => { b.setAttribute("aria-pressed", b.dataset.mail === id); if (b.dataset.mail === id) b.classList.add("read"); });
-    $("ag-mailview").innerHTML = MAIL.card({ headers: e.headers, body: e.body, links: e.links, attachments: e.attachments, folder: e.folder }, { id: `ag-em-${id}`, org: src.org });
+    $("ag-mailview").innerHTML = MAIL.card({ headers: e.headers, body: e.body, links: e.links, attachments: e.attachments, folder: e.folder }, { id: `ag-em-${id}`, org: src.org, client: true });
   }
   function showSearch(ev) {
     if (ev.source !== source || !$("ag-lout")) return;
@@ -508,7 +508,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
           <p class="muted log-count">Search: <b class="mono">${esc(st.query)}</b></p>
           <pre class="evidence console log-out" tabindex="0" aria-label="Matching lines">${st.lines.map(l => markTerms(l, st.query.split(" "))).join("\n")}</pre>
           ${st.found.length ? `<h4 class="eyebrow">New finding${st.found.length === 1 ? "" : "s"}</h4><ul class="findings">${st.found.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}`;
-        case "email": { const e = emailOf(st); return MAIL.card({ headers: e.headers, body: e.body, links: e.links, attachments: e.attachments, folder: e.folder }, { id: `ag-sh-em-${e.id}`, org: shift.sources[st.source].org }); }
+        case "email": { const e = emailOf(st); return MAIL.card({ headers: e.headers, body: e.body, links: e.links, attachments: e.attachments, folder: e.folder }, { id: `ag-sh-em-${e.id}`, org: shift.sources[st.source].org, client: true }); }
         case "ask": return DESK.ticket({ kind: "Request", title: st.label, status: "pending", fields: [["Team", contact(st.ref).role], ["Contact", contact(st.ref).from]],
           bodyLabel: st.attached ? "Reason attached" : "", body: st.attached ? `<p>${esc(st.attached)}</p>` : "" }, { level: 3 });
         case "reply": return `<ol class="dk-msgs">${DESK.message({ ...contact(st.ref), at: clockAt(st.clock), status: st.outcome, html: `<p>${gl(st.text, 2)}</p>` })}</ol>`;

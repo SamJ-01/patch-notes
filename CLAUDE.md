@@ -1,3 +1,5 @@
+**First read [AI_CONTEXT.md](AI_CONTEXT.md)** for what is in progress, and [docs/image-style.md](docs/image-style.md) before changing a picture.
+
 # Patch Notes: notes for Claude
 
 A static, free cyber security and IT learning site (GitHub Pages). Live: https://patchnoteslab.com/
