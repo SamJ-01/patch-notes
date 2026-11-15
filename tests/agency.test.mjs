@@ -8,6 +8,7 @@ import { matches } from "../static/js/missions/engine.js";
 import * as E from "../static/js/missions/engine.js";
 import { MAIL } from "../static/js/mail.js";
 import * as INFRA from "../static/js/agency/infra.js";
+import { KINDS as EXPLAINER_KINDS } from "../static/js/explainers.js";
 
 const dir = new URL("../content/agency/", import.meta.url);
 const shifts = readdirSync(dir).filter(f => f.endsWith(".json")).map(f => JSON.parse(readFileSync(new URL(f, dir), "utf8")));
@@ -27,6 +28,18 @@ test("every shift has a well-formed infrastructure map", () => {
   }
 });
 const shift = shifts.find(s => s.id === "shift-01");
+
+test("Agency contextual explainers resolve to real kinds, including multi-stage incidents", () => {
+  for (const sh of shifts) for (const a of sh.alerts) {
+    const items = Array.isArray(a.seeItAtWork) ? a.seeItAtWork : a.seeItAtWork ? [a.seeItAtWork] : [];
+    for (const item of items) {
+      assert.ok(item.label && item.label.trim(), sh.id + " " + a.id + ": explainer needs a learner-facing label");
+      assert.ok(EXPLAINER_KINDS.includes(item.kind), sh.id + " " + a.id + ": unknown explainer kind " + item.kind);
+    }
+  }
+  const chain = shifts.find(s => s.id === "shift-04").alerts.find(a => a.id === "a2").seeItAtWork;
+  assert.deepEqual(chain.map(x => x.kind), ["xss", "idor"], "the review-to-order incident teaches both session theft and broken ownership checks");
+});
 
 // Apply actions in turn, collecting every event.
 function play(steps, s = A.start(shift).state) {

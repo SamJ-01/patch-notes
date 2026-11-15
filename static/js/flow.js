@@ -207,26 +207,38 @@ export function mount(el, d) {
   draw(false);
 }
 
-// One request, drawn as the packet. The stops stay small. The address on the packet is the lesson.
+// One request, drawn in a room (docs/diagram-standard.md). The devices stand on a floor and a plain slab rides
+// the cable to the device it is at (`packet.at`, 0 = the first stop); the stretch it just travelled glows.
+// The addresses are the lesson, so they sit in one fixed card above the room; the card does not chase the slab.
+// Every step's card and caption are drawn stacked in the same grid cell and only the current one shows, so the
+// whole figure is the height of its tallest step on every step and nothing below it moves.
 function mountRoute(el, d) {
-  let i = 0;
+  let i = 0, was = null;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const n = d.nodes.length;
+  const atOf = k => Math.max(0, Math.min(n - 1, Number(d.steps[k].packet?.at) || 0));
   const face = p => {
-    const line = (k, was, now) => `<span>${k}</span>${was && now ? `<b class="was">${esc(was)}</b>` : ""}<b>${esc(now || was || "")}</b>`;
+    // The old address always has its own line, empty until an address is rewritten, so NAT can't make the card taller.
+    const line = (k, old, now) => `<span>${k}</span><span class="vals"><b class="was${old && now ? " on" : ""}">${old && now ? esc(old) : "&nbsp;"}</b><b>${esc(now || old || "")}</b></span>`;
     return `<p class="route-note">${p.back ? "←" : "→"} ${esc(p.note || "Packet")}</p>
       <p class="route-addr">${line("From", p.from, p.fromNow)}</p>
       <p class="route-addr">${line("To", p.to, p.toNow)}</p>`;
   };
-  el.innerHTML = `<figure class="flow is-route">
+  const caption = k => { const t = describe(d, k); return `<div class="eyebrow">Step ${k + 1} of ${d.steps.length} · ${esc(t.who)}</div>
+      <p class="flow-msg ${t.tone}">${esc(t.msg)}</p><p>${gl(t.text, 2)}</p>${t.stop ? `<p class="flow-stop"><b>How it's stopped here:</b> ${esc(t.stop)}</p>` : ""}`; };
+  const pct = at => `${((at + 0.5) / n) * 100}%`;
+  el.innerHTML = `<figure class="flow is-route" style="--n:${n}">
     <figcaption class="flow-title">${esc(d.title)}</figcaption>
     <div class="route">
-      <div class="route-pkt" data-at="0"></div>
+      <div class="route-cards" aria-hidden="true">${d.steps.map((s, k) => `<div class="route-pkt${s.packet?.back ? " back" : ""}" data-k="${k}">${face(s.packet || {})}</div>`).join("")}</div>
       <div class="route-track">
         <span class="route-line" aria-hidden="true"></span>
-        ${d.nodes.map(n => `<div class="route-stop" data-id="${esc(n.id)}"><svg viewBox="-36 -27 72 54" aria-hidden="true">${hw(n.kind)}</svg><span>${esc(n.label)}</span></div>`).join("")}
+        <span class="route-lit" aria-hidden="true"></span>
+        <span class="route-slab" aria-hidden="true"></span>
+        ${d.nodes.map(nd => `<div class="route-stop" data-id="${esc(nd.id)}"><svg viewBox="-36 -27 72 54" aria-hidden="true">${hw(nd.kind)}</svg><span>${esc(nd.label)}</span></div>`).join("")}
       </div>
     </div>
-    <div class="flow-step" aria-live="polite"></div>
+    <div class="flow-steps" aria-live="polite">${d.steps.map((_, k) => `<div class="flow-step" data-k="${k}">${caption(k)}</div>`).join("")}</div>
     <div class="row flow-ctl">
       <button class="btn ghost" type="button" data-go="-1">‹ Back</button>
       <button class="btn brand" type="button" data-go="1">Next step ›</button>
@@ -234,22 +246,24 @@ function mountRoute(el, d) {
     </div>
     <details class="flow-text"><summary>All steps as text</summary><ol>${d.steps.map((_, k) => { const s = describe(d, k); return `<li><b>${esc(s.who)}</b>: ${esc(s.msg)}. ${esc(s.text)}${s.stop ? ` <em>Stopped by: ${esc(s.stop)}</em>` : ""}</li>`; }).join("")}</ol></details>
   </figure>`;
-  const pkt = el.querySelector(".route-pkt");
-  const box = el.querySelector(".flow-step");
-  const caption = k => { const t = describe(d, k); return `<div class="eyebrow">Step ${k + 1} of ${d.steps.length} · ${esc(t.who)}</div>
-      <p class="flow-msg ${t.tone}">${esc(t.msg)}</p><p>${gl(t.text, 2)}</p>${t.stop ? `<p class="flow-stop"><b>How it's stopped here:</b> ${esc(t.stop)}</p>` : ""}`; };
+  const slab = el.querySelector(".route-slab"), lit = el.querySelector(".route-lit");
+  const stops = [...el.querySelectorAll(".route-stop")];
+  if (reduced) [slab, lit].forEach(x => { x.style.transition = "none"; });
   function draw(speak) {
-    const s = d.steps[i], p = s.packet || {};
-    pkt.dataset.at = String(p.at ?? 0);
-    pkt.classList.toggle("back", !!p.back);
-    if (reduced) pkt.style.transition = "none";
-    pkt.innerHTML = face(p);
-    el.querySelectorAll(".route-stop").forEach(n => n.classList.toggle("on", n.dataset.id === s.from || n.dataset.id === s.to));
-    box.innerHTML = caption(i);
+    const s = d.steps[i], p = s.packet || {}, at = atOf(i), from = was ?? at;
+    el.querySelectorAll(".route-pkt").forEach(c => c.classList.toggle("now", Number(c.dataset.k) === i));
+    el.querySelectorAll(".flow-step").forEach(c => { const on = Number(c.dataset.k) === i; c.classList.toggle("now", on); c.toggleAttribute("aria-hidden", !on); });
+    slab.style.left = pct(at);
+    slab.classList.toggle("back", !!p.back);
+    // The stretch of cable the packet has just travelled glows; nothing glows before it has moved.
+    lit.style.left = pct(Math.min(from, at)); lit.style.width = `${(Math.abs(at - from) / n) * 100}%`;
+    lit.classList.toggle("back", !!p.back);
+    stops.forEach((nd, k) => nd.classList.toggle("on", k === at));
     el.querySelector('[data-go="-1"]').disabled = i === 0;
     const next = el.querySelector('[data-go="1"]');
     next.disabled = i === d.steps.length - 1;
     next.textContent = i === d.steps.length - 1 ? "End of the flow" : "Next step ›";
+    was = at;
     if (speak && p.patch) globalThis.PN_patch?.(p.patch, 7000);
   }
   el.querySelector(".flow-ctl").addEventListener("click", e => {

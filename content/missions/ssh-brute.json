@@ -4,6 +4,7 @@
  "topic": "Security operations · SSH & logs",
  "minutes": 15,
  "lesson": "soc",
+ "scene": "room",
  "category": "Security operations",
  "summary": "Overnight SSH alerts on a Linux server: search auth.log, find the one login that worked, contain the attacker and prove how they got in.",
  "card": "Overnight SSH alerts: did anyone get in?",

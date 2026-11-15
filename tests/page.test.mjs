@@ -305,3 +305,14 @@ test("page history: going back to the page before pops it, so a back link never 
   c.note("#lesson-a");   // a redraw of the same page
   assert.deepEqual([...c.crumbs], ["#today", "#lesson-a"]);
 });
+
+test("chart filters can be used from the keyboard, through the table under each chart", () => {
+  const c = { esc: ctx.esc };
+  vm.createContext(c);
+  vm.runInContext([template.match(/const esc = .*\n/)[0], extract("function barPath("), extract("function rankChart(items, label, linkFn)"), "this.rankChart = rankChart;"].join("\n"), c);
+  const html = c.rankChart([{ label: `Cross-site "scripting" <b>`, n: 3, id: "CWE-79" }], "Bug types", it => it.id.toLowerCase());
+  const table = html.slice(html.indexOf("<table"));
+  assert.match(table, /<button type="button" class="link-btn" data-chart-q="cwe-79" aria-label="Show CVEs for [^"]*">/, "each row's name is a button that carries the same filter as its bar");
+  assert.ok(!table.includes("<b>") && !table.includes('"scripting"'), "labels are escaped");
+  assert.ok(!c.rankChart([{ label: "Acme", n: 1 }], "Vendors").includes("<button"), "a chart with no filter stays a plain table");
+});

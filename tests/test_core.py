@@ -132,6 +132,7 @@ class NvdOutage(unittest.TestCase):
             db = Path(tmp) / "cves.db"
             with mock.patch.object(cve_watch, "DB_PATH", db):
                 conn = cve_watch.open_db()
+                self.addCleanup(conn.close)
                 saved = {"id": "CVE-2026-0001", "published": today + "T10:00:00.000", "status": "Analyzed", "description": "A flaw.",
                          "cvss": 9.8, "severity": "CRITICAL", "vector": "AV:N", "cvss_version": "3.1", "cwes": ["CWE-79"], "products": ["acme widget"],
                          "kev": None, "epss": 0.5, "priority": 2}
@@ -153,6 +154,7 @@ class NvdOutage(unittest.TestCase):
         from unittest import mock
         with tempfile.TemporaryDirectory() as tmp, mock.patch.object(cve_watch, "DB_PATH", Path(tmp) / "c.db"):
             db = cve_watch.open_db()
+            self.addCleanup(db.close)
             full = {"id": "CVE-2019-1", "published": "2019-01-01", "status": "Analyzed", "description": "Full NVD text.", "products": []}
             cve_watch.save(db, [full])
             cve_watch.save(db, [dict(full, status="KEV addition", description="Short KEV text.")])
@@ -182,7 +184,9 @@ class KevEpssOutage(unittest.TestCase):
                "cvss": 9.8, "severity": "CRITICAL", "vector": "AV:N", "cvss_version": "3.1", "cwes": [], "products": ["acme widget"]}
         kev = {"added": today, "due": today, "ransomware": True, "name": "Acme flaw", "action": "Patch it."}
         with tempfile.TemporaryDirectory() as tmp, mock.patch.object(cve_watch, "DB_PATH", Path(tmp) / "c.db"):
-            cve_watch.save(cve_watch.open_db(), [dict(nvd, kev=kev, epss=0.42, epss_pct=0.97, priority=1)])
+            seeded = cve_watch.open_db()
+            cve_watch.save(seeded, [dict(nvd, kev=kev, epss=0.42, epss_pct=0.97, priority=1)])
+            seeded.close()
             down = mock.Mock(side_effect=http.client.IncompleteRead(b"{", 10))
             with mock.patch.object(cve_watch, "fetch_nvd", return_value=[{"id": "CVE-2026-0002"}]), mock.patch.object(cve_watch, "parse_nvd", return_value=dict(nvd)), \
                     mock.patch.object(cve_watch, "fetch_kev", down), mock.patch.object(cve_watch, "fetch_epss", down), mock.patch("sys.stderr"):
@@ -344,6 +348,57 @@ class ExplainHelper(unittest.TestCase):
         self.assertEqual([d["id"] for d in json.loads(explain.DRAFTS.read_text())], ["dup"])
 
 
+class PublishingSafety(unittest.TestCase):
+    def test_push_confirmation_names_repository_and_branch_without_credentials(self):
+        from unittest.mock import patch
+        import subprocess
+        results = [
+            subprocess.CompletedProcess([], 0, stdout="https://user:secret@github.com/SamJ-01/patch-notes-dev.git\n"),
+            subprocess.CompletedProcess([], 0, stdout="audit/code-cleanup\n"),
+        ]
+        with patch.object(explain.subprocess, "run", side_effect=results) as run, \
+             patch("builtins.input", return_value="n") as prompt, \
+             patch("builtins.print") as output:
+            explain.offer_push(["content/explainers.json"], "Approve explanations")
+        self.assertEqual(run.call_count, 2, "declining must not stage, commit or push")
+        question = prompt.call_args.args[0]
+        self.assertIn("github.com/SamJ-01/patch-notes-dev", question)
+        self.assertIn("audit/code-cleanup", question)
+        self.assertNotIn("secret", question)
+        self.assertTrue(any("remain local" in str(call) for call in output.call_args_list))
+
+    def test_push_confirmation_refuses_detached_head(self):
+        from unittest.mock import patch
+        import subprocess
+        results = [
+            subprocess.CompletedProcess([], 0, stdout="git@github.com:SamJ-01/patch-notes-dev.git\n"),
+            subprocess.CompletedProcess([], 0, stdout="\n"),
+        ]
+        with patch.object(explain.subprocess, "run", side_effect=results) as run, \
+             patch("builtins.input") as prompt, \
+             patch("builtins.print") as output:
+            explain.offer_push(["content/explainers.json"], "Approve explanations")
+        self.assertEqual(run.call_count, 2)
+        prompt.assert_not_called()
+        self.assertTrue(any("Cannot safely offer a push" in str(call) for call in output.call_args_list))
+
+    def test_accepted_push_targets_confirmed_origin_head(self):
+        from unittest.mock import patch
+        import subprocess
+        results = [
+            subprocess.CompletedProcess([], 0, stdout="git@github.com:SamJ-01/patch-notes-dev.git\n"),
+            subprocess.CompletedProcess([], 0, stdout="audit/code-cleanup\n"),
+            subprocess.CompletedProcess([], 0),
+            subprocess.CompletedProcess([], 1),  # staged changes exist
+            subprocess.CompletedProcess([], 0),
+            subprocess.CompletedProcess([], 0),
+        ]
+        with patch.object(explain.subprocess, "run", side_effect=results) as run, \
+             patch("builtins.input", return_value="y"):
+            explain.offer_push(["content/explainers.json"], "Approve explanations")
+        self.assertEqual(run.call_args_list[-1].args[0], ["git", "push", "-q", "origin", "HEAD"])
+
+
 class Styles(unittest.TestCase):
     def test_glossary_term_style_is_inline_only(self):
         """Regression: a lab once reused the class name "term", turning every glossary word into a 460px box."""
@@ -364,6 +419,117 @@ class Styles(unittest.TestCase):
         self.assertNotIn('fill="${SEV_COLORS', build.assemble_template(), "SVG fill attributes can't read CSS variables")
 
 
+class Housekeeping(unittest.TestCase):
+    def test_pipeline_closes_its_database_connections(self):
+        """A leaked SQLite handle keeps cves.db locked (and the CI cache step copies that file)."""
+        import gc, warnings
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(cve_watch, "DB_PATH", Path(tmp) / "c.db"):
+            db = cve_watch.open_db()
+            cve_watch.save(db, [{"id": "CVE-2026-0003", "published": dt.date.today().isoformat(), "status": "Analyzed", "description": "A flaw."}])
+            db.close()
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always", ResourceWarning)
+                cve_watch.cached_cves(7)
+                cve_watch.cached_extras()
+                build.trends([], {}, db_path=cve_watch.DB_PATH)
+                gc.collect()
+            self.assertEqual([str(w.message) for w in caught if issubclass(w.category, ResourceWarning)], [])
+
+
+class FictionalDomains(unittest.TestCase):
+    """Made-up organisations must live on reserved names (RFC 2606/6761: .example, example.com/net/org).
+    Five 'fictional' company domains once turned out to be registered to real owners, and the attacker
+    look-alikes beside them were free for anyone to register and catch a learner who typed one in."""
+    RESERVED = re.compile(r"(?:^|\.)(?:example|test|invalid|example\.(?:com|net|org))$")
+    # Real services a scenario names on purpose, and a public-sector name nobody can register.
+    REAL = {"gmail.com", "riverton.gov.uk", "www.riverton.gov.uk"}
+
+    def ok(self, host):
+        host = host.lower().rstrip(".")
+        return bool(self.RESERVED.search(host)) or host in self.REAL or host.endswith((".outlook.com", ".google.com"))
+
+    def test_phishing_game_senders_and_links_use_reserved_domains(self):
+        from urllib.parse import urlsplit
+        for mail in content("phish.json"):
+            self.assertTrue(self.ok(mail["fromAddr"].split("@")[1]), mail["fromAddr"])
+            for href in re.findall(r'"href": "([^"]+)"', json.dumps(mail)):
+                self.assertTrue(self.ok(urlsplit(href).hostname or ""), href)
+
+    def test_email_addresses_in_scenarios_use_reserved_domains(self):
+        skip = {"site.json", "explainers.json", "verification_log.json", "careers.json"}
+        for f in sorted(CONTENT.rglob("*.json")):
+            if f.name in skip:
+                continue
+            for addr in set(re.findall(r"[A-Za-z0-9._%+-]+@((?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,})", f.read_text())):
+                self.assertTrue(self.ok(addr), f"{f.relative_to(ROOT)} uses the address domain {addr}")
+
+
+class Markup(unittest.TestCase):
+    def test_glossary_terms_are_never_put_inside_buttons(self):
+        """A glossary term is itself a button. Inside another button it can't be reached by keyboard, a tap
+        on it also presses the outer button, and screen readers announce it wrongly (axe: nested-interactive)."""
+        nested = re.compile(r"<button\b[^>]*>\s*\$\{\s*(?:gl|gloss)\(")
+        for f in sorted([*(ROOT / "src" / "app").glob("*.js"), *(ROOT / "static" / "js").rglob("*.js")]):
+            for n, line in enumerate(f.read_text().splitlines(), 1):
+                self.assertIsNone(nested.search(line), f"{f.relative_to(ROOT)}:{n} puts glossary markup inside a button")
+
+
+class Contrast(unittest.TestCase):
+    def test_osi_layer_labels_are_readable_in_light_theme(self):
+        """Each layer's header label is its own colour darkened, on a tint of that colour. Three of the seven
+        (green, teal, amber) once fell under WCAG AA 4.5:1 in light theme, only after stepping into the lab."""
+        css = (ROOT / "src" / "site.css").read_text()
+        pct = int(re.search(r'\[data-theme="light"\] \.pdu-h b[^{]*\{ color: color-mix\(in srgb, var\(--c\) (\d+)%, #000\)', css).group(1)) / 100
+        tint = int(re.search(r"\.pdu-h, \.pdu-data \{[^}]*color-mix\(in srgb, var\(--c\) (\d+)%, var\(--bg\)\)", css).group(1)) / 100
+        bg = re.search(r':root\[data-theme="light"\][^{]*\{[^}]*--bg:\s*(#[0-9a-fA-F]{6})', css).group(1)
+        osi = next(l for l in content("labs.json") if l["id"] == "osi-model")
+        colours = sorted(set(re.findall(r"#[0-9a-fA-F]{6}", json.dumps(osi))))
+        self.assertGreaterEqual(len(colours), 7)
+        rgb = lambda c: [int(c[i:i + 2], 16) for i in (1, 3, 5)]
+        mix = lambda a, b, p: [a[i] * p + b[i] * (1 - p) for i in range(3)]
+        chan = lambda v: v / 255 / 12.92 if v / 255 <= 0.03928 else ((v / 255 + 0.055) / 1.055) ** 2.4
+        lum = lambda c: 0.2126 * chan(c[0]) + 0.7152 * chan(c[1]) + 0.0722 * chan(c[2])
+        for c in colours:
+            text, back = lum(mix(rgb(c), [0, 0, 0], pct)), lum(mix(rgb(c), rgb(bg), tint))
+            ratio = (max(text, back) + 0.05) / (min(text, back) + 0.05)
+            self.assertGreaterEqual(ratio, 4.5, f"{c} label is {ratio:.2f}:1 on its tint")
+
+
+class CardPictures(unittest.TestCase):
+    """Every card has its own picture (done 12 November 2026; the owner asked for no duplicates). A new card must get
+    its own file too, not a copy of another card's: docs/card-shot-list.md and docs/image-style.md say how."""
+
+    def test_no_two_cards_share_a_picture(self):
+        import collections, hashlib
+        by_hash = collections.defaultdict(list)
+        for f in sorted((ROOT / "static" / "img" / "cards").glob("*.webp")):
+            by_hash[hashlib.md5(f.read_bytes()).hexdigest()].append(f.stem)
+        shared = [g for g in by_hash.values() if len(g) > 1]
+        self.assertEqual(shared, [], "these cards share one picture")
+
+
+class MailAppColours(unittest.TestCase):
+    """The mail app is white in both themes, so nothing inside it may depend on the page theme."""
+
+    def test_mail_app_carries_light_theme_colours(self):
+        css = (ROOT / "src" / "site.css").read_text()
+        light = dict(re.findall(r"(--[a-z0-9-]+):\s*([^;]+);", re.search(r':root\[data-theme="light"\] \{(.*?)\n\}', css, re.S).group(1)))
+        scoped = dict(re.findall(r"(--[a-z0-9-]+):\s*([^;]+);", re.search(r"\n\.em-app \{\n(.*?)\n\}", css, re.S).group(1)))
+        for token in ("--ink", "--muted", "--line", "--brand", "--sun", "--good", "--bad", "--surface", "--surface-2"):
+            self.assertEqual(scoped.get(token), light[token], f"{token} inside the mail app must match the light theme")
+
+    def test_sender_avatar_initial_is_readable_for_every_colour(self):
+        import colorsys
+        css = (ROOT / "src" / "site.css").read_text()
+        sat, light = (int(x) / 100 for x in re.search(r"\.em-av \{[^}]*hsl\(var\(--em-h\) (\d+)% (\d+)%\)", css).groups())
+        chan = lambda v: v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4
+        for hue in range(360):
+            r, g, b = colorsys.hls_to_rgb(hue / 360, light, sat)
+            ratio = 1.05 / (0.2126 * chan(r) + 0.7152 * chan(g) + 0.0722 * chan(b) + 0.05)
+            self.assertGreaterEqual(ratio, 4.5, f"white initial on hue {hue} is {ratio:.2f}:1")
+
+
 class SecurityControls(unittest.TestCase):
     """Guards for the site's and pipeline's security controls, so they can't quietly regress."""
 
@@ -379,6 +545,55 @@ class SecurityControls(unittest.TestCase):
         self.assertNotIn("pages: write", build, "only the deploy job may publish")
         self.assertNotIn("id-token: write", build)
         self.assertIn("persist-credentials: false", build)
+
+    def test_article_fetch_is_https_only_and_capped(self):
+        """urllib also opens file:// and ftp://; the fact-check fetch must never read a local file."""
+        from unittest.mock import patch
+        with tempfile.NamedTemporaryFile("w", suffix=".html") as f:
+            f.write("<p>" + "secret local text " * 100 + "</p>"); f.flush()
+            with patch("urllib.request.urlopen") as opened:
+                for url in (Path(f.name).as_uri(), "ftp://example.com/a", "http://example.com/a", "", None):
+                    self.assertIsNone(explain.article_text(url))
+            opened.assert_not_called()
+
+        class Reply:
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+            def read(self, n=-1):
+                self.asked = n
+                return ("<p>" + "A long enough paragraph of article text. " * 30 + "</p>").encode()
+        reply = Reply()
+        with patch("urllib.request.urlopen", return_value=reply):
+            self.assertIn("article text", explain.article_text("https://example.com/story"))
+        self.assertEqual(reply.asked, explain.MAX_ARTICLE_BYTES)
+
+    def test_feed_reply_size_is_capped(self):
+        import io
+        self.assertEqual(news.read_capped(io.BytesIO(b"abc"), 3), b"abc")
+        with self.assertRaises(ValueError):
+            news.read_capped(io.BytesIO(b"abcd"), 3)
+        from unittest.mock import patch
+
+        class Big(io.BytesIO):
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+        with patch("urllib.request.urlopen", return_value=Big(b"x" * 64)), patch.object(news, "MAX_FEED_BYTES", 8), \
+             patch("sys.stderr"):
+            self.assertEqual(news.fetch_feed({"name": "Big", "url": "https://example.com/feed"}), [])
+
+    def test_all_workflows_discover_node_tests_and_preview_audit_branches(self):
+        """New Node tests must be picked up automatically, including on dedicated audit branches."""
+        workflows = ROOT / ".github" / "workflows"
+        # The public production repository has daily.yml only; the preview workflow exists in the dev repository.
+        preview_file = workflows / "draft-preview.yml"
+        for name in ("daily.yml", "draft-preview.yml"):
+            if not (workflows / name).exists():
+                continue
+            text = (workflows / name).read_text()
+            self.assertIn("node --test tests/*.test.mjs", text, f"{name} must discover every Node test")
+            self.assertNotRegex(text, r"node --test tests/[^\n]*\.test\.mjs tests/", f"{name} must not maintain a hand-written test list")
+        if preview_file.exists():
+            self.assertIn('"audit/**"', preview_file.read_text(), "dedicated audit branches must run the preview checks")
 
     def test_csp_allows_exactly_the_pages_inline_scripts(self):
         import base64, hashlib, re
@@ -433,8 +648,17 @@ class FeedbackForm(unittest.TestCase):
             page = build.assemble_template()
             self.assertIn("VIEWS.feedback", page)
             self.assertIn('id="fb-form"', page)
-            self.assertIn('name="_honey"', page, "the form needs a honeypot against spam bots")
+            self.assertIn('name="_gotcha"', page, "the form needs Formspree's honeypot against spam bots")
+            self.assertNotIn("@", post, "the endpoint must not contain an email address: it ships in the public page")
+            self.assertRegex(post, r"^https://formspree\.io/f/[A-Za-z0-9]+$", "feedback posts to a Formspree form ID")
+            self.assertIn(f"connect-src 'self' {build.feedback_origin()};", build.csp_meta("<p></p>"),
+                          "the security policy must allow exactly the feedback relay's origin")
+            self.assertEqual(build.feedback_origin(), "https://formspree.io")
             self.assertIn("DATA.site.feedbackPost", page, "the form must post to the configured endpoint")
+            self.assertIn("AbortSignal.timeout(", page, "a stalled relay must not leave the form stuck on Sending")
+            for field in re.findall(r'<textarea id="fb-[^>]*>|<input id="fb-email"[^>]*>', page):
+                self.assertIn("maxlength=", field, "free-text feedback fields need a length limit")
+            self.assertEqual(len(re.findall(r'<textarea id="fb-', page)), 2)
         else:
             self.assertTrue(url.startswith("https://github.com/SamJ-01/patch-notes/issues/new?template="))
             form = ROOT / ".github" / "ISSUE_TEMPLATE" / re.search(r"template=([\w.-]+)", url).group(1)

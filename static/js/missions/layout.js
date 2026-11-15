@@ -58,10 +58,13 @@ export function wrapLines(text, maxW, width, maxLines = 3) {
 export function cardGeometry(scenario, layout, width) {
   const ids = Object.keys(scenario.devices);
   const inner = layout.dw - CARD.pad * 2;
+  // `textScale` grows the text rows when a stage is drawn small (a mission room on a phone keeps the desktop
+  // arrangement and draws its words larger, so they stay readable once the whole picture is scaled down).
+  const ts = layout.textScale ?? 1;
   const content = {};
   for (const id of ids) {
     const lines = hasStatus(scenario, id) ? Math.max(1, ...statusTexts(scenario, id).map(t => wrapLines(t, inner, width).length)) : 0;
-    content[id] = { lines, h: CARD.art + CARD.gap + CARD.name + (hasIp(scenario, id) ? CARD.ip : 0) + (lines ? CARD.statusGap + lines * CARD.line : 0) };
+    content[id] = { lines, h: (layout.art ?? CARD.art) + CARD.gap + ts * (CARD.name + (hasIp(scenario, id) ? CARD.ip : 0) + (lines ? CARD.statusGap + lines * CARD.line : 0)) };
   }
   const detailed = id => hasIp(scenario, id) || hasStatus(scenario, id);
   const geo = {};
@@ -96,6 +99,44 @@ export function route(p, q) {
   const my = (p.y + q.y) / 2;
   return [p, { x: p.x, y: my }, { x: q.x, y: my }, q];
 }
+
+// A cable lying on the floor (the "room" scene): a smooth curve from p to q as a list of points, so the same
+// points draw the cable and carry the packet. A mostly sideways run is a gentle S. A mostly up-and-down run
+// leaves the upper device sideways (towards the other, or to the right when it is straight below) and comes
+// into the lower one from above, which keeps it clear of the labels printed under both.
+// `side` (-1 left, 1 right) says which way a cable to a device straight below swings out; `reach` caps how far.
+export function curveRoute(p, q, n = 24, { side = 1, reach = Infinity } = {}) {
+  const dx = q.x - p.x, dy = q.y - p.y;
+  // Labels hang under every device, so an up-and-down cable always leaves the upper one sideways and drops
+  // into the lower one from above (where the device's own body hides the end), whichever way it was asked for.
+  if (Math.abs(dy) > Math.abs(dx) && dy < 0) return curveRoute(q, p, n, { side, reach }).reverse();
+  const [c1, c2] = Math.abs(dx) >= Math.abs(dy)
+    ? [{ x: p.x + dx / 2, y: p.y }, { x: q.x - dx / 2, y: q.y }]
+    // The curve's furthest point out is 4/9 of the way to its first control point, hence reach * 9 / 4.
+    : [{ x: p.x + (dx < 0 ? -1 : dx > 0 ? 1 : side) * Math.max(Math.abs(dx), Math.min(Math.abs(dy) * 0.78, reach * 9 / 4)), y: p.y }, { x: q.x, y: q.y - dy * 0.6 }];
+  const pts = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, u = 1 - t;
+    pts.push({ x: u ** 3 * p.x + 3 * u * u * t * c1.x + 3 * u * t * t * c2.x + t ** 3 * q.x,
+      y: u ** 3 * p.y + 3 * u * u * t * c1.y + 3 * u * t * t * c2.y + t ** 3 * q.y });
+  }
+  return pts;
+}
+// The first `frac` of a route by length, so a packet stops just short of the device it is going to.
+export function shorten(pts, frac) {
+  const lens = pts.slice(1).map((p, i) => Math.hypot(p.x - pts[i].x, p.y - pts[i].y));
+  let left = lens.reduce((a, b) => a + b, 0) * Math.max(0, Math.min(1, frac));
+  const out = [pts[0]];
+  for (let i = 0; i < lens.length; i++) {
+    if (left >= lens[i]) { out.push(pts[i + 1]); left -= lens[i]; continue; }
+    const f = lens[i] ? left / lens[i] : 0;
+    out.push({ x: pts[i].x + (pts[i + 1].x - pts[i].x) * f, y: pts[i].y + (pts[i + 1].y - pts[i].y) * f });
+    break;
+  }
+  return out;
+}
+// An SVG path straight through every point (for curves that are already a list of close points).
+export const polyPath = pts => "M" + pts.map(p => `${+p.x.toFixed(1)},${+p.y.toFixed(1)}`).join(" L");
 
 // An SVG path through the points, with each corner rounded.
 export function roundedPath(pts, r = 12) {

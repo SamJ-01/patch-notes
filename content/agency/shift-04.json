@@ -33,12 +33,12 @@
   "wait": 5
  },
  "infra": {
-  "caption": "Lanternfield's SOC watches Wrenfield & Co's web app, database and cloud storage.",
+  "caption": "Lanternfield's SOC watches Wrenfield & Co's web app, database and Amazon S3 exports.",
   "nodes": [
    {"id": "net", "label": "Internet", "sub": "attacker", "icon": "globe", "at": [0, 0], "bad": true},
    {"id": "app", "label": "Shop app", "sub": "web app", "icon": "server", "at": [1, 0]},
    {"id": "db", "label": "Database", "sub": "users, orders", "icon": "database", "at": [2, 0]},
-   {"id": "bucket", "label": "Cloud bucket", "sub": "customer exports", "icon": "cloud", "at": [2, 1]},
+   {"id": "bucket", "label": "Amazon S3", "sub": "customer exports", "icon": "cloud", "at": [2, 1]},
    {"id": "siem", "label": "SIEM", "sub": "the SOC", "icon": "eye", "at": [0, 1]}
   ],
   "links": [
@@ -321,7 +321,10 @@
     "at": 0
    },
    "detection": "An admin signed into the panel from 203.0.113.90 with a reused session and no password, minutes after opening the review queue, and then read hundreds of customer orders.",
-   "seeItAtWork": {"kind": "idor", "label": "See how changing an order number leaks another customer's data"},
+   "seeItAtWork": [
+      {"kind": "xss", "label": "See how a malicious review can steal an admin session"},
+      {"kind": "idor", "label": "See why changing an order number must not expose another customer"}
+     ],
    "guide": {
     "hints": [
      "Start in the app audit log. A review was posted last night; read its text. Then see what happened when admin s.okafor opened the review queue this morning.",

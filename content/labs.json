@@ -5037,28 +5037,28 @@
   "artifact": {
    "kind": "headers",
    "name": "Message headers",
-   "text": "Return-Path: <bounce-7731@mail-x7-delivery.biz>\nReceived: from mail-x7-delivery.biz (mail-x7-delivery.biz [198.51.100.23])\n        by mx.halcyonlabs.com with ESMTP id 4f9a2c; Mon, 12 Oct 2026 08:41:07 +0000\nAuthentication-Results: mx.halcyonlabs.com;\n       spf=fail (sender IP is 198.51.100.23) smtp.mailfrom=mail-x7-delivery.biz;\n       dkim=none (message not signed);\n       dmarc=fail action=quarantine header.from=northvalebank.com\nFrom: \"Northvale Bank Security\" <security@northvalebank.com>\nReply-To: northvale-verify@quickmail.example\nTo: jordan@halcyonlabs.com\nSubject: Unusual sign-in detected - verify within 12 hours\nDate: Mon, 12 Oct 2026 08:41:02 +0000\nMessage-ID: <20261012084102.7731@mail-x7-delivery.biz>\nX-Mailer: MassMail Pro 4.2",
+   "text": "Return-Path: <bounce-7731@mail-x7-delivery.example>\nReceived: from mail-x7-delivery.example (mail-x7-delivery.example [198.51.100.23])\n        by mx.halcyonlabs.example with ESMTP id 4f9a2c; Mon, 12 Oct 2026 08:41:07 +0000\nAuthentication-Results: mx.halcyonlabs.example;\n       spf=fail (sender IP is 198.51.100.23) smtp.mailfrom=mail-x7-delivery.example;\n       dkim=none (message not signed);\n       dmarc=fail action=quarantine header.from=northvalebank.example\nFrom: \"Northvale Bank Security\" <security@northvalebank.example>\nReply-To: northvale-verify@quickmail.example\nTo: jordan@halcyonlabs.example\nSubject: Unusual sign-in detected - verify within 12 hours\nDate: Mon, 12 Oct 2026 08:41:02 +0000\nMessage-ID: <20261012084102.7731@mail-x7-delivery.example>\nX-Mailer: MassMail Pro 4.2",
    "body": "Dear Jordan,\n\nWe noticed a sign-in to your Northvale account from a new device. If this wasn't you, verify your identity within 12 hours or online banking will be locked.\n\nNorthvale Bank Security Team",
    "links": [
     {
      "text": "Verify my identity",
-     "href": "http://mail-x7-delivery.biz/nv/verify"
+     "href": "http://mail-x7-delivery.example/nv/verify"
     }
    ]
   },
   "steps": [
    {
     "type": "choice",
-    "q": "The From line says northvalebank.com. Which domain's server actually sent it?",
+    "q": "The From line says northvalebank.example. Which domain's server actually sent it?",
     "options": [
-     "northvalebank.com",
-     "mail-x7-delivery.biz",
-     "halcyonlabs.com",
+     "northvalebank.example",
+     "mail-x7-delivery.example",
+     "halcyonlabs.example",
      "quickmail.example"
     ],
     "answer": 1,
-    "explain": "The Received and Return-Path lines show mail-x7-delivery.biz. The From line is just text the sender typed, and it's trivial to fake.",
-    "where": "mail-x7-delivery.biz"
+    "explain": "The Received and Return-Path lines show mail-x7-delivery.example. The From line is just text the sender typed, and it's trivial to fake.",
+    "where": "mail-x7-delivery.example"
    },
    {
     "type": "choice",
@@ -5091,7 +5091,7 @@
      "Spoofed phishing email: report it and don't click"
     ],
     "answer": 1,
-    "explain": "DMARC failing means the message didn't prove it came from northvalebank.com. Combined with urgency and a mismatched Reply-To, it's phishing.",
+    "explain": "DMARC failing means the message didn't prove it came from northvalebank.example. Combined with urgency and a mismatched Reply-To, it's phishing.",
     "where": "dmarc="
    }
   ],
@@ -6560,7 +6560,7 @@
   "artifact": {
    "kind": "log",
    "name": "Entra ID sign-ins",
-   "text": "Simulated Microsoft Entra ID sign-in log (simplified), Thornbury Surveyors (fictional), 27 Nov 2026 (UTC). 41 staff accounts.\nSimplified: one line per sign-in with a few fields; error codes are Entra's real AADSTS codes.\n\ntime      user                        client app                        IP              loc result   detail\n09:12:01  a.lewis@thornbury.example   Exchange Online (browser)         203.0.113.140   NL  Failure  50126 invalid username or password\n09:12:03  b.shah@thornbury.example    Exchange Online (browser)         203.0.113.140   NL  Failure  50126 invalid username or password\n09:12:05  c.morgan@thornbury.example  Exchange Online (browser)         203.0.113.140   NL  Failure  50126 invalid username or password\n09:12:07  d.owusu@thornbury.example   Exchange Online (browser)         203.0.113.140   NL  Failure  50126 invalid username or password\n09:12:09  e.kowalski@thornbury.exampleExchange Online (browser)         203.0.113.140   NL  Failure  50126 invalid username or password\n... 34 more lines like these: a different user each time, one attempt each, 2 seconds apart, all 50126 ...\n09:13:22  r.james@thornbury.example   Exchange Online (browser)         203.0.113.140   NL  Success  single-factor authentication; Conditional Access: not applied\n09:31:47  a.lewis@thornbury.example   Exchange Online (browser)         198.51.100.66   GB  Success  multifactor authentication (Authenticator app)\n09:44:10  e.kowalski@thornbury.exampleExchange Online (browser)         198.51.100.66   GB  Failure  50126 invalid username or password\n09:44:31  e.kowalski@thornbury.exampleExchange Online (browser)         198.51.100.66   GB  Success  multifactor authentication (Authenticator app)\n\nConditional Access policy 'Require MFA for all users': excluded group CA-Exclude-Travel (members: r.james, added 3 Mar 2026 for a site visit abroad).\nNote: 198.51.100.66 is the office.",
+   "text": "Simulated Microsoft Entra ID sign-in log (simplified), Thornbury Surveyors (fictional), 27 Nov 2026 (UTC). 41 staff accounts.\nSimplified: one line per sign-in with a few fields; error codes are Entra's real AADSTS codes.\n\ntime      user                          client app                        IP              loc result   detail\n09:12:01  a.lewis@thornbury.example     Exchange Online (browser)         203.0.113.140   NL  Failure  50126 invalid username or password\n09:12:03  b.shah@thornbury.example      Exchange Online (browser)         203.0.113.140   NL  Failure  50126 invalid username or password\n09:12:05  c.morgan@thornbury.example    Exchange Online (browser)         203.0.113.140   NL  Failure  50126 invalid username or password\n09:12:07  d.owusu@thornbury.example     Exchange Online (browser)         203.0.113.140   NL  Failure  50126 invalid username or password\n09:12:09  e.kowalski@thornbury.example  Exchange Online (browser)         203.0.113.140   NL  Failure  50126 invalid username or password\n... 34 more lines like these: a different user each time, one attempt each, 2 seconds apart, all 50126 ...\n09:13:22  r.james@thornbury.example     Exchange Online (browser)         203.0.113.140   NL  Success  single-factor authentication; Conditional Access: not applied\n09:31:47  a.lewis@thornbury.example     Exchange Online (browser)         198.51.100.66   GB  Success  multifactor authentication (Authenticator app)\n09:44:10  e.kowalski@thornbury.example  Exchange Online (browser)         198.51.100.66   GB  Failure  50126 invalid username or password\n09:44:31  e.kowalski@thornbury.example  Exchange Online (browser)         198.51.100.66   GB  Success  multifactor authentication (Authenticator app)\n\nConditional Access policy 'Require MFA for all users': excluded group CA-Exclude-Travel (members: r.james, added 3 Mar 2026 for a site visit abroad).\nNote: 198.51.100.66 is the office.",
    "placeholder": "e.g. r.james"
   },
   "steps": [

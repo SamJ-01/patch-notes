@@ -466,7 +466,7 @@ function lessonView(id) {
       ${showDiagram ? `<div id="l-diagram" tabindex="-1">${l.diagram.why ? `<p class="muted xpl-why">${gloss(l.diagram.why, 2)}</p>` : ""}<div id="lflow"><div class="empty">Loading the diagram…</div></div></div>` : ""}
       ${showConcept ? `<div id="l-concept" tabindex="-1">${l.concept.why ? `<p class="muted xpl-why">${gloss(l.concept.why, 2)}</p>` : ""}<div id="lconcept"><div class="empty">Loading the diagram…</div></div></div>` : ""}
     </section>`) : "";
-  main.innerHTML = `<div class="view"${bannerAttr(id)}><article class="article lesson">
+  main.innerHTML = `<div class="view"><article class="article lesson">
     <a class="link-btn" href="#learn">← All lessons</a>
     <header class="lesson-open"><p class="eyebrow">${esc(l.track)} · ${esc(l.level)} · ${l.minutes} min</p><h1>${esc(l.title)}</h1></header>
     ${loopStrip(id, "understand")}

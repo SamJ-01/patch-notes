@@ -117,6 +117,17 @@ def parse_feed(xml_bytes, source):
     return items
 
 
+MAX_FEED_BYTES = 8 * 1024 * 1024  # real feeds are well under 1 MB; a larger reply is a mistake or abuse
+
+
+def read_capped(resp, limit):
+    """Read at most `limit` bytes. A reply larger than that raises, so one bad server can't exhaust memory."""
+    body = resp.read(limit + 1)
+    if len(body) > limit:
+        raise ValueError(f"reply larger than {limit // 1024} KB")
+    return body
+
+
 def fetch_feed(feed):
     # Standard content-negotiation headers: some sites' firewalls refuse requests that send none.
     req = urllib.request.Request(feed["url"], headers={
@@ -126,7 +137,7 @@ def fetch_feed(feed):
     })
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
-            body = resp.read()
+            body = read_capped(resp, MAX_FEED_BYTES)
         if body.lstrip()[:15].lower().startswith((b"<!doctype html", b"<html")):
             print(f"  ! {feed['name']}: sent a web page instead of its feed (probably rate-limited); skipped this run", file=sys.stderr)
             return []

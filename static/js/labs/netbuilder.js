@@ -153,7 +153,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     if (frozen) return frozen;
     const pts = Object.values(layout);
     if (!pts.length) return `0 0 ${W} ${H}`;
-    let [x0, y0, x1, y1] = [Math.min(...pts.map(p => p[0])) - 80, Math.min(...pts.map(p => p[1])) - 70, Math.max(...pts.map(p => p[0])) + 80, Math.max(...pts.map(p => p[1])) + 70];
+    let [x0, y0, x1, y1] = [Math.min(...pts.map(p => p[0])) - 80, Math.min(...pts.map(p => p[1])) - 70, Math.max(...pts.map(p => p[0])) + 80, Math.max(...pts.map(p => p[1])) + 84];  // room below for the name and address under each device
     let w = Math.max(x1 - x0, W / 3), h = Math.max(y1 - y0, H / 3);
     if (w / h > W / H) h = w * H / W; else w = h * W / H;
     const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;

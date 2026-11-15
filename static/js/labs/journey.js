@@ -308,10 +308,12 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     SCENES[c.id]($("jr-body"), c, () => mark(c.id));
     if (focus) { $("jr-title").focus({ preventScroll: true }); $("jr-ch").scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" }); }
   }
-  // A packet dot that glides along a line in the scene's SVG (or jumps there with reduced motion).
+  // A packet that glides along a line in the scene's SVG (or jumps there with reduced motion).
   const fly = (svg, [x1, y1], [x2, y2], cls = "") => new Promise(res => {
-    const g = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    g.setAttribute("r", "7"); g.setAttribute("class", `jr-pkt ${cls}`);
+    // The packet is a plain slab riding the cable; its edge colour says how it went (docs/diagram-standard.md).
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    for (const [k, v] of [["x", -11], ["y", -7], ["width", 22], ["height", 14], ["rx", 3]]) g.setAttribute(k, v);
+    g.setAttribute("class", `jr-pkt ${cls}`);
     g.style.transform = `translate(${x1}px, ${y1}px)`; svg.appendChild(g);
     if (reduced) { g.style.transform = `translate(${x2}px, ${y2}px)`; setTimeout(() => { g.remove(); res(); }, 60); return; }
     void g.getBoundingClientRect();
@@ -328,7 +330,8 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
       try { await fn(...a); } finally { busy = false; root.querySelector("#jr-body")?.removeAttribute("aria-busy"); }
     };
   };
-  const dev = (kind, x, y, label, cls = "", s = 1) => `<g class="jr-dev ${cls}">${hw(kind, x, y, s)}<text x="${x}" y="${y + 40 * s}" text-anchor="middle" class="jr-label">${esc(label)}</text></g>`;
+  // A device in the room (docs/diagram-standard.md): drawn a little larger, standing on the floor with a shadow, its name underneath.
+  const dev = (kind, x, y, label, cls = "", s = 1) => `<g class="jr-dev ${cls}"><ellipse class="jr-shadow" cx="${x}" cy="${y + 24 * s}" rx="${34 * s}" ry="${5 * s}"/>${hw(kind, x, y, s * 1.15)}<text x="${x}" y="${y + 43 * s}" text-anchor="middle" class="jr-label">${esc(label)}</text></g>`;
   const wire = (x1, y1, x2, y2, cls = "") => `<line class="jr-wire ${cls}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
   const code = (title, text, cls = "") => `<figure class="jr-code ${cls}"><figcaption>${esc(title)}</figcaption><pre tabindex="0">${esc(text)}</pre></figure>`;
 
@@ -336,11 +339,13 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     // Part 1: DNS
     dns(el, c, met) {
       let st = dnsStart(c.zone), now = 0, cached = false, expired = false, moved = false;
-      const N = [["phone", 60, 90, "Hopper app"], ["server", 220, 90, "Resolver"], ["cloud", 400, 40, "Root servers"], ["cloud", 400, 140, ".example servers"], ["server", 570, 90, "ns1.hopper.example"]];
-      el.innerHTML = `<svg class="jr-svg" viewBox="0 0 640 215" role="img" aria-label="The app asks a resolver. On a miss, the resolver asks the root servers, the .example servers and Hopper's name server, then caches the answer.">
-          ${wire(90, 90, 190, 90)}${wire(250, 80, 370, 40)}${wire(250, 100, 370, 140)}${wire(250, 90, 540, 90, "jr-inside")}
+      // Room to breathe: the two clouds sit well above and below the resolver's line to Hopper's server, so no
+      // label lands on a cable, and the cache note has its own line under the resolver.
+      const N = [["phone", 60, 125, "Hopper app"], ["server", 215, 125, "Resolver"], ["cloud", 405, 45, "Root servers"], ["cloud", 405, 205, ".example servers"], ["server", 565, 125, "ns1.hopper.example"]];
+      el.innerHTML = `<svg class="jr-svg" viewBox="0 0 640 275" role="img" aria-label="The app asks a resolver. On a miss, the resolver asks the root servers, the .example servers and Hopper's name server, then caches the answer.">
+          ${wire(90, 125, 185, 125)}${wire(245, 115, 375, 50)}${wire(245, 135, 375, 200)}${wire(245, 125, 535, 125, "jr-inside")}
           ${N.map(([k, x, y, l]) => dev(k, x, y, l, "", k === "cloud" ? 0.9 : 1)).join("")}
-          <text class="jr-tag" id="jr-cache" x="220" y="205" text-anchor="middle">cache empty</text></svg>
+          <text class="jr-tag" id="jr-cache" x="215" y="196" text-anchor="middle">cache empty</text></svg>
         <div class="row"><button class="btn brand" type="button" id="jr-look">Look up ${esc(c.host)}</button><button class="btn" type="button" data-wait="60">Wait 1 minute</button><button class="btn" type="button" data-wait="300">Wait 5 minutes</button><button class="btn ghost" type="button" id="jr-move">Hopper moves server</button></div>
         <p class="muted jr-small" id="jr-clock" aria-live="polite"></p>
         <div class="jr-pair"><div id="jr-dig"></div><div id="jr-dnsnote" aria-live="polite"></div></div>`;
@@ -350,9 +355,9 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
       async function look() {
         const hadExpired = !!st.cache[c.host] && st.cache[c.host].expires <= now;
         const r = dnsLookup(st, c.host, now); st = r.state;
-        await fly(svg, [90, 90], [190, 90]);
-        if (r.from === "servers") for (const [x, y] of [[370, 40], [370, 140], [540, 90]]) { await fly(svg, [250, 90], [x, y]); await fly(svg, [x, y], [250, 90], "s2xx"); }
-        await fly(svg, [190, 90], [90, 90], "s2xx");
+        await fly(svg, [90, 125], [185, 125]);
+        if (r.from === "servers") for (const [x, y] of [[375, 50], [375, 200], [535, 125]]) { await fly(svg, [245, 125], [x, y]); await fly(svg, [x, y], [245, 125], "s2xx"); }
+        await fly(svg, [185, 125], [90, 125], "s2xx");
         el.querySelector("#jr-dig").innerHTML = code(`dig ${c.host}`, digAnswer(c.host, r, c.resolver));
         el.querySelector("#jr-dnsnote").innerHTML = `<p class="jr-note">${r.from === "cache"
           ? `<b>From the cache</b> in 1 ms, with ${r.ttl} seconds of its TTL left. The resolver didn't ask anyone.${moved && r.ip !== st.zone[c.host].ip ? ` <b class="no">But Hopper moved to ${esc(st.zone[c.host].ip)}: this answer is out of date until the TTL runs out.</b>` : ""}`

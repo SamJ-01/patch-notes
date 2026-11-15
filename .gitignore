@@ -4,3 +4,10 @@ site/
 __pycache__/
 .DS_Store
 .claude/
+
+# Local credentials and private key material
+.env
+.env.*
+!.env.example
+*.pem
+*.key

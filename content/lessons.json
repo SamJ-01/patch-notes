@@ -442,13 +442,13 @@
       "tone": "bad",
       "line": "Your mailbox is full",
       "from": "IT Support <it-support@company-mail.example>",
-      "reply": "bounce@mail-x7-delivery.biz",
+      "reply": "bounce@mail-x7-delivery.example",
       "subject": "Your mailbox is full",
       "date": "10 Nov 2026, 09:14",
       "body": "Hello Alex,\n\nYour mailbox has reached its limit and will stop receiving mail within the hour.\n\nSign in to raise the limit and keep your mail.\n\nIT Support",
       "link": {
        "text": "Sign in to keep your mail",
-       "href": "https://company-mail.signin-example.com/login"
+       "href": "https://company-mail-signin.example/login"
       },
       "org": "company.example",
       "to": "alex@company.example"
@@ -464,8 +464,8 @@
      "stage": {
       "kind": "login",
       "tone": "bad",
-      "line": "https://company-mail.signin-example.com/login",
-      "url": "https://company-mail.signin-example.com/login",
+      "line": "https://company-mail-signin.example/login",
+      "url": "https://company-mail-signin.example/login",
       "brand": "Company Mail",
       "user": "alex@company.example"
      }
@@ -480,7 +480,7 @@
       "kind": "sent",
       "tone": "bad",
       "line": "Posted to 203.0.113.50",
-      "url": "https://company-mail.signin-example.com/login",
+      "url": "https://company-mail-signin.example/login",
       "brand": "Company Mail",
       "user": "alex@company.example",
       "posted": "203.0.113.50"
@@ -2509,11 +2509,18 @@
      "stop": "A firewall here decides which traffic may pass."
     },
     {
+     "from": "r",
+     "to": "w",
+     "msg": "Delivered to the website",
+     "text": "The packet arrives at 203.0.113.10. The site sees the router's public address, 198.51.100.20, not your PC.",
+     "packet": { "from": "198.51.100.20", "to": "203.0.113.10", "at": 3, "note": "At the website" }
+    },
+    {
      "from": "w",
      "to": "p",
      "msg": "Reply comes back",
      "text": "The website answers to the router's public IP, and the router translates it back to 10.0.0.5 and hands it to your PC.",
-     "packet": { "from": "203.0.113.10", "to": "198.51.100.20", "toNow": "10.0.0.5", "at": 1, "back": true, "note": "Back to your PC" },
+     "packet": { "from": "203.0.113.10", "to": "198.51.100.20", "toNow": "10.0.0.5", "at": 0, "back": true, "note": "Back to your PC" },
      "tone": "good"
     }
    ]

@@ -1,7 +1,9 @@
 // A small "what you're watching" infrastructure map for a shift's client file: the client's key assets, the way
 // in (internet/attacker), and the SOC/SIEM that watches them. Pure string output from the shift's `infra` data,
 // so it's cheap to draw. Decorative SVG (aria-hidden); the caption and the client file carry the meaning.
-// Layout is explicit: each node gives a grid [x, y]; links join node centres. Icons are drawn in currentColor.
+// Layout is explicit: each node gives a grid [x, y]; links join the drawings.
+
+import { HW } from "../hw.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -19,9 +21,28 @@ const ICONS = {
   shield: '<path d="M0-9l7 2.5v4.5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9v-4.5z"/>',
 };
 export const ICON_NAMES = Object.keys(ICONS);
-const icon = k => ICONS[k] || ICONS.server;
+// The map is a room (docs/diagram-standard.md): each asset is the site's own hardware drawing standing on the
+// floor, not a line icon on a plate. A shift still names its nodes by these generic icon names, so no vendor
+// is implied; this says which drawing stands in for each.
+const DRAWING = { globe: "cloud", lock: "router", server: "server", database: "db", pc: "pc", mail: "server", cloud: "cloud", eye: "pc", users: "laptop", shield: "server" };
+const drawing = k => HW[DRAWING[k] || "server"];
 
-const COLW = 132, ROWH = 94, NW = 96, NH = 58;
+ // Long, real product names stay intact: split at a word boundary rather than shrinking or truncating them.
+const labelLines = label => {
+  const words = String(label ?? "").trim().split(/\s+/).filter(Boolean);
+  const lines = [];
+  let current = "";
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word;
+    if (current && next.length > 16) { lines.push(current); current = word; }
+    else current = next;
+  }
+  if (current) lines.push(current);
+  return lines.length > 2 ? [lines[0], lines.slice(1).join(" ")] : (lines.length ? lines : [""]);
+};
+
+// Each node's cell: the drawing on top (centred ART above the middle), then its name and one line of detail.
+const COLW = 132, ROWH = 104, NW = 126, NH = 84, ART = -17, SCALE = 0.62;
 
 // The diagram for a shift's `infra` (see a shift JSON). Nodes: { id, label, sub?, icon, at: [x, y], bad? }.
 // Links: [fromId, toId] or [fromId, toId, { watch, label }]. `highlight` is a set/array of node ids to lift.
@@ -34,17 +55,27 @@ export function svg(infra, { highlight = [] } = {}) {
   const W = (maxX + 1) * COLW, H = (maxY + 1) * ROWH;
   const links = (infra.links || []).map(([a, b, o = {}]) => {
     if (!pos[a] || !pos[b]) return "";
-    const [x1, y1] = pos[a], [x2, y2] = pos[b];
-    const mid = o.label ? `<text class="im-llbl" x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 - 3}" text-anchor="middle">${esc(o.label)}</text>` : "";
+    // Cables run between the drawings (which hide their ends), not between the middles of the cells.
+    const [x1, y1] = [pos[a][0], pos[a][1] + ART + 6], [x2, y2] = [pos[b][0], pos[b][1] + ART + 6];
+    // A cable's name sits above a sideways cable; beside an up-and-down one, below the words under the upper device.
+    const upright = Math.abs(x2 - x1) < 1;
+    const mid = !o.label ? "" : upright
+      ? `<text class="im-llbl" x="${x1 + 7}" y="${(y1 + y2) / 2 + 21}">${esc(o.label)}</text>`
+      : `<text class="im-llbl" x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 - 5}" text-anchor="middle">${esc(o.label)}</text>`;
     return `<line class="im-link${o.watch ? " watch" : ""}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>${mid}`;
   }).join("");
   const nodes = infra.nodes.map(n => {
     const [cx, cy] = pos[n.id], on = hi.has(n.id);
-    return `<g class="im-node${n.bad ? " bad" : ""}${on ? " on" : ""}" transform="translate(${cx},${cy})">
+    const lines = labelLines(n.label);
+    const label = lines.map((line, i) => `<tspan x="0" y="${14 + i * 10}">${esc(line)}</tspan>`).join("");
+    const subY = 14 + lines.length * 10 + 1;
+    // The plate is invisible: it is the node's bounds, which a browser check uses to make sure the words fit.
+    return `<g class="im-node${n.bad ? " bad" : ""}${on ? " on" : ""}${n.icon === "eye" ? " soc" : ""}" transform="translate(${cx},${cy})">
       <rect class="im-plate" x="${-NW / 2}" y="${-NH / 2}" width="${NW}" height="${NH}" rx="9"/>
-      <g class="im-ic" transform="translate(${-NW / 2 + 17},0) scale(0.82)">${icon(n.icon)}</g>
-      <text class="im-lbl" x="${-NW / 2 + 33}" y="${n.sub ? -2 : 4}">${esc(n.label)}</text>
-      ${n.sub ? `<text class="im-sub" x="${-NW / 2 + 33}" y="11">${esc(n.sub)}</text>` : ""}</g>`;
+      <ellipse class="im-shadow" cy="${ART + 17}" rx="24" ry="4"/><ellipse class="im-ring" cy="${ART + 17}" rx="30" ry="7"/>
+      <g class="hw" transform="translate(0,${ART}) scale(${SCALE})">${drawing(n.icon)}</g>
+      <text class="im-lbl" text-anchor="middle" data-label="${esc(n.label)}">${label}</text>
+      ${n.sub ? `<text class="im-sub" text-anchor="middle" data-label="${esc(n.sub)}" x="0" y="${subY}">${esc(n.sub)}</text>` : ""}</g>`;
   }).join("");
   // The SVG is decorative; the figcaption carries the meaning for screen readers (so it isn't announced twice).
   return `<figure class="infra-map"><svg viewBox="0 0 ${W} ${H}" class="im-svg" aria-hidden="true" focusable="false">${links}${nodes}</svg>

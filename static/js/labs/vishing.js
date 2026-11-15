@@ -80,7 +80,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     if (!answeredThis) {
       body = `<p class="vp-line">${gl(b.say)}</p>${heard}
         <div class="vp-options" role="group" aria-label="Your reply">${b.options.map((o, i) =>
-          `<button class="vp-opt" type="button" data-i="${i}">${gl(o.text)}</button>`).join("")}</div>`;
+          `<button class="vp-opt" type="button" data-i="${i}">${esc(o.text)}</button>`).join("")}</div>`;
     } else {
       const chosen = b.options[picks[bi]], r = beatResult(b, picks[bi]);
       body = `<p class="vp-youline">You: ${gl(chosen.text)}</p>

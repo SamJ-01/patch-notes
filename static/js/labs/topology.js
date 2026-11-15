@@ -50,7 +50,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     <div class="row osi-progress" id="tp-parts"></div>
     <div class="row" role="group" aria-label="Topology" id="tp-tabs">${lab.topologies.map(t => `<button class="chip" data-topo="${t.id}">${esc(t.name)}</button>`).join("")}</div>
     <div class="topo-grid">
-      <section class="panel"><div class="stage-box"><svg viewBox="0 0 600 340" id="tp-svg" role="group" aria-label="Network diagram"></svg></div>
+      <section class="panel"><div class="stage-box tp-room"><svg viewBox="0 -4 600 362" id="tp-svg" role="group" aria-label="Network diagram"></svg></div>
         <div class="row"><button class="btn ghost" id="tp-fix">↺ Repair everything</button><label class="m-toggle"><input type="checkbox" id="tp-spof"> Show single points of failure</label></div>
         <p class="topo-status" id="tp-status" aria-live="polite"></p></section>
       <aside class="panel" id="tp-info"></aside>
@@ -84,7 +84,10 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
       const isEnd = ends.includes(n.id), isTarget = n.id === topo.target, down = failed.has(n.id);
       const state = down ? "down" : isTarget ? "target" : isEnd ? (r.has(n.id) ? "ok" : "bad") : r.has(n.id) ? "" : "bad";
       const [w, h, sc] = PLATE[n.kind] || PLATE.pc;
-      const shape = `<rect class="plate" x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="9"/>${hw(n.kind, 0, n.kind === "router" ? 3 : 0, sc)}`;
+      // A room, not a chart (docs/diagram-standard.md): the device stands on the floor with a shadow, and its state
+      // (working, cut off, failed, the target) is a ring of light on the floor under it. The rectangle is only the hit area.
+      const shape = `<rect class="hit" x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}"/><ellipse class="shadow" cy="${h / 2 - 7}" rx="${w * 0.46}" ry="5"/>
+        <ellipse class="plate" cy="${h / 2 - 7}" rx="${w * 0.62}" ry="10"/>${hw(n.kind, 0, n.kind === "router" ? 0 : -3, sc * 1.22)}`;
       svg += `<g class="tp-node ${state} ${spof.nodes.includes(n.id) ? "spof" : ""}" data-node="${n.id}" transform="translate(${n.x},${n.y})" tabindex="0" role="button" aria-label="${esc(label(n))}${isTarget ? " (target)" : ""}: ${down ? "failed, select to repair" : state === "bad" ? "cut off" : "working, select to make it fail"}">
         ${shape}${n.label ? `<text y="${(PLATE[n.kind] || PLATE.pc)[1] / 2 + 13}" text-anchor="middle" class="lbl">${esc(n.label)}</text>` : ""}${down ? `<path d="M-12,-12L12,12M12,-12L-12,12" class="x"/>` : ""}</g>`;
     }

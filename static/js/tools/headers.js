@@ -84,14 +84,14 @@ export function analyse(raw, { org = "" } = {}) {
 // ---------- the page
 export function mount(root, { samples = [] } = {}) {
   root.innerHTML = `<div class="hc">
+    <div id="hc-out" aria-live="polite"></div>
     <section class="panel hc-in"><div class="panel-title"><h2>Paste the headers</h2><span class="sim-tag hc-private">🔒 Stays on your device</span></div>
       <p class="muted hc-how">Open the email, then <b>Show original</b> (Gmail) or <b>View message source</b> (Outlook). Copy from the top down to Subject and Date.</p>
       <label class="sr-only" for="hc-raw">Email headers</label>
       <textarea id="hc-raw" class="hc-raw" rows="8" spellcheck="false" autocomplete="off" placeholder="Received: from …&#10;Authentication-Results: …&#10;From: …"></textarea>
       <div class="hc-row"><label for="hc-org">Your organisation's email domain <span class="muted">(optional, to spot imitations)</span></label><input id="hc-org" class="mono" placeholder="example.co.uk" autocomplete="off" spellcheck="false"></div>
       <div class="row"><button class="btn brand" type="button" id="hc-go">Check these headers</button>${samples.length ? `<span class="muted hc-try">or try an example:</span>${samples.map((x, i) => `<button class="chip" type="button" data-sample="${i}">${esc(x.label)}</button>`).join("")}` : ""}</div>
-      <p class="muted hc-small">Nothing you paste leaves this page: no upload, no saving. Even so, remove anything you'd rather not have on screen.</p></section>
-    <div id="hc-out" aria-live="polite"></div></div>`;
+      <p class="muted hc-small">Nothing you paste leaves this page: no upload, no saving. Even so, remove anything you'd rather not have on screen.</p></section></div>`;
   const $ = id => root.querySelector("#" + id);
   MAIL.wire($("hc-out"));  // once: the results inside are redrawn, the listener on their container stays
   const run = () => {
@@ -116,4 +116,5 @@ export function mount(root, { samples = [] } = {}) {
     const x = samples[Number(b.dataset.sample)];
     $("hc-raw").value = x.headers; $("hc-org").value = x.org || ""; run();
   }));
+  if (samples[0]) { $("hc-raw").value = samples[0].headers; $("hc-org").value = samples[0].org || ""; run(); }
 }

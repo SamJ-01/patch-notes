@@ -264,6 +264,8 @@ function dailyChart(daily) {
     <div class="chart" tabindex="0" role="region" aria-label="New CVEs per day chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="New CVEs per day by severity">${svg}</svg></div>
     <details class="tbl"><summary>View as table</summary><div class="tbl-wrap"><table><thead><tr><th>Day</th><th>Critical</th><th>High</th><th>Other</th><th>Total</th></tr></thead><tbody>${daily.map(d => `<tr><td>${esc(fmtDay(d.date))}</td><td>${d.critical}</td><td>${d.high}</td><td>${d.other}</td><td>${total(d)}</td></tr>`).join("")}</tbody></table></div></details>`;
 }
+// The bars filter the list on click, which a keyboard can't reach, so the table under each chart offers
+// the same filter as real buttons.
 function rankChart(items, label, linkFn) {
   if (!items.length) return `<p class="muted">No data yet.</p>`;
   const W = 640, rowH = 26, L = 200, R = 44, H = items.length * rowH + 4;
@@ -277,12 +279,12 @@ function rankChart(items, label, linkFn) {
       <rect x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent" data-tip="${esc(`${it.label}: ${it.n.toLocaleString()} CVEs`)}"${linkFn ? ` data-chart-q="${esc(linkFn(it))}"` : ""} style="cursor:${linkFn ? "pointer" : "default"}"/>`;
   });
   return `<div class="chart" tabindex="0" role="region" aria-label="${esc(label)} chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${svg}</svg></div>
-    <details class="tbl"><summary>View as table</summary><div class="tbl-wrap"><table><tbody>${items.map(it => `<tr><td>${esc(it.label)}</td><td>${it.n}</td></tr>`).join("")}</tbody></table></div></details>`;
+    <details class="tbl"><summary>View as table</summary><div class="tbl-wrap"><table><tbody>${items.map(it => `<tr><td>${linkFn ? `<button type="button" class="link-btn" data-chart-q="${esc(linkFn(it))}" aria-label="Show CVEs for ${esc(it.label)}">${esc(it.label)}</button>` : esc(it.label)}</td><td>${it.n}</td></tr>`).join("")}</tbody></table></div></details>`;
 }
 function trendsHtml() {
   const t = DATA.trends;
   // Folded away so the list of vulnerabilities is near the top; opening it is one tap.
-  return `<details class="more-what fold-sec" id="trends"><summary><h2 id="trends-h">Trends this week</h2><span class="muted">new CVEs per day, bug types, vendors · click a bar to filter</span></summary>
+  return `<details class="more-what fold-sec" id="trends"><summary><h2 id="trends-h">Trends this week</h2><span class="muted">new CVEs per day, bug types, vendors · click a bar, or a name in its table, to filter</span></summary>
     <div class="trend-grid">
       <section class="panel"><h3>New CVEs per day</h3>${dailyChart(t.daily)}</section>
       <section class="panel"><h3>Most common bug types</h3>${rankChart(t.cwes.map(c => ({ label: c.name, n: c.n, id: c.id })), "Most common bug types", it => it.id.toLowerCase())}</section>

@@ -9,7 +9,8 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 export const SEG_COLOURS = 8;
 const segClass = i => `seg${i % SEG_COLOURS}`;
 const GLYPH = { switch: "switch", pc: "pc", router: "router" };
-const SIZE = { switch: [78, 46], pc: [62, 56], router: [70, 52] };
+const SIZE = { switch: [88, 50], pc: [84, 66], router: [84, 58] };  // the space each device takes on the floor
+const ART = { switch: 1.3, pc: 1.05, router: 1.15 };  // how large its drawing is (the hardware is the subject)
 
 // One line per carried segment, offset side by side so a trunk reads as a bundle of coloured wires.
 function linkSvg(topo, l, pos, seg, focus) {
@@ -33,7 +34,9 @@ function linkSvg(topo, l, pos, seg, focus) {
     const px = ax + ((x2 - x1) / len) * along + nx * side, py = ay + ((y2 - y1) / len) * along + ny * side;
     return `<text class="nv-port" x="${px}" y="${py + 3}" text-anchor="middle">${esc(p)}</text>`;
   }).join("");
-  return `<g class="nv-link${dim}">${lines}${tag}${ports}</g>`;
+  // The cable itself lies dark on the floor; the coloured wires are the networks it carries.
+  const bed = `<line class="nv-bed" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke-width:${7 + gap * Math.max(0, carried.length - 1)}"/>`;
+  return `<g class="nv-link${dim}">${bed}${lines}${tag}${ports}</g>`;
 }
 
 function deviceSvg(topo, id, [x, y], seg, opts) {
@@ -42,20 +45,22 @@ function deviceSvg(topo, id, [x, y], seg, opts) {
   const dim = opts.focus != null && !mine.includes(opts.focus) ? " dim" : "";
   const sel = opts.selected === id ? " sel" : "";
   const ring = d.kind === "pc" && mine.length ? ` ${segClass(mine[0])}` : "";
-  // A PC wears a solid colour bar in its segment's colour, so PCs on the same VLAN visibly match at a glance
-  // (the outline alone was too subtle). Switches and routers carry a dot per segment they're in instead.
-  const stripe = d.kind === "pc" && mine.length ? `<rect class="nv-tint ${segClass(mine[0])}" x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="9"/><rect class="nv-stripe ${segClass(mine[0])}" x="${-w / 2}" y="${-h / 2}" width="${w}" height="7" rx="9"/>` : "";
-  const dots = d.kind !== "pc" ? mine.map((s, i) => `<circle class="nv-dot ${segClass(s)}" cx="${-w / 2 + 9 + i * 9}" cy="${-h / 2 - 1}" r="4"/>`).join("") : "";
+  // Names: under a PC (with its address); above a switch or router, whose cables leave downwards.
+  // A PC stands in a pool of light in its segment's colour, so PCs on the same VLAN visibly match at a glance.
+  // Switches and routers carry a small light per segment they're in instead.
+  const pool = d.kind === "pc" && mine.length ? `<ellipse class="nv-pool ${segClass(mine[0])}" cy="${h / 2 - 8}" rx="${w * 0.62}" ry="13"/>` : "";
+  const dots = d.kind !== "pc" ? mine.map((s, i) => `<circle class="nv-dot ${segClass(s)}" cx="${-w / 2 + 9 + i * 9}" cy="${h / 2 + 4}" r="4"/>`).join("") : "";  // a row of lights at its foot
   const sub = d.kind === "pc" ? (d.ip || "no IP") : "";  // router and switch details are in the legend
   const r = opts.reach?.[id];
   const badge = r ? `<g class="nv-badge ${r.result === "ok" ? "ok" : "no"}" transform="translate(${w / 2 - 4},${-h / 2 + 4})"><circle r="9"/><text y="4" text-anchor="middle">${r.result === "ok" ? "✓" : "✗"}</text></g>` : "";
-  const scale = d.kind === "switch" ? 0.95 : d.kind === "router" ? 0.7 : 0.6;
   const a11y = opts.interactive ? ` tabindex="0" role="button" aria-label="${esc(describe(topo, id, seg, r))}" aria-pressed="${opts.selected === id}"` : "";
   return `<g class="nv-dev nv-${d.kind}${dim}${sel}" data-node="${esc(id)}" transform="translate(${x},${y})"${a11y}>
-    <rect class="nv-plate${ring}" x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="9"/>${stripe}${dots}
-    <g transform="translate(0,${d.kind === "pc" ? -4 : 2}) scale(${scale})">${HW[GLYPH[d.kind]]}</g>
-    <text class="nv-name" y="${-h / 2 - 8}" text-anchor="middle">${esc(id)}</text>
-    ${sub ? `<text class="nv-sub" y="${h / 2 + 13}" text-anchor="middle">${esc(sub)}</text>` : ""}${badge}</g>`;
+    <rect class="nv-plate${ring}" x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="9"/>
+    <ellipse class="nv-shadow" cy="${h / 2 - 8}" rx="${w * 0.5}" ry="7"/>${pool}
+    <ellipse class="nv-ring" cy="${h / 2 - 8}" rx="${w * 0.66}" ry="15"/>
+    <g class="hw" transform="translate(0,-6) scale(${ART[d.kind]})">${HW[GLYPH[d.kind]]}</g>${dots}
+    <text class="nv-name" y="${d.kind === "pc" ? h / 2 + 16 : -h / 2 - 12}" text-anchor="middle">${esc(id)}</text>
+    ${sub ? `<text class="nv-sub" y="${h / 2 + 30}" text-anchor="middle">${esc(sub)}</text>` : ""}${badge}</g>`;
 }
 // The segments a device takes part in.
 export function memberships(topo, id, seg) {

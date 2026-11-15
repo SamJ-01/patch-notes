@@ -177,7 +177,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         fields: [["Client", shift.client], ["Raised", a.time ? `${a.time}, by the night shift's SIEM` : "This shift"], ["Assigned to", "You"], ["Logs", plural(a.sources.length, "source")]],
         bodyLabel: "What the detection rule saw", body: `<p>${gl(a.detection, 2)}</p>`,
       }, { headingId: "ag-a-h", statusId: "ag-tk-st" })}
-      ${a.seeItAtWork ? `<details class="ag-see" id="ag-see"><summary><span class="ag-see-ic" aria-hidden="true">▸</span> ${esc(a.seeItAtWork.label)}</summary><div class="ag-see-body" id="ag-see-body"></div></details>` : ""}
+      ${(Array.isArray(a.seeItAtWork) ? a.seeItAtWork : a.seeItAtWork ? [a.seeItAtWork] : []).map((item, i) => `<details class="ag-see" data-kind="${esc(item.kind)}"><summary><span class="ag-see-ic" aria-hidden="true">▸</span> ${esc(item.label)}</summary><div class="ag-see-body" data-explainer-body="${i}"></div></details>`).join("")}
       <div id="ag-guide"></div>
       <div class="ag-worksplit">
         <section class="ag-card ag-investigate" aria-label="Investigate">
@@ -192,12 +192,14 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         </section>
       </div>`;
     // "See it at work": load and draw the explainer the first time it's opened. It changes nothing in the shift.
-    const see = $("ag-see");
-    see?.addEventListener("toggle", () => {
-      if (see.open && !see.dataset.ready) {
-        see.dataset.ready = "1";
-        import("../explainers.js").then(X => X.mount($("ag-see-body"), a.seeItAtWork.kind)).catch(() => { see.dataset.ready = ""; });
-      }
+    $("ag-alert").querySelectorAll(".ag-see").forEach(see => {
+      see.addEventListener("toggle", () => {
+        if (see.open && !see.dataset.ready) {
+          see.dataset.ready = "1";
+          import("../explainers.js").then(X => X.mount(see.querySelector(".ag-see-body"), see.dataset.kind))
+            .catch(() => { see.dataset.ready = ""; });
+        }
+      });
     });
     $("ag-alert").querySelectorAll("[data-src]").forEach(b => b.addEventListener("click", () => {
       source = b.dataset.src;
@@ -467,7 +469,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
   root.querySelectorAll(".ag-tab").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
   $("ag-desk-go").addEventListener("click", () => {
     const level = root.querySelector('[name="ag-level"]:checked')?.value || "standard";
-    if (level === "shadow") { $("ag-in").hidden = true; startShadow(); root.scrollIntoView?.({ block: "start" }); return; }
+    if (level === "shadow") { $("ag-in").hidden = true; root.scrollIntoView?.({ block: "start" }); startShadow(); return; }
     begin(level);
     $("ag-in").hidden = true; $("ag-desk").hidden = false;
     root.scrollIntoView?.({ block: "start" });

@@ -4,6 +4,7 @@
  "topic": "Security operations · Phishing & email headers",
  "minutes": 15,
  "lesson": "phishing",
+ "scene": "room",
  "category": "Security operations",
  "summary": "Three reported emails, one real attack: read the headers, search the mail and proxy logs, find who clicked, contain it and prove how it got through.",
  "card": "Three reported emails, one real attack",

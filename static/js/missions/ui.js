@@ -24,6 +24,10 @@ const STATE_WORDS = { ok: "working", bad: "problem", warn: "warning" };
 export function mount(root, scenario, { mode = "guided", doneModes = [], next = null, onComplete = () => {}, reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches } = {}) {
   let state, playing = false, speed = 1, details = false, selected = null, busy = false, runId = 0, modeId = 0;
   const modes = Object.entries(scenario.modes);
+  // "room" scene: the devices stand on one floor with no cards round them, the cable lies on that floor and
+  // carries a plain packet, and each device shows its own state. Scenarios opt in with "scene": "room".
+  const room = scenario.scene === "room";
+  const stageHead = `<div class="stage-head"><span class="sim-tag">Simulation</span><span id="m-stage-title">Modelled in your browser. No real network traffic is sent or captured.</span></div>`;
 
   root.innerHTML = `<div class="mission">
     <div class="view-head"><a class="link-btn" href="#missions">← Missions</a>
@@ -31,16 +35,19 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
       <h1>${esc(scenario.title)}</h1><p>${esc(scenario.summary)}</p></div>
     <div class="row mode-tabs" role="group" aria-label="Mission mode">${modes.map(([k, m]) => `<button class="chip" data-mode="${k}" aria-pressed="false">${doneModes.includes(k) ? "✓ " : ""}${esc(m.label)} <span class="n">+${m.xp} XP</span></button>`).join("")}</div>
     <p class="mode-intro" id="m-intro"></p>
+    <section class="panel m-mailview" id="m-mailview" hidden></section>
     <div class="mission-grid">
-      <section class="panel stage" aria-labelledby="m-stage-title">
-        <div class="stage-head"><span class="sim-tag">Simulation</span><span id="m-stage-title">Modelled in your browser. No real network traffic is sent or captured.</span></div>
+      <section class="panel stage${room ? " room" : ""}" aria-labelledby="m-stage-title">
+        ${room ? "" : stageHead}
         <div class="stage-box"><svg id="m-svg" role="group" aria-label="Network diagram: ${esc(Object.values(scenario.devices).map(d => d.label).join(", "))}"></svg><div class="bubbles" id="m-bubbles" aria-hidden="true"></div></div>
+        ${room ? `<div class="m-says" id="m-says" aria-hidden="true"></div><p class="m-caption" id="m-caption" aria-hidden="true"></p>` : ""}
         <div class="row m-controls" id="m-controls">
           <button class="btn brand" id="m-play">▶ Play</button>
           <button class="btn" id="m-step">Step ›</button>
           <button class="btn ghost" id="m-reset">↺ Reset</button>
           <label class="m-speed">Speed <select id="m-speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
         </div>
+        ${room ? stageHead : ""}
         <details class="tbl simplification"><summary>How this simulation differs from a real network</summary><p>${esc(scenario.simplification)} Nothing on this page sends real network traffic.</p></details>
       </section>
       <aside class="stack m-side">
@@ -48,7 +55,6 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
         <section class="panel" id="m-inspect"></section>
       </aside>
     </div>
-    <section class="panel m-mailview" id="m-mailview" hidden></section>
     <section class="panel m-logview" id="m-logview" hidden></section>
     <section class="panel"><h2>What happened (text version)</h2><ol class="transcript" id="m-log" aria-live="polite"></ol></section>
     <section class="panel debrief" id="m-debrief" hidden></section>
@@ -59,13 +65,24 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
   const dev = id => scenario.devices[id];
   // With reduced motion, nothing slides: Step is the main control and Play pauses on each message.
   if (reducedMotion) { $("m-step").classList.add("brand"); $("m-play").classList.remove("brand"); }
+  let VB = { x: -MARGIN, y: -MARGIN, w: 1, h: 1 };  // the stage's viewBox, in diagram units
   let L, geo = {}, zones = [];  // current layout, card rectangles and network zones
   const center = id => layout.centerOf(scenario, L, id);
   const box = id => geo[id];
   const hasIp = id => layout.hasIp(scenario, id);
   const hasStatus = id => layout.hasStatus(scenario, id);
-  const route = (a, b) => layout.route(center(a), center(b));
-  const arrival = (from, to) => layout.arrivalRoute(route(from, to), box(to));
+  const artSize = () => L.art ?? CARD.art;
+  // In the room the cable plugs into the foot of each device, not the middle of a card.
+  // How far down each drawing its cable plugs in, so the end of the cable is hidden behind the device's body.
+  const PLUG = { pc: 0.8, server: 0.84, router: 0.68, switch: 0.6, laptop: 0.8, firewall: 0.78, attacker: 0.8, phone: 0.8 };
+  const anchor = id => (room ? { x: box(id).cx, y: box(id).top + artSize() * (PLUG[dev(id).kind] ?? 0.75) } : center(id));
+  // A cable between two devices in one column swings towards the middle of the room, and never past its edge.
+  const swing = (a, b) => ({ side: (anchor(a).x + anchor(b).x) / 2 > L.w / 2 ? -1 : 1, reach: L.w * 0.21 });
+  const route = (a, b) => (room ? layout.curveRoute(anchor(a), anchor(b), 24, swing(a, b)) : layout.route(center(a), center(b)));
+  const arrival = (from, to) => (room ? layout.shorten(route(from, to), 0.84) : layout.arrivalRoute(route(from, to), box(to)));
+  const links = new Map();  // "a|b" -> its cable, so a cable can light up while a packet is on it
+  const cable = (a, b) => links.get(`${a}|${b}`) || links.get(`${b}|${a}`);
+  const caption = text => { const c = $("m-caption"); if (c) c.textContent = text; };
 
   // Real text measurement in the stage's own font.
   function measurer(cls) {
@@ -86,12 +103,29 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
 
   // ---------- drawing
   function drawTopology() {
-    L = layout.chooseLayout(scenario, root.clientWidth < 620);
+    const small = root.clientWidth < 620;
+    // A room keeps the desktop arrangement on a phone, like the card pictures do: the same picture, scaled down.
+    // Its words are drawn larger (textScale) and its cells wider, so they stay readable at that scale.
+    L = layout.chooseLayout(scenario, room ? false : small);
+    if (room) Object.assign(L, { art: small ? 130 : 110, compact: small }, small ? { textScale: 1.8, dw: 250 } : {});
+    // The larger words need more room between rows of devices: spread the rows apart, keeping the columns.
+    if (room && small && L.pos) { const k = 1.22; L.pos = Object.fromEntries(Object.entries(L.pos).map(([id, [x, y]]) => [id, [x, Math.round(y * k)]])); L.h = Math.round(L.h * k); }
+    svg.classList.toggle("compact", !!L.compact);
+    links.clear();
     svg.setAttribute("viewBox", `${-MARGIN} ${-MARGIN} ${L.w + MARGIN * 2} ${L.h + MARGIN * 2}`);
     svg.innerHTML = "";
     const m = measurer("m-status");
     geo = layout.cardGeometry(scenario, L, m.width);
     m.done();
+    VB = { x: -MARGIN, y: -MARGIN, w: L.w + MARGIN * 2, h: L.h + MARGIN * 2 };
+    if (room) {
+      // The room is cut to what stands in it (no dead floor under the last device), with headroom on a phone
+      // so a device at the top can speak above itself rather than over its own cable.
+      // (Headroom at both widths: a little less on a desktop, where bubbles are shorter.)
+      const head = L.compact ? 0 : 60, foot = Math.max(...Object.values(geo).map(c => c.y + c.h)) + 18;
+      VB = { x: -MARGIN, y: -MARGIN - head, w: L.w + MARGIN * 2, h: foot + MARGIN + head };
+      svg.setAttribute("viewBox", `${VB.x} ${VB.y} ${VB.w} ${VB.h}`);
+    }
     zones = layout.zoneRects(scenario, L, geo);
     for (const z of zones) {
       const g = document.createElementNS(NS, "g");
@@ -101,30 +135,34 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     }
     for (const [a, b] of scenario.links) {
       const l = document.createElementNS(NS, "path");
-      l.setAttribute("d", layout.roundedPath(route(a, b)));
+      l.setAttribute("d", room ? layout.polyPath(route(a, b)) : layout.roundedPath(route(a, b)));
       l.setAttribute("class", "m-link");
       l.setAttribute("aria-hidden", "true");
       svg.appendChild(l);
+      links.set(`${a}|${b}`, l);
     }
     for (const id of Object.keys(scenario.devices)) {
       const b = box(id);
       let y = b.top;
-      const artY = y + CARD.art / 2; y += CARD.art + CARD.gap;
-      const nameY = y + CARD.name / 2; y += CARD.name;
-      const ipY = y + CARD.ip / 2; if (hasIp(id)) y += CARD.ip;
-      const statusY = y + CARD.statusGap;
+      const art = artSize(), k = art / CARD.art;
+      const artY = y + art / 2; y += art + CARD.gap;
+      const ts = L.textScale ?? 1;
+      const nameY = y + ts * CARD.name / 2; y += ts * CARD.name;
+      const ipY = y + ts * CARD.ip / 2; if (hasIp(id)) y += ts * CARD.ip;
+      const statusY = y + ts * CARD.statusGap;
       const g = document.createElementNS(NS, "g");
       g.setAttribute("class", `m-dev kind-${dev(id).kind}`);
       g.setAttribute("id", "dev-" + id);
       g.setAttribute("role", "img");
       g.innerHTML = `<rect class="m-box" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="12"/>
-        <g class="hw hw-k-${dev(id).kind}" transform="translate(${b.cx},${artY})">${HW[dev(id).kind] || ""}</g>
+        ${room ? `<ellipse class="m-shadow" cx="${b.cx}" cy="${artY + art * 0.44}" rx="${art * 0.66}" ry="${art * 0.09}"/>` : ""}
+        <g class="hw hw-k-${dev(id).kind}" transform="translate(${b.cx},${artY})${room ? ` scale(${k})` : ""}">${HW[dev(id).kind] || ""}${room && dev(id).kind === "pc" ? `<text class="m-screen" x="-11" y="-2.6" text-anchor="middle"></text>` : ""}</g>
         <text class="m-name" x="${b.cx}" y="${nameY}" text-anchor="middle" dominant-baseline="central"></text>
         ${hasStatus(id) ? `<circle class="m-dot" cx="${b.x + b.w - 16}" cy="${b.y + 16}" r="4"/>` : ""}
         ${hasIp(id) ? `<text class="m-ip" x="${b.cx}" y="${ipY}" text-anchor="middle" dominant-baseline="central"><tspan class="m-k">IP</tspan><tspan class="m-v" dx="7"></tspan></text>` : ""}
         ${hasStatus(id) ? `<text class="m-status" x="${b.cx}" y="${statusY}" text-anchor="middle"></text>` : ""}`;
       svg.appendChild(g);
-      fit(g.querySelector(".m-name"), dev(id).label, b.w - CARD.pad * 2, 12);
+      fit(g.querySelector(".m-name"), dev(id).label, b.w - CARD.pad * 2, room ? 9 : 12);
     }
     updateDevices();
   }
@@ -133,13 +171,16 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     for (const [id, d] of Object.entries(state.devices)) {
       const g = svg.querySelector("#dev-" + id); if (!g) continue;
       const b = box(id), room = b.w - CARD.pad * 2;
+      // The PC shows the address it has been given on its own screen: the moment the mission is about.
+      const screen = g.querySelector(".m-screen");
+      if (screen) { const got = /^\d/.test(d.ip || ""); screen.textContent = got ? d.ip : ""; g.classList.toggle("lit", got); }
       const ip = g.querySelector(".m-v");
       if (ip) fit(ip, d.ip || "—", room - 24, 11);
       const st = g.querySelector(".m-status");
       if (st) {
         const lines = layout.wrapLines(d.status || "", room, t => { st.textContent = t; return st.getComputedTextLength(); }, b.lines);
         const x = st.getAttribute("x"), y0 = parseFloat(st.getAttribute("y"));
-        st.innerHTML = lines.map((t, i) => `<tspan x="${x}" y="${y0 + CARD.line / 2 + i * CARD.line}" dominant-baseline="central">${esc(t)}</tspan>`).join("");
+        st.innerHTML = lines.map((t, i) => `<tspan x="${x}" y="${y0 + (L.textScale ?? 1) * (CARD.line / 2 + i * CARD.line)}" dominant-baseline="central">${esc(t)}</tspan>`).join("");
       }
       for (const s of Object.keys(STATE_WORDS)) g.classList.toggle(s, looks[id] === s);
       // Screen readers get the whole card as one sentence.
@@ -149,15 +190,25 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
 
   // ---------- speech bubbles (placement rules in layout.placeBubble)
   function bubble(id, text, tone = "") {
+    // On a phone the room is drawn small, so what each device says goes in a strip under it, named by speaker,
+    // and the picture stays clear. (The text version below the stage carries the same words for screen readers.)
+    if (L.compact) {
+      const line = document.createElement("p");
+      line.className = `m-say ${tone}`;
+      line.innerHTML = `<b>${esc(dev(id).label)}</b> ${esc(text)}`;
+      $("m-says").appendChild(line);
+      return line;
+    }
     const d = box(id);
     const b = document.createElement("div");
     b.className = `bubble ${tone}`;
     b.textContent = text;
     bubbles.appendChild(b);
-    const area = bubbles.getBoundingClientRect(), k = area.width / (L.w + MARGIN * 2);
-    const px = v => (v + MARGIN) * k;
-    const rectOf = g => ({ l: px(g.x), t: px(g.y), r: px(g.x + g.w), b: px(g.y + g.h) });
-    const obstacles = [...Object.values(geo).map(rectOf), ...zones.map(z => rectOf(z.labelBox)),
+    const area = bubbles.getBoundingClientRect(), k = area.width / VB.w;
+    const rectOf = g => ({ l: (g.x - VB.x) * k, t: (g.y - VB.y) * k, r: (g.x + g.w - VB.x) * k, b: (g.y + g.h - VB.y) * k });
+    // In the room the cables are part of the picture (and carry the packet), so a bubble keeps off them too.
+    const cables = room ? scenario.links.flatMap(([a, c]) => route(a, c).filter((_, i) => i % 3 === 0).map(p => rectOf({ x: p.x - 16, y: p.y - 12, w: 32, h: 24 }))) : [];
+    const obstacles = [...Object.values(geo).map(rectOf), ...cables, ...zones.map(z => rectOf(z.labelBox)),
       ...[...bubbles.children].filter(o => o !== b).map(o => ({ l: o.offsetLeft, t: o.offsetTop, r: o.offsetLeft + o.offsetWidth, b: o.offsetTop + o.offsetHeight }))];
     const spot = layout.placeBubble({ w: b.offsetWidth, h: b.offsetHeight }, rectOf(d), obstacles, { width: area.width, height: area.height });
     b.classList.add(spot.side);
@@ -166,7 +217,7 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     b.style.setProperty("--tail", `${spot.tail}px`);
     return b;
   }
-  const clearBubbles = () => { bubbles.innerHTML = ""; };
+  const clearBubbles = () => { bubbles.innerHTML = ""; const says = $("m-says"); if (says) says.innerHTML = ""; caption(""); };
   // A reaction is either plain text or { text, tone }: "quiet" for bystanders that ignore a message.
   const reaction = r => (typeof r === "string" ? { text: r, tone: "" } : { text: r.text, tone: r.tone || "" });
 
@@ -178,7 +229,15 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     g.setAttribute("tabindex", "0");
     g.setAttribute("role", "button");
     g.setAttribute("aria-label", `Inspect ${msg.name}`);
-    g.innerHTML = `<rect x="-50" y="-13" width="100" height="26" rx="5"/><text x="0" y="5" text-anchor="middle">${esc(msg.short || msg.name)}</text>`;
+    // In the room the packet is a plain slab on the cable. Its name is the caption under the scene, and a small
+    // tag appears on hover or keyboard focus; the wide clear rectangle keeps it easy to tap.
+    // The stage is scaled down on a phone, so the tap area is sized in screen pixels (at least 46 across), not diagram units.
+    const hit = Math.max(23, Math.ceil(23 * VB.w / (svg.getBoundingClientRect().width || VB.w)));
+    g.innerHTML = room
+      ? `<rect class="m-hit" x="${-hit}" y="${-hit}" width="${hit * 2}" height="${hit * 2}"/><rect class="m-slab" x="-15" y="-9" width="30" height="18" rx="4"/><path class="m-slab-edge" d="M-10 -4.5h20"/>
+         <g class="m-tag"><rect x="-46" y="-40" width="92" height="22" rx="5"/><text x="0" y="-25" text-anchor="middle">${esc(msg.short || msg.name)}</text></g>`
+      : `<rect x="-50" y="-13" width="100" height="26" rx="5"/><text x="0" y="5" text-anchor="middle">${esc(msg.short || msg.name)}</text>`;
+    if (room) g.classList.add("slab");
     g.addEventListener("click", () => inspect(msgId));
     g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); inspect(msgId); } });
     svg.appendChild(g);
@@ -216,21 +275,32 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     svg.querySelectorAll(".m-pkt").forEach(p => p.remove());
     clearBubbles();
     bubble(msg.from, msg.say, "say");
+    caption(msg.name);
+    // A cable glows while a packet is on it, and the device it reaches blinks once.
+    const lit = (a, b, on) => cable(a, b)?.classList.toggle("live", on);
+    const blink = id => { const g = svg.querySelector("#dev-" + id); if (!g || !room) return; g.classList.add("rx"); setTimeout(() => g.classList.remove("rx"), 700); };
     svg.querySelector("#dev-" + msg.from)?.classList.add("talk");
     const p = packet(msg, id);
-    const start = center(msg.path[0]);
+    const start = anchor(msg.path[0]);
     p.setAttribute("transform", `translate(${start.x},${start.y})`);
     for (let i = 1; i < msg.path.length; i++) {
       const last = i === msg.path.length - 1 && !msg.flood;
+      lit(msg.path[i - 1], msg.path[i], true);
       await move(p, last ? arrival(msg.path[i - 1], msg.path[i]) : route(msg.path[i - 1], msg.path[i]), ms, token);
+      lit(msg.path[i - 1], msg.path[i], false);
+      if (token === runId) blink(msg.path[i]);
     }
-    const hubId = msg.path[msg.path.length - 1], hub = center(hubId);
+    const hubId = msg.path[msg.path.length - 1], hub = anchor(hubId);
     // A switch floods broadcasts out of every other port: one copy per destination.
     const copies = (msg.flood || []).map((to, i) => { const c = i === 0 ? p : packet(msg, id); c.setAttribute("transform", `translate(${hub.x},${hub.y})`); return [c, to]; });
+    copies.forEach(([, to]) => lit(hubId, to, true));
     await Promise.all(copies.map(([c, to]) => move(c, arrival(hubId, to), ms, token)));
+    copies.forEach(([, to]) => lit(hubId, to, false));
     if (token !== runId) return;
+    copies.forEach(([, to]) => blink(to));
     // Delivered packets fade away so they never sit on top of a card or its label.
-    svg.querySelectorAll(".m-pkt").forEach(c => c.classList.add("arrived"));
+    // They also leave the tab order: a faded packet was still a keyboard stop on something nobody could see.
+    svg.querySelectorAll(".m-pkt").forEach(c => { c.classList.add("arrived"); c.setAttribute("tabindex", "-1"); c.setAttribute("aria-hidden", "true"); });
     svg.querySelector("#dev-" + msg.from)?.classList.remove("talk");
     if (noReply) bubble((msg.flood || msg.path.slice(-1))[0], "… (no answer)", "quiet");
     else Object.entries(msg.reactions || {}).forEach(([who, r]) => { const { text, tone } = reaction(r); bubble(who, text, tone); });
@@ -401,24 +471,28 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
     if (ev.query) logLine(`You searched the log for <strong>${esc(ev.query)}</strong>: ${ev.lines.length} line${ev.lines.length === 1 ? "" : "s"}${ev.found.length ? ` → ${ev.found.map(esc).join(" ")}` : ""}`);
     renderFindings();
   }
-  // ---------- email inspector (challenge modes of scenarios with reported emails): read headers as pictures
+  function paintEmail(e) {
+    $("m-mailview").querySelectorAll("[data-email]").forEach(b => b.setAttribute("aria-pressed", b.dataset.email === e.id));
+    $("m-mail").innerHTML = `${e.note ? `<p class="m-mailnote"><b>${esc(e.reportedBy)}</b> reported it from ${esc(e.folder)}: ${esc(e.note.replace(/^[^:]+:\s*/, ""))}</p>` : ""}
+      ${MAIL.card({ headers: e.headers, body: e.body, links: e.links, folder: e.folder }, { id: `m-em-${e.id}`, org: scenario.emails.org, client: true })}`;
+  }
+  // A mission with reported emails opens on the mailbox, in every mode, showing the first email. The room diagram
+  // stays under it: the emails are the evidence, the room is how the mail travelled.
   function emailViewer() {
-    const v = $("m-mailview"), on = isToolMode(scenario.modes[state.mode]) && !!scenario.emails;
+    const v = $("m-mailview"), on = !!scenario.emails;
     v.hidden = !on; if (!on) return;
     v.innerHTML = `<div class="panel-title"><h2>Reported emails</h2><span class="sim-tag">Simulated email</span></div>
       <p class="muted" style="margin:0">${esc(scenario.emails.intro)}</p>
       <div class="row mail-tabs" role="group" aria-label="Choose a reported email">${scenario.emails.items.map(e => `<button class="chip" type="button" data-email="${esc(e.id)}" aria-pressed="false">${esc(e.label)} <span class="n">${esc(e.reportedBy)}</span></button>`).join("")}</div>
-      <div id="m-mail" aria-live="polite"><p class="muted">Pick an email above to inspect it.</p></div>`;
+      <div id="m-mail" aria-live="polite"></div>`;
     v.querySelectorAll("[data-email]").forEach(b => b.addEventListener("click", () => run(engine.inspectEmail(scenario, state, b.dataset.email))));
     MAIL.wire(v.querySelector("#m-mail"));
+    paintEmail(scenario.emails.items[0]);
   }
   // The email itself is the site's shared email (static/js/mail.js): Message, Details (who, route, checks) and Original.
   function showEmail(ev) {
-    const e = ev.email;
-    $("m-mailview").querySelectorAll("[data-email]").forEach(b => b.setAttribute("aria-pressed", b.dataset.email === e.id));
-    $("m-mail").innerHTML = `${e.note ? `<p class="m-mailnote"><b>${esc(e.reportedBy)}</b> reported it from ${esc(e.folder)}: ${esc(e.note.replace(/^[^:]+:\s*/, ""))}</p>` : ""}
-      ${MAIL.card({ headers: e.headers, body: e.body, links: e.links, folder: e.folder }, { id: `m-em-${e.id}`, org: scenario.emails.org, client: true })}`;
-    logLine(`You inspected <strong>${esc(e.label)}</strong> (reported by ${esc(e.reportedBy)})${ev.found.length ? ` → ${ev.found.map(esc).join(" ")}` : ""}`);
+    paintEmail(ev.email);
+    logLine(`You inspected <strong>${esc(ev.email.label)}</strong> (reported by ${esc(ev.email.reportedBy)})${ev.found.length ? ` → ${ev.found.map(esc).join(" ")}` : ""}`);
     renderFindings();
   }
   function renderFindings() {
@@ -512,7 +586,8 @@ export function mount(root, scenario, { mode = "guided", doneModes = [], next = 
   setMode(mode);
   const ro = new ResizeObserver(() => {
     if (!root.isConnected) return ro.disconnect();
-    if (layout.chooseLayout(scenario, root.clientWidth < 620).narrow !== L.narrow) { runId++; clearBubbles(); drawTopology(); }
+    const small = root.clientWidth < 620;
+    if (room ? small !== !!L.compact : layout.chooseLayout(scenario, small).narrow !== L.narrow) { runId++; clearBubbles(); drawTopology(); }
   });
   ro.observe(root);
   return { setMode, get state() { return state; } };

@@ -26,6 +26,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 HERE = Path(__file__).resolve().parent
 NEWS = HERE / "data" / "news.json"
@@ -38,6 +39,7 @@ CVES = HERE / "site" / "data" / "cves.json"
 KEEP_DAYS = 30
 USER_AGENT = "Mozilla/5.0 (compatible; patch-notes/1.0; +personal security news reader)"
 MAX_CHARS = 700
+MAX_ARTICLE_BYTES = 3 * 1024 * 1024
 
 
 def load(path, default):
@@ -162,17 +164,43 @@ def ask(prompt, choices):
             return answer
 
 
+def push_destination():
+    """Return a credential-free origin/repository and current branch for an explicit push confirmation."""
+    remote = subprocess.run(
+        ["git", "remote", "get-url", "--push", "origin"], cwd=HERE, check=True, capture_output=True, text=True
+    ).stdout.strip()
+    branch = subprocess.run(
+        ["git", "branch", "--show-current"], cwd=HERE, check=True, capture_output=True, text=True
+    ).stdout.strip()
+    if not remote or not branch:
+        raise RuntimeError("Git origin or current branch could not be determined.")
+    # Handle both HTTPS/SSH URLs and scp-style SSH remotes without ever displaying embedded credentials.
+    if remote.startswith("git@") and ":" in remote:
+        host, path = remote[4:].split(":", 1)
+    else:
+        parsed = urlsplit(remote)
+        host, path = parsed.hostname or "unknown host", parsed.path
+    repository = path.strip("/").removesuffix(".git")
+    return f"{host}/{repository}" if repository else host, branch
+
+
 def offer_push(files, message):
-    if ask("\nCommit and push the approved changes now so the site updates? [y/n] ", "yn") != "y":
-        print("Not pushed. Run `git add`, `git commit` and `git push` when you're ready.")
+    try:
+        repository, branch = push_destination()
+    except (OSError, RuntimeError, subprocess.CalledProcessError) as exc:
+        print(f"Cannot safely offer a push: {exc}")
+        return
+    prompt = f"\nCommit and push the approved changes to {repository} on branch {branch}? [y/n] "
+    if ask(prompt, "yn") != "y":
+        print("Not pushed. The approved changes remain local.")
         return
     subprocess.run(["git", "add", *files], cwd=HERE, check=True)
     if subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=HERE).returncode == 0:
         print("Nothing to commit.")
         return
     subprocess.run(["git", "commit", "-q", "-m", message], cwd=HERE, check=True)
-    subprocess.run(["git", "push", "-q"], cwd=HERE, check=True)
-    print("Pushed. The public site rebuilds in about a minute.")
+    subprocess.run(["git", "push", "-q", "origin", "HEAD"], cwd=HERE, check=True)
+    print(f"Pushed to {repository} ({branch}). Deployment depends on that repository's configured workflow.")
 
 
 def review():
@@ -233,10 +261,14 @@ def review_terms():
 def article_text(url):
     """Readable paragraph text of a page, or None if the site refuses or sends nothing useful."""
     import html, re, urllib.request
+    # Story links come from saved data files. urllib would also open file:// and ftp:// URLs, so only
+    # https is fetched, and the reply is capped so one huge page can't exhaust memory.
+    if not str(url).startswith("https://"):
+        return None
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept-Language": "en-GB,en;q=0.9"})
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
-            page = resp.read().decode("utf-8", "replace")
+            page = resp.read(MAX_ARTICLE_BYTES).decode("utf-8", "replace")
     except Exception:
         return None
     page = re.sub(r"(?is)<(script|style|noscript|nav|footer|header|aside)[^>]*>.*?</\1>", " ", page)

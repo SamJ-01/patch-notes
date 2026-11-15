@@ -13,6 +13,7 @@ Run on its own for a terminal summary:  python3 cve_watch.py --days 7 --notify
 """
 
 import argparse
+import contextlib
 import datetime as dt
 import http.client
 import json
@@ -269,10 +270,11 @@ def cached_cves(days=None, ids=()):
         return {}
     cutoff = (dt.date.today() - dt.timedelta(days=days)).isoformat() if days else None
     out = {}
-    for (data,) in open_db().execute("SELECT data FROM cves"):
-        cve = json.loads(data)
-        if (cutoff and (cve.get("published") or "") >= cutoff) or cve["id"] in ids:
-            out[cve["id"]] = {k: cve.get(k) for k in NVD_FIELDS}
+    with contextlib.closing(open_db()) as db:
+        for (data,) in db.execute("SELECT data FROM cves"):
+            cve = json.loads(data)
+            if (cutoff and (cve.get("published") or "") >= cutoff) or cve["id"] in ids:
+                out[cve["id"]] = {k: cve.get(k) for k in NVD_FIELDS}
     return out
 
 
@@ -281,9 +283,10 @@ def cached_extras():
     if sqlite3 is None or not DB_PATH.exists():
         return {}
     out = {}
-    for (data,) in open_db().execute("SELECT data FROM cves"):
-        cve = json.loads(data)
-        out[cve["id"]] = {k: cve.get(k) for k in ("kev", "epss", "epss_pct")}
+    with contextlib.closing(open_db()) as db:
+        for (data,) in db.execute("SELECT data FROM cves"):
+            cve = json.loads(data)
+            out[cve["id"]] = {k: cve.get(k) for k in ("kev", "epss", "epss_pct")}
     return out
 
 
@@ -374,7 +377,8 @@ def collect(days):
     rows = sorted(cves.values(), key=lambda c: (c["priority"], -(c["epss"] or 0), -(c["cvss"] or 0)))
 
     if sqlite3 is not None:
-        new_ids = save(open_db(), rows)
+        with contextlib.closing(open_db()) as db:
+            new_ids = save(db, rows)
     else:  # no cross-run cache without sqlite3: nothing can be marked "new since last run"
         new_ids = set()
     for cve in rows:

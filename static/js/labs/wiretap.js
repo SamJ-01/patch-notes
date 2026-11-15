@@ -38,7 +38,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
         <div class="row" role="group" aria-label="Protocol">
           <button class="chip" data-proto="telnet" aria-pressed="true">Telnet · port 23</button>
           <button class="chip" data-proto="ssh" aria-pressed="false">SSH · port 22</button></div></div>
-      <div class="stage-box"><svg viewBox="0 0 420 150" id="tap-svg" role="img" aria-label="A client and a server with an eavesdropper tapping the wire between them"></svg></div>
+      <div class="stage-box room-box"><svg viewBox="0 -8 420 168" id="tap-svg" role="img" aria-label="A client and a server with an eavesdropper tapping the wire between them"></svg></div>
       <div class="row"><button class="btn brand" id="tap-go" type="button">Send the login and a command</button></div>
     </section>
     <section class="panel tap-sniff">
@@ -52,9 +52,9 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   const svg = $("tap-svg");
   svg.innerHTML = `
     <line class="tap-wire" x1="70" y1="110" x2="350" y2="110"/>
-    <g>${hw("laptop", 46, 110, 0.72)}<text class="tap-lbl" x="46" y="144">You</text></g>
-    <g>${hw("server", 374, 110, 0.78)}<text class="tap-lbl" x="374" y="146">Server</text></g>
-    <g>${hw("attacker", 210, 44, 0.6)}<text class="tap-lbl" x="210" y="76">Eavesdropper</text><line class="tap-tap" x1="210" y1="62" x2="210" y2="104"/></g>`;
+    <g><ellipse class="room-shadow" cx="46" cy="130" rx="30" ry="4"/>${hw("laptop", 46, 108, 0.92)}<text class="tap-lbl" x="46" y="150">You</text></g>
+    <g><ellipse class="room-shadow" cx="374" cy="134" rx="26" ry="4"/>${hw("server", 374, 108, 1)}<text class="tap-lbl" x="374" y="154">Server</text></g>
+    <g><ellipse class="room-shadow" cx="210" cy="58" rx="24" ry="3.5"/>${hw("attacker", 210, 40, 0.74)}<text class="tap-lbl" x="210" y="76">Eavesdropper</text><line class="tap-tap" x1="210" y1="62" x2="210" y2="104"/></g>`;
 
   function drawParts() {
     const parts = [["telnet", "Sniff a Telnet login"], ["ssh", "Sniff an SSH login"], ["compare", "See the difference"]];

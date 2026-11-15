@@ -1,8 +1,10 @@
 /* PROGRESS */
 let resetArmed = 0;
 
-// The on-site feedback form. Submits straight to a form-to-email relay (DATA.site.feedbackPost) from the browser,
-// so the site stays static and the person needs no account and never leaves the page. Nothing is saved locally.
+// The on-site feedback form. Submits straight to Formspree (DATA.site.feedbackPost, an endpoint like
+// https://formspree.io/f/<id>, so no email address is in the page) from the browser as JSON, so the site stays
+// static and the person needs no account and never leaves the page. Nothing is saved locally. Formspree's own
+// script isn't used: the page's security policy only runs scripts it serves itself.
 VIEWS.feedback = () => {
   const endpoint = DATA.site.feedbackPost || "";
   const checks = (name, opts, type) => opts.map(o => `<label class="fb-opt"><input type="${type}" name="${esc(name)}" value="${esc(o)}"><span>${esc(o)}</span></label>`).join("");
@@ -16,15 +18,15 @@ VIEWS.feedback = () => {
       <fieldset class="fb-set"><legend>What device were you on?</legend>
         <div class="fb-opts">${checks("Device", ["Phone", "Tablet", "Laptop or desktop"], "radio")}</div></fieldset>
       <div class="stack" style="gap:6px"><label for="fb-stuck"><b>What confused you, was wrong, or annoyed you?</b> <span class="muted">Name the page if you can.</span></label>
-        <textarea id="fb-stuck" name="What confused, was wrong or annoying" rows="4"></textarea></div>
+        <textarea id="fb-stuck" name="What confused, was wrong or annoying" rows="4" maxlength="4000"></textarea></div>
       <fieldset class="fb-set"><legend>How likely are you to use it again?</legend>
         <div class="fb-opts fb-scale">${checks("Likely to use again (1-5)", ["1", "2", "3", "4", "5"], "radio")}</div>
         <p class="muted" style="margin:4px 0 0">1 = not at all, 5 = definitely.</p></fieldset>
       <div class="stack" style="gap:6px"><label for="fb-else"><b>Anything else?</b> <span class="muted">Optional.</span></label>
-        <textarea id="fb-else" name="Anything else" rows="3"></textarea></div>
+        <textarea id="fb-else" name="Anything else" rows="3" maxlength="4000"></textarea></div>
       <div class="stack" style="gap:6px"><label for="fb-email"><b>Your email</b> <span class="muted">Optional, only if you want a reply.</span></label>
-        <input id="fb-email" name="email" type="email" autocomplete="email" inputmode="email" spellcheck="false"></div>
-      <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" class="fb-honey">
+        <input id="fb-email" name="email" type="email" maxlength="254" autocomplete="email" inputmode="email" spellcheck="false"></div>
+      <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" class="fb-honey">
       <div class="row"><button class="btn brand" type="submit" id="fb-send">Send feedback</button></div>
       <p class="muted" id="fb-note" role="status" aria-live="polite" style="margin:0"></p>
     </form>
@@ -32,22 +34,30 @@ VIEWS.feedback = () => {
   const form = $("fb-form"), note = $("fb-note"), btn = $("fb-send");
   form.addEventListener("submit", async e => {
     e.preventDefault();
-    if (form.querySelector('[name="_honey"]').value) return;  // a bot filled the hidden field
+    if (form.querySelector('[name="_gotcha"]').value) return;  // a bot filled the hidden field (Formspree's honeypot)
     const fd = new FormData(form), tried = fd.getAll("tried"), body = {};
-    for (const [k, v] of fd.entries()) { if (k === "tried" || k === "_honey" || !String(v).trim()) continue; body[k] = v; }
+    for (const [k, v] of fd.entries()) { if (k === "tried" || k === "_gotcha" || !String(v).trim()) continue; body[k] = v; }
     if (tried.length) body["What they tried"] = tried.join(", ");
     if (!Object.keys(body).length) { note.textContent = "Add a word or two first, then send."; return; }
-    Object.assign(body, { _subject: "Patch Notes feedback", _template: "table", _captcha: "false" });
+    body._subject = "Patch Notes feedback";
+    // Formspree uses the sender's address as reply-to only when the field is called "email", which it already is.
     btn.disabled = true; note.textContent = "Sending…";
     try {
       if (!endpoint) throw new Error("no endpoint set");
-      const r = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body) });
-      if (!r.ok) throw new Error("bad status " + r.status);
+      // Give up after 15 s so a stalled relay can't leave the button stuck on "Sending…".
+      const r = await fetch(endpoint, { method: "POST", signal: AbortSignal.timeout(15000), headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body) });
+      if (!r.ok) {
+        // Formspree explains a refused submission (for example an invalid email address) in errors[].message.
+        const why = await r.json().then(j => (j.errors || []).map(x => x.message).filter(Boolean).join(" ")).catch(() => "");
+        throw Object.assign(new Error(why || "bad status " + r.status), { refused: !!why });
+      }
       form.innerHTML = `<div class="feedback"><b class="ok">Thank you.</b> Your feedback is on its way, and it really does shape what gets built next.</div>
         <a class="btn ghost" href="#today" style="justify-self:start">Back to the site</a>`;
     } catch (err) {
       btn.disabled = false;
-      note.textContent = "Couldn't send just now, sorry. Check your connection and try again in a moment.";
+      note.textContent = err.refused
+        ? `Couldn't send that: ${err.message}`
+        : "Couldn't send just now, sorry. Check your connection and try again in a moment.";
     }
   });
 };

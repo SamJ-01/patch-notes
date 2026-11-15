@@ -52,7 +52,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     <div class="row osi-progress" id="hs-parts"></div>
     <div class="hs-grid">
       <section class="panel">
-        <div class="stage-box"><svg viewBox="0 0 400 200" id="hs-svg" role="img" aria-label="An attacker, a client and a server, with the server's connection queue"></svg></div>
+        <div class="stage-box room-box"><svg viewBox="0 -6 400 216" id="hs-svg" role="img" aria-label="An attacker, a client and a server, with the server's connection queue"></svg></div>
         <p class="hs-status" id="hs-status" aria-live="polite"></p>
       </section>
       <aside class="panel hs-ctl">
@@ -76,9 +76,9 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
 
   svg.innerHTML = `
     <line class="hs-wire" x1="70" y1="150" x2="330" y2="150"/>
-    <g>${hw("attacker", 46, 46, 0.72)}<text class="hs-lbl" x="46" y="82">Attacker</text></g>
-    <g>${hw("laptop", 46, 150, 0.72)}<text class="hs-lbl" x="46" y="184">You</text></g>
-    <g>${hw("server", 354, 150, 0.8)}<text class="hs-lbl" x="354" y="188">Server</text></g>`;
+    <g><ellipse class="room-shadow" cx="46" cy="66" rx="30" ry="4"/>${hw("attacker", 46, 44, 0.92)}<text class="hs-lbl" x="46" y="86">Attacker</text></g>
+    <g><ellipse class="room-shadow" cx="46" cy="170" rx="30" ry="4"/>${hw("laptop", 46, 148, 0.92)}<text class="hs-lbl" x="46" y="190">You</text></g>
+    <g><ellipse class="room-shadow" cx="354" cy="174" rx="26" ry="4"/>${hw("server", 354, 148, 1)}<text class="hs-lbl" x="354" y="194">Server</text></g>`;
 
   function drawParts() {
     const parts = [["handshake", "See a handshake"], ["flood", "Fill the queue"], ["defend", "Defend with SYN cookies"]];

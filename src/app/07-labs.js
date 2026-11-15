@@ -378,7 +378,7 @@ const LEAVE_SHIFT = "Leave this shift? It isn't saved part-way, so you'll start 
 addEventListener("beforeunload", e => { if (agencyShift?.inProgress && main.contains($("agency-root"))) e.preventDefault(); });
 function missionView(id) {
   const m = MISSION(id); if (!m) return VIEWS.missions();
-  main.innerHTML = `<div class="view" id="mission-root"${bannerAttr(id)}><div class="empty">Loading mission…</div></div>`;
+  main.innerHTML = `<div class="view" id="mission-root"><div class="empty">Loading mission…</div></div>`;
   import("./js/missions/ui.js").then(ui => {
     if (parseRoute().path !== "missions/" + id) return;  // the learner navigated away while it loaded
     const next = m.next && MISSION(m.next);
@@ -401,7 +401,7 @@ function missionView(id) {
 }
 const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring", "wiretap", "vlan", "hashing", "netbuilder", "perms", "journey", "corridor", "firewall", "vishing"];  // labs with their own module in static/js/labs/<kind>.js
 function moduleLab(l) {
-  main.innerHTML = `<div class="view" id="lab-root"${bannerAttr(l.id)}><div class="empty">Loading lab…</div></div>`;
+  main.innerHTML = `<div class="view" id="lab-root"><div class="empty">Loading lab…</div></div>`;
   import(`./js/labs/${l.kind}.js`).then(mod => {
     if (parseRoute().path !== "missions/" + l.id) return;
     mod.mount($("lab-root"), l, {
@@ -440,11 +440,11 @@ function labView(id) {
   if (l.kind === "cvss") return cvssLab(l);
   if (MODULE_LABS.includes(l.kind)) return moduleLab(l);
   const solved = new Set(P.labSteps[id] || []);
-  main.innerHTML = `<div class="view"${bannerAttr(id)}><article class="article lesson">
+  main.innerHTML = `<div class="view"><article class="article lesson">
     <a class="link-btn" href="#missions">← Practise</a>
     <header class="lesson-open"><p class="eyebrow">Lab · ${esc(l.track)} · ${l.minutes} min</p><h1>${esc(l.title)}</h1></header>
     ${loopStrip(pageTopic(l), labStage(l))}
-    ${l.artifact.kind === "headers" ? `<section class="lesson-mail">${MAIL.card({ headers: l.artifact.text, body: l.artifact.body, links: l.artifact.links }, { id: "lab-mail", views: ["message", "original"], org: "halcyonlabs.com", client: true })}</section>` : `<section class="panel screen"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
+    ${l.artifact.kind === "headers" ? `<section class="lesson-mail">${MAIL.card({ headers: l.artifact.text, body: l.artifact.body, links: l.artifact.links }, { id: "lab-mail", views: ["message", "original"], org: "halcyonlabs.example", client: true })}</section>` : `<section class="panel screen"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
       ${l.artifact.kind === "log" ? `<div class="row"><label class="sr" for="lab-f">Filter lines</label><span class="mono" style="color:var(--sun)">grep</span><input id="lab-f" type="search" placeholder="${esc(l.artifact.placeholder || "e.g. Failed password")}" autocomplete="off" spellcheck="false"></div>` : ""}
       <pre class="evidence" id="lab-pre" tabindex="0" aria-label="Evidence"></pre></section>`}
     <section class="stack" id="lab-steps">${l.steps.map((st, i) => `<div class="panel lab-step ${solved.has(i) ? "got" : ""}" data-i="${i}">
@@ -594,7 +594,7 @@ function cvssLab(l) {
   const pick = { AV: "N", AC: "L", PR: "N", UI: "N", S: "U", C: "N", I: "N", A: "N" };
   const draw = () => {
     const sc = l.scenarios[cur], score = cvss31(pick), vec = CVSS_METRICS.map(([k]) => `${k}:${pick[k]}`).join("/");
-    main.innerHTML = `<div class="view"${bannerAttr(l.id)}><article class="article" style="max-width:900px">
+    main.innerHTML = `<div class="view"><article class="article" style="max-width:900px">
       <a class="link-btn" href="#missions">← Missions</a>
       <div class="stack" style="gap:8px"><div class="eyebrow">Lab · ${esc(l.track)} · ${done.size}/${l.scenarios.length} scenarios · +${LAB_XP} XP</div><h1>${esc(l.title)}</h1><p class="hook">${esc(l.intro)}</p></div>
       ${loopStrip(pageTopic(l), labStage(l))}

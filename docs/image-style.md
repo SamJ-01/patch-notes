@@ -5,10 +5,10 @@ The owner chose this on 11 November 2026 and prefers it. Do not go back to neon 
 The look in one line: **a dark room, one teal light, a real object.** Classy, quiet, photoreal. The home hero (`static/img/hero-soc.webp`) is the reference.
 
 ## Hard rules
-- One practical teal light. No second neon colour, no holographic UI, no glowing emblems.
+- No teal lamp, teal dot, halo or coloured wash. If the light would sit in an odd place, leave the shot dark. A screen may glow only when the screen is the subject.
 - The subject is a real thing: a phone, a terminal, a server cabinet, a door, a keycard. Not an illustrated icon.
 - No people. No readable text, logos or watermarks.
-- Related cards may share a still. Do not invent a new style for one card.
+- One picture per card. Every card has its own since 12 November 2026, and a test keeps it that way. Do not invent a new style for one card.
 - Teaching diagrams stay as live SVG, not fake screenshots of real tools.
 
 ## Prompt preamble

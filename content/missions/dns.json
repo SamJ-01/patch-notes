@@ -779,5 +779,6 @@
   "honesty": "An illustration of how Wireshark shows a DNS message, built from this scenario, not a real capture.",
   "tryIt": "On a network you're allowed to monitor, capture with the filter dns and watch a lookup. nslookup or dig shows the same answer on the command line."
  },
+ "scene": "room",
  "category": "Networking"
 }

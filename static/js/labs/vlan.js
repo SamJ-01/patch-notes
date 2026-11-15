@@ -9,6 +9,10 @@ import * as M from "../net/model.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const pad = (s, n) => String(s).padEnd(n);
+// Replies the switch and the router consoles give in exactly the same words (Cisco IOS 15).
+const helpList = opts => ({ out: opts.length ? opts.map(o => `  ${pad(o.word, 17)}${o.help}`).join("\n") : "% Unrecognized command" });
+const unknownWord = word => ({ out: `Translating "${word}"...domain server (255.255.255.255)\n% Unknown command or computer name, or unable to find computer address`, error: true });
+const notModelled = () => ({ out: "[Simulator: that command isn't modelled here.]", error: true });
 
 // ---------- ports: a 2960-24TT has Fa0/1-24 and Gi0/1-2
 export const PORTS = M.SWITCH_PORTS;
@@ -310,7 +314,7 @@ export function createCli(topo) {
     if (words.at(-1).endsWith("?")) {
       const last = words.at(-1).slice(0, -1);  // "sh?" lists words starting "sh"; "show ?" lists what follows show
       const opts = options(C.mode, words.slice(0, -1)).filter(o => !last || o.word.startsWith(last.toLowerCase()));
-      return { out: opts.length ? opts.map(o => `  ${pad(o.word, 17)}${o.help}`).join("\n") : "% Unrecognized command" };
+      return helpList(opts);
     }
     let r = parse(C.mode, words);
     // IOS runs global configuration commands from any configuration submode, and moves to that mode.
@@ -322,7 +326,7 @@ export function createCli(topo) {
     if (r.error === "incomplete") return { out: "% Incomplete command.", error: true };
     if (r.error) {
       if (["user", "priv"].includes(C.mode) && r.at === 0 && words.length === 1)
-        return { out: `Translating "${words[0]}"...domain server (255.255.255.255)\n% Unknown command or computer name, or unable to find computer address`, error: true };
+        return unknownWord(words[0]);
       return { out: caret(s, line, words, r.at), error: true };
     }
     const out = run(s, r.path, r.args, line, words);
@@ -428,7 +432,7 @@ export function createCli(topo) {
         return { out: msgs.join("\n") };
       }
     }
-    return { out: "[Simulator: that command isn't modelled here.]", error: true };
+    return notModelled();
   }
 
   // ---------- the router. Interfaces and subinterfaces live in the topology (so the data plane sees them); this
@@ -514,7 +518,7 @@ export function createCli(topo) {
     if (words.at(-1).endsWith("?")) {
       const last = words.at(-1).slice(0, -1);
       const opts = options(C.mode, words.slice(0, -1), RGRAMMAR).filter(o => !last || o.word.startsWith(last.toLowerCase()));
-      return { out: opts.length ? opts.map(o => `  ${pad(o.word, 17)}${o.help}`).join("\n") : "% Unrecognized command" };
+      return helpList(opts);
     }
     let r2 = parse(C.mode, words, RGRAMMAR);
     if (r2.error && ["if", "subif", "nacl"].includes(C.mode)) {
@@ -525,7 +529,7 @@ export function createCli(topo) {
     if (r2.error === "incomplete") return { out: "% Incomplete command.", error: true };
     if (r2.error) {
       if (["user", "priv"].includes(C.mode) && r2.at === 0 && words.length === 1)
-        return { out: `Translating "${words[0]}"...domain server (255.255.255.255)\n% Unknown command or computer name, or unable to find computer address`, error: true };
+        return unknownWord(words[0]);
       return { out: caret(r, line, words, r2.at), error: true };
     }
     const out = routerRun(r, r2.path, r2.args, line, words);
@@ -633,7 +637,7 @@ export function createCli(topo) {
         return done();
       }
     }
-    return { out: "[Simulator: that command isn't modelled here.]", error: true };
+    return notModelled();
   }
 
   // ---------- Windows PCs: ping results come from the model, printed the way Windows prints them

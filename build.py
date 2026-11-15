@@ -21,6 +21,7 @@ import base64
 import hashlib
 import os
 import collections
+import contextlib
 import datetime as dt
 import email.utils
 import html
@@ -81,6 +82,15 @@ def snapshot(name, data=None):
 FONT_SOURCES = "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com"
 
 
+def feedback_origin():
+    """The origin the feedback form posts to (content/site.json feedbackPost), for the security policy. Only an
+    https endpoint counts; anything else gets no connect-src entry, so a bad setting fails closed."""
+    from urllib.parse import urlsplit
+    post = json.loads((CONTENT / "site.json").read_text()).get("feedbackPost", "")
+    u = urlsplit(post)
+    return f"https://{u.hostname}" if u.scheme == "https" and u.hostname else ""
+
+
 def csp_meta(page, scripts=True):
     """A Content-Security-Policy <meta> for a built page. GitHub Pages can't send headers, so the policy lives
     in the page. Inline scripts are allowed only by the SHA-256 of their exact text, computed here at build time,
@@ -88,10 +98,12 @@ def csp_meta(page, scripts=True):
     if scripts:
         hashes = " ".join("'sha256-" + base64.b64encode(hashlib.sha256(body.encode()).digest()).decode() + "'"
                           for body in re.findall(r"<script>(.*?)</script>", page, re.S))
-        # connect-src allows the browser's own data fetches (same origin) and the feedback form's submit to the
-        # form-to-email relay; form-action stays 'none' because the form posts with fetch, not a navigation.
+        # connect-src allows the browser's own data fetches (same origin) and the feedback form's submit to its
+        # relay (the origin of feedbackPost, so changing relay needs no edit here); form-action stays 'none' because
+        # the form posts with fetch, not a navigation.
+        relay = feedback_origin()
         policy = (f"default-src 'self'; script-src 'self' {hashes}; {FONT_SOURCES}; img-src 'self' data:; "
-                  "connect-src 'self' https://formsubmit.co; object-src 'none'; base-uri 'self'; form-action 'none'")
+                  f"connect-src 'self'{' ' + relay if relay else ''}; object-src 'none'; base-uri 'self'; form-action 'none'")
     else:
         policy = f"default-src 'none'; {FONT_SOURCES}; img-src 'self' data:; base-uri 'none'; form-action 'none'"
     return f'<meta http-equiv="Content-Security-Policy" content="{policy}">\n'
@@ -149,7 +161,7 @@ def trends(rows, cwe_names, db_path=cve_watch.DB_PATH, days=30):
     per_day = {start + dt.timedelta(days=i): collections.Counter() for i in range(days)}
     history = []
     if sqlite3 is not None and Path(db_path).exists():
-        with sqlite3.connect(db_path) as db:
+        with contextlib.closing(sqlite3.connect(db_path)) as db:  # "with connect()" alone only commits
             history = [json.loads(d) for (d,) in db.execute("SELECT data FROM cves")]
     for c in history or rows:
         if not c.get("published"):

@@ -1,7 +1,7 @@
 [
  {
   "fromName": "Northvale Bank Security",
-  "fromAddr": "alerts@northvale-secure-verify.com",
+  "fromAddr": "alerts@northvale-secure-verify.example",
   "subject": "URGENT: Unusual sign-in detected – account suspended",
   "body": [
    "Dear Customer,",
@@ -10,13 +10,13 @@
   ],
   "link": {
    "text": "Verify my account",
-   "href": "http://northvale-secure-verify.com/login.php"
+   "href": "http://northvale-secure-verify.example/login.php"
   },
   "verdict": "phish",
   "clues": [
    {
     "at": "from",
-    "text": "The sender domain isn't the bank's real domain (northvalebank.com); it just contains the brand name"
+    "text": "The sender domain isn't the bank's real domain (northvalebank.example); it just contains the brand name"
    },
    {
     "at": "body",
@@ -34,7 +34,7 @@
  },
  {
   "fromName": "ParcelPoint",
-  "fromAddr": "noreply@parcelpoint-delivery.info",
+  "fromAddr": "noreply@parcelpoint-delivery.example",
   "subject": "Your parcel is on hold – £1.45 redelivery fee",
   "body": [
    "We attempted to deliver your parcel today but no one was available.",
@@ -42,7 +42,7 @@
   ],
   "link": {
    "text": "Pay & reschedule",
-   "href": "https://parcelpoint-delivery.info/pay?ref=88213"
+   "href": "https://parcelpoint-delivery.example/pay?ref=88213"
   },
   "verdict": "phish",
   "clues": [
@@ -52,7 +52,7 @@
    },
    {
     "at": "from",
-    "text": "A .info domain that isn't the courier's real site"
+    "text": "A look-alike domain with 'delivery' added, not the courier's real site"
    },
    {
     "at": "body",
@@ -66,7 +66,7 @@
  },
  {
   "fromName": "Brightdesk",
-  "fromAddr": "no-reply@brightdesk.com",
+  "fromAddr": "no-reply@brightdesk.example",
   "subject": "Your Brightdesk invoice for October",
   "body": [
    "Hi Jordan,",
@@ -75,7 +75,7 @@
   ],
   "link": {
    "text": "View invoice",
-   "href": "https://app.brightdesk.com/settings/billing"
+   "href": "https://app.brightdesk.example/settings/billing"
   },
   "verdict": "legit",
   "clues": [
@@ -99,7 +99,7 @@
  },
  {
   "fromName": "IT Service Desk",
-  "fromAddr": "it-support@halcyonlabs-helpdesk.com",
+  "fromAddr": "it-support@halcyonlabs-helpdesk.example",
   "subject": "Action required: mailbox storage full",
   "body": [
    "Your mailbox has exceeded its storage limit (99.8%). You will no longer be able to send or receive emails.",
@@ -107,7 +107,7 @@
   ],
   "link": {
    "text": "Re-validate now",
-   "href": "https://halcyonlabs-helpdesk.com/m365/auth"
+   "href": "https://halcyonlabs-helpdesk.example/m365/auth"
   },
   "verdict": "phish",
   "clues": [
@@ -189,7 +189,7 @@
  },
  {
   "fromName": "Streamly",
-  "fromAddr": "info@streamly.com",
+  "fromAddr": "info@streamly.example",
   "subject": "New this week: 3 shows we think you'll like",
   "body": [
    "Hi Sam,",
@@ -198,7 +198,7 @@
   ],
   "link": {
    "text": "Browse picks",
-   "href": "https://www.streamly.com/browse/picks"
+   "href": "https://www.streamly.example/browse/picks"
   },
   "verdict": "legit",
   "clues": [
@@ -218,26 +218,26 @@
  },
  {
   "fromName": "CloudVault",
-  "fromAddr": "share@cloudvault.com",
+  "fromAddr": "share@cloudvault.example",
   "subject": "Priya Shah shared \"Q3 Salary Review.xlsx\" with you",
   "body": [
-   "Priya Shah (priya.shah@halcyon-labs.co) has shared a file with you.",
+   "Priya Shah (priya.shah@halcyon-labs.example) has shared a file with you.",
    "Q3 Salary Review.xlsx",
    "Sign in with your work email and password to view."
   ],
   "link": {
    "text": "Open file",
-   "href": "https://cloudvault-docs.web.app/view?id=q3"
+   "href": "https://cloudvault-docs.freehost.example/view?id=q3"
   },
   "verdict": "phish",
   "clues": [
    {
     "at": "link",
-    "text": "The sender looks real, but the link goes to a free hosting domain (web.app), not cloudvault.com"
+    "text": "The sender looks real, but the link goes to a free hosting site (freehost.example), not cloudvault.example"
    },
    {
     "at": "from",
-    "text": "The colleague's domain is subtly wrong (halcyon-labs.co vs halcyonlabs.com)"
+    "text": "The colleague's domain is subtly wrong (halcyon-labs.example vs halcyonlabs.example)"
    },
    {
     "at": "body",
@@ -251,11 +251,11 @@
  },
  {
   "fromName": "Northvale Bank",
-  "fromAddr": "notifications@northvalebank.com",
+  "fromAddr": "notifications@northvalebank.example",
   "subject": "Your statement is ready",
   "body": [
    "Your October statement is now available.",
-   "For your security, we never include links to sign in. Open the Northvale app or type northvalebank.com into your browser to view it."
+   "For your security, we never include links to sign in. Open the Northvale app or type northvalebank.example into your browser to view it."
   ],
   "link": null,
   "verdict": "legit",
@@ -276,7 +276,7 @@
  },
  {
   "fromName": "Payroll Team",
-  "fromAddr": "payroll@halcyonlabs.com",
+  "fromAddr": "payroll@halcyonlabs.example",
   "subject": "RE: Update to your direct deposit details",
   "body": [
    "Hi,",

@@ -126,14 +126,14 @@ const KIND_NAME = { auth: "a Linux sign-in log (auth.log)", web: "a web server a
 export function mount(root, { samples = [] } = {}) {
   let log = null;
   root.innerHTML = `<div class="hc">
+    <div id="lg-out" aria-live="polite"></div>
     <section class="panel hc-in"><div class="panel-title"><h2>Paste or open a log</h2><span class="sim-tag hc-private">🔒 Stays on your device</span></div>
       <p class="muted hc-how">Recognised: Linux sign-in logs (<span class="mono">/var/log/auth.log</span> or <span class="mono">secure</span>) and nginx or Apache access logs. Anything else can still be searched.</p>
       <label class="sr-only" for="lg-raw">Log lines</label>
       <textarea id="lg-raw" class="hc-raw" rows="8" spellcheck="false" autocomplete="off" placeholder="Oct 21 03:04:09 web01 sshd[2205]: Failed password for root from …"></textarea>
       <div class="row"><button class="btn brand" type="button" id="lg-go">Read the log</button><label class="btn ghost" for="lg-file">Open a file</label><input type="file" id="lg-file" class="sr-only" accept=".log,.txt,text/plain">
         ${samples.length ? `<span class="muted hc-try">or try an example:</span>${samples.map((x, i) => `<button class="chip" type="button" data-sample="${i}">${esc(x.label)}</button>`).join("")}` : ""}</div>
-      <p class="muted hc-small">Files are read by your browser, never uploaded. Up to ${MAX_BYTES / 1024 / 1024} MB.</p></section>
-    <div id="lg-out" aria-live="polite"></div></div>`;
+      <p class="muted hc-small">Files are read by your browser, never uploaded. Up to ${MAX_BYTES / 1024 / 1024} MB.</p></section></div>`;
   const $ = id => root.querySelector("#" + id);
   const mark = markText;
   const SHOW = 500;
@@ -176,4 +176,5 @@ export function mount(root, { samples = [] } = {}) {
     fr.readAsText(file);
   });
   root.querySelectorAll("[data-sample]").forEach(b => b.addEventListener("click", () => { const x = samples[Number(b.dataset.sample)]; fileShown = null; $("lg-raw").value = x.lines.join("\n"); read($("lg-raw").value); }));
+  if (samples[0]) { $("lg-raw").value = samples[0].lines.join("\n"); read($("lg-raw").value); }
 }

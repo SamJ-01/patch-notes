@@ -37,7 +37,7 @@
    {"id": "net", "label": "Internet", "sub": "beacon + exfil", "icon": "globe", "at": [0, 0], "bad": true},
    {"id": "pc", "label": "HAL-PC-07", "sub": "workstation", "icon": "pc", "at": [1, 0]},
    {"id": "fs01", "label": "FS01", "sub": "file server", "icon": "database", "at": [2, 0]},
-   {"id": "backup", "label": "BACKUP02", "sub": "backups", "icon": "shield", "at": [2, 1]},
+   {"id": "backup", "label": "BACKUP02", "sub": "Veeam backup", "icon": "shield", "at": [2, 1]},
    {"id": "siem", "label": "EDR / SIEM", "sub": "the SOC", "icon": "eye", "at": [0, 1]}
   ],
   "links": [
