@@ -1,7 +1,7 @@
 {
  "cert": "security-plus",
  "exam": "SY0-701",
- "reviewed": "2026-10-23",
+ "reviewed": "2026-11-15",
  "note": "Original practice questions written for Patch Notes. They are not real exam questions.",
  "questions": [
   {
@@ -2080,6 +2080,1356 @@
      "text": "There's no difference",
      "correct": false,
      "why": "Independence is the difference, and it matters."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.1-3",
+   "objective": "2.1",
+   "stem": "A well-funded group spends months quietly inside a defence supplier's network, copying designs and avoiding detection. Which threat actor fits best?",
+   "options": [
+    {
+     "text": "A nation-state group",
+     "correct": true,
+     "why": "Long, patient, well-resourced intrusions aimed at secrets are typical of nation-state (advanced persistent threat) groups."
+    },
+    {
+     "text": "An unskilled attacker",
+     "correct": false,
+     "why": "Unskilled attackers use ready-made tools for quick wins; they rarely stay hidden for months."
+    },
+    {
+     "text": "A hacktivist",
+     "correct": false,
+     "why": "Hacktivists want publicity for a cause, so they usually deface or leak loudly rather than hide."
+    },
+    {
+     "text": "Shadow IT",
+     "correct": false,
+     "why": "Shadow IT is staff using unapproved services. It's a risk, not an attacker spying on designs."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.1-4",
+   "objective": "2.1",
+   "stem": "A ransomware gang encrypts a firm's servers and demands payment in cryptocurrency. What is their main motivation?",
+   "options": [
+    {
+     "text": "Financial gain",
+     "correct": true,
+     "why": "Ransom is about money: organised crime groups run ransomware as a business."
+    },
+    {
+     "text": "Espionage",
+     "correct": false,
+     "why": "Espionage means quietly stealing secrets. Encrypting servers and demanding money is loud and money-driven."
+    },
+    {
+     "text": "Philosophical or political beliefs",
+     "correct": false,
+     "why": "That drives hacktivists, who usually want attention for a cause, not a payment."
+    },
+    {
+     "text": "Revenge",
+     "correct": false,
+     "why": "Revenge drives some insiders. A ransom demand points to money."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.2-1",
+   "objective": "2.2",
+   "stem": "Staff receive text messages saying a parcel is waiting, with a link to pay a small redelivery fee. What is this attack?",
+   "options": [
+    {
+     "text": "Smishing",
+     "correct": true,
+     "why": "Smishing is phishing by SMS text message."
+    },
+    {
+     "text": "Vishing",
+     "correct": false,
+     "why": "Vishing is phishing by voice call."
+    },
+    {
+     "text": "Watering hole",
+     "correct": false,
+     "why": "A watering hole attack compromises a website the targets already visit."
+    },
+    {
+     "text": "Typosquatting",
+     "correct": false,
+     "why": "Typosquatting registers misspelt domain names. The text may use one, but the attack is delivered by SMS."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.2-2",
+   "objective": "2.2",
+   "stem": "Attackers compromise a trade association's website because they know staff at their real target visit it every week. What is this?",
+   "options": [
+    {
+     "text": "A watering hole attack",
+     "correct": true,
+     "why": "The attacker poisons a site the victims trust and visit, then waits for them to come."
+    },
+    {
+     "text": "Pretexting",
+     "correct": false,
+     "why": "Pretexting is inventing a story to persuade someone, for example posing as IT support on the phone."
+    },
+    {
+     "text": "A brand impersonation email",
+     "correct": false,
+     "why": "That sends lookalike messages to the victims. Here the victims come to a real, compromised site."
+    },
+    {
+     "text": "Business email compromise",
+     "correct": false,
+     "why": "BEC takes over or imitates a business mailbox to trick people into paying."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.2-4",
+   "objective": "2.2",
+   "stem": "A USB stick labelled 'Salaries 2026' is left in the office car park. Why should staff hand it to IT rather than plug it in?",
+   "options": [
+    {
+     "text": "It may carry malware that runs or tricks them when opened",
+     "correct": true,
+     "why": "Dropped media is a known attack vector: curiosity gets the stick plugged in, and its files or firmware attack the PC."
+    },
+    {
+     "text": "USB sticks can't be read on company laptops",
+     "correct": false,
+     "why": "Most laptops can read them, which is exactly why this works."
+    },
+    {
+     "text": "The file name proves it's safe",
+     "correct": false,
+     "why": "A tempting name is the lure, not a sign of safety."
+    },
+    {
+     "text": "It breaks the clean desk policy",
+     "correct": false,
+     "why": "The risk is malware on removable media, not desk tidiness."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.3-1",
+   "objective": "2.3",
+   "stem": "A program copies user input into a fixed-size memory area without checking its length, and extra input overwrites nearby memory. What is this?",
+   "options": [
+    {
+     "text": "A buffer overflow",
+     "correct": true,
+     "why": "Writing past the end of a buffer can corrupt memory and, in the worst case, let an attacker run code."
+    },
+    {
+     "text": "A race condition",
+     "correct": false,
+     "why": "A race condition depends on the timing of two events, such as a check and then a use."
+    },
+    {
+     "text": "SQL injection",
+     "correct": false,
+     "why": "SQL injection changes a database query. This is about memory, not a query."
+    },
+    {
+     "text": "Cross-site scripting",
+     "correct": false,
+     "why": "XSS runs script in a victim's browser."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.3-2",
+   "objective": "2.3",
+   "stem": "A program checks that a file is safe, then opens it a moment later. In between, an attacker swaps the file. What is this called?",
+   "options": [
+    {
+     "text": "Time-of-check to time-of-use (a race condition)",
+     "correct": true,
+     "why": "TOCTOU flaws exploit the gap between checking something and using it."
+    },
+    {
+     "text": "Memory injection",
+     "correct": false,
+     "why": "Memory injection puts code into another process's memory."
+    },
+    {
+     "text": "Directory traversal",
+     "correct": false,
+     "why": "Traversal uses ../ to reach files outside the intended folder."
+    },
+    {
+     "text": "A misconfiguration",
+     "correct": false,
+     "why": "This is a logic flaw in the order of operations, not a wrong setting."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.3-3",
+   "objective": "2.3",
+   "stem": "Why is jailbreaking or rooting a company phone a security concern?",
+   "options": [
+    {
+     "text": "It removes the operating system's protections, so apps can do far more than intended",
+     "correct": true,
+     "why": "Jailbreaking breaks the sandbox and lets unvetted apps run with high privileges."
+    },
+    {
+     "text": "It always wipes the phone",
+     "correct": false,
+     "why": "It doesn't have to wipe anything. The concern is weaker protection."
+    },
+    {
+     "text": "It turns off mobile data",
+     "correct": false,
+     "why": "Mobile data keeps working. The risk is lost OS controls."
+    },
+    {
+     "text": "It makes the phone use a weaker Wi-Fi standard",
+     "correct": false,
+     "why": "Jailbreaking changes the OS, not the Wi-Fi hardware."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.3-4",
+   "objective": "2.3",
+   "stem": "A web page loads a file with ?page=../../../../etc/passwd and shows the server's account list. What vulnerability is this?",
+   "options": [
+    {
+     "text": "Directory (path) traversal",
+     "correct": true,
+     "why": "The ../ sequences climb out of the web folder to read other files on the server."
+    },
+    {
+     "text": "Cross-site request forgery",
+     "correct": false,
+     "why": "CSRF tricks a signed-in browser into sending a request the user didn't mean to."
+    },
+    {
+     "text": "Buffer overflow",
+     "correct": false,
+     "why": "Nothing here overruns memory. The server just accepted a path it should have refused."
+    },
+    {
+     "text": "Privilege escalation",
+     "correct": false,
+     "why": "Reading the file may help later, but the flaw shown is traversal."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.4-1",
+   "objective": "2.4",
+   "stem": "Many accounts are locked out at once, across different departments, within ten minutes. What does this most suggest?",
+   "options": [
+    {
+     "text": "A password-guessing attack against many accounts",
+     "correct": true,
+     "why": "Mass lockouts across unrelated users point to automated guessing, such as spraying or brute force."
+    },
+    {
+     "text": "A users' training day",
+     "correct": false,
+     "why": "Training doesn't usually lock out many accounts across departments at the same moment."
+    },
+    {
+     "text": "A certificate expiry",
+     "correct": false,
+     "why": "An expired certificate gives connection errors, not account lockouts."
+    },
+    {
+     "text": "Normal password changes",
+     "correct": false,
+     "why": "Changing a password doesn't lock the account."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.4-2",
+   "objective": "2.4",
+   "stem": "A finance user's account downloads 40 GB from the file server at 03:00, far more than it ever has before. What kind of indicator is this?",
+   "options": [
+    {
+     "text": "Out-of-cycle, unusual resource use that may mean data theft",
+     "correct": true,
+     "why": "Activity at an odd hour and far beyond the usual baseline is a classic indicator of exfiltration."
+    },
+    {
+     "text": "Proof of ransomware",
+     "correct": false,
+     "why": "It needs investigating, but a large download alone doesn't prove encryption."
+    },
+    {
+     "text": "Normal overnight backup",
+     "correct": false,
+     "why": "Backups run under a backup service account, not a finance user's account."
+    },
+    {
+     "text": "A blocked content warning",
+     "correct": false,
+     "why": "Nothing was blocked: the download happened."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.5-3",
+   "objective": "2.5",
+   "stem": "A new server is built from a standard image with unused services removed, default accounts disabled and logging turned on. What is this?",
+   "options": [
+    {
+     "text": "Hardening",
+     "correct": true,
+     "why": "Hardening reduces the attack surface by switching off what isn't needed and setting secure defaults."
+    },
+    {
+     "text": "Decommissioning",
+     "correct": false,
+     "why": "Decommissioning is retiring a system."
+    },
+    {
+     "text": "Isolation",
+     "correct": false,
+     "why": "Isolation separates a system from others; it doesn't change what runs on it."
+    },
+    {
+     "text": "Patching",
+     "correct": false,
+     "why": "Patching fixes known flaws in software. Removing services and accounts goes further."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.1-1",
+   "objective": "3.1",
+   "stem": "A company moves its email to a SaaS provider. Who is responsible for deciding which staff accounts can read which mailboxes?",
+   "options": [
+    {
+     "text": "The company",
+     "correct": true,
+     "why": "Under shared responsibility the provider runs the service, but the customer still manages its own users, access and data."
+    },
+    {
+     "text": "The SaaS provider",
+     "correct": false,
+     "why": "The provider secures the platform. Who may read what is the customer's decision."
+    },
+    {
+     "text": "Nobody, because SaaS handles it automatically",
+     "correct": false,
+     "why": "Access rules have to be set by the customer."
+    },
+    {
+     "text": "The internet service provider",
+     "correct": false,
+     "why": "The ISP carries traffic; it has no say over mailbox permissions."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.1-2",
+   "objective": "3.1",
+   "stem": "What is a main security benefit of infrastructure as code (IaC)?",
+   "options": [
+    {
+     "text": "Every environment is built the same way from reviewed, version-controlled files",
+     "correct": true,
+     "why": "IaC makes builds repeatable and auditable, so drift and one-off mistakes are easier to spot and undo."
+    },
+    {
+     "text": "It removes the need for any access control",
+     "correct": false,
+     "why": "The code and the pipeline still need tight access control."
+    },
+    {
+     "text": "It encrypts all data automatically",
+     "correct": false,
+     "why": "IaC can set encryption, but it doesn't encrypt anything by itself."
+    },
+    {
+     "text": "It means servers never need patching",
+     "correct": false,
+     "why": "Rebuilding from code helps patching, but images still need updating."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.1-3",
+   "objective": "3.1",
+   "stem": "Why do serverless functions and containers change how a company patches?",
+   "options": [
+    {
+     "text": "The provider patches the platform, but the company must still update its own code and libraries",
+     "correct": true,
+     "why": "Less infrastructure to patch, but dependencies inside the function or image are still the customer's job."
+    },
+    {
+     "text": "Nothing needs patching any more",
+     "correct": false,
+     "why": "Vulnerable libraries in your own code still need updating."
+    },
+    {
+     "text": "Only the network needs patching",
+     "correct": false,
+     "why": "Code and images are the main concern."
+    },
+    {
+     "text": "Containers can't have vulnerabilities",
+     "correct": false,
+     "why": "Container images often carry outdated packages with known flaws."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.1-4",
+   "objective": "3.1",
+   "stem": "An air-gapped network is one that:",
+   "options": [
+    {
+     "text": "Has no connection to other networks, including the internet",
+     "correct": true,
+     "why": "An air gap is physical separation. Data only moves by deliberate, controlled means such as approved media."
+    },
+    {
+     "text": "Uses only wireless links",
+     "correct": false,
+     "why": "Wireless links are a connection, the opposite of an air gap."
+    },
+    {
+     "text": "Has a firewall in front of it",
+     "correct": false,
+     "why": "A firewall filters a connection; an air gap has none."
+    },
+    {
+     "text": "Is hosted in a public cloud",
+     "correct": false,
+     "why": "Cloud hosting means internet connectivity."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.2-1",
+   "objective": "3.2",
+   "stem": "Which device inspects web traffic to block attacks such as SQL injection before they reach an online shop's servers?",
+   "options": [
+    {
+     "text": "A web application firewall (WAF)",
+     "correct": true,
+     "why": "A WAF understands HTTP and filters attacks aimed at web applications."
+    },
+    {
+     "text": "A layer 2 switch",
+     "correct": false,
+     "why": "A switch forwards frames by MAC address. It doesn't read web requests."
+    },
+    {
+     "text": "A jump server",
+     "correct": false,
+     "why": "A jump server is a hardened host administrators connect through."
+    },
+    {
+     "text": "A load balancer only",
+     "correct": false,
+     "why": "A plain load balancer spreads traffic; it doesn't block injection unless it includes WAF features."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.2-2",
+   "objective": "3.2",
+   "stem": "Administrators must reach servers in a secure zone. Why make them connect through a jump server?",
+   "options": [
+    {
+     "text": "It gives one hardened, logged route in, instead of many direct ones",
+     "correct": true,
+     "why": "A jump server narrows access to a single monitored entry point."
+    },
+    {
+     "text": "It speeds up the connection",
+     "correct": false,
+     "why": "It adds a hop; speed isn't the point."
+    },
+    {
+     "text": "It removes the need for passwords",
+     "correct": false,
+     "why": "Strong sign-in, ideally with MFA, is still needed."
+    },
+    {
+     "text": "It encrypts the servers' disks",
+     "correct": false,
+     "why": "Disk encryption is separate."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.2-3",
+   "objective": "3.2",
+   "stem": "Which port security feature limits a switch port to known devices by their hardware address?",
+   "options": [
+    {
+     "text": "MAC filtering or sticky MAC port security",
+     "correct": true,
+     "why": "The port learns or is given allowed MAC addresses and blocks others. MACs can be spoofed, so it's one layer, not the only one."
+    },
+    {
+     "text": "Network address translation",
+     "correct": false,
+     "why": "NAT rewrites IP addresses at the router."
+    },
+    {
+     "text": "Spanning tree",
+     "correct": false,
+     "why": "STP prevents switching loops."
+    },
+    {
+     "text": "DNS filtering",
+     "correct": false,
+     "why": "DNS filtering blocks lookups of bad domains."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.2-4",
+   "objective": "3.2",
+   "stem": "A firewall that tracks each connection and lets reply packets back in automatically is:",
+   "options": [
+    {
+     "text": "A stateful firewall",
+     "correct": true,
+     "why": "Stateful firewalls keep a table of connections, so replies to traffic you started are allowed without separate rules."
+    },
+    {
+     "text": "A stateless packet filter",
+     "correct": false,
+     "why": "Stateless filters judge each packet alone and need rules for both directions."
+    },
+    {
+     "text": "A proxy server only",
+     "correct": false,
+     "why": "A proxy relays requests; tracking connection state is the defining point here."
+    },
+    {
+     "text": "An intrusion detection system",
+     "correct": false,
+     "why": "An IDS watches and alerts; it doesn't pass or block traffic."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.3-2",
+   "objective": "3.3",
+   "stem": "Data on a laptop's disk, data crossing the internet and data in memory while being processed are examples of which three states?",
+   "options": [
+    {
+     "text": "At rest, in transit, in use",
+     "correct": true,
+     "why": "These are the three data states, each protected differently: disk encryption, TLS, and controls on running systems."
+    },
+    {
+     "text": "Public, private, restricted",
+     "correct": false,
+     "why": "Those are classification labels, not states."
+    },
+    {
+     "text": "Created, stored, deleted",
+     "correct": false,
+     "why": "That describes a lifecycle, not the three states the exam names."
+    },
+    {
+     "text": "Hashed, salted, encrypted",
+     "correct": false,
+     "why": "Those are techniques, not states."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.3-3",
+   "objective": "3.3",
+   "stem": "A payment system replaces each card number with a random value and keeps the real number in a separate, guarded vault. What is this?",
+   "options": [
+    {
+     "text": "Tokenisation",
+     "correct": true,
+     "why": "A token has no mathematical link to the card number, so stolen tokens are useless without the vault."
+    },
+    {
+     "text": "Hashing",
+     "correct": false,
+     "why": "A hash is computed from the data and can't be reversed to get it back for a refund."
+    },
+    {
+     "text": "Masking",
+     "correct": false,
+     "why": "Masking hides part of the value on screen, such as showing only the last four digits."
+    },
+    {
+     "text": "Steganography",
+     "correct": false,
+     "why": "Steganography hides data inside other data, such as an image."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.3-4",
+   "objective": "3.3",
+   "stem": "Why might a company be required to keep EU customers' data in data centres inside the EU?",
+   "options": [
+    {
+     "text": "Data sovereignty and residency rules",
+     "correct": true,
+     "why": "Laws can say where data must be stored and which country's rules apply to it."
+    },
+    {
+     "text": "Lower latency only",
+     "correct": false,
+     "why": "Speed may help, but the requirement comes from law."
+    },
+    {
+     "text": "Because encryption only works in the EU",
+     "correct": false,
+     "why": "Encryption works anywhere."
+    },
+    {
+     "text": "To avoid needing backups",
+     "correct": false,
+     "why": "Location doesn't remove the need for backups."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.4-2",
+   "objective": "3.4",
+   "stem": "A company can move to a second site that has power, network and hardware ready, but needs a few hours to restore recent data. What kind of site is this?",
+   "options": [
+    {
+     "text": "A warm site",
+     "correct": true,
+     "why": "A warm site has equipment ready but not live data, so recovery takes hours rather than minutes or days."
+    },
+    {
+     "text": "A hot site",
+     "correct": false,
+     "why": "A hot site runs near-live copies and can take over almost at once."
+    },
+    {
+     "text": "A cold site",
+     "correct": false,
+     "why": "A cold site is space and power with little or no equipment, so recovery takes days."
+    },
+    {
+     "text": "A honeypot",
+     "correct": false,
+     "why": "A honeypot is a decoy for attackers."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.4-3",
+   "objective": "3.4",
+   "stem": "Why is a backup only trusted once a restore has been tested?",
+   "options": [
+    {
+     "text": "A backup that can't be restored is no backup at all",
+     "correct": true,
+     "why": "Tests find corrupt, incomplete or unreadable backups before you need them in an incident."
+    },
+    {
+     "text": "Testing makes backups smaller",
+     "correct": false,
+     "why": "Testing checks them; it doesn't change their size."
+    },
+    {
+     "text": "Untested backups are illegal",
+     "correct": false,
+     "why": "It's good practice, not a general law."
+    },
+    {
+     "text": "Restores delete the original data",
+     "correct": false,
+     "why": "A test restore goes to a separate place."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.4-4",
+   "objective": "3.4",
+   "stem": "A data centre has an uninterruptible power supply (UPS) and a generator. What is the UPS mainly for?",
+   "options": [
+    {
+     "text": "Keeping systems running for the minutes until the generator takes over",
+     "correct": true,
+     "why": "The UPS bridges the gap and smooths power; the generator covers long outages."
+    },
+    {
+     "text": "Running the site for several days",
+     "correct": false,
+     "why": "That's the generator's job. UPS batteries last minutes."
+    },
+    {
+     "text": "Cooling the servers",
+     "correct": false,
+     "why": "Cooling is separate."
+    },
+    {
+     "text": "Encrypting backups",
+     "correct": false,
+     "why": "A UPS supplies power only."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.1-2",
+   "objective": "4.1",
+   "stem": "A company sets a secure configuration baseline for its servers. What is it used for afterwards?",
+   "options": [
+    {
+     "text": "Checking servers against it and fixing any that drift",
+     "correct": true,
+     "why": "A baseline is the agreed secure state; scans compare systems to it."
+    },
+    {
+     "text": "Replacing the need for patches",
+     "correct": false,
+     "why": "Patches are still needed; the baseline may even require them."
+    },
+    {
+     "text": "Listing staff phone numbers",
+     "correct": false,
+     "why": "That isn't a configuration baseline."
+    },
+    {
+     "text": "Deciding the company's risk appetite",
+     "correct": false,
+     "why": "Risk appetite is a governance decision, not a server setting."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.2-3",
+   "objective": "4.2",
+   "stem": "A drive holding old customer records is sent for disposal. What should the company get back from the disposal firm?",
+   "options": [
+    {
+     "text": "A certificate of destruction",
+     "correct": true,
+     "why": "The certificate is evidence the data was destroyed, which supports audits and data protection duties."
+    },
+    {
+     "text": "A software licence key",
+     "correct": false,
+     "why": "Licences have nothing to do with destroying data."
+    },
+    {
+     "text": "A purchase order",
+     "correct": false,
+     "why": "That's for buying things."
+    },
+    {
+     "text": "A new drive",
+     "correct": false,
+     "why": "Replacement is a separate matter. The record of destruction is what matters."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.3-2",
+   "objective": "4.3",
+   "stem": "A scanner reports a flaw on a server, but checking shows the vendor's backported patch has already fixed it. What is the scanner result?",
+   "options": [
+    {
+     "text": "A false positive",
+     "correct": true,
+     "why": "The scanner reported a vulnerability that isn't really there."
+    },
+    {
+     "text": "A false negative",
+     "correct": false,
+     "why": "A false negative is a real flaw the scanner missed."
+    },
+    {
+     "text": "A true positive",
+     "correct": false,
+     "why": "That would mean the flaw really exists."
+    },
+    {
+     "text": "A zero-day",
+     "correct": false,
+     "why": "A zero-day has no patch available. This one is patched."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.3-3",
+   "objective": "4.3",
+   "stem": "What does a CVSS base score describe?",
+   "options": [
+    {
+     "text": "How severe a vulnerability is in general, from 0 to 10",
+     "correct": true,
+     "why": "The base score rates the flaw itself. Your own priority should also weigh exposure and whether it's being exploited."
+    },
+    {
+     "text": "How many times it has been exploited",
+     "correct": false,
+     "why": "CVSS doesn't count exploitation. Lists such as CISA KEV track that."
+    },
+    {
+     "text": "The vendor's name",
+     "correct": false,
+     "why": "That's in the advisory, not the score."
+    },
+    {
+     "text": "The date the patch will arrive",
+     "correct": false,
+     "why": "CVSS says nothing about patch dates."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.4-2",
+   "objective": "4.4",
+   "stem": "Which is an example of a SIEM correlation rule?",
+   "options": [
+    {
+     "text": "Alert when one account fails to sign in many times, then succeeds from a new country",
+     "correct": true,
+     "why": "Correlation joins separate events into one more meaningful alert."
+    },
+    {
+     "text": "Store logs for 90 days",
+     "correct": false,
+     "why": "That's a retention setting, not correlation."
+    },
+    {
+     "text": "Send a weekly report of disk space",
+     "correct": false,
+     "why": "That's a report, not a rule linking events."
+    },
+    {
+     "text": "Back up the SIEM every night",
+     "correct": false,
+     "why": "Backing up the SIEM is housekeeping."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.6-2",
+   "objective": "4.6",
+   "stem": "Which access control model grants permissions based on a person's job, such as 'payroll clerk'?",
+   "options": [
+    {
+     "text": "Role-based access control (RBAC)",
+     "correct": true,
+     "why": "Permissions attach to roles and people get roles, which makes joiners and leavers easier to manage."
+    },
+    {
+     "text": "Discretionary access control",
+     "correct": false,
+     "why": "DAC lets the owner of each resource decide who gets access."
+    },
+    {
+     "text": "Mandatory access control",
+     "correct": false,
+     "why": "MAC uses labels such as secret and top secret set by the system."
+    },
+    {
+     "text": "Rule-based access control",
+     "correct": false,
+     "why": "Rule-based control applies conditions such as time of day to everyone."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.6-3",
+   "objective": "4.6",
+   "stem": "An administrator gets admin rights only for a two-hour task, after approval, and they are removed automatically afterwards. What is this?",
+   "options": [
+    {
+     "text": "Just-in-time (privileged access management) access",
+     "correct": true,
+     "why": "JIT access keeps standing admin rights to a minimum, shrinking what a stolen account can do."
+    },
+    {
+     "text": "Single sign-on",
+     "correct": false,
+     "why": "SSO lets you sign in once to many services. It doesn't limit admin time."
+    },
+    {
+     "text": "Password reuse",
+     "correct": false,
+     "why": "That's a bad habit, not a control."
+    },
+    {
+     "text": "Federation",
+     "correct": false,
+     "why": "Federation lets one organisation trust another's identities."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.7-3",
+   "objective": "4.7",
+   "stem": "What is a risk of automating security responses?",
+   "options": [
+    {
+     "text": "A faulty playbook can make the same mistake at scale, very quickly",
+     "correct": true,
+     "why": "Automation needs testing and guard rails, because errors repeat as fast as successes."
+    },
+    {
+     "text": "Automation always makes responses slower",
+     "correct": false,
+     "why": "Automation is usually faster. Speed is the point."
+    },
+    {
+     "text": "Automated actions can't be logged",
+     "correct": false,
+     "why": "They can and should be logged."
+    },
+    {
+     "text": "It means no one has to understand the process",
+     "correct": false,
+     "why": "Someone still has to understand and maintain the playbook, or it becomes a single point of failure."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.8-2",
+   "objective": "4.8",
+   "stem": "After an incident is closed, the team meets to discuss what went well and what to change. Which phase is this?",
+   "options": [
+    {
+     "text": "Lessons learned",
+     "correct": true,
+     "why": "Lessons learned feed improvements back into preparation."
+    },
+    {
+     "text": "Containment",
+     "correct": false,
+     "why": "Containment stops the spread during the incident."
+    },
+    {
+     "text": "Detection",
+     "correct": false,
+     "why": "Detection is spotting the incident in the first place."
+    },
+    {
+     "text": "Eradication",
+     "correct": false,
+     "why": "Eradication removes the attacker's foothold."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.8-3",
+   "objective": "4.8",
+   "stem": "A team walks through a ransomware scenario around a table, talking through who does what, without touching any systems. What is this?",
+   "options": [
+    {
+     "text": "A tabletop exercise",
+     "correct": true,
+     "why": "Tabletop exercises test plans and roles by discussion, cheaply and safely."
+    },
+    {
+     "text": "A penetration test",
+     "correct": false,
+     "why": "A pen test actively attacks systems with permission."
+    },
+    {
+     "text": "A full failover test",
+     "correct": false,
+     "why": "That actually moves services to another site."
+    },
+    {
+     "text": "Threat hunting",
+     "correct": false,
+     "why": "Threat hunting searches real systems for hidden attackers."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.9-2",
+   "objective": "4.9",
+   "stem": "Which data source shows which internal hosts talked to which external addresses, and how much data moved, without the content?",
+   "options": [
+    {
+     "text": "Network flow records such as NetFlow",
+     "correct": true,
+     "why": "Flow records summarise conversations: who, when, which ports and how much."
+    },
+    {
+     "text": "A full packet capture",
+     "correct": false,
+     "why": "A packet capture includes the content too."
+    },
+    {
+     "text": "A vulnerability scan",
+     "correct": false,
+     "why": "A scan lists weaknesses, not traffic."
+    },
+    {
+     "text": "The application's change log",
+     "correct": false,
+     "why": "A change log records changes to the app, not network conversations."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.9-3",
+   "objective": "4.9",
+   "stem": "An investigator needs to know which websites a laptop's user tried to reach, even those it couldn't load. Which log helps most?",
+   "options": [
+    {
+     "text": "DNS query logs",
+     "correct": true,
+     "why": "Every lookup is logged even when the connection fails, so DNS logs show attempted destinations."
+    },
+    {
+     "text": "The laptop's battery report",
+     "correct": false,
+     "why": "That shows power use."
+    },
+    {
+     "text": "The printer queue",
+     "correct": false,
+     "why": "Print logs show printing."
+    },
+    {
+     "text": "A backup job log",
+     "correct": false,
+     "why": "Backup logs show what was backed up."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.1-2",
+   "objective": "5.1",
+   "stem": "Which person is responsible for the day-to-day care of data, such as applying access rules and backups, as the owner decides?",
+   "options": [
+    {
+     "text": "The data custodian",
+     "correct": true,
+     "why": "The custodian looks after data as the owner directs. The owner decides; the custodian carries it out."
+    },
+    {
+     "text": "The data subject",
+     "correct": false,
+     "why": "The data subject is the person the data is about."
+    },
+    {
+     "text": "The data owner",
+     "correct": false,
+     "why": "The owner decides classification and access; the custodian looks after it day to day."
+    },
+    {
+     "text": "The auditor",
+     "correct": false,
+     "why": "An auditor checks controls; they don't run them."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.1-3",
+   "objective": "5.1",
+   "stem": "Which document sets out the minimum mandatory rules, such as 'passwords must be at least 14 characters'?",
+   "options": [
+    {
+     "text": "A standard",
+     "correct": true,
+     "why": "Standards give specific, mandatory requirements that support a policy."
+    },
+    {
+     "text": "A guideline",
+     "correct": false,
+     "why": "Guidelines are recommendations, not mandatory."
+    },
+    {
+     "text": "A press release",
+     "correct": false,
+     "why": "That's public communication, not internal governance."
+    },
+    {
+     "text": "A playbook",
+     "correct": false,
+     "why": "A playbook gives steps for responding to a situation."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.2-1",
+   "objective": "5.2",
+   "stem": "A risk has an annual rate of occurrence (ARO) of 0.5 and a single loss expectancy (SLE) of £20,000. What is the annual loss expectancy (ALE)?",
+   "options": [
+    {
+     "text": "£10,000",
+     "correct": true,
+     "why": "ALE = SLE × ARO = £20,000 × 0.5 = £10,000 a year."
+    },
+    {
+     "text": "£40,000",
+     "correct": false,
+     "why": "That divides by the ARO instead of multiplying."
+    },
+    {
+     "text": "£20,000",
+     "correct": false,
+     "why": "That's the loss from one event, not the yearly expectation."
+    },
+    {
+     "text": "£0.50",
+     "correct": false,
+     "why": "The ARO alone isn't a money value."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.3-1",
+   "objective": "5.3",
+   "stem": "Before signing with a new cloud supplier, the company sends it a security questionnaire and asks for its latest independent audit report. What is this?",
+   "options": [
+    {
+     "text": "Due diligence in vendor assessment",
+     "correct": true,
+     "why": "Checking a supplier's security before trusting it with data is part of third-party risk management."
+    },
+    {
+     "text": "A penetration test of the supplier",
+     "correct": false,
+     "why": "Testing a supplier's systems needs its written permission and is a different activity."
+    },
+    {
+     "text": "Change management",
+     "correct": false,
+     "why": "Change management controls changes to your own systems."
+    },
+    {
+     "text": "Incident response",
+     "correct": false,
+     "why": "Nothing has gone wrong yet."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.3-2",
+   "objective": "5.3",
+   "stem": "Which agreement sets out a supplier's promised uptime and how fast it will respond to problems?",
+   "options": [
+    {
+     "text": "A service-level agreement (SLA)",
+     "correct": true,
+     "why": "An SLA sets measurable service levels such as 99.9% uptime and response times."
+    },
+    {
+     "text": "A non-disclosure agreement (NDA)",
+     "correct": false,
+     "why": "An NDA covers keeping information confidential."
+    },
+    {
+     "text": "A memorandum of understanding (MOU)",
+     "correct": false,
+     "why": "An MOU is a statement of intent, usually less binding and less specific."
+    },
+    {
+     "text": "A rules of engagement document",
+     "correct": false,
+     "why": "Rules of engagement set the limits of a security test."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.3-3",
+   "objective": "5.3",
+   "stem": "A contract gives a company the right to inspect its supplier's security controls. What is this clause called?",
+   "options": [
+    {
+     "text": "A right-to-audit clause",
+     "correct": true,
+     "why": "It lets the customer check, or have someone check, that the supplier keeps its promises."
+    },
+    {
+     "text": "A non-compete clause",
+     "correct": false,
+     "why": "Non-compete limits working for competitors."
+    },
+    {
+     "text": "An escrow clause",
+     "correct": false,
+     "why": "Escrow holds something, such as source code, with a third party."
+    },
+    {
+     "text": "A force majeure clause",
+     "correct": false,
+     "why": "Force majeure covers events outside anyone's control."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.4-1",
+   "objective": "5.4",
+   "stem": "An online shop stores and processes card payments. Which standard sets the security rules it must meet?",
+   "options": [
+    {
+     "text": "PCI DSS",
+     "correct": true,
+     "why": "The Payment Card Industry Data Security Standard applies to anyone who stores, processes or sends card data."
+    },
+    {
+     "text": "ISO 9001",
+     "correct": false,
+     "why": "ISO 9001 is about quality management."
+    },
+    {
+     "text": "HIPAA",
+     "correct": false,
+     "why": "HIPAA covers US health information."
+    },
+    {
+     "text": "ITIL",
+     "correct": false,
+     "why": "ITIL is a framework for IT service management."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.4-2",
+   "objective": "5.4",
+   "stem": "What can happen to a company that fails to meet a regulation it's bound by?",
+   "options": [
+    {
+     "text": "Fines, sanctions, loss of licence and damage to its reputation",
+     "correct": true,
+     "why": "Non-compliance can bring penalties from regulators and lost trust from customers."
+    },
+    {
+     "text": "Nothing, regulations are only advice",
+     "correct": false,
+     "why": "Regulations are enforceable."
+    },
+    {
+     "text": "Its insurance automatically doubles its cover",
+     "correct": false,
+     "why": "Insurers are more likely to refuse or raise prices."
+    },
+    {
+     "text": "Its staff must all retake their degrees",
+     "correct": false,
+     "why": "That isn't a consequence of non-compliance."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.4-3",
+   "objective": "5.4",
+   "stem": "A company reports on its security compliance to its board every quarter. What is this?",
+   "options": [
+    {
+     "text": "Internal compliance reporting",
+     "correct": true,
+     "why": "Regular internal reports show leadership how well the company meets its obligations."
+    },
+    {
+     "text": "A penetration test",
+     "correct": false,
+     "why": "A pen test attacks systems; this is a report."
+    },
+    {
+     "text": "An external regulatory audit",
+     "correct": false,
+     "why": "External audits are done by an outside body."
+    },
+    {
+     "text": "Attestation by a supplier",
+     "correct": false,
+     "why": "Attestation is a formal statement, often from an outside party, that controls are in place."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.6-1",
+   "objective": "5.6",
+   "stem": "The security team sends staff a harmless fake phishing email and offers quick training to anyone who clicks. What is this?",
+   "options": [
+    {
+     "text": "A phishing simulation (campaign)",
+     "correct": true,
+     "why": "Simulations measure and improve how staff respond, without real harm."
+    },
+    {
+     "text": "A real attack",
+     "correct": false,
+     "why": "It's run by the company's own team with no malicious payload."
+    },
+    {
+     "text": "A tabletop exercise",
+     "correct": false,
+     "why": "A tabletop is a discussion of an incident scenario."
+    },
+    {
+     "text": "Data loss prevention",
+     "correct": false,
+     "why": "DLP stops sensitive data leaving the company."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.6-2",
+   "objective": "5.6",
+   "stem": "What should staff do if they think they clicked a phishing link?",
+   "options": [
+    {
+     "text": "Report it straight away, even if they're not sure",
+     "correct": true,
+     "why": "Fast reporting lets the security team act early. A culture that doesn't blame people gets more reports."
+    },
+    {
+     "text": "Wait to see if anything bad happens",
+     "correct": false,
+     "why": "Waiting gives an attacker time."
+    },
+    {
+     "text": "Delete the email and say nothing",
+     "correct": false,
+     "why": "That hides evidence the team needs."
+    },
+    {
+     "text": "Forward it to colleagues to warn them",
+     "correct": false,
+     "why": "Forwarding spreads the link. Report it to security instead."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.6-3",
+   "objective": "5.6",
+   "stem": "Which two are signs a security awareness programme is working? (Choose two.)",
+   "options": [
+    {
+     "text": "More staff report suspicious emails",
+     "correct": true,
+     "why": "Rising reports show staff spot and act on threats."
+    },
+    {
+     "text": "Fewer staff click simulated phishing links",
+     "correct": true,
+     "why": "A falling click rate over time is a common measure of progress."
+    },
+    {
+     "text": "Fewer emails are received overall",
+     "correct": false,
+     "why": "Email volume isn't affected by training."
+    },
+    {
+     "text": "Staff finish the training faster each year",
+     "correct": false,
+     "why": "Speed through a course doesn't show changed behaviour."
     }
    ]
   }

@@ -125,7 +125,43 @@ function recordAnswer(q, right) {
   right ? s.r++ : s.w++; s.last = right ? 1 : 0; saveP();
 }
 const MASTERY_LABEL = { new: ["Not tried", "muted"], started: ["Started", "sun"], weak: ["Revise", "bad"], strong: ["All correct", "good"] };
-function startPractice(c, mode, questions, title, lesson = null) {
+// Mock exam options on the cert page: length (what the bank can fill), timer, feedback. Saved as P.mockPrefs.
+// The lengths and defaults come from exam.js (mockLengths, mockSettings) once it loads; until then the
+// form shows the usual 20 questions, timed, feedback at the end.
+function mockOptions(c) {
+  const opt = (name, value, label, on) => `<label class="ex-choice"><input type="radio" name="${name}" value="${value}"${on ? " checked" : ""}><span>${label}</span></label>`;
+  return `<form class="ex-setup" id="mock-setup" aria-labelledby="mock-h"><h3 id="mock-h">Mock exam</h3>
+    <fieldset><legend>Questions</legend><div class="ex-choices" id="mock-n">${opt("mock-n", 20, "20", true)}</div></fieldset>
+    <fieldset><legend>Timer</legend><div class="ex-choices">${opt("mock-timed", "1", "Timed (exam pace)", true)}${opt("mock-timed", "0", "Untimed", false)}</div></fieldset>
+    <fieldset><legend>Feedback</legend><div class="ex-choices">${opt("mock-fb", "end", "At the end, like the exam", true)}${opt("mock-fb", "each", "After each question", false)}</div></fieldset>
+    <p class="muted ex-setup-note" id="mock-note" aria-live="polite"></p>
+    <div class="row"><button class="btn ghost" type="button" data-practice="mock" id="mock-go">Start mock exam</button></div></form>`;
+}
+function wireMockOptions(c) {
+  const form = $("mock-setup"); if (!form) return;
+  import("./js/exam.js").then(ex => {
+    if (!form.isConnected) return;
+    const lengths = ex.mockLengths(c.questions, c.domains);
+    if (!lengths.length) { form.hidden = true; return; }
+    const show = () => {
+      const s = ex.mockSettings(P.mockPrefs, lengths);
+      form.querySelector("#mock-n").innerHTML = lengths.map(n => `<label class="ex-choice"><input type="radio" name="mock-n" value="${n}"${n === s.n ? " checked" : ""}><span>${n}${n === 90 ? " (full length)" : ""}</span></label>`).join("");
+      form.querySelector(`[name="mock-timed"][value="${s.timed ? 1 : 0}"]`).checked = true;
+      form.querySelector(`[name="mock-fb"][value="${s.feedback}"]`).checked = true;
+      form.querySelector("#mock-go").textContent = `Start: ${s.n} questions${s.minutes ? `, ${s.minutes} minutes` : ", untimed"}`;
+      form.querySelector("#mock-note").textContent = s.real ? "Exam conditions: this one counts towards \"Am I ready?\"."
+        : "Practice mode: good for learning, but only timed mocks of 20+ questions with feedback at the end count towards \"Am I ready?\".";
+    };
+    form.addEventListener("submit", e => e.preventDefault());
+    form.addEventListener("change", () => {
+      const v = name => (form.querySelector(`[name="${name}"]:checked`) || {}).value;
+      P.mockPrefs = { n: Number(v("mock-n")), ...(v("mock-timed") === "0" ? { timed: false } : {}), ...(v("mock-fb") === "each" ? { feedback: "each" } : {}) };
+      saveP(); show();
+    });
+    show();
+  }).catch(() => {});
+}
+function startPractice(c, mode, questions, title, lesson = null, prefs = P.mockPrefs) {
   import("./js/exam.js").then(ex => {
     if (parseRoute().path !== "exams/" + c.id) return;
     proveTopic = lesson;
@@ -135,9 +171,11 @@ function startPractice(c, mode, questions, title, lesson = null) {
     // Practice is drawn under the cert's own hash, so following the link wouldn't change it (no hashchange).
     main.querySelector(".lesson > .link-btn").addEventListener("click", e => { e.preventDefault(); certView(c.id); drawTrail(); window.scrollTo(0, 0); });
     if (lesson) { topicTop(main.querySelector(".lesson"), lesson, "prove"); drawTrail(); }
-    ex.mount($("ex-root"), { title, mode, questions: mode === "mock" ? ex.buildMock(c.questions, c.domains) : questions,
+    const set = ex.mockSettings(prefs, ex.mockLengths(c.questions, c.domains));  // {} = exam conditions
+    ex.mount($("ex-root"), { title, mode, questions: mode === "mock" ? ex.buildMock(c.questions, c.domains, set.n) : questions,
+      minutes: set.minutes, instant: set.feedback === "each",
       objectiveName: id => names[id] || id, onAnswer: recordAnswer,
-      onFinish: r => { if (r.mode === "mock") { (P.mocks[c.id] || (P.mocks[c.id] = [])).push({ d: todayStr(), score: r.score, total: r.total }); P.mocks[c.id] = P.mocks[c.id].slice(-20); saveP(); award(20, "Mock exam completed"); celebrate("Mock exam done", `${r.score} of ${r.total} correct`); } },
+      onFinish: r => { if (r.mode === "mock") { (P.mocks[c.id] || (P.mocks[c.id] = [])).push({ d: todayStr(), score: r.score, total: r.total, ...(set.real ? {} : { practice: 1 }) }); P.mocks[c.id] = P.mocks[c.id].slice(-20); saveP(); award(20, "Mock exam completed"); celebrate("Mock exam done", `${r.score} of ${r.total} correct`); } },
       onExit: () => { certView(c.id); drawTrail(); window.scrollTo(0, 0); } });
   }).catch(() => toast("Couldn't load the practice questions"));
 }
@@ -164,7 +202,7 @@ function readinessPanel(c, progress) {
     const qLine = x => { const qs = x.objs.reduce((s, o) => s + o.m.total, 0), right = x.objs.reduce((s, o) => s + o.m.right, 0), ad = x.objs.reduce((s, o) => s + o.p.done, 0), at = x.objs.reduce((s, o) => s + o.p.total, 0);
       return [qs && `${right}/${qs} questions right`, at && `${ad}/${at} activities done`].filter(Boolean).join(" · ") || "Nothing to check here yet"; };
     const planRow = it => {
-      if (it.kind === "mock") return `<button class="try-row" type="button" data-practice="mock"><span class="eyebrow">Mock exam</span><b>Take a mock exam</b><span class="muted">${ex.MOCK_SIZE} questions in ${ex.MOCK_MINUTES} minutes. ${pctOf(ex.READY.mock)}% or more counts towards ready.</span></button>`;
+      if (it.kind === "mock") return `<button class="try-row" type="button" data-practice="mock" data-real="1"><span class="eyebrow">Mock exam</span><b>Take a mock exam</b><span class="muted">${ex.MOCK_SIZE} questions in ${ex.MOCK_MINUTES} minutes, feedback at the end. ${pctOf(ex.READY.mock)}% or more counts towards ready.</span></button>`;
       const tag = `${esc(it.o.id)} · ${esc(it.o.title)}`;
       if (it.kind === "activity") return `<a class="try-row" href="${it.next.href}"><span class="eyebrow">${tag}</span><b>${esc(it.next.label)}</b><span class="muted">${it.fresh ? "Start here" : "One of your weakest domains"}: ${esc(it.domain.name)}</span></a>`;
       const why = { wrong: ["Revise", "You got a question here wrong last time."], new: ["Try", "Not tried yet."], finish: ["Finish", "Some questions here are still unanswered."] }[it.why];
@@ -204,7 +242,8 @@ function certView(id) {
     <section class="panel wide ready" id="cert-ready" aria-labelledby="ready-h"><div class="panel-title"><h2 id="ready-h">Am I ready?</h2></div><p class="muted" style="margin:0">Working it out…</p></section>
     ${c.questions.length ? `<section class="panel wide"><div class="panel-title"><h2>Practice questions</h2><span class="eyebrow">${c.questions.length} original questions · not real exam questions</span></div>
       <p class="muted" style="margin:0">Every answer explains why it's right or wrong. Your results mark each objective below as started, to revise, or all correct.</p>
-      <div class="row"><button class="btn brand" type="button" data-practice="weak">Revise weak spots</button><button class="btn ghost" type="button" data-practice="mock">Mock exam: 20 questions, 20 minutes</button></div></section>` : ""}
+      <div class="row"><button class="btn brand" type="button" data-practice="weak">Revise weak spots</button></div>
+      ${mockOptions(c)}</section>` : ""}
     ${c.domains.map(d => `<section class="panel wide cert-domain"><div class="panel-title"><h2>${esc(d.id)} ${esc(d.name)}</h2><span class="eyebrow">${d.weight}% of the exam</span></div>
       <ul class="cert-list">${d.objectives.map(o => { const p = progress.get(o.id), [label, tone] = COVERAGE[o.coverage];
         return `<li class="cert-obj"><div class="cert-top"><b class="mono">${esc(o.id)}</b><span class="cert-title">${esc(o.title)}</span><span class="cert-badge ${tone}">${label}</span>${p.total ? `<span class="cert-done${p.done === p.total ? " ok" : ""}">${p.done}/${p.total} done</span>` : ""}${qCount(o.id) ? (() => { const m = objMastery(o.id), [ml, mt] = MASTERY_LABEL[m.level]; return `<span class="cert-badge ${mt}" title="${m.right} of ${m.total} questions right last time">Questions: ${ml}${m.answered ? ` ${m.right}/${m.total}` : ""}</span><button class="link-btn" type="button" data-practice-obj="${esc(o.id)}">Practise ${qCount(o.id)} ›</button>`; })() : ""}</div>
@@ -213,11 +252,12 @@ function certView(id) {
     ${c.study ? `<p class="muted cert-note">For the parts not covered here, <a href="${esc(c.study.url)}" target="_blank" rel="noopener">${esc(c.study.label)} ↗</a> follows the same objective numbers.</p>` : ""}
   </article></div>`;
   readinessPanel(c, progress);
+  wireMockOptions(c);
   main.querySelector("article").addEventListener("click", e => {
-    const b = e.target.closest("[data-practice], [data-practice-obj]"); if (!b) return;
+    const b = e.target.closest("[data-practice], [data-practice-obj]"); if (!b || b.disabled) return;
     const oid = b.dataset.practiceObj;
     if (oid) return startPractice(c, "drill", c.questions.filter(q => q.objective === oid), `Objective ${oid}`);
-    if (b.dataset.practice === "mock") return startPractice(c, "mock", null, `${c.name} mock exam`);
+    if (b.dataset.practice === "mock") return startPractice(c, "mock", null, `${c.name} mock exam`, null, b.dataset.real ? {} : P.mockPrefs);
     // Weak spots: questions from objectives answered wrong last time, then untried ones, heaviest domains first.
     const weight = q => (c.domains.find(d => d.id[0] === q.objective[0]) || {}).weight || 0;
     const rank = q => (P.exam[q.id] ? (P.exam[q.id].last ? 2 : 0) : 1);

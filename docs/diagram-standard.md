@@ -35,6 +35,7 @@ The idea in one line: **the hardware stands in a dark room under one light; it i
 ## Still to bring up to it
 Checked 12 November 2026. Each of these draws devices its own way:
 - The home hero's device row. Not touched: the owner's standing instruction is that the home page stays as it is.
+  Tried and rejected (15 November 2026): a room scene in place of the hero photo (branch `design/home-scene`). The owner felt it lost the premium feel: the hero sells mood, and simple device line art blown up to half the hero reads as clip art. Keep the photo hero; room diagrams belong where they teach.
 
 Do them one engine at a time, each behind a browser check at desktop and 390 px in both themes, and tick them off here.
 

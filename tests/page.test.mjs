@@ -114,6 +114,13 @@ test("progress: restored or stored data is cleaned before use", () => {
   assert.equal(m.mocks["network-plus"][0].score, 0, "a non-number score becomes 0, never markup");
   assert.equal(m.mocks["network-plus"][0].d.length, 10, "dates are cut short");
   assert.equal(Object.keys(cleanProgress({ xp: 1 }).mocks).length, 0, "older saves without mocks still load");
+  const pm = cleanProgress({ xp: 1, mocks: { "security-plus": [{ d: "2026-11-15", score: 8, total: 10, practice: evil }, { d: "2026-11-15", score: 18, total: 20, practice: 0 }] } });
+  assert.deepEqual(pm.mocks["security-plus"].map(x => x.practice), [1, undefined], "the practice flag is 1 or absent, never text");
+  const pref = p => JSON.parse(JSON.stringify(cleanProgress({ xp: 1, mockPrefs: p }).mockPrefs));
+  assert.deepEqual(pref({ n: 45, timed: false, feedback: "each", extra: evil }), { n: 45, timed: false, feedback: "each" }, "mock options keep only known fields");
+  assert.deepEqual(pref({ n: evil, timed: "no", feedback: evil }), {}, "bad mock options fall back to the defaults");
+  assert.deepEqual(pref({ n: 9999 }), {}, "a length beyond a full exam is dropped");
+  assert.deepEqual(JSON.parse(JSON.stringify(cleanProgress({ xp: 1 }).mockPrefs)), {}, "older saves without mock options still load");
   const ag = cleanProgress({ xp: 1, agency: { "shift-01": { d: evil, best: 999, total: "6", own: "yes" }, [evil]: { best: 1 }, "shift-02": "nope", "shift-03": [1], "shift-04": { best: 3, total: 6, own: true } } });
   assert.deepEqual(JSON.parse(JSON.stringify(ag.agency)), { "shift-01": { d: evil.slice(0, 10), best: 20, total: 6, own: false }, "shift-04": { d: "", best: 3, total: 6, own: true } }, "agency results are clamped numbers, a short date and whether it was done on your own");
   assert.equal(Object.keys(cleanProgress({ xp: 1 }).agency).length, 0, "older saves without agency still load");

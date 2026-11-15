@@ -99,3 +99,41 @@ test("every cert: each domain has twice its share of a mock (so a second mock is
     assert.equal(new Set(mock.map(q => q.id)).size, ex.MOCK_SIZE, "no repeats");
   }
 });
+
+test("mock options: lengths the bank can fill, safe settings, and only exam conditions count as real", () => {
+  for (const id of ["network-plus", "security-plus", "pentest-plus"]) {
+    const c = read(`../content/certs/${id}.json`), bank = read(`../content/certs/${id}-questions.json`).questions;
+    const lengths = ex.mockLengths(bank, c.domains);
+    assert.ok(lengths.includes(ex.MOCK_SIZE), `${id}: the usual 20-question mock is always on offer`);
+    for (const n of lengths) {
+      const m = ex.buildMock(bank, c.domains, n, seeded(n));
+      assert.equal(m.length, n, `${id}: a ${n}-question mock is full`);
+      assert.equal(new Set(m.map(q => q.id)).size, n, `${id}: no repeats in ${n}`);
+    }
+    for (const n of ex.MOCK_LENGTHS.filter(n => !lengths.includes(n))) assert.ok(ex.buildMock(bank, c.domains, n, seeded(1)).length < n, `${id}: ${n} is left out only when it can't be filled`);
+  }
+  const sp = read("../content/certs/security-plus.json"), spBank = read("../content/certs/security-plus-questions.json").questions;
+  assert.ok(ex.mockLengths(spBank, sp.domains).includes(90), "Security+ offers a full-length 90-question mock");
+  assert.deepEqual(ex.mockSettings({}), { n: 20, timed: true, feedback: "end", minutes: 20, real: true }, "the default is exam conditions");
+  assert.deepEqual(ex.mockSettings({ n: 90 }), { n: 90, timed: true, feedback: "end", minutes: 90, real: true }, "exam pace: one minute a question");
+  assert.equal(ex.mockSettings({ n: 45, timed: false }).minutes, null, "untimed has no clock");
+  assert.equal(ex.mockSettings({ n: 45, timed: false }).real, false);
+  assert.equal(ex.mockSettings({ feedback: "each" }).real, false, "instant feedback is practice, not exam conditions");
+  assert.equal(ex.mockSettings({ n: 10 }).real, false, "a 10-question mock is too short to count");
+  assert.equal(ex.mockSettings({ n: 90 }, [10, 20, 45]).n, 20, "a saved length the bank can't fill falls back to 20");
+  assert.equal(ex.mockSettings({ n: "<b>" }).n, 20);
+  assert.equal(ex.mockSettings({ feedback: "<script>" }).feedback, "end");
+});
+
+test("readiness ignores practice-mode mocks", () => {
+  const stats = Object.fromEntries(questions.map(q => [q.id, { r: 1, w: 0, last: 1 }]));
+  const base = { domains: cert.domains, questions, stats, progressOf: () => ({ done: 1, total: 1, next: null }) };
+  const real = ex.readiness({ ...base, mocks: [{ d: "2026-11-01", score: 18, total: 20 }] });
+  assert.equal(real.verdict, "ready");
+  const after = ex.readiness({ ...base, mocks: [{ d: "2026-11-01", score: 18, total: 20 }, { d: "2026-11-02", score: 2, total: 10, practice: 1 }] });
+  assert.equal(after.lastMock.score, 18, "a practice mock doesn't replace the last real one");
+  assert.equal(after.verdict, "ready");
+  const onlyPractice = ex.readiness({ ...base, mocks: [{ d: "2026-11-02", score: 10, total: 10, practice: 1 }] });
+  assert.equal(onlyPractice.mockPct, null, "practice mocks alone don't count as a mock");
+  assert.notEqual(onlyPractice.verdict, "ready");
+});

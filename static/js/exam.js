@@ -15,15 +15,33 @@ export function isCorrect(q, chosen) {
 }
 export const correctCount = q => q.options.filter(o => o.correct).length;
 
-// A mock exam that mirrors the domain weights: allocate questions by weight (largest remainder),
-// then pick at random within each domain, never repeating a question.
-export function buildMock(questions, domains, n = MOCK_SIZE, rand = Math.random) {
-  const byDomain = d => questions.filter(q => q.objective.split(".")[0] === d.id.split(".")[0]);
-  const raw = domains.map(d => ({ d, exact: (d.weight / 100) * n }));
-  const alloc = raw.map(r => ({ ...r, k: Math.floor(r.exact) }));
+// How many questions each domain gets in an n-question mock: by weight, largest remainder first.
+function allocate(domains, n) {
+  const alloc = domains.map(d => ({ d, exact: (d.weight / 100) * n })).map(r => ({ ...r, k: Math.floor(r.exact) }));
   let left = n - alloc.reduce((s, r) => s + r.k, 0);
   for (const r of alloc.slice().sort((a, b) => (b.exact % 1) - (a.exact % 1))) { if (left <= 0) break; r.k++; left--; }
-  return shuffle(alloc.flatMap(r => shuffle(byDomain(r.d), rand).slice(0, r.k)), rand);
+  return alloc;
+}
+const inDomain = (q, d) => q.objective.split(".")[0] === d.id.split(".")[0];
+// A mock exam that mirrors the domain weights: pick at random within each domain, never repeating a question.
+export function buildMock(questions, domains, n = MOCK_SIZE, rand = Math.random) {
+  return shuffle(allocate(domains, n).flatMap(r => shuffle(questions.filter(q => inDomain(q, r.d)), rand).slice(0, r.k)), rand);
+}
+
+// ---------- mock exam options: length, timer and when you see feedback.
+// Lengths on offer are the ones the bank can fill at the exam's domain weights (90 is full length).
+export const MOCK_LENGTHS = [10, 20, 45, 90];
+export function mockLengths(questions, domains) {
+  return MOCK_LENGTHS.filter(n => allocate(domains, n).every(r => questions.filter(q => inDomain(q, r.d)).length >= r.k));
+}
+// Any saved or chosen settings -> a safe set: { n, timed, feedback: "end" | "each", minutes (null when untimed), real }.
+// Timed mocks keep the real exam's pace (up to 90 questions in 90 minutes, so one a minute). "real" means exam
+// conditions (timed, feedback at the end, 20 questions or more): only those count towards "Am I ready?".
+export function mockSettings(s = {}, lengths = MOCK_LENGTHS) {
+  const ok = lengths.length ? lengths : [MOCK_SIZE];
+  const want = Number(s.n), n = ok.includes(want) ? want : ok.includes(MOCK_SIZE) ? MOCK_SIZE : ok[ok.length - 1];
+  const timed = s.timed !== false, feedback = s.feedback === "each" ? "each" : "end";
+  return { n, timed, feedback, minutes: timed ? Math.round(n * MOCK_MINUTES / MOCK_SIZE) : null, real: timed && feedback === "end" && n >= MOCK_SIZE };
 }
 
 // Mastery of one objective from the latest answer to each of its questions.
@@ -65,7 +83,8 @@ export function readiness({ domains, questions = [], stats = {}, progressOf = ()
   const totalW = all.reduce((s, x) => s + x.weight, 0);
   const overall = totalW ? all.reduce((s, x) => s + x.score * x.weight, 0) / totalW : 0;
   const answered = all.reduce((s, x) => s + x.m.answered, 0), qTotal = questions.length;
-  const lastMock = mocks.length ? mocks[mocks.length - 1] : null, mockPct = lastMock && lastMock.total ? lastMock.score / lastMock.total : null;
+  const real = mocks.filter(m => !m.practice);  // practice-mode mocks (untimed, instant feedback, short) don't count
+  const lastMock = real.length ? real[real.length - 1] : null, mockPct = lastMock && lastMock.total ? lastMock.score / lastMock.total : null;
   const mockOk = !qTotal || (mockPct !== null && mockPct >= READY.mock);
   const anyEvidence = all.some(x => x.m.answered || x.p.done);
   const verdict = !anyEvidence ? "start"
@@ -140,26 +159,32 @@ function mountDrill(el, qs, { title, objectiveName = id => id, onAnswer = () => 
 
 // Mock exam: like the real thing. Answer in any order, flag questions, no feedback until you end,
 // then review every question. A countdown runs; when it hits zero the exam ends automatically.
-function mountMock(el, qs, { title, objectiveName = id => id, onAnswer = () => {}, onFinish = () => {}, onExit = () => {} }) {
+// Options: minutes (null = untimed, no countdown) and instant (check each answer as you go, then it locks).
+function mountMock(el, qs, { title, minutes = MOCK_MINUTES, instant = false, objectiveName = id => id, onAnswer = () => {}, onFinish = () => {}, onExit = () => {} }) {
   const answers = new Map();  // index -> Set of chosen option indexes
-  const flagged = new Set();
+  const flagged = new Set(), checked = new Set();  // checked: answers already marked (instant feedback)
   let i = 0, confirming = false, done = false, timer = null;
-  const deadline = Date.now() + MOCK_MINUTES * 60 * 1000;
+  const deadline = minutes ? Date.now() + minutes * 60 * 1000 : null;
   const left = () => Math.max(0, Math.round((deadline - Date.now()) / 1000));
-  const clock = () => `${Math.floor(left() / 60)}:${String(left() % 60).padStart(2, "0")}`;
+  const clock = () => deadline ? `${Math.floor(left() / 60)}:${String(left() % 60).padStart(2, "0")}` : "";
+  const clockText = () => deadline ? `<span id="ex-clock">${clock()}</span> left` : "Untimed";
   const answered = () => answers.size;
+  const score = () => [...checked].filter(k => isCorrect(qs[k], answers.get(k) || new Set())).length;
 
   function draw() {
     if (done) return;
     if (confirming) return drawConfirm();
     const q = qs[i], chosen = answers.get(i) || new Set(), multi = correctCount(q) > 1;
-    el.innerHTML = `<div class="panel-title"><h2>${esc(title)}</h2><span class="eyebrow mono"><span id="ex-clock">${clock()}</span> left · ${answered()}/${qs.length} answered</span></div>
+    el.innerHTML = `<div class="panel-title"><h2>${esc(title)}</h2><span class="eyebrow mono">${clockText()} · ${answered()}/${qs.length} answered${instant ? ` · ${score()} right` : ""}</span></div>
       <div class="ex-qhead"><span class="eyebrow">Question ${i + 1} of ${qs.length} · Objective ${esc(q.objective)} · ${esc(objectiveName(q.objective))}</span>
         <button class="ex-flag${flagged.has(i) ? " on" : ""}" type="button" data-act="flag" aria-pressed="${flagged.has(i)}">⚑ ${flagged.has(i) ? "Flagged" : "Flag for review"}</button></div>
       ${q.scenario ? `<p class="ex-scenario">${esc(q.scenario)}</p>` : ""}
       <p class="q">${gl(q.stem)}</p>${multi && !/choose/i.test(q.stem) ? `<p class="muted ex-hint">Choose ${correctCount(q)}.</p>` : ""}
-      <div class="ex-opts" role="${multi ? "group" : "radiogroup"}" aria-label="Answers">${q.options.map((o, k) => `<button type="button" class="opt ex-opt${chosen.has(k) ? " picked" : ""}" data-k="${k}" role="${multi ? "checkbox" : "radio"}" aria-checked="${chosen.has(k)}">
-        <span class="ex-letter" aria-hidden="true">${letter(k)}</span><span>${esc(o.text)}</span></button>`).join("")}</div>
+      <div class="ex-opts" role="${multi ? "group" : "radiogroup"}" aria-label="Answers">${q.options.map((o, k) => { const on = chosen.has(k), shown = checked.has(i);
+        return `<button type="button" class="opt ex-opt${shown ? (o.correct ? " right" : on ? " wrong" : "") : on ? " picked" : ""}" data-k="${k}" role="${multi ? "checkbox" : "radio"}" aria-checked="${on}" ${shown ? "disabled" : ""}>
+        <span class="ex-letter" aria-hidden="true">${letter(k)}</span><span>${esc(o.text)}</span></button>
+        ${shown && (o.correct || on) ? `<p class="ex-why ${o.correct ? "ok" : "no"}"><b>${o.correct ? "Correct" : "Not this one"}:</b> ${gl(o.why)}</p>` : ""}`; }).join("")}</div>
+      ${instant && !checked.has(i) ? `<div class="row ex-ctl"><button class="btn brand" type="button" data-act="check" ${chosen.size === correctCount(q) ? "" : "disabled"}>Check answer</button></div>` : ""}
       <div class="row ex-nav">
         <button class="btn ghost" type="button" data-act="prev" ${i === 0 ? "disabled" : ""}>‹ Previous</button>
         <button class="btn ghost" type="button" data-act="next" ${i === qs.length - 1 ? "disabled" : ""}>Next ›</button>
@@ -172,16 +197,16 @@ function mountMock(el, qs, { title, objectiveName = id => id, onAnswer = () => {
   }
   function drawConfirm() {
     const un = qs.length - answered();
-    el.innerHTML = `<div class="panel-title"><h2>End the exam?</h2><span class="eyebrow mono">${clock()} left</span></div>
+    el.innerHTML = `<div class="panel-title"><h2>End the exam?</h2><span class="eyebrow mono">${clockText()}</span></div>
       <p>${un ? `You have <b>${un}</b> unanswered question${un === 1 ? "" : "s"}${flagged.size ? ` and <b>${flagged.size}</b> flagged` : ""}. ` : flagged.size ? `You still have <b>${flagged.size}</b> flagged for review. ` : "Every question is answered. "}You can't change answers after ending.</p>
       <div class="row"><button class="btn brand" type="button" data-act="end-yes">End and see results</button><button class="btn ghost" type="button" data-act="end-no">Keep going</button></div>`;
   }
   function finish() {
     done = true; clearInterval(timer);
     const results = qs.map((q, k) => ({ q, chosen: answers.get(k) || new Set(), right: isCorrect(q, answers.get(k) || new Set()) }));
-    results.forEach(r => onAnswer(r.q, r.right));
+    results.forEach((r, k) => checked.has(k) || onAnswer(r.q, r.right));  // checked ones were recorded as they were marked
     const score = results.filter(r => r.right).length;
-    onFinish({ mode: "mock", score, total: qs.length });
+    onFinish({ mode: "mock", score, total: qs.length, minutes, instant });
     el.innerHTML = `<div class="panel-title"><h2>${esc(title)}: results</h2><span class="eyebrow">${score} of ${qs.length} correct</span></div>
       <p>Patch Notes mock exams are practice only. The real exam is scored differently, so treat this as a guide to what to revise. Your answers update each objective's mastery.</p>
       <details class="ex-review" open><summary>Review every question</summary><ol>${results.map(r => `<li class="${r.right ? "ok" : r.chosen.size ? "no" : "skip"}"><b>${r.right ? "✓" : r.chosen.size ? "✗" : "—"} ${esc(r.q.objective)}</b> ${esc(r.q.stem)}
@@ -192,6 +217,7 @@ function mountMock(el, qs, { title, objectiveName = id => id, onAnswer = () => {
   el.addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b || b.disabled) return;
     if (b.dataset.k !== undefined) {
+      if (checked.has(i)) return;
       const k = Number(b.dataset.k), q = qs[i], set = answers.get(i) || new Set();
       if (correctCount(q) > 1) { set.has(k) ? set.delete(k) : set.add(k); } else { set.clear(); set.add(k); }
       set.size ? answers.set(i, set) : answers.delete(i);
@@ -199,6 +225,7 @@ function mountMock(el, qs, { title, objectiveName = id => id, onAnswer = () => {
     }
     const act = b.dataset.act;
     if (b.dataset.go !== undefined) go(Number(b.dataset.go));
+    else if (act === "check") { checked.add(i); onAnswer(qs[i], isCorrect(qs[i], answers.get(i) || new Set())); draw(); (el.querySelector('[data-act="next"]:not([disabled])') || el.querySelector('[data-act="end"]')).focus(); }
     else if (act === "flag") { flagged.has(i) ? flagged.delete(i) : flagged.add(i); draw(); el.querySelector('[data-act="flag"]').focus(); }
     else if (act === "prev") go(i - 1);
     else if (act === "next") go(i + 1);
@@ -207,7 +234,7 @@ function mountMock(el, qs, { title, objectiveName = id => id, onAnswer = () => {
     else if (act === "end-yes") finish();
     else if (act === "exit") { clearInterval(timer); onExit(); }
   });
-  timer = setInterval(() => {
+  if (deadline) timer = setInterval(() => {
     if (!el.isConnected) return clearInterval(timer);
     const c = el.querySelector("#ex-clock"); if (c) c.textContent = clock();
     if (left() <= 0 && !done) finish();  // time's up: score what's answered
