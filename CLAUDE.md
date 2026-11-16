@@ -50,7 +50,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   phishing triage ("Which email was it?", `phish-triage.json`: the email inspector, `scenario.emails` with raw headers parsed by
   `engine.parseHeaders`; findings come from `engine.inspectEmail`). Keep its headers, log lines and findings in step: tests check they agree.
 - Exam prep has its own tab (`#exams`, `VIEWS.exams` in 06-learn; cert pages `#cert-<id>` sit under it), so lessons stay free of
-  exam clutter (a lesson only shows its "Prove it" stage). Network+ N10-009 (25 objectives, 60 questions, "Am I ready?" panel), Security+ SY0-701 (28 objectives, 127 questions, mock exams). Mock options on each cert page (`mockOptions` in 06-learn, saved as `P.mockPrefs`; pure `mockLengths`/`mockSettings` in exam.js, tested): 10/20/45/90 questions (only lengths the bank fills at the domain weights; 90 = full length, Security+ only), timed at exam pace or untimed, feedback at the end or after each question. Only timed, end-feedback mocks of 20+ count towards "Am I ready?" (others are saved with `practice: 1`). PenTest+ PT0-003 (26 objectives, 47 questions;
+  exam clutter (a lesson only shows its "Prove it" stage). Network+ N10-009 (25 objectives, 60 questions, "Am I ready?" panel), Security+ SY0-701 (28 objectives, 147 questions, mock exams; every objective now has a lesson, lab or shift). Mock options on each cert page (`mockOptions` in 06-learn, saved as `P.mockPrefs`; pure `mockLengths`/`mockSettings` in exam.js, tested): 10/20/45/90 questions (only lengths the bank fills at the domain weights; 90 = full length, Security+ only), timed at exam pace or untimed, feedback at the end or after each question. Only timed, end-feedback mocks of 20+ count towards "Am I ready?" (others are saved with `practice: 1`). PenTest+ PT0-003 (26 objectives, 47 questions;
   mostly defender-side coverage, said in its note), with three evidence labs for it:
   `scope-roe` (rules of engagement, kind "doc"), `nmap-read` (Nmap 7.94 -sV output) and `validate-findings` (false positives, backports). `build.load_certs()` orders them Network+, Security+, PenTest+ (tested). All three map
   and tag questions per objective (not per domain), every objective has a question, and each domain holds at least twice
@@ -72,6 +72,8 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   A shift (`content/agency/*.json`, `static/js/agency/`, route `#agency-<id>`, tests `tests/agency.test.mjs`: every shift
   must be finishable with every check passed from its own content, logs visible at the start mustn't postdate it) opens with
   clocking in (badge tap, the lead's briefing as chat, the client file), then the desk (queue, alert, messages), then clock out.
+  The client file's "What you're watching" is one card per source (`static/js/agency/watch.js`, pure `watchList`, tested): icon from
+  kind/id/name (or a source's own `icon`), title with "(SIEM export)" or ": detail" split into a tag, first sentence of `about`.
   Design and decisions: `docs/agency-pilot.md`. Logs are searched with `engine.searchLines`. A search records findings only when focused (3+ characters,
   at most 80% of the log's lines). Each supporting evidence item lists the `findings` that back it; citing one before any is
   found is noted at close (`closed[id].unchecked`) and judged "cited without checking" (`judgeClosed`); the close form marks
@@ -140,6 +142,33 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   Diamond, STRIDE). Doc labs (Practise group "Governance"): `cyber-essentials-check`, `risk-register`, `allowed-or-not`, `threat-model`.
   Paths `grc` and `it-support`. Practise is grouped by topic (CATEGORY_ORDER in 07-labs). Evidence lab options are mixed when shown
   (`mixLabSteps`); tests pick lab answers by text. Fonts are self-hosted (`static/fonts`); the build writes `/.well-known/security.txt`.
+- Lessons lead with their picture (16 Nov): the "See it" block (flow diagram, explainer or concept) sits under the topic
+  steps, before the text, on every lesson. Concepts (`static/js/concept.js`, tests `tests/concept.test.mjs`): `cards`, `triad`
+  and `cycle` (open on the first part, Back/Next, the arc into the current stage lit) and `matrix` (a 5 x 5 likelihood x impact
+  heat map: items `{ label, l, i, text, treat }`, optional `appetite`; pure `riskScore`/`riskBand`; opens on the biggest risk).
+  The risk lesson uses the matrix; tested that risks over its appetite aren't simply accepted.
+  `cards` render as a spotlight (picture tiles, the chosen one large beneath, Back/Next); `ordered: true` numbers them
+  with arrows (zero-day, wireless, certificates).
+- Practise page: length filters and "Not done yet" (`PS.time`/`PS.todo`, pure `practiseMatch`, tested) and "Pick up where you
+  left off" (`pn-last` in localStorage, a convenience not progress; `lastActivity` only offers a known unfinished lab, mission
+  or shift; tested). Labs and shifts don't save mid-way yet, so it reopens them from the start.
+- Finished paths show a printable record (`pathRecordHtml`, name typed for printing only, never saved; printed alone via
+  `#print-root`); it says it is not a qualification.
+- Asset and automation labs (16 Nov, doc labs): `asset-register` ("Who owns this laptop?", Halstead & Rowe's register: an
+  ownerless laptop, a leaver's laptop, a reformatted server going to a reseller, a printer disk, two unknown devices; NIST SP
+  800-88 sanitisation) for Security+ 4.2, and `soar-playbook` ("Automate it, safely": a phishing playbook, guard rails, a feed
+  as a single point of failure) for 4.7. PenTest+ 5.1 and 5.3 now map to defender-side labs and shifts (gap notes say so);
+  2.3, 3.3, 4.10 and 5.4 still have no activity. The done card's topic bar is labelled "Where this leaves the topic" so it
+  isn't a duplicate landmark.
+- Exam date planner (cert page, inside "Am I ready?"): `P.examDates` (cert id -> YYYY-MM-DD, cleaned and tested); pure
+  `weekPlan` in exam.js spreads objectives under 70% (unscored first, heaviest first) across the weeks left and keeps the last
+  week for timed mocks; week chips open that objective's drill.
+- Installable and offline: `static/manifest.webmanifest`, icons in `static/icons/` (the amber // mark), `static/sw.js`
+  (network first, same-site GETs only, copies used only offline; bump `CACHE` to drop old copies). Registered in 09-shell on
+  https and localhost. Smoke test: "works offline after a visit".
+- Publishing: `python3 scripts/publish.py <production clone>` diffs dev since the last published "dev <sha>", leaves out the
+  files kept apart (CLAUDE.md, AI notes, wrangler, the preview workflow), applies, runs the gate there and commits. It never
+  pushes: production's push needs the owner's approval. `--dry-run` lists the files.
 - Review deck (`#review`, `static/js/review.js`, tests `tests/review.test.mjs`): due cards first, then new cards 15 per session
   (`NEW_PER_SESSION`; `reviewDueCount` in 08-you mirrors it). Exam hub cards show each cert's `card` line (who it suits) and study order.
 - Hashing lab (`#lab-hashing`, `static/js/labs/hashing.js`, tests `tests/hashing.test.mjs`): MD5/SHA-1/SHA-256, salts, slow hashes.
