@@ -509,9 +509,14 @@
     {
      "id": "4.2",
      "title": "Asset management",
-     "coverage": "none",
-     "activities": [],
-     "gap": "Asset inventory, ownership and secure disposal aren't covered yet beyond practice questions."
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "asset-register"
+      }
+     ],
+     "gap": "The lab covers inventory, ownership, unknown devices, leavers and safe disposal. Buying and procurement are covered by questions only."
     },
     {
      "id": "4.3",
@@ -628,9 +633,14 @@
     {
      "id": "4.7",
      "title": "Automation and orchestration",
-     "coverage": "none",
-     "activities": [],
-     "gap": "Scripting, automation and SOAR aren't covered yet beyond practice questions."
+     "coverage": "partial",
+     "activities": [
+      {
+       "type": "lab",
+       "id": "soar-playbook"
+      }
+     ],
+     "gap": "The lab covers automated playbooks: their benefits, guard rails and risks. Writing scripts yourself isn't taught here."
     },
     {
      "id": "4.8",

@@ -32,24 +32,6 @@
   "close": 3,
   "wait": 5
  },
- "infra": {
-  "caption": "Lanternfield's SOC watches Wrenfield & Co's web app, database and Amazon S3 exports.",
-  "nodes": [
-   {"id": "net", "label": "Internet", "sub": "attacker", "icon": "globe", "at": [0, 0], "bad": true},
-   {"id": "app", "label": "Shop app", "sub": "web app", "icon": "server", "at": [1, 0]},
-   {"id": "db", "label": "Database", "sub": "users, orders", "icon": "database", "at": [2, 0]},
-   {"id": "bucket", "label": "Amazon S3", "sub": "customer exports", "icon": "cloud", "at": [2, 1]},
-   {"id": "siem", "label": "SIEM", "sub": "the SOC", "icon": "eye", "at": [0, 1]}
-  ],
-  "links": [
-   ["net", "app", {"label": "HTTP"}],
-   ["app", "db"],
-   ["app", "bucket", {"label": "key"}],
-   ["siem", "app", {"watch": true}],
-   ["siem", "db", {"watch": true}],
-   ["siem", "bucket", {"watch": true}]
-  ]
- },
  "sources": {
   "weblog": {
    "name": "Web and WAF log: shop.wrenfield.example (SIEM export)",

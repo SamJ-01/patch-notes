@@ -7,25 +7,28 @@ import * as A from "../static/js/agency/shift.js";
 import { matches } from "../static/js/missions/engine.js";
 import * as E from "../static/js/missions/engine.js";
 import { MAIL } from "../static/js/mail.js";
-import * as INFRA from "../static/js/agency/infra.js";
+import * as WATCH from "../static/js/agency/watch.js";
 import { KINDS as EXPLAINER_KINDS } from "../static/js/explainers.js";
 
 const dir = new URL("../content/agency/", import.meta.url);
 const shifts = readdirSync(dir).filter(f => f.endsWith(".json")).map(f => JSON.parse(readFileSync(new URL(f, dir), "utf8")));
 
-test("every shift has a well-formed infrastructure map", () => {
+test("every shift's client file lists each source it can search, with a known icon and a short line", () => {
   for (const sh of shifts) {
-    assert.ok(sh.infra, `${sh.id}: needs an infra map for the client file`);
-    const ids = new Set(sh.infra.nodes.map(n => n.id));
-    assert.ok(sh.infra.nodes.length >= 3 && ids.size === sh.infra.nodes.length, `${sh.id}: needs a few nodes with unique ids`);
-    for (const n of sh.infra.nodes) {
-      assert.ok(n.id && n.label && Array.isArray(n.at) && n.at.length === 2, `${sh.id}: node ${n.id} is missing fields`);
-      assert.ok(INFRA.ICON_NAMES.includes(n.icon), `${sh.id}: node ${n.id} has unknown icon "${n.icon}"`);
+    const list = WATCH.watchList(sh);
+    assert.deepEqual(list.map(w => w.id), Object.keys(sh.sources), `${sh.id}: every source gets a card, in order`);
+    for (const w of list) {
+      assert.ok(WATCH.ICON_NAMES.includes(w.icon), `${sh.id}: ${w.id} has unknown icon "${w.icon}"`);
+      assert.ok(w.name && !/[():]/.test(w.name), `${sh.id}: ${w.id} title "${w.name}" should be short (tag split off)`);
+      assert.ok(w.about && w.about.length <= 160, `${sh.id}: ${w.id} needs a short about line`);
     }
-    for (const [a, b] of sh.infra.links) assert.ok(ids.has(a) && ids.has(b), `${sh.id}: link ${a}->${b} references a missing node`);
-    const out = INFRA.svg(sh.infra);
-    for (const n of sh.infra.nodes) assert.ok(out.includes(n.label), `${sh.id}: ${n.label} is not drawn`);
+    const out = WATCH.html(sh);
+    for (const w of list) assert.ok(out.includes(w.name), `${sh.id}: ${w.name} is not shown`);
   }
+  const w = WATCH.watchList({ sources: { signin: { name: "Sign-in log (SIEM export)", about: "One. Two." }, inbox: { kind: "email", name: "Mailbox: a@b.example", about: "x" } } });
+  assert.deepEqual(w.map(x => [x.icon, x.name, x.tag, x.about]), [["key", "Sign-in log", "SIEM export", "One."], ["mail", "Mailbox", "a@b.example", "x"]]);
+  const raw = WATCH.html({ sources: { x: { name: "<img>", about: "<i>" } } });
+  assert.ok(raw.includes("&lt;img&gt;") && !raw.includes("<img>") && !raw.includes("<i>"), "names and about lines are escaped");
 });
 const shift = shifts.find(s => s.id === "shift-01");
 

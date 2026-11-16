@@ -92,3 +92,32 @@ The Governance track's seven cards use drawn scenes until photos are made in the
 - `risk-register`: index cards in a tray, one pulled half out. Light: desk lamp edge.
 - `allowed-or-not`: a door with a keycard reader, the reader's light on. Light: the reader LED.
 - `threat-model`: a sheet of tracing paper over a printed plan, pencil beside it. Light: a lightbox under the paper.
+
+### Ready-to-paste prompts: the nine cards still on drawn scenes (16 November 2026)
+Seven Governance cards plus two new labs (`asset-register`, `soar-playbook`). Learned from the two Grok rounds above:
+no warm desk lamps, no brass, no props, no haze, and no brighter than the site (average about 21 to 25 out of 255).
+Light each object with its own small light (an LED, a screen edge), as in the four pictures that were kept.
+Attach `static/img/cards/ai-security.webp` and `static/img/cards/zero-trust-decision.webp` as the style reference.
+
+**Grid C (2 rows x 3, one image):**
+> Photoreal cinematic still, a 2 x 3 grid of six separate frames with thin black gutters, each frame 2:1. Every frame:
+> a quiet dark room at night, no people, matte black surroundings, one real object, lit only by its own small light or the
+> edge of a screen. Cool, low light, deep blacks, no haze, no fog, no warm lamps, no brass, no props, no readable text,
+> no logos, no neon, no holograms. Restrained film photograph, the same camera and grade in all six.
+> Row 1: (1) an open ledger book on a dark desk, one ruled line, lit by the cold edge of a laptop screen out of frame;
+> (2) a sealed document folder beside a closed laptop, lit by the laptop's small charging LED;
+> (3) a short length of steel chain lying on a desk, one link open, lit by a thin cool strip of light from a door gap.
+> Row 2: (4) a blank clipboard next to a small office router, lit by the router's row of tiny status LEDs;
+> (5) a tray of blank index cards, one pulled halfway out, lit by the cold edge of a monitor out of frame;
+> (6) a closed office door with a keycard reader beside it, the reader's single small LED lit.
+
+**Grid D (1 row x 3, one image):** the same preamble, three frames:
+> (1) a sheet of tracing paper over a printed floor plan on a lightbox, the lightbox the only light (no readable text);
+> (2) three closed laptops standing in a charging shelf, small blank asset-tag stickers, one laptop's charging LED lit;
+> (3) a plug-in timer switch in a wall socket in a dark room, its small LED lit.
+
+Crop each frame to 2:1, about 1200 x 600 webp:
+Grid C → `risk`, `law`, `attack-models`, `cyber-essentials-check`, `risk-register`, `allowed-or-not`.
+Grid D → `threat-model`, `asset-register`, `soar-playbook`.
+Then add each id to `CARD_PHOTOS` in `src/app/07-labs.js` (the drawn scene stays as the fallback). Keep only frames that
+match the house look; a card is better on its drawn scene than with a picture that doesn't fit.

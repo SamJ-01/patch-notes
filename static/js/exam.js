@@ -103,6 +103,27 @@ export function readiness({ domains, questions = [], stats = {}, progressOf = ()
   return { verdict, overall, rows, answered, qTotal, lastMock, mockPct, plan, elsewhere: rows.reduce((s, r) => s + r.elsewhere, 0) };
 }
 
+// ---------- Exam date planner: spread what still needs work across the weeks left, weakest and heaviest first,
+// keeping the final week for timed mocks and revision. Pure; dates are "YYYY-MM-DD" strings (local days).
+const dayN = s => Math.floor(Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10)) / 86400000);
+const dayS = n => new Date(n * 86400000).toISOString().slice(0, 10);
+// rows: readiness().rows. Returns { days, past, weeks: [{ n, from, to, focus: [objective], mocks: bool }] }.
+export function weekPlan({ examDate, today, rows = [] }) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(examDate || "") || !/^\d{4}-\d{2}-\d{2}$/.test(today || "")) return null;
+  const t = dayN(today), e = dayN(examDate), days = e - t;
+  if (days < 0) return { days, past: true, weeks: [] };
+  const nWeeks = Math.min(52, Math.max(1, Math.ceil(days / 7)));
+  const todo = rows.flatMap(r => r.objs).filter(x => x.score === null || x.score < READY.domain)
+    .sort((a, b) => (a.score ?? -1) - (b.score ?? -1) || b.weight - a.weight).map(x => x.o);
+  const study = nWeeks > 1 ? nWeeks - 1 : 1, per = Math.ceil(todo.length / study);
+  const weeks = Array.from({ length: nWeeks }, (_, i) => {
+    const from = t + i * 7, last = i === nWeeks - 1, to = last ? e : from + 6;
+    const focus = nWeeks > 1 && last ? [] : todo.slice(i * per, (i + 1) * per);
+    return { n: i + 1, from: dayS(from), to: dayS(to), focus, mocks: last };
+  });
+  return { days, past: false, weeks };
+}
+
 // ---------- the practice screen
 const letter = k => String.fromCharCode(65 + k);
 // opts: { title, questions, mode: "drill"|"mock", objectiveName(id), onAnswer(q, right), onFinish(summary), onExit() }

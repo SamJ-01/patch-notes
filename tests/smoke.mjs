@@ -13,7 +13,7 @@ import { extname, join, normalize } from "node:path";
 
 const require = createRequire(import.meta.url);
 const ROOT = new URL("../site/", import.meta.url).pathname;
-const TYPES = { ".html": "text/html", ".js": "text/javascript", ".json": "application/json", ".png": "image/png", ".xml": "application/xml", ".css": "text/css", ".svg": "image/svg+xml", ".webp": "image/webp" };
+const TYPES = { ".webmanifest": "application/manifest+json", ".html": "text/html", ".js": "text/javascript", ".json": "application/json", ".png": "image/png", ".xml": "application/xml", ".css": "text/css", ".svg": "image/svg+xml", ".webp": "image/webp" };
 const { chromium } = (() => { try { return require("playwright"); } catch { return require(execSync("npm root -g").toString().trim() + "/playwright"); } })();
 const server = createServer((req, res) => {
   const p = normalize(decodeURIComponent(req.url.split("?")[0])).replace(/^(\.\.[/\\])+/, "");
@@ -189,6 +189,18 @@ await journey("agency on a wide screen", async () => {
   await page.close();
 });
 
+// Offline: after one online visit the service worker (static/sw.js) serves the page and a lesson with no connection.
+await journey("works offline after a visit", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: "reduce" }), page = await ctx.newPage();
+  await page.goto(base); await page.evaluate(() => localStorage.setItem("pn-hello", "1"));
+  await page.evaluate(() => navigator.serviceWorker.ready); await page.reload();
+  await page.goto(base + "#lesson-malware"); await page.waitForSelector(".cs-tile");
+  await ctx.setOffline(true); await page.reload();
+  await page.waitForSelector(".cs-tile", { timeout: 8000 });
+  if (!/Malware/i.test(await page.locator("h1").first().textContent())) problems.push("offline: the lesson didn't load from the cache");
+  await ctx.close();
+});
+
 await browser.close(); server.close();
 if (problems.length) { console.error(problems.join("\n")); console.error(`\n${problems.length} problem(s)`); process.exit(1); }
-console.log(`Smoke test passed: ${ROUTES.length} routes at desktop and phone, a lab, a shadowed shift and a route.`);
+console.log(`Smoke test passed: ${ROUTES.length} routes at desktop and phone, a lab, a shadowed shift, a route and offline.`);

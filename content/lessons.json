@@ -992,6 +992,7 @@
   "concept": {
    "why": "A flaw moves from hidden to patched. Here is its life, and what defenders can do at each stage.",
    "type": "cards",
+    "ordered": true,
    "title": "The life of a flaw",
    "items": [
     {
@@ -2692,6 +2693,7 @@
   "concept": {
    "why": "Wi-Fi protection has improved over the years. Here it is, weakest to strongest.",
    "type": "cards",
+    "ordered": true,
    "title": "Wi-Fi security, weakest to strongest",
    "items": [
     {
@@ -3253,6 +3255,7 @@
   "concept": {
    "why": "Trust runs along a chain. Here is each link your browser checks.",
    "type": "cards",
+    "ordered": true,
    "title": "The chain your browser checks",
    "items": [
     {
@@ -3921,34 +3924,45 @@
    }
   ],
   "concept": {
-   "why": "Risk management never finishes: risks change as the business and the attackers do.",
-   "type": "cycle",
-   "title": "The risk cycle",
+   "why": "Example scores for a small firm. Score = likelihood × impact; anything at 12 or more is over its appetite and must be treated.",
+   "type": "matrix",
+   "title": "Where each risk sits",
+   "appetite": 12,
    "items": [
     {
-     "label": "Identify",
-     "icon": "search",
-     "text": "What could go wrong?"
+     "label": "Payment fraud by email",
+     "l": 4,
+     "i": 4,
+     "text": "Fake bank-change emails arrive most months, and one paid invoice could cost tens of thousands.",
+     "treat": "Mitigate: call the supplier back on a known number before any bank change."
     },
     {
-     "label": "Analyse",
-     "icon": "gauge",
-     "text": "How likely, and how bad?"
+     "label": "Ransomware on the file server",
+     "l": 3,
+     "i": 5,
+     "text": "Less frequent, but client files and billing would stop for days.",
+     "treat": "Mitigate: offline backups, MFA on remote access and prompt patching."
     },
     {
-     "label": "Evaluate",
-     "icon": "alert",
-     "text": "Is it above our appetite?"
+     "label": "Stolen laptop",
+     "l": 4,
+     "i": 2,
+     "text": "Happens most years, but the disks are encrypted.",
+     "treat": "Accept, on record: encryption already limits the harm."
     },
     {
-     "label": "Treat",
-     "icon": "shield",
-     "text": "Mitigate, transfer, avoid or accept."
+     "label": "Cloud booking system outage",
+     "l": 2,
+     "i": 4,
+     "text": "Rare, but bookings stop until the supplier recovers.",
+     "treat": "Transfer: a contract with service levels and credits."
     },
     {
-     "label": "Monitor",
-     "icon": "cycle",
-     "text": "Review it: risks change."
+     "label": "Office flood",
+     "l": 1,
+     "i": 5,
+     "text": "Unlikely, but severe if it happens.",
+     "treat": "Transfer: insurance, plus backups kept off site."
     }
    ]
   },

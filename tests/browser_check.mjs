@@ -76,36 +76,18 @@ for (const id of ["01", "02", "03", "04"]) {
     await page.waitForSelector("#ag-tap");
     await page.click("#ag-tap");
     await page.waitForSelector("#ag-dossier:not([hidden])");
-    const labels = await page.evaluate(() => [...document.querySelectorAll(".infra-map .im-node")].map(node => {
-      const plate = node.querySelector(".im-plate")?.getBoundingClientRect();
-      const labelEl = node.querySelector(".im-lbl");
-      const subEl = node.querySelector(".im-sub");
-      const label = labelEl?.getBoundingClientRect();
-      const sub = subEl?.getBoundingClientRect();
-      const inside = box => !box || (!!plate && box.left >= plate.left - 1 && box.right <= plate.right + 1);
-      return {
-        text: labelEl?.dataset.label || labelEl?.textContent || "(missing)",
-        subtext: subEl?.dataset.label || subEl?.textContent || "",
-        plateLeft: plate?.left ?? null, plateRight: plate?.right ?? null, plateWidth: plate?.width ?? null,
-        labelLeft: label?.left ?? null, labelRight: label?.right ?? null, labelWidth: label?.width ?? null,
-        subLeft: sub?.left ?? null, subRight: sub?.right ?? null, subWidth: sub?.width ?? null,
-        fits: !!plate && !!label && inside(label) && inside(sub),
-      };
-    }));
-    if (labels.length !== 5) errs.push(`expected 5 infrastructure nodes, found ${labels.length}`);
-    const overflow = labels.filter(x => !x.fits);
-    if (overflow.length) errs.push(`node labels outside their plates: ${JSON.stringify(overflow)}`);
-    // The labels once "fitted" inside a map that had been squeezed to 47px by a two-column rule that ignored
-    // the phone layout, so the map must also be a readable size and the client file must not scroll sideways.
-    const size = await page.evaluate(() => ({ map: document.querySelector(".infra-map svg")?.getBoundingClientRect().width || 0,
+    // "What you're watching": one card per source the desk can search, each wide enough to read on a phone.
+    const watch = await page.evaluate(() => ({ cards: [...document.querySelectorAll(".ag-watch .ag-src")].map(c => Math.round(c.getBoundingClientRect().width)),
       sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 }));
-    if (size.map < 280) errs.push(`the client map is only ${Math.round(size.map)}px wide on a phone`);
+    if (watch.cards.length < 3) errs.push(`expected the client file to list its sources, found ${watch.cards.length}`);
+    if (watch.cards.some(w => w < 280)) errs.push(`a source card is too narrow on a phone: ${watch.cards.join(", ")}px`);
+    const size = watch;
     if (size.sideways) errs.push("the client file scrolls sideways on a phone");
   } catch (e) {
     errs.push(`journey error: ${e.message.split(String.fromCharCode(10))[0]}`);
   }
   problems += errs.length;
-  console.log(`${errs.length ? "✗" : "✓"} Agency map ${id} · dark · phone${errs.length ? String.fromCharCode(10) + "    " + errs.join(String.fromCharCode(10) + "    ") : ""}`);
+  console.log(`${errs.length ? "✗" : "✓"} Agency client file ${id} · dark · phone${errs.length ? String.fromCharCode(10) + "    " + errs.join(String.fromCharCode(10) + "    ") : ""}`);
   await page.close();
 }
 

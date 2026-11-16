@@ -32,27 +32,56 @@ const icon = (k, cls = "") => `<svg class="cc-ic ${cls}" viewBox="-14 -14 28 28"
 export function validate(c) {
   const errors = [];
   if (!c || !c.type) return ["missing type"];
-  if (!["triad", "cycle", "cards"].includes(c.type)) errors.push(`unknown type ${c.type}`);
+  if (!["triad", "cycle", "cards", "matrix"].includes(c.type)) errors.push(`unknown type ${c.type}`);
   const items = c.items || [];
   if (c.type === "triad" && items.length !== 3) errors.push("a triad needs exactly 3 items");
   if (c.type === "cycle" && (items.length < 3 || items.length > 7)) errors.push("a cycle needs 3–7 items");
   if (c.type === "cards" && (items.length < 2 || items.length > 8)) errors.push("cards need 2–8 items");
+  if (c.type === "matrix" && (items.length < 2 || items.length > 8)) errors.push("a matrix needs 2–8 risks");
+  if (c.type === "matrix" && c.appetite != null && !(Number.isInteger(c.appetite) && c.appetite >= 1 && c.appetite <= 25)) errors.push("appetite must be a score from 1 to 25");
   items.forEach((it, i) => {
     if (!it.label) errors.push(`item ${i + 1}: missing label`);
     if (it.icon && !ICONS[it.icon]) errors.push(`item ${i + 1}: no icon "${it.icon}"`);
-    if ((c.type === "triad" || c.type === "cards") && !it.text) errors.push(`item ${i + 1}: needs text`);
+    if ((c.type === "triad" || c.type === "cards" || c.type === "matrix") && !it.text) errors.push(`item ${i + 1}: needs text`);
+    if (c.type === "matrix" && !([it.l, it.i].every(v => Number.isInteger(v) && v >= 1 && v <= 5))) errors.push(`item ${i + 1}: needs likelihood l and impact i from 1 to 5`);
   });
   return errors;
 }
 
+// Risk scoring for the matrix: likelihood x impact on 1-5 scales, in four bands (the usual 5 x 5 heat map).
+export function riskScore(l, i) { return l * i; }
+export function riskBand(score) {
+  return score >= 20 ? { key: "critical", label: "Critical" } : score >= 10 ? { key: "high", label: "High" } : score >= 5 ? { key: "medium", label: "Medium" } : { key: "low", label: "Low" };
+}
+
 export function mount(el, c) {
   if (c.type === "cards") return mountCards(el, c);
+  if (c.type === "matrix") return mountMatrix(el, c);
   return mountNodes(el, c);  // triad and cycle share the click-a-node + caption pattern
 }
 
+// Cards: a row of picture tiles (the overview) and one big spotlight beneath for the selected tile, opened on the
+// first so the picture explains itself before anyone clicks. `ordered: true` numbers the tiles and joins them
+// with arrows, for sets that run in sequence (a flaw's life, a certificate chain, weakest to strongest).
 function mountCards(el, c) {
-  el.innerHTML = `<figure class="concept cc-cards"><figcaption class="cc-title">${esc(c.title)}</figcaption>
-    <div class="cc-grid">${c.items.map(it => `<div class="cc-card">${it.icon ? icon(it.icon) : ""}<b>${esc(it.label)}</b><span>${esc(it.text)}</span></div>`).join("")}</div></figure>`;
+  const n = c.items.length, ordered = !!c.ordered;
+  el.innerHTML = `<figure class="concept cc-spot${ordered ? " ordered" : ""}"><figcaption class="cc-title">${esc(c.title)}</figcaption>
+    <div class="cs-stage">
+      <div class="cs-tiles" role="group" aria-label="${esc(c.title)}">${c.items.map((it, i) => `<button type="button" class="cs-tile" data-i="${i}" aria-pressed="false">
+        ${ordered ? `<span class="cs-num" aria-hidden="true">${i + 1}</span>` : ""}${icon(it.icon || "shield", "cs-ic")}<span class="cs-lbl">${esc(it.label)}</span></button>`).join("")}</div>
+      <div class="cs-detail" aria-live="polite"></div>
+    </div></figure>`;
+  const detail = el.querySelector(".cs-detail");
+  let cur = 0;
+  const select = i => {
+    cur = (i + n) % n;
+    el.querySelectorAll(".cs-tile").forEach((b, k) => { b.classList.toggle("on", k === cur); b.setAttribute("aria-pressed", String(k === cur)); });
+    const it = c.items[cur];
+    detail.innerHTML = `${icon(it.icon || "shield", "cs-big")}<div class="cs-body"><span class="eyebrow">${ordered ? "Step" : ""} ${cur + 1} of ${n}</span><b>${esc(it.label)}</b><p>${esc(it.text)}</p>${it.example ? `<p class="cc-eg"><span class="eyebrow">Example</span> ${esc(it.example)}</p>` : ""}</div>
+      <div class="cc-step"><button type="button" class="btn ghost sm" data-step="-1">‹ Back</button><button type="button" class="btn brand sm" data-step="1">Next ›</button></div>`;
+  };
+  el.addEventListener("click", e => { const t = e.target.closest(".cs-tile"); if (t) return select(Number(t.dataset.i)); const b = e.target.closest("[data-step]"); if (b) select(cur + Number(b.dataset.step)); });
+  select(0);
 }
 
 // Triad: three corners of a triangle. Cycle: a ring with arrows. Both let you select a part to read its detail.
@@ -77,15 +106,49 @@ function mountNodes(el, c) {
           <circle r="26"/>${it.icon ? `<g class="cc-gi" transform="scale(1.15)">${ICONS[it.icon]}</g>` : `<text class="cc-num" y="5">${i + 1}</text>`}
           <text class="cc-node-lbl" y="42">${esc(it.label)}</text></g>`).join("")}
       </svg>
-      <div class="cc-detail" id="cc-detail-${el.id}" aria-live="polite"></div>
+      <div class="cc-side"><div class="cc-detail" id="cc-detail-${el.id}" aria-live="polite"></div>
+        <div class="cc-step"><button type="button" class="btn ghost sm" data-step="-1">‹ Back</button><button type="button" class="btn brand sm" data-step="1">Next ›</button></div></div>
     </div></figure>`;
-  const svg = el.querySelector(".cc-svg"), detail = el.querySelector(`#cc-detail-${el.id}`);
+  const svg = el.querySelector(".cc-svg"), detail = el.querySelector(`#cc-detail-${el.id}`), word = triad ? "Goal" : "Stage";
+  let cur = 0;
   const select = i => {
-    svg.querySelectorAll(".cc-node").forEach((g, k) => g.classList.toggle("on", k === i));
-    const it = c.items[i];
-    detail.innerHTML = `<b>${esc(it.label)}</b>${it.text ? `<p>${esc(it.text)}</p>` : ""}${it.example ? `<p class="cc-eg"><span class="eyebrow">Example</span> ${esc(it.example)}</p>` : ""}`;
+    cur = (i + n) % n;
+    svg.querySelectorAll(".cc-node").forEach((g, k) => g.classList.toggle("on", k === cur));
+    svg.querySelectorAll(".cc-edges > *").forEach((e, k) => e.classList.toggle("on", triad ? false : (k + 1) % n === cur));
+    const it = c.items[cur];
+    detail.innerHTML = `<span class="eyebrow">${word} ${cur + 1} of ${n}</span><b>${esc(it.label)}</b>${it.text ? `<p>${esc(it.text)}</p>` : ""}${it.example ? `<p class="cc-eg"><span class="eyebrow">Example</span> ${esc(it.example)}</p>` : ""}`;
   };
   svg.addEventListener("click", e => { const g = e.target.closest(".cc-node"); if (g) select(Number(g.dataset.i)); });
   svg.addEventListener("keydown", e => { const g = e.target.closest(".cc-node"); if (g && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); select(Number(g.dataset.i)); } });
-  detail.innerHTML = `<p class="muted">Select ${triad ? "a goal" : "a stage"} to see what it means.</p>`;
+  el.querySelector(".cc-step").addEventListener("click", e => { const b = e.target.closest("[data-step]"); if (b) select(cur + Number(b.dataset.step)); });
+  select(0);
+}
+
+// Matrix: a 5 x 5 likelihood x impact heat map with example risks plotted on it. Each risk is a button (in its
+// cell and in the list); selecting one shows its score, band, whether it's over the appetite, and its treatment.
+function mountMatrix(el, c) {
+  const rows = [5, 4, 3, 2, 1], cols = [1, 2, 3, 4, 5], ap = c.appetite;
+  const over = s => ap != null && s >= ap;
+  const cell = (l, i) => { const s = riskScore(l, i), here = c.items.map((it, k) => ({ it, k })).filter(x => x.it.l === l && x.it.i === i);
+    return `<div class="rm-cell rm-${riskBand(s).key}${over(s) ? " over" : ""}"><span class="rm-s" aria-hidden="true">${s}</span>${here.map(x => `<button type="button" class="rm-dot" data-k="${x.k}" tabindex="-1" aria-label="${esc(x.it.label)}: likelihood ${l}, impact ${i}">${x.k + 1}</button>`).join("")}</div>`; };
+  el.innerHTML = `<figure class="concept cc-matrix"><figcaption class="cc-title">${esc(c.title)}</figcaption>
+    <div class="rm-stage">
+      <div class="rm-plot"><span class="rm-ylab" aria-hidden="true">Likelihood →</span>
+        <div class="rm-grid">${rows.map(l => `<div class="rm-row">${cols.map(i => cell(l, i)).join("")}</div>`).join("")}</div>
+        <span class="rm-xlab" aria-hidden="true">Impact →</span></div>
+      <div class="rm-side"><div class="rm-detail" aria-live="polite"></div>
+        <ol class="rm-list">${c.items.map((it, k) => `<li><button type="button" class="rm-pick" data-k="${k}"><span class="rm-n" aria-hidden="true">${k + 1}</span>${esc(it.label)}<span class="rm-b rm-${riskBand(riskScore(it.l, it.i)).key}">${riskScore(it.l, it.i)}</span></button></li>`).join("")}</ol>
+        <p class="rm-key"><span class="rm-sw rm-low"></span>Low <span class="rm-sw rm-medium"></span>Medium <span class="rm-sw rm-high"></span>High <span class="rm-sw rm-critical"></span>Critical${ap != null ? ` <span class="rm-sw over"></span>At or over the appetite (${ap})` : ""}</p></div>
+    </div></figure>`;
+  const detail = el.querySelector(".rm-detail");
+  const select = k => {
+    const it = c.items[k], s = riskScore(it.l, it.i), b = riskBand(s);
+    el.querySelectorAll("[data-k]").forEach(x => { const on = Number(x.dataset.k) === k; x.classList.toggle("on", on); if (x.classList.contains("rm-pick")) x.setAttribute("aria-pressed", String(on)); });
+    detail.innerHTML = `<span class="eyebrow">Risk ${k + 1} of ${c.items.length}</span><b>${esc(it.label)}</b>
+      <p class="rm-sum"><span class="rm-calc">Likelihood ${it.l} × impact ${it.i} = <strong>${s}</strong></span><span class="rm-b rm-${b.key}">${b.label}</span>${ap != null ? `<span class="rm-ap${over(s) ? " over" : ""}">${over(s) ? "Over the appetite: must be treated" : "Within the appetite"}</span>` : ""}</p>
+      <p>${esc(it.text)}</p>${it.treat ? `<p class="cc-eg"><span class="eyebrow">Decision</span> ${esc(it.treat)}</p>` : ""}`;
+  };
+  el.addEventListener("click", e => { const b = e.target.closest("[data-k]"); if (b) select(Number(b.dataset.k)); });
+  // Open on the biggest risk, so the picture explains itself before anyone clicks.
+  select(c.items.reduce((best, it, k) => riskScore(it.l, it.i) > riskScore(c.items[best].l, c.items[best].i) ? k : best, 0));
 }

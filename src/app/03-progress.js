@@ -1,7 +1,7 @@
 /* ---------- progress & XP (stored only in this browser) ---------- */
 const PKEY = "patch-notes-progress";
 const RANKS = [[0, "guest"], [100, "intern"], [300, "analyst"], [700, "hunter"], [1500, "responder"], [3000, "root"]];
-const FRESH = () => ({ xp: 0, done: {}, daily: null, streak: 0, lastDaily: null, best: {}, flags: {}, labs: {}, labSteps: {}, paths: {}, terms: {}, read: {}, badges: {}, stack: null, log: [], days: {}, missions: {}, exam: {}, mocks: {}, mockPrefs: {}, agency: {}, review: {} });
+const FRESH = () => ({ xp: 0, done: {}, daily: null, streak: 0, lastDaily: null, best: {}, flags: {}, labs: {}, labSteps: {}, paths: {}, terms: {}, read: {}, badges: {}, stack: null, log: [], days: {}, missions: {}, exam: {}, mocks: {}, mockPrefs: {}, examDates: {}, agency: {}, review: {} });
 // Progress is untrusted input: it lives in the browser (anyone can edit it) and can be restored from a file.
 // Keep only known fields of the right type, and coerce the XP history so nothing in it can become HTML.
 function cleanProgress(src) {
@@ -22,6 +22,8 @@ function cleanProgress(src) {
     .map(([k, v]) => [k, v.filter(x => x && typeof x === "object").slice(-20).map(x => ({ d: String(x.d ?? "").slice(0, 10), score: Math.max(0, Number(x.score) || 0), total: Math.max(0, Number(x.total) || 0), ...(x.practice ? { practice: 1 } : {}) }))]));
   // Mock exam options (exam.js mockSettings): a length, timed or not, and when feedback shows. Nothing else survives.
   { const m = out.mockPrefs, n = Math.round(Number(m.n)); out.mockPrefs = { ...(n >= 1 && n <= 90 ? { n } : {}), ...(m.timed === false ? { timed: false } : {}), ...(m.feedback === "each" ? { feedback: "each" } : {}) }; }
+  // Exam dates the learner has set (cert id -> YYYY-MM-DD), for the week-by-week plan. Anything else is dropped.
+  out.examDates = Object.fromEntries(Object.entries(out.examDates).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v)).slice(0, 20));
   // Agency shifts: when one was first completed and the best number of debrief checks passed.
   out.agency = Object.fromEntries(Object.entries(out.agency).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && v && typeof v === "object" && !Array.isArray(v))
     .map(([k, v]) => [k, { d: String(v.d ?? "").slice(0, 10), best: Math.min(20, Math.max(0, Math.round(Number(v.best) || 0))), total: Math.min(20, Math.max(0, Math.round(Number(v.total) || 0))), own: v.own === true }]));

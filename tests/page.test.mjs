@@ -124,6 +124,9 @@ test("progress: restored or stored data is cleaned before use", () => {
   const ag = cleanProgress({ xp: 1, agency: { "shift-01": { d: evil, best: 999, total: "6", own: "yes" }, [evil]: { best: 1 }, "shift-02": "nope", "shift-03": [1], "shift-04": { best: 3, total: 6, own: true } } });
   assert.deepEqual(JSON.parse(JSON.stringify(ag.agency)), { "shift-01": { d: evil.slice(0, 10), best: 20, total: 6, own: false }, "shift-04": { d: "", best: 3, total: 6, own: true } }, "agency results are clamped numbers, a short date and whether it was done on your own");
   assert.equal(Object.keys(cleanProgress({ xp: 1 }).agency).length, 0, "older saves without agency still load");
+  const ed = cleanProgress({ xp: 1, examDates: { "security-plus": "2027-01-12", "network-plus": evil, [evil]: "2027-01-01", "pentest-plus": 20270101 } });
+  assert.deepEqual(JSON.parse(JSON.stringify(ed.examDates)), { "security-plus": "2027-01-12" }, "exam dates keep only cert ids with real dates");
+  assert.deepEqual(JSON.parse(JSON.stringify(cleanProgress({ xp: 1 }).examDates)), {}, "older saves without exam dates still load");
   // Review deck (spaced repetition): each card is clamped to sane numbers; junk shapes are dropped.
   const rev = cleanProgress({ xp: 1, review: { http: { e: "2.9", i: 999, due: 1234.7, reps: "3" }, [evil]: { e: 5, i: 2, due: 1, reps: 1 }, bad: "nope", arr: [1] } });
   assert.deepEqual(JSON.parse(JSON.stringify(rev.review.http)), { e: 2.9, i: 365, due: 1235, reps: 3 }, "review cards are clamped numbers");
@@ -322,4 +325,27 @@ test("chart filters can be used from the keyboard, through the table under each 
   assert.match(table, /<button type="button" class="link-btn" data-chart-q="cwe-79" aria-label="Show CVEs for [^"]*">/, "each row's name is a button that carries the same filter as its bar");
   assert.ok(!table.includes("<b>") && !table.includes('"scripting"'), "labels are escaped");
   assert.ok(!c.rankChart([{ label: "Acme", n: 1 }], "Vendors").includes("<button"), "a chart with no filter stays a plain table");
+});
+
+test("practise filters: length bands and 'not done yet' (tools and games count as quick)", () => {
+  const ctx2 = {}; vm.createContext(ctx2);
+  vm.runInContext(extract("function practiseMatch(") + "; this.f = practiseMatch;", ctx2);
+  const f = ctx2.f, any = { time: "any", todo: false };
+  assert.ok(f({ min: 25 }, any) && f({}, any));
+  assert.ok(f({ min: 10 }, { ...any, time: "quick" }) && !f({ min: 15 }, { ...any, time: "quick" }) && f({}, { ...any, time: "quick" }));
+  assert.ok(f({ min: 15 }, { ...any, time: "mid" }) && !f({ min: 10 }, { ...any, time: "mid" }) && !f({ min: 25 }, { ...any, time: "mid" }));
+  assert.ok(f({ min: 25 }, { ...any, time: "long" }) && !f({ min: 20 }, { ...any, time: "long" }));
+  assert.ok(!f({ min: 5, done: true }, { ...any, todo: true }) && f({ min: 5, done: false }, { ...any, todo: true }));
+});
+
+test("pick up where you left off: only a known, unfinished activity is offered", () => {
+  const c = { DATA: { labs: [{ id: "hashing", title: "Hashing" }, { id: "done-lab", title: "Done" }] }, P: { labs: { "done-lab": "2026-11-16" }, missions: {}, agency: {} },
+    MISSION: id => (id === "dns" ? { title: "DNS" } : null), SHIFT: id => (id === "shift-01" ? { title: "Early shift" } : null), count: o => Object.keys(o || {}).length };
+  vm.createContext(c);
+  vm.runInContext(extract("function lastActivity(raw)") + "; this.f = lastActivity;", c);
+  assert.equal(c.f("lab:hashing").href, "#lab-hashing");
+  assert.equal(c.f("lab:done-lab"), null, "finished: not offered");
+  assert.equal(c.f("mission:dns").label, "DNS");
+  assert.equal(c.f("agency:shift-01").kind, "Agency shift");
+  for (const bad of ["lab:nope", "lab:<img src=x>", "javascript:alert(1)", "agency:shift-01\nlab:x", "", null, "lesson:phishing"]) assert.equal(c.f(bad), null, String(bad));
 });

@@ -30,7 +30,7 @@ The idea in one line: **the hardware stands in a dark room under one light; it i
 - The TCP handshake and Telnet vs SSH labs (`.stage-box.room-box`, a reusable opt-in for small pictures; `.room-shadow` under each device). Their packets keep a short tag, because the words are the lesson: SYN and ACK, and what a sniffer can read.
 
 - The subnet calculator's network picture (styles under `.sc-net`).
-- The Agency client map (`static/js/agency/infra.js`, styles under `.infra-map`): each asset is the site's own hardware drawing standing on the floor with its name underneath. Shift files still name nodes by a generic icon name, so no vendor is implied; `DRAWING` in `infra.js` says which drawing stands in for each. The way in is red, the SOC's console has a lit screen.
+- The Agency client file no longer has a map (removed 16 Nov: thin line art under a cinematic photo, half width, and it didn't match the desk). Its "What you're watching" section is one card per searchable source (`static/js/agency/watch.js`), built from the shift's `sources`.
 
 ## Still to bring up to it
 Checked 12 November 2026. Each of these draws devices its own way:

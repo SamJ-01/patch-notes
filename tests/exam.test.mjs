@@ -137,3 +137,21 @@ test("readiness ignores practice-mode mocks", () => {
   assert.equal(onlyPractice.mockPct, null, "practice mocks alone don't count as a mock");
   assert.notEqual(onlyPractice.verdict, "ready");
 });
+
+test("weekPlan: weakest and heaviest objectives first, the last week kept for mocks", () => {
+  const obj = (id, score, weight) => ({ o: { id, title: "T" + id }, score, weight });
+  const rows = [{ objs: [obj("1.1", 0.9, 6), obj("1.2", null, 6), obj("1.3", 0.2, 6)] }, { objs: [obj("2.1", 0.5, 11), obj("2.2", null, 11), obj("2.3", 0.75, 11)] }];
+  const p = ex.weekPlan({ examDate: "2026-12-07", today: "2026-11-16", rows });
+  assert.equal(p.days, 21);
+  assert.equal(p.weeks.length, 3);
+  const studied = p.weeks.flatMap(w => w.focus.map(o => o.id));
+  assert.deepEqual(studied, ["2.2", "1.2", "1.3", "2.1"], "nothing scored first (heaviest first), then lowest score; strong ones (70%+) left out");
+  assert.deepEqual(p.weeks.map(w => w.mocks), [false, false, true]);
+  assert.equal(p.weeks[2].focus.length, 0, "the last week is for mocks and revision");
+  assert.equal(p.weeks[0].from, "2026-11-16"); assert.equal(p.weeks[2].to, "2026-12-07", "the plan ends on the exam day");
+  const one = ex.weekPlan({ examDate: "2026-11-19", today: "2026-11-16", rows });
+  assert.equal(one.weeks.length, 1); assert.ok(one.weeks[0].mocks && one.weeks[0].focus.length === 4, "one week left: study and a mock");
+  assert.ok(ex.weekPlan({ examDate: "2026-11-10", today: "2026-11-16", rows }).past);
+  assert.equal(ex.weekPlan({ examDate: "<script>", today: "2026-11-16", rows }), null);
+  assert.equal(ex.weekPlan({ examDate: "2030-01-01", today: "2026-11-16", rows }).weeks.length, 52, "capped at a year of weeks");
+});

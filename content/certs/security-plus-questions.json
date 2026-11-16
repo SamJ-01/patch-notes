@@ -1,7 +1,7 @@
 {
  "cert": "security-plus",
  "exam": "SY0-701",
- "reviewed": "2026-11-15",
+ "reviewed": "2026-11-16",
  "note": "Original practice questions written for Patch Notes. They are not real exam questions.",
  "questions": [
   {
@@ -3430,6 +3430,546 @@
      "text": "Staff finish the training faster each year",
      "correct": false,
      "why": "Speed through a course doesn't show changed behaviour."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.2-1",
+   "objective": "1.2",
+   "stem": "Under zero trust, a laptop on the office network asks to open the finance app. What decides whether it's allowed?",
+   "options": [
+    {
+     "text": "A policy check of the user, the device's health and the request, every time, wherever the laptop is",
+     "correct": true,
+     "why": "Zero trust removes trust based on location: each request is checked against identity, device posture and policy."
+    },
+    {
+     "text": "Being on the office network is enough",
+     "correct": false,
+     "why": "That's the old perimeter model zero trust replaces. An attacker inside the network would get the same trust."
+    },
+    {
+     "text": "A firewall rule reviewed once a year",
+     "correct": false,
+     "why": "A static rule can't take account of who is asking or whether the device is healthy right now."
+    },
+    {
+     "text": "The user's job title alone",
+     "correct": false,
+     "why": "Role matters, but zero trust also checks the device and the context of each request."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.2-2",
+   "objective": "1.2",
+   "stem": "A manager approves a £40,000 payment by signing it with their private key, then later says they never approved it. Which concept makes that claim hard to sustain?",
+   "options": [
+    {
+     "text": "Non-repudiation",
+     "correct": true,
+     "why": "Only the holder of the private key could have made that signature, so they can't credibly deny it."
+    },
+    {
+     "text": "Availability",
+     "correct": false,
+     "why": "Availability is about systems and data being usable when needed, not proving who did something."
+    },
+    {
+     "text": "Authorisation",
+     "correct": false,
+     "why": "Authorisation decides what someone is allowed to do; it doesn't prove afterwards that they did it."
+    },
+    {
+     "text": "Obfuscation",
+     "correct": false,
+     "why": "Obfuscation hides meaning; it gives no proof of who approved anything."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.3-3",
+   "objective": "1.3",
+   "stem": "A firewall change is approved for Saturday at 02:00. What must the change request include so a failed change can be undone quickly?",
+   "options": [
+    {
+     "text": "A backout plan",
+     "correct": true,
+     "why": "A backout (rollback) plan says exactly how to return to the last working state if the change goes wrong."
+    },
+    {
+     "text": "Every user's password",
+     "correct": false,
+     "why": "Passwords never belong in a change request, and they don't help undo a change."
+    },
+    {
+     "text": "A press release",
+     "correct": false,
+     "why": "Communication may be needed, but it doesn't restore service after a failed change."
+    },
+    {
+     "text": "An impact analysis written after the change",
+     "correct": false,
+     "why": "Impact analysis comes before approval, and it describes effects rather than how to undo them."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.3-4",
+   "objective": "1.3",
+   "stem": "Patching a web server needs a restart. Why schedule it in an agreed maintenance window?",
+   "options": [
+    {
+     "text": "So the downtime happens when the business expects it and affects the fewest people",
+     "correct": true,
+     "why": "Maintenance windows are agreed times when short outages do the least harm and stakeholders know to expect them."
+    },
+    {
+     "text": "Because patches only install at night",
+     "correct": false,
+     "why": "Patches install whenever they're run; the window is about business impact, not the clock."
+    },
+    {
+     "text": "So the change doesn't need a change request",
+     "correct": false,
+     "why": "Scheduled changes still go through change management; the window is part of the request."
+    },
+    {
+     "text": "Because restarts break certificates",
+     "correct": false,
+     "why": "A restart doesn't affect TLS certificates."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.1-5",
+   "objective": "2.1",
+   "stem": "A sysadmin sacked last month uses an account nobody disabled to delete the company's backups. Which actor and motivation fit best?",
+   "options": [
+    {
+     "text": "An insider threat, motivated by revenge",
+     "correct": true,
+     "why": "A former employee with leftover access, acting out of grievance, is a classic malicious insider."
+    },
+    {
+     "text": "A nation-state, seeking espionage",
+     "correct": false,
+     "why": "Nation-states usually aim to steal information quietly over time, not destroy backups out of spite."
+    },
+    {
+     "text": "A hacktivist, making a political point",
+     "correct": false,
+     "why": "Hacktivists act for a cause and usually want publicity; nothing here suggests either."
+    },
+    {
+     "text": "An unskilled attacker, for bragging rights",
+     "correct": false,
+     "why": "This used inside knowledge and access, not borrowed tools and luck."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.1-6",
+   "objective": "2.1",
+   "stem": "Which threat actor usually has the most resources and patience, and targets organisations for espionage over years?",
+   "options": [
+    {
+     "text": "A nation-state actor",
+     "correct": true,
+     "why": "State-backed groups (often called APTs) are well funded and patient, and commonly seek intelligence."
+    },
+    {
+     "text": "Organised crime",
+     "correct": false,
+     "why": "Criminal groups can be skilled, but they usually want money, and fast."
+    },
+    {
+     "text": "A hacktivist",
+     "correct": false,
+     "why": "Hacktivists are driven by a cause and tend to want attention, not years of quiet access."
+    },
+    {
+     "text": "An unskilled attacker",
+     "correct": false,
+     "why": "Unskilled attackers rely on ready-made tools and rarely sustain long campaigns."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.5-4",
+   "objective": "2.5",
+   "stem": "Card payment terminals should only ever talk to the payment processor. Which mitigation fits best?",
+   "options": [
+    {
+     "text": "Segmentation: put them in their own network zone with rules that allow only that traffic",
+     "correct": true,
+     "why": "Segmenting the terminals limits what they can reach and what can reach them, so a breach elsewhere can't spread to them easily."
+    },
+    {
+     "text": "Give each terminal local admin rights",
+     "correct": false,
+     "why": "More privilege makes a compromise worse, not better."
+    },
+    {
+     "text": "Turn off their logging to save space",
+     "correct": false,
+     "why": "Without logs, misuse goes unseen; it removes a control rather than adding one."
+    },
+    {
+     "text": "Put them on the guest Wi-Fi",
+     "correct": false,
+     "why": "Sharing a network with untrusted guests is the opposite of isolating them."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.5-5",
+   "objective": "2.5",
+   "stem": "A laptop build removes unused services, closes ports it doesn't need and changes every default password. What is this called?",
+   "options": [
+    {
+     "text": "Hardening",
+     "correct": true,
+     "why": "Hardening reduces the attack surface by removing what isn't needed and fixing weak defaults."
+    },
+    {
+     "text": "Decommissioning",
+     "correct": false,
+     "why": "Decommissioning is retiring a system, not preparing it for use."
+    },
+    {
+     "text": "Isolation",
+     "correct": false,
+     "why": "Isolation separates a system from others; it doesn't change what runs on it."
+    },
+    {
+     "text": "Patching only",
+     "correct": false,
+     "why": "Patching is part of keeping a system secure, but this build goes further than installing updates."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.1-3",
+   "objective": "4.1",
+   "stem": "Staff phones hold work email. Which tool lets IT enforce a screen lock PIN and wipe a lost phone remotely?",
+   "options": [
+    {
+     "text": "Mobile device management (MDM)",
+     "correct": true,
+     "why": "MDM enforces policies such as PINs and encryption on enrolled devices and can wipe them if lost."
+    },
+    {
+     "text": "A captive portal",
+     "correct": false,
+     "why": "A captive portal controls access to a network, usually guest Wi-Fi; it can't manage a phone."
+    },
+    {
+     "text": "WPA3",
+     "correct": false,
+     "why": "WPA3 protects Wi-Fi traffic; it has no control over the phone itself."
+    },
+    {
+     "text": "A load balancer",
+     "correct": false,
+     "why": "A load balancer spreads traffic across servers; it has nothing to do with phones."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.1-4",
+   "objective": "4.1",
+   "stem": "Every new server is built from a standard secure configuration that's checked against a benchmark. What's that standard configuration called?",
+   "options": [
+    {
+     "text": "A secure baseline",
+     "correct": true,
+     "why": "A baseline is the agreed secure starting configuration; systems are built to it and checked for drift from it."
+    },
+    {
+     "text": "A honeypot",
+     "correct": false,
+     "why": "A honeypot is a decoy built to attract attackers, not a standard build."
+    },
+    {
+     "text": "A sandbox",
+     "correct": false,
+     "why": "A sandbox is an isolated place to run untrusted code."
+    },
+    {
+     "text": "A hot site",
+     "correct": false,
+     "why": "A hot site is a ready-to-run disaster recovery location."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.2-4",
+   "objective": "4.2",
+   "stem": "A retired laptop held confidential client files. What proof should the company keep once it has been disposed of?",
+   "options": [
+    {
+     "text": "A certificate of destruction or sanitisation from whoever wiped or destroyed it",
+     "correct": true,
+     "why": "The certificate is evidence the data was properly removed, which auditors and regulators may ask for."
+    },
+    {
+     "text": "A photo of the laptop",
+     "correct": false,
+     "why": "A photo shows the device existed, not that its data was destroyed."
+    },
+    {
+     "text": "The original purchase receipt",
+     "correct": false,
+     "why": "The receipt records the purchase, not what happened to the data."
+    },
+    {
+     "text": "Nothing: once it has gone, it has gone",
+     "correct": false,
+     "why": "If the data turns up later, the company has no evidence it disposed of it properly."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.2-5",
+   "objective": "4.2",
+   "stem": "A network discovery scan finds a storage device (NAS) that isn't in the asset inventory. What does that tell you?",
+   "options": [
+    {
+     "text": "The inventory is incomplete: find the owner, then register the device or remove it",
+     "correct": true,
+     "why": "You can't protect what you don't know about. Discovery finds unknown devices so they can be managed or taken off the network."
+    },
+    {
+     "text": "The scan is wrong, because scans always match the inventory",
+     "correct": false,
+     "why": "Scans exist precisely because inventories drift from reality."
+    },
+    {
+     "text": "Storage devices never need tracking",
+     "correct": false,
+     "why": "A NAS often holds sensitive data, such as backups, so it matters more than most."
+    },
+    {
+     "text": "Add it with no owner and move on",
+     "correct": false,
+     "why": "An asset without an owner has nobody accountable for patching or protecting it."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.4-3",
+   "objective": "4.4",
+   "stem": "A SIEM raises 900 alerts a day and analysts have started ignoring most of them. What's the best first step?",
+   "options": [
+    {
+     "text": "Tune the rules: fix or remove the noisy ones so each alert means something",
+     "correct": true,
+     "why": "Alert tuning cuts false positives so real alerts aren't lost in the noise (alert fatigue)."
+    },
+    {
+     "text": "Switch the SIEM off",
+     "correct": false,
+     "why": "That removes detection entirely."
+    },
+    {
+     "text": "Hire enough analysts to read 900 a day",
+     "correct": false,
+     "why": "That treats the symptom; most of those alerts would still be noise."
+    },
+    {
+     "text": "Raise every alert to critical",
+     "correct": false,
+     "why": "If everything is critical, nothing stands out."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.4-4",
+   "objective": "4.4",
+   "stem": "An alert fires when a backup service account signs in by Remote Desktop, which it never normally does. What kind of detection is this?",
+   "options": [
+    {
+     "text": "Anomaly-based: it flags behaviour that differs from the normal pattern",
+     "correct": true,
+     "why": "Behaviour or anomaly detection compares activity with a baseline, so an unusual sign-in type stands out."
+    },
+    {
+     "text": "Signature-based, matching a known file hash",
+     "correct": false,
+     "why": "Signatures match known bad things, such as a malware hash, not unusual behaviour."
+    },
+    {
+     "text": "An antivirus quarantine",
+     "correct": false,
+     "why": "Quarantine isolates a detected file; this is about a sign-in."
+    },
+    {
+     "text": "Vulnerability scanning",
+     "correct": false,
+     "why": "Scanning looks for weaknesses in systems, not unusual account activity."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.5-2",
+   "objective": "4.5",
+   "stem": "Staff keep emailing spreadsheets of customers' card numbers to personal addresses. Which control can spot and block that?",
+   "options": [
+    {
+     "text": "Data loss prevention (DLP)",
+     "correct": true,
+     "why": "DLP inspects outgoing data for patterns such as card numbers and can block or alert on it."
+    },
+    {
+     "text": "A load balancer",
+     "correct": false,
+     "why": "A load balancer shares traffic across servers; it doesn't inspect email content."
+    },
+    {
+     "text": "DNS sinkholing",
+     "correct": false,
+     "why": "Sinkholing redirects lookups for bad domains; it doesn't inspect what staff send."
+    },
+    {
+     "text": "A VPN concentrator",
+     "correct": false,
+     "why": "A VPN concentrator terminates VPN connections; it doesn't look inside email."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.5-3",
+   "objective": "4.5",
+   "stem": "Which DMARC policy tells receiving mail servers to reject messages that fail SPF and DKIM alignment for your domain?",
+   "options": [
+    {
+     "text": "p=reject",
+     "correct": true,
+     "why": "With p=reject, receivers are asked to refuse failing messages outright."
+    },
+    {
+     "text": "p=none",
+     "correct": false,
+     "why": "p=none only monitors and reports; failing mail is still delivered."
+    },
+    {
+     "text": "p=quarantine",
+     "correct": false,
+     "why": "p=quarantine asks receivers to treat failing mail as suspicious, usually sending it to junk, rather than rejecting it."
+    },
+    {
+     "text": "p=allow",
+     "correct": false,
+     "why": "There is no p=allow policy in DMARC: the valid values are none, quarantine and reject."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.7-4",
+   "objective": "4.7",
+   "stem": "Every new starter needs the same 12 accounts and group memberships set up. Which automation use case is this?",
+   "options": [
+    {
+     "text": "User provisioning",
+     "correct": true,
+     "why": "Automating account creation makes it fast and consistent, and the same flow can remove access when people leave."
+    },
+    {
+     "text": "Penetration testing",
+     "correct": false,
+     "why": "Penetration testing tries to break in with permission; it doesn't set up accounts."
+    },
+    {
+     "text": "Data sanitisation",
+     "correct": false,
+     "why": "Sanitisation removes data from media before reuse or disposal."
+    },
+    {
+     "text": "Threat hunting",
+     "correct": false,
+     "why": "Threat hunting searches for attackers who got past existing defences."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.7-5",
+   "objective": "4.7",
+   "stem": "A playbook disables any account after a single failed sign-in. What's the main risk?",
+   "options": [
+    {
+     "text": "It could lock out many legitimate users: automation acting on a weak signal can cause an outage",
+     "correct": true,
+     "why": "One failed sign-in is usually a typo. Acting automatically on weak evidence harms availability at machine speed."
+    },
+    {
+     "text": "It improves availability",
+     "correct": false,
+     "why": "Locking out staff makes systems less available to them, not more."
+    },
+    {
+     "text": "None: automation never makes mistakes",
+     "correct": false,
+     "why": "Automation repeats whatever logic it is given, including bad logic, very quickly."
+    },
+    {
+     "text": "It's too slow",
+     "correct": false,
+     "why": "Speed isn't the problem here; acting on too little evidence is."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.5-3",
+   "objective": "5.5",
+   "stem": "A company hires an outside firm to check its controls against ISO/IEC 27001 for certification. What kind of assessment is this?",
+   "options": [
+    {
+     "text": "An external audit",
+     "correct": true,
+     "why": "An independent third party checking controls against a standard is an external audit."
+    },
+    {
+     "text": "A self-assessment",
+     "correct": false,
+     "why": "A self-assessment is done by the organisation itself."
+    },
+    {
+     "text": "A tabletop exercise",
+     "correct": false,
+     "why": "A tabletop is a discussion-based rehearsal of an incident, not a certification check."
+    },
+    {
+     "text": "A vulnerability scan",
+     "correct": false,
+     "why": "A scan looks for technical weaknesses; it doesn't assess controls against a standard."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.5-4",
+   "objective": "5.5",
+   "stem": "Before a penetration test begins, what must be agreed and signed?",
+   "options": [
+    {
+     "text": "The rules of engagement: scope, timing, methods and who to contact",
+     "correct": true,
+     "why": "Written permission and agreed rules make the test legal and safe, and say what's in and out of scope."
+    },
+    {
+     "text": "Only the price",
+     "correct": false,
+     "why": "Price matters to the contract, but the test needs scope and permission to be lawful."
+    },
+    {
+     "text": "The tester's social media accounts",
+     "correct": false,
+     "why": "That has nothing to do with authorising the test."
+    },
+    {
+     "text": "Nothing: testers may test anything they find",
+     "correct": false,
+     "why": "Testing systems without permission can be a crime, for example under the Computer Misuse Act in the UK."
     }
    ]
   }

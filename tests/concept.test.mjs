@@ -33,3 +33,15 @@ test("validate catches broken concepts", () => {
   assert.match(concept.validate({ type: "triad", items: [{ label: "a" }, { label: "b" }, { label: "c" }] }).join(), /needs text/);
   assert.deepEqual(concept.validate({ type: "triad", items: [{ label: "a", text: "1" }, { label: "b", text: "2" }, { label: "c", text: "3" }] }), []);
 });
+
+test("risk matrix: scores and bands, and the risk lesson's heat map is consistent", () => {
+  assert.equal(concept.riskScore(4, 5), 20);
+  assert.deepEqual([1, 4, 5, 9, 10, 16, 20, 25].map(n => concept.riskBand(n).key), ["low", "low", "medium", "medium", "high", "high", "critical", "critical"]);
+  assert.match(concept.validate({ type: "matrix", items: [{ label: "a", text: "x", l: 6, i: 1 }, { label: "b", text: "y", l: 1, i: 1 }] }).join(), /1 to 5/);
+  assert.match(concept.validate({ type: "matrix", appetite: 30, items: [{ label: "a", text: "x", l: 1, i: 1 }, { label: "b", text: "y", l: 1, i: 1 }] }).join(), /appetite/);
+  const risk = lessons.find(l => l.id === "risk").concept;
+  assert.equal(risk.type, "matrix");
+  const over = risk.items.filter(it => concept.riskScore(it.l, it.i) >= risk.appetite);
+  assert.ok(over.length && over.length < risk.items.length, "some risks over the appetite and some within it");
+  for (const it of over) assert.match(it.treat, /^(Mitigate|Avoid|Transfer)/, `${it.label} is over the appetite, so it can't just be accepted`);
+});

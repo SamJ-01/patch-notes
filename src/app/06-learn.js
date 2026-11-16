@@ -78,7 +78,35 @@ function pathView(id) {
     <div class="progress"><span class="trk" aria-hidden="true" style="flex-basis:100%"><i style="width:${Math.round(done / steps.length * 100)}%"></i></span></div>
     <ol class="steps" data-trail="${esc(p.id)}">${steps.map((st, i) => `<li class="${st.done ? "got" : ""}"><span class="st">${i + 1}${st.done ? '<span class="st-tick" aria-hidden="true">✓</span><span class="sr-only"> (done)</span>' : ""}</span><span class="stack" style="gap:2px"><span class="eyebrow">${esc(st.kind)}</span><a href="${st.href}"${st.flags ? ' data-play-mode="flags"' : st.kind === "game" ? ' data-play-mode="phish"' : ""}>${esc(st.label)}</a></span></li>`).join("")}</ol>
     <p class="muted">${P.paths[p.id] ? `Completed on ${esc(P.paths[p.id])}. Nice work.` : `Finish every step to earn <strong>+${PATH_XP} XP</strong> and the Pathfinder badge.`}${career ? ` See the <a href="#careers">${esc(career.role)}</a> career guide.` : ""}</p>
+    ${P.paths[p.id] ? pathRecordHtml(p, steps) : ""}
   </article></div>`;
+  if (P.paths[p.id]) wirePathRecord();
+}
+// A printable record for a finished path. The name is typed for printing only and never saved. It says plainly
+// that it records practice here and is not a qualification.
+function pathRecordHtml(p, steps) {
+  return `<section class="path-rec-wrap" aria-labelledby="path-rec-h"><h2 id="path-rec-h">Your path record</h2>
+    <div class="row path-rec-tools"><label class="path-rec-name">Name to print (not saved) <input type="text" id="path-rec-input" maxlength="60" autocomplete="name"></label>
+      <button type="button" class="btn brand" id="path-rec-print">Print or save as PDF</button></div>
+    <div class="path-rec" id="path-rec">
+      <div class="path-rec-top"><span class="ag-logo sm">PATCH<b>//</b>NOTES</span><span class="mono">Path record</span></div>
+      <p class="path-rec-for">This records that</p><p class="path-rec-who" id="path-rec-who">A Patch Notes learner</p>
+      <p class="path-rec-for">completed every stop of</p><h3>${esc(p.title.replace(/^Path to /, ""))}</h3>
+      <ol class="path-rec-steps">${steps.map(st => `<li>${esc(st.label)}</li>`).join("")}</ol>
+      <p class="path-rec-date">Completed on ${esc(P.paths[p.id])} · patchnoteslab.com</p>
+      <p class="path-rec-note">A record of practice on a free learning site. It is not a qualification or a certification.</p>
+    </div></section>`;
+}
+function wirePathRecord() {
+  const inp = $("path-rec-input"), who = $("path-rec-who");
+  inp?.addEventListener("input", () => { who.textContent = inp.value.trim() || "A Patch Notes learner"; });
+  $("path-rec-print")?.addEventListener("click", () => {
+    // Print a copy of the record on its own, outside the page layout, then tidy up.
+    const box = document.createElement("div"); box.id = "print-root"; box.appendChild($("path-rec").cloneNode(true)); box.firstChild.removeAttribute("id");
+    document.body.appendChild(box); document.body.classList.add("printing-record");
+    const done = () => { document.body.classList.remove("printing-record"); box.remove(); removeEventListener("afterprint", done); };
+    addEventListener("afterprint", done); print();
+  });
 }
 
 /* CERTIFICATIONS: exam objectives mapped onto existing lessons, labs and missions */
@@ -222,10 +250,33 @@ function readinessPanel(c, progress) {
         <span class="trk" aria-hidden="true"><i class="${x.score === null ? "" : readyTone(x.score)}" style="width:${pctOf(x.score)}%"></i></span>
         <span class="rd-pct mono">${x.score === null ? "–" : pctOf(x.score) + "%"}</span><span class="muted rd-ev">${qLine(x)}${x.elsewhere ? ` · ${x.elsewhere} not taught here yet` : ""}</span></li>`).join("")}</ul></details>
       ${mock ? `<p class="muted" style="margin:0">${mock}</p>` : ""}
+      ${examDateHtml(c, ex, r)}
       ${r.plan.length ? `<h3 class="cert-h">Your study plan</h3><div class="try-list ready-plan">${r.plan.map(planRow).join("")}</div>` : ""}
       ${r.elsewhere && c.study ? `<p class="muted" style="margin:0">${r.elsewhere} objective${r.elsewhere === 1 ? " has" : "s have"} practice questions here but no lessons yet. Learn ${r.elsewhere === 1 ? "it" : "them"} with <a href="${esc(c.study.url)}" target="_blank" rel="noopener">${esc(c.study.label)} ↗</a>, then come back to test yourself.</p>` : ""}
       <details class="ready-how"><summary>How this is worked out</summary><p class="muted">Each objective scores from the questions you got right last time (counted double, because they test you) and the lessons, labs and missions you've finished. Domains are weighted like the real exam. "Ready" means ${pctOf(ex.READY.overall)}%+ overall, ${pctOf(ex.READY.domain)}%+ in every domain${r.qTotal ? ` and ${pctOf(ex.READY.mock)}%+ on your latest mock` : ""}. That's Patch Notes' own bar, not CompTIA's scoring, so it's a guide to what to study, not a promise you'll pass.</p></details>`;
+      wireExamDate(c, progress);
   }).catch(() => { const el = $("cert-ready"); if (el) el.innerHTML = `<div class="panel-title"><h2 id="ready-h">Am I ready?</h2></div><p class="muted" style="margin:0">Couldn't load the readiness check. Try reloading the page.</p>`; });
+}
+// "My exam is on…": the date is saved per cert (P.examDates), and exam.js weekPlan spreads the objectives that
+// still need work across the weeks left, keeping the last week for timed mocks.
+const shortDay = d => new Date(d + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+function examDateHtml(c, ex, r) {
+  const date = P.examDates[c.id] || "", plan = date ? ex.weekPlan({ examDate: date, today: todayStr(), rows: r.rows }) : null;
+  const body = !plan ? `<p class="muted" style="margin:0">Set the date you sit ${esc(c.exam)} and get a week-by-week plan from what still needs work.</p>`
+    : plan.past ? `<p class="muted" style="margin:0">That date has passed. Set your next one, or clear it.</p>`
+    : `<p class="ed-left"><b>${plan.days === 0 ? "It's today. Good luck." : `${plan.days} day${plan.days === 1 ? "" : "s"} to go`}</b>${plan.days ? ` <span class="muted">until ${esc(shortDay(date))}</span>` : ""}</p>
+      <ol class="week-plan">${plan.weeks.map(w => `<li class="${w.mocks ? "wk-mock" : ""}"><span class="wk-when"><b>Week ${w.n}</b><span class="muted">${esc(shortDay(w.from))}${w.to !== w.from ? ` to ${esc(shortDay(w.to))}` : ""}</span></span>
+        <span class="wk-what">${w.focus.length ? w.focus.map(o => `<button type="button" class="chip" data-practice-obj="${esc(o.id)}" title="Practise ${esc(o.id)}">${esc(o.id)} ${esc(o.title)}</button>`).join("")
+          : w.mocks ? `<span>Take timed mock exams and revise your weakest domain.</span>` : `<span class="muted">Everything here is strong: keep drilling questions.</span>`}
+          ${w.mocks && w.focus.length ? `<span>Then a timed mock exam.</span>` : ""}</span></li>`).join("")}</ol>`;
+  return `<section class="exam-date" aria-labelledby="ed-h"><h3 class="cert-h" id="ed-h">Your exam date</h3>
+    <div class="row ed-set"><label class="ed-label">I sit ${esc(c.exam)} on <input type="date" id="ed-input" value="${esc(date)}" min="${esc(todayStr())}"></label>
+      ${date ? `<button type="button" class="btn ghost" id="ed-clear">Clear the date</button>` : ""}</div>${body}</section>`;
+}
+function wireExamDate(c, progress) {
+  const inp = $("ed-input"); if (!inp) return;
+  inp.addEventListener("change", () => { if (/^\d{4}-\d{2}-\d{2}$/.test(inp.value)) { P.examDates[c.id] = inp.value; saveP(); readinessPanel(c, progress); } });
+  $("ed-clear")?.addEventListener("click", () => { delete P.examDates[c.id]; saveP(); readinessPanel(c, progress); });
 }
 function certView(id) {
   const c = DATA.certs.find(x => x.id === id); if (!c) return notFound(VIEWS.exams);
@@ -323,7 +374,7 @@ function topicStages(lessonId) {
   return Object.keys(LOOP_META).map(key => stages.find(s => s.key === key) || { key, status: "none" });
 }
 // The horizontal stage strip. `current` is the stage the learner is on now (not a link).
-function loopStrip(lessonId, current) {
+function loopStrip(lessonId, current, label = "This topic's steps") {
   const stages = topicStages(lessonId); if (!stages.length) return "";
   // No numbers: a route's stops are numbered, and these are steps within one topic, so they mustn't look like stops.
   const mark = s => (s.status === "done" ? '<span aria-hidden="true">✓</span><span class="sr-only">(done)</span>' : "");
@@ -334,7 +385,7 @@ function loopStrip(lessonId, current) {
       : `<a class="loop-node ${s.status}" href="${s.href}"${s.prove ? ` data-prove='${esc(JSON.stringify(s.prove))}'` : ""}>${inner}</a>`; };
   const onRoute = trailStop(trailSteps(), "#lesson-" + lessonId);
   return `<div class="loopwrap"><p class="eyebrow loop-eyebrow">${onRoute ? "Go deeper on this topic (optional)" : "This topic, step by step"}</p>
-    <nav class="looptrack" aria-label="This topic's steps">${stages.map(node).join('<span class="loop-arr" aria-hidden="true">→</span>')}</nav></div>`;
+    <nav class="looptrack" aria-label="${esc(label)}">${stages.map(node).join('<span class="loop-arr" aria-hidden="true">→</span>')}</nav></div>`;
 }
 // The same strip at the top of a lab, mission or "Prove it" page, under its title, with that page's stage lit. A lab or
 // mission that serves several topics shows the one you came from (the last lesson you opened), else its own.
@@ -476,7 +527,7 @@ function showDoneCard(type, item, title) {
   if (!root) return;
   root.querySelector("#done-card")?.remove();
   const ls = LESSON[item.lesson], n = nextStep(type, item.id);
-  const strip = ls ? loopStrip(pageTopic(item), type === "lab" ? labStage(item) : "diagnose") : "";
+  const strip = ls ? loopStrip(pageTopic(item), type === "lab" ? labStage(item) : "diagnose", "Where this leaves the topic") : "";  // a second copy of the bar, so its own landmark name
   root.insertAdjacentHTML("beforeend", `<section class="panel next-step" id="done-card" tabindex="-1"><div class="eyebrow">${esc(title)}</div>
     <h2>${esc(item.title)}</h2><p class="muted" style="margin:0">${esc(item.skill || item.summary)}</p>${strip}
     <div class="row">${n ? `<a class="btn brand" href="${n.href}"${n.prove ? ` data-prove='${esc(JSON.stringify(n.prove))}'` : ""}>Next: ${esc(n.label)} ›</a>` : ""}${ls && (!n || n.href !== "#lesson-" + ls.id) ? `<a class="btn ghost" href="#lesson-${esc(ls.id)}">Revisit the lesson: ${esc(ls.title)}</a>` : ""}<a class="link-btn" href="#missions">All missions and labs</a></div>${ls ? toTopButton() : ""}${feedbackLine(item.title)}</section>`);
@@ -517,11 +568,10 @@ function lessonView(id) {
     <a class="link-btn" href="#learn">← All lessons</a>
     <header class="lesson-open"><p class="eyebrow">${esc(l.track)} · ${esc(l.level)} · ${l.minutes} min</p><h1>${esc(l.title)}</h1></header>
     ${loopStrip(id, "understand")}
-    ${leadPicture ? seeBlock : ""}
+    ${seeBlock}
     <section id="l-what" tabindex="-1"><p class="hook">${esc(l.hook)}</p><p>${gloss(lede.lede, 2, lseen)}</p>
       ${lede.more ? `<details class="more-what" id="l-what-more"><summary>Read the full explanation</summary><p>${gloss(l.what, 6, lseen)}</p></details>` : ""}</section>
     ${l.tip ? `<div class="qtip" role="note"><span class="qtip-k">★ Quick tip</span><p>${gloss(l.tip, 3, lseen)}</p></div>` : ""}
-    ${leadPicture ? "" : seeBlock}
     <section class="case" id="l-example" tabindex="-1"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h2 class="case-h">${esc(l.example.title)}</h2><p>${gloss(l.example.text, 4, lseen)}</p>${l.example.source ? `<p class="muted" style="font-size:0.85rem">Source: <a href="${esc(l.example.source.url)}" target="_blank" rel="noopener">${esc(l.example.source.label)} ↗</a></p>` : ""}</section>
     <section id="l-defend" tabindex="-1"><h2>How defenders stop it</h2><ul class="checklist">${l.defend.map(d => `<li>${esc(d)}</li>`).join("")}</ul></section>
     <section class="doc panel${practice.length > 1 ? " wide" : ""}"><h2>Try it</h2>

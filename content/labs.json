@@ -9922,5 +9922,173 @@
     "explain": "A regular check-in to an outside server is command and control (C2), and the beat makes it easy to spot in network logs."
    }
   ]
+ },
+ {
+  "id": "asset-register",
+  "kind": "doc",
+  "category": "Vulnerabilities",
+  "track": "Vulnerabilities",
+  "minutes": 8,
+  "lesson": "vuln-management",
+  "title": "Who owns this laptop?",
+  "skill": "Read an asset register: owners, leavers, unknown devices and safe disposal",
+  "card": "Lost laptops, wiped disks and devices nobody listed",
+  "intro": "Halstead & Rowe, an Agency client, sent its asset register before an audit. Find what's missing, unowned or about to leave unsafely.",
+  "artifact": {
+   "kind": "doc",
+   "name": "Asset register",
+   "text": "ASSET REGISTER (extract)\nClient: Halstead & Rowe (fictional), solicitors, 24 staff\nExported 16 Nov 2026 from the IT asset tracker\nSimplified: a real register has more fields (serial, purchase date,\nwarranty, location); this extract shows the ones that matter here.\n\nTAG     DEVICE                 OWNER                     DATA          LAST SEEN\nHR-L01  Laptop, Windows 11     M. Bell                   Confidential  16 Nov 2026\nHR-L07  Laptop, Windows 11     J. Doyle                  Confidential  16 Nov 2026\nHR-L12  Laptop, Windows 11     (none)                    Confidential  02 Jun 2026\nHR-L15  Laptop, Windows 10     K. Patel (left Sep 2026)  Confidential  12 Sep 2026\nHR-S01  File server FS01       IT (T. Okafor)            Confidential  16 Nov 2026\nHR-S00  Old file server FS00   IT (T. Okafor)            Confidential  30 Apr 2026\nHR-P03  Multifunction printer  Office manager            Internal      16 Nov 2026\n\nSTATUS NOTES\n  HR-L12  marked In use\n  HR-L15  not returned\n  HR-S00  retired: disks reformatted, collection by a reseller on Friday\n  HR-P03  leased; stores scanned jobs on its internal disk; lease ends Jan 2027\n\nNOT IN THE REGISTER\n  Network discovery scan, 16 Nov 2026, found 2 devices that aren't listed:\n  192.0.2.40   NAS named HR-BACKUP2, web admin page on port 443\n  192.0.2.77   Raspberry Pi in the post room, SSH open on port 22"
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "HR-L12 holds confidential data, has no owner and hasn't been seen since June. Why is that a problem?",
+    "options": [
+     "Nobody is responsible for patching or finding it, and it may be lost: trace it and assign an owner, or report it lost",
+     "It isn't: it's still marked In use",
+     "Only because the register looks untidy",
+     "Because Windows 11 laptops must be replaced every year"
+    ],
+    "answer": 0,
+    "explain": "Every asset needs a named owner who is accountable for it. A confidential laptop unseen for five months could be lost or stolen, and a device that never checks in misses its updates too.",
+    "where": "02 Jun 2026"
+   },
+   {
+    "type": "choice",
+    "q": "The old file server's disks were reformatted and a reseller collects it on Friday. Is that enough?",
+    "options": [
+     "No: a reformat can leave data recoverable. Sanitise the disks (purge) or destroy them, and get a certificate before it leaves",
+     "Yes: reformatting erases everything",
+     "Yes, as long as the reseller is reputable",
+     "Only if the server was switched off for a month"
+    ],
+    "answer": 0,
+    "explain": "A quick format removes the index, not the data. NIST SP 800-88 calls for clearing, purging or destroying media to suit the data on it; for confidential client files, purge or destroy, and keep a certificate of sanitisation or destruction as proof.",
+    "where": "disks reformatted"
+   },
+   {
+    "type": "choice",
+    "q": "K. Patel left in September and the laptop never came back. What should happen?",
+    "options": [
+     "Make sure the accounts are disabled, chase the return, and if it can't be recovered treat it as lost: wipe it remotely and report it",
+     "Nothing: leavers can keep old laptops",
+     "Change the register to say In use",
+     "Buy a replacement and forget the old one"
+    ],
+    "answer": 0,
+    "explain": "Offboarding includes getting company devices back. A confidential laptop held by a former employee is an unmanaged risk: confirm access is revoked, recover it, and if that fails, wipe and report it as a lost asset.",
+    "where": "left Sep 2026"
+   },
+   {
+    "type": "choice",
+    "q": "The discovery scan found a NAS and a Raspberry Pi that aren't in the register. What's the first step?",
+    "options": [
+     "Find out who put them there and why, then add them to the register with an owner, or remove them",
+     "Ignore them: they weren't bought by IT",
+     "Block the whole post room from the network forever",
+     "Add them to the register with no owner and move on"
+    ],
+    "answer": 0,
+    "explain": "You can't protect what you don't know you have. Unknown devices (shadow IT) are found by discovery and enumeration, then either brought under management with an owner or taken off the network. A backup NAS may even hold client data.",
+    "where": "HR-BACKUP2"
+   },
+   {
+    "type": "choice",
+    "q": "The leased printer stores scanned jobs on its internal disk, and the lease ends in January. What must happen before it goes back?",
+    "options": [
+     "Sanitise or remove its internal disk: scans of client letters may be on it",
+     "Nothing: printers don't hold data",
+     "Unplug it for a week first",
+     "Reclassify it as public so it doesn't matter"
+    ],
+    "answer": 0,
+    "explain": "Many multifunction printers keep copies of scanned and printed jobs. Disposal and decommissioning covers every device that stores data, including leased ones: sanitise or remove the disk, and agree this in the lease.",
+    "where": "stores scanned jobs on its internal disk"
+   }
+  ]
+ },
+ {
+  "id": "soar-playbook",
+  "kind": "doc",
+  "category": "SOC & incident response",
+  "track": "SOC & incident response",
+  "minutes": 8,
+  "lesson": "soc",
+  "title": "Automate it, safely",
+  "skill": "Judge an automated SOC playbook: speed, guard rails and what still needs a person",
+  "card": "3 minutes to block, 1,900 emails deleted by mistake",
+  "intro": "Lanternfield's SOC automated its phishing reports. It's much faster, and it once deleted 1,900 real emails. Review the playbook.",
+  "artifact": {
+   "kind": "doc",
+   "name": "Playbook",
+   "text": "PLAYBOOK: reported-phish (draft v0.3)\nOwner: Lanternfield SOC (fictional)\nTrigger: a staff member presses 'Report phishing' in their mail app\nGeneric playbook format, simplified: real SOAR products each have their own.\n\n1. create_ticket          priority: low\n2. extract_indicators     sender, reply-to, links, attachment hashes\n3. enrich                 look up every link and hash in the threat intel feed\n4. if any indicator is known-bad:\n     a. search_mailboxes  same sender or subject, last 7 days\n     b. delete_messages   ALL matches, in every mailbox, no approval\n     c. block_sender      at the email gateway\n     d. raise_priority    high, and page the on-call analyst\n5. if nothing is known-bad:\n     a. assign_to_analyst queue: triage\n6. reply_to_reporter      \"Thanks, we're looking at it\"\n7. close_ticket           automatically after 24 hours\n\nRUN HISTORY, last 30 days\n  412 reports, 61 with a known-bad indicator\n  Median time to block a bad sender: 3 minutes (47 minutes when done by hand)\n  4 Nov: step 4b deleted 1,900 copies of a supplier newsletter, after the\n          threat intel feed wrongly listed its link tracker as malicious"
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "Blocking a bad sender now takes a median of 3 minutes instead of 47. Which benefit of automation is that?",
+    "options": [
+     "Faster reaction time: the same team responds in minutes, not most of an hour",
+     "Lower complexity",
+     "No need for any analysts",
+     "Removing the need for a threat intel feed"
+    ],
+    "answer": 0,
+    "explain": "Speed and consistency are the big wins: automation does the same steps every time, straight away, and frees analysts (a workforce multiplier) for the cases that need judgement.",
+    "where": "3 minutes"
+   },
+   {
+    "type": "choice",
+    "q": "On 4 Nov step 4b deleted 1,900 real newsletters. What's the best change?",
+    "options": [
+     "Add a guard rail: quarantine rather than delete, and need an analyst's approval above a set number of mailboxes",
+     "Delete the whole playbook and go back to doing it by hand",
+     "Make step 4b run twice to be sure",
+     "Turn off the Report phishing button"
+    ],
+    "answer": 0,
+    "explain": "Automation should have guard rails on actions that are hard to undo. Quarantine can be released; a human approval step above a threshold stops one bad feed entry hitting every mailbox.",
+    "where": "1,900 copies"
+   },
+   {
+    "type": "choice",
+    "q": "Step 7 closes every ticket after 24 hours. What's wrong with that?",
+    "options": [
+     "A report nobody has looked at yet gets closed anyway: tickets should close when an analyst resolves them, and escalate if untouched",
+     "Nothing: 24 hours is long enough",
+     "Tickets should close after 1 hour instead",
+     "Closing tickets is the reporter's job"
+    ],
+    "answer": 0,
+    "explain": "Automatic closure hides work that hasn't been done. A good playbook escalates a stale ticket instead, so 'closed' always means someone decided.",
+    "where": "automatically after 24 hours"
+   },
+   {
+    "type": "choice",
+    "q": "Why does step 5 send emails with nothing known-bad to a person instead of closing them?",
+    "options": [
+     "A brand new phishing campaign won't be in any threat feed yet: people catch what automation hasn't seen",
+     "Because automation can't read email",
+     "To make the analysts' queue look busier",
+     "Because the law says every email must be read by hand"
+    ],
+    "answer": 0,
+    "explain": "Automation only knows the indicators it has been told about. New campaigns, targeted emails and lookalike domains often have no reputation yet, so a person still triages them.",
+    "where": "assign_to_analyst"
+   },
+   {
+    "type": "choice",
+    "q": "Every decision in step 4 depends on one threat intel feed. Which risk of automation is that?",
+    "options": [
+     "A single point of failure: when the feed is wrong (as on 4 Nov) or down, the playbook acts wrongly",
+     "Technical debt in the mail app",
+     "Too many analysts",
+     "A licensing cost only"
+    ],
+    "answer": 0,
+    "explain": "Automation inherits the mistakes of its inputs, at machine speed. Checking more than one source, setting a confidence threshold and keeping a human in the loop for big actions all reduce that risk.",
+    "where": "threat intel feed"
+   }
+  ]
  }
 ]

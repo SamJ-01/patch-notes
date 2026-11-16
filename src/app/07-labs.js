@@ -48,6 +48,8 @@ const SCENE = {
   "risk-register": { g: [["doc", 56, 42, 1.8], ["gauge", 146, 42, 1.5, "bad"]], l: [[78, 42, 124, 42]], t: [["R1 · 20", 146, 86, "bad"]] },
   "allowed-or-not": { d: [["laptop", 40, 52, 0.5], ["server", 160, 50, 0.56]], g: [["lock", 100, 26, 1.2, "good"]], l: [[58, 52, 142, 50]], t: [["authorised?", 100, 84]] },
   "threat-model": { d: [["server", 150, 48, 0.58]], g: [["doc", 52, 44, 1.7], ["alert", 184, 20, 1, "bad"]], l: [[74, 44, 132, 48]], t: [["STRIDE", 100, 88]] },
+  "asset-register": { d: [["laptop", 52, 52, 0.55], ["server", 150, 50, 0.56]], g: [["search", 100, 26, 1.2], ["alert", 184, 20, 1, "bad"]], t: [["owner: (none)", 52, 88, "bad"], ["HR-S00", 150, 88]] },
+  "soar-playbook": { g: [["doc", 52, 42, 1.7], ["clock", 100, 42, 1.3, "good"], ["mail", 150, 42, 1.4, "bad"]], l: [[74, 42, 88, 42], [112, 42, 132, 42]], t: [["3 min", 100, 86, "good"], ["1,900 deleted", 150, 86, "bad"]] },
   "scope-roe": { g: [["doc", 62, 46, 2], ["lock", 140, 46, 1.6, "good"]], l: [[84, 46, 120, 46]], t: [["IN SCOPE", 140, 82, "good"]] },
   "nmap-read": { d: [["laptop", 40, 54, 0.55], ["server", 156, 50, 0.6]], g: [["search", 98, 30, 1.2]], l: [[60, 52, 138, 50]], t: [["22 · 80 · 443", 156, 88]], p: ["M40 54L156 50"] },
   "validate-findings": { g: [["alert", 48, 46, 1.6, "bad"], ["search", 100, 46, 1.6], ["shield", 152, 46, 1.6, "good"]], l: [[66, 46, 82, 46], [118, 46, 134, 46]], t: [["false positive?", 100, 84]] },
@@ -187,17 +189,43 @@ document.addEventListener("mouseover", e => {
 // Grouped by topic (16 Nov): "Security operations" had grown to 35 items while "Threats" held one.
 const CATEGORY_ORDER = ["SOC & incident response", "Identity & email", "Web & cloud", "Vulnerabilities", "Governance", "Your own evidence", "Cryptography", "Linux", "Network security", "Networking", "Ethical hacking", "Games"];
 // "Start here": one pick per track. When a pick is done, the next unfinished item in its track takes its place.
+// "Pick up where you left off": the last lab, mission or shift opened (a per-browser convenience, not progress).
+// Read back as untrusted: only a known activity that isn't finished yet is offered.
+const LAST_KEY = "pn-last";
+function noteLastActivity(hash) {
+  const m = /^#(lab|mission|agency)-([a-z0-9-]{1,60})$/.exec(hash || ""); if (!m) return;
+  try { localStorage.setItem(LAST_KEY, `${m[1]}:${m[2]}`); } catch (e) {}
+}
+function lastActivity(raw) {
+  const m = /^(lab|mission|agency):([a-z0-9-]{1,60})$/.exec(String(raw || "")); if (!m) return null;
+  const [, kind, id] = m;
+  if (kind === "lab") { const l = DATA.labs.find(x => x.id === id); return l && !P.labs[id] ? { href: "#lab-" + id, label: l.title, kind: "Lab" } : null; }
+  if (kind === "mission") { const x = MISSION(id); return x && !count((P.missions || {})[id]) ? { href: "#mission-" + id, label: x.title, kind: "Mission" } : null; }
+  const sh = SHIFT(id); return sh && !(P.agency || {})[id] ? { href: "#agency-" + id, label: sh.title, kind: "Agency shift" } : null;
+}
+function lastActivityHtml() {
+  let raw = null; try { raw = localStorage.getItem(LAST_KEY); } catch (e) {}
+  const a = lastActivity(raw);
+  return a ? `<a class="pr-resume" href="${a.href}"><span class="eyebrow">Pick up where you left off · ${esc(a.kind)}</span><b>${esc(a.label)}</b><span class="pr-resume-go" aria-hidden="true">Continue ›</span></a>` : "";
+}
 const PRACTISE_PICKS = ["agency:shift-01", "lab:hashing", "lab:permissions", "lab:network-builder"];
-const PS = { track: "All", open: {} };  // the chosen filter and which tracks are expanded, for this visit
+const PS = { track: "All", open: {}, time: "any", todo: false };  // the chosen filters and which tracks are expanded, for this visit
+// Does a practise item pass the length and "not done yet" filters? Tools and games have no length: they count as quick.
+const PRACTISE_TIMES = [["any", "Any length"], ["quick", "10 min or less"], ["mid", "10 to 20 min"], ["long", "Over 20 min"]];
+function practiseMatch(item, f) {
+  if (f.todo && item.done) return false;
+  const m = Number(item.min) || 5;
+  return f.time === "quick" ? m <= 10 : f.time === "mid" ? m > 10 && m <= 20 : f.time === "long" ? m > 20 : true;
+}
 function practiseItems() {
   // Each item carries its card html and the fields the compact one-line row needs (label, href, sub).
   return [
-    ...(DATA.agency || []).map(sh => ({ key: `agency:${sh.id}`, cat: "SOC & incident response", done: !!(P.agency || {})[sh.id], html: shiftCard(sh), label: `PATCH//AGENCY: ${sh.title}`, href: `#agency-${esc(sh.id)}`, sub: `${sh.minutes} min` })),
+    ...(DATA.agency || []).map(sh => ({ key: `agency:${sh.id}`, cat: "SOC & incident response", done: !!(P.agency || {})[sh.id], html: shiftCard(sh), label: `PATCH//AGENCY: ${sh.title}`, href: `#agency-${esc(sh.id)}`, sub: `${sh.minutes} min`, min: sh.minutes })),
     { key: "tool:headers-check", cat: "Your own evidence", done: false, html: headerToolCard(), label: "Email header checker", href: "#headers-check", sub: "Tool" },
     { key: "tool:log-search", cat: "Your own evidence", done: false, html: logToolCard(), label: "Log search", href: "#log-search", sub: "Tool" },
     { key: "tool:cvss-decode", cat: "Your own evidence", done: false, html: cvssToolCard(), label: "CVSS decoder", href: "#cvss-decode", sub: "Tool" },
-    ...DATA.missions.map(m => ({ key: `mission:${m.id}`, cat: m.category || "Networking", done: Object.keys((P.missions || {})[m.id] || {}).length === Object.keys(m.modes).length, html: missionCard(m), label: m.title, href: `#mission-${esc(m.id)}`, sub: `Mission · ${m.minutes} min` })),
-    ...DATA.labs.map(l => ({ key: `lab:${l.id}`, cat: l.category || "SOC & incident response", done: !!P.labs[l.id], html: labCard(l), label: l.title, href: `#lab-${esc(l.id)}`, sub: `Lab · ${l.minutes} min` })),
+    ...DATA.missions.map(m => ({ key: `mission:${m.id}`, cat: m.category || "Networking", done: Object.keys((P.missions || {})[m.id] || {}).length === Object.keys(m.modes).length, html: missionCard(m), label: m.title, href: `#mission-${esc(m.id)}`, sub: `Mission · ${m.minutes} min`, min: m.minutes })),
+    ...DATA.labs.map(l => ({ key: `lab:${l.id}`, cat: l.category || "SOC & incident response", done: !!P.labs[l.id], html: labCard(l), label: l.title, href: `#lab-${esc(l.id)}`, sub: `Lab · ${l.minutes} min`, min: l.minutes })),
     { key: "tool:subnet-calc", cat: "Networking", done: false, html: toolCard(), label: "Subnet calculator", href: "#subnet-calc", sub: "Tool" },
     { key: "games", cat: "Games", done: false, html: gamesCard(), label: "Phish or Legit, quizzes and a flag hunt", href: "#play", sub: "Game" },
   ];
@@ -211,19 +239,28 @@ VIEWS.missions = () => {
     .map(p => (p.done ? items.find(i => i.cat === p.cat && !i.done && !PRACTISE_PICKS.includes(i.key)) || p : p));
   main.innerHTML = `<div class="view">
     <div class="view-head with-art">${headArt("missions")}<h1>Practise by doing</h1><p>Missions, labs, the Agency shift and games. Start with one from each track, or pick what you want to get better at.</p></div>
+    ${lastActivityHtml()}
     ${compact ? "" : `<section class="stack pr-start"${PS.track === "All" ? "" : " hidden"}><h2 class="cat-h">Start here: one from each track</h2><div class="lessons">${picks.map(p => p.html).join("")}</div></section>`}
     <div class="row" style="justify-content:space-between;align-items:center;gap:10px">
       <div class="row pr-tracks" role="group" aria-label="Show a track">${["All", ...cats].map(c => `<button type="button" class="chip" data-t="${esc(c)}" aria-pressed="${PS.track === c}">${esc(c)} <span class="n">${c === "All" ? items.length : items.filter(i => i.cat === c).length}</span></button>`).join("")}</div>
-      ${viewToggle()}
     </div>
+    <div class="row pr-filterbar"><div class="row pr-filters" role="group" aria-label="Filter by length and progress"><span class="eyebrow">Length</span>${PRACTISE_TIMES.map(([k, t]) => `<button type="button" class="chip" data-time="${k}" aria-pressed="${PS.time === k}">${t}</button>`).join("")}
+      <span class="pr-sep" aria-hidden="true"></span><button type="button" class="chip pr-todo" data-todo aria-pressed="${PS.todo}">Not done yet</button></div>
+      ${viewToggle()}</div>
+    <p class="muted pr-count" aria-live="polite"></p>
     <div class="stack" id="pr-grid" style="gap:30px"></div>
   </div>`;
   const SHOW = matchMedia("(max-width: 600px)").matches ? 2 : 4;  // a row of four on a desktop; two stacked cards on a phone
   const draw = () => {
-    const shown = PS.track === "All" ? cats : [PS.track];
-    const st = main.querySelector(".pr-start"); if (st) st.hidden = PS.track !== "All";  // the picks only repeat cards once a track is chosen
+    const filtered = PS.time !== "any" || PS.todo, pass = items.filter(i => practiseMatch(i, PS));
+    const shown = (PS.track === "All" ? cats : [PS.track]).filter(c => pass.some(i => i.cat === c));
+    const st = main.querySelector(".pr-start"); if (st) st.hidden = PS.track !== "All" || filtered;  // the picks only repeat cards once a track or filter is chosen
+    main.querySelectorAll(".pr-tracks [data-t]").forEach(b => { const n = b.dataset.t === "All" ? pass.length : pass.filter(i => i.cat === b.dataset.t).length; b.querySelector(".n").textContent = n; });
+    const inTrack = pass.filter(i => PS.track === "All" || i.cat === PS.track).length;
+    main.querySelector(".pr-count").textContent = filtered ? `${inTrack} match${inTrack === 1 ? "" : "es"}` : "";
+    if (!shown.length) { $("pr-grid").innerHTML = `<div class="empty">Nothing matches. <button type="button" class="link-btn" data-clear>Clear the filters</button></div>`; return; }
     $("pr-grid").innerHTML = shown.map(c => {
-      const list = items.filter(i => i.cat === c), all = compact || PS.track !== "All" || PS.open[c] || list.length <= SHOW + 1;
+      const list = pass.filter(i => i.cat === c), all = compact || PS.track !== "All" || filtered || PS.open[c] || list.length <= SHOW + 1;
       const shownList = all ? list : list.slice(0, SHOW);
       const body = compact ? `<div class="learn-list">${shownList.map(i => listRow(i.href, i.label, i.sub, i.done)).join("")}</div>`
         : `<div class="lessons">${shownList.map(i => i.html).join("")}</div>`;
@@ -235,7 +272,14 @@ VIEWS.missions = () => {
     const b = e.target.closest("[data-t]"); if (!b) return;
     PS.track = b.dataset.t; main.querySelectorAll(".pr-tracks [data-t]").forEach(x => x.setAttribute("aria-pressed", x === b)); draw();
   });
+  main.querySelector(".pr-filters").addEventListener("click", e => {
+    const b = e.target.closest("[data-time],[data-todo]"); if (!b) return;
+    if (b.dataset.time) { PS.time = b.dataset.time; main.querySelectorAll(".pr-filters [data-time]").forEach(x => x.setAttribute("aria-pressed", x === b)); }
+    else { PS.todo = !PS.todo; b.setAttribute("aria-pressed", PS.todo); }
+    draw();
+  });
   $("pr-grid").addEventListener("click", e => {
+    if (e.target.closest("[data-clear]")) { PS.time = "any"; PS.todo = false; main.querySelectorAll(".pr-filters [data-time]").forEach(x => x.setAttribute("aria-pressed", x.dataset.time === "any")); main.querySelector("[data-todo]").setAttribute("aria-pressed", false); return draw(); }
     const b = e.target.closest("[data-more]"); if (!b) return;
     PS.open[b.dataset.more] = true; draw();
     const sec = [...$("pr-grid").querySelectorAll(".cat-h")].find(h => h.textContent === b.dataset.more)?.parentElement;

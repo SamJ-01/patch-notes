@@ -4,7 +4,7 @@ import * as A from "./shift.js";
 import { markText } from "../missions/engine.js";
 import { DESK } from "../desk.js";
 import { MAIL } from "../mail.js";
-import * as INFRA from "./infra.js";
+import * as WATCH from "./watch.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 // Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
@@ -42,8 +42,8 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         <div class="ag-in-side">
           <ol class="dk-msgs ag-chat" id="ag-chat" aria-live="polite" aria-label="Messages from ${esc(leadName)}"></ol>
           <div class="ag-dossier" id="ag-dossier" hidden>${DESK.scene(shift.clientImage)}<div class="eyebrow">Client file</div><h2>${esc(shift.client)}</h2>
-            <dl class="fields"><div><dt>Alerts waiting</dt><dd>${waiting}, with more likely</dd></div><div><dt>Logs you can search</dt><dd>${Object.keys(shift.sources).length}</dd></div><div><dt>Shift length</dt><dd>about ${shift.minutes} min</dd></div>${done ? `<div><dt>Your record</dt><dd>✓ worked before</dd></div>` : ""}</dl>
-            ${shift.infra ? `<div class="ag-infra"><div class="eyebrow">What you're watching</div>${INFRA.svg(shift.infra)}</div>` : ""}
+            <dl class="fields"><div><dt>Alerts waiting</dt><dd>${waiting}, with more likely</dd></div><div><dt>Shift length</dt><dd>about ${shift.minutes} min</dd></div>${done ? `<div><dt>Your record</dt><dd>✓ worked before</dd></div>` : ""}</dl>
+            ${WATCH.html(shift)}
             <fieldset class="ag-level"><legend>How do you want to work?</legend>
               <label class="ag-lv"><input type="radio" name="ag-level" value="shadow"><span><b>Shadow</b> Watch ${esc(leadName)} work this shift, step by step and explained, then take your turn.</span></label>
               <label class="ag-lv"><input type="radio" name="ag-level" value="guided"${done ? "" : " checked"}><span><b>Guided</b> ${esc(leadName)} gives hints, suggests searches and checks each alert as you close it.</span></label>

@@ -267,6 +267,7 @@ function route() {
   }
   agencyShift = null; lastHash = location.hash;
   noteCrumb(location.hash || "#today");
+  noteLastActivity(location.hash);
   const r = parseRoute();
   document.querySelectorAll("nav.tabs a").forEach(a => a.dataset.tab === r.tab ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   closePop();
@@ -449,3 +450,9 @@ function unmountCompanion() { clearInterval(patchIdleTimer); clearTimeout(patchB
 renderXP();
 route();
 mountCompanion();
+
+// Offline support (static/sw.js): network first, so online visits always get the latest build; the copies it keeps
+// are only used when there's no connection. Only on a real origin (https, or localhost while testing).
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}

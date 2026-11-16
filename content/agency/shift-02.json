@@ -32,23 +32,6 @@
   "close": 3,
   "wait": 5
  },
- "infra": {
-  "caption": "Lanternfield's SOC watches Fernhollow Vets' Microsoft 365 sign-ins and mailboxes.",
-  "nodes": [
-   {"id": "net", "label": "Internet", "sub": "attacker", "icon": "globe", "at": [0, 0], "bad": true},
-   {"id": "m365", "label": "Microsoft 365", "sub": "mail + sign-in", "icon": "cloud", "at": [1, 0]},
-   {"id": "staff", "label": "Mailboxes", "sub": "Fernhollow staff", "icon": "mail", "at": [2, 0]},
-   {"id": "supplier", "label": "Supplier", "sub": "invoices", "icon": "users", "at": [2, 1]},
-   {"id": "siem", "label": "SIEM", "sub": "the SOC", "icon": "eye", "at": [0, 1]}
-  ],
-  "links": [
-   ["net", "m365", {"label": "sign-in"}],
-   ["m365", "staff"],
-   ["staff", "supplier", {"label": "invoices"}],
-   ["siem", "m365", {"watch": true}],
-   ["siem", "staff", {"watch": true}]
-  ]
- },
  "sources": {
   "signin": {
    "name": "Sign-in log (SIEM export)",

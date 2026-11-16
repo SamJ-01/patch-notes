@@ -760,7 +760,7 @@ class ContentIntegrity(unittest.TestCase):
         for l in with_concept:
             self.assertNotIn("diagram", l, f"{l['id']}: a lesson should have a flow diagram or a concept visual, not both")
             c = l["concept"]
-            self.assertIn(c["type"], {"triad", "cycle", "cards"}, l["id"])
+            self.assertIn(c["type"], {"triad", "cycle", "cards", "matrix"}, l["id"])
             self.assertTrue(c.get("title"), f"{l['id']}: concept needs a title")
             items = c["items"]
             if c["type"] == "triad":
@@ -773,7 +773,7 @@ class ContentIntegrity(unittest.TestCase):
                 self.assertTrue(it.get("label"), f"{l['id']}: every item needs a label")
                 if it.get("icon"):
                     self.assertIn(it["icon"], icons, f"{l['id']}: no icon '{it['icon']}' in concept.js")
-                if c["type"] in ("triad", "cards"):
+                if c["type"] in ("triad", "cards", "matrix"):
                     self.assertTrue(it.get("text"), f"{l['id']}: {it['label']} needs text")
 
     def test_labs_and_missions_point_to_real_lessons(self):
@@ -979,3 +979,37 @@ class CardPhotos(unittest.TestCase):
         ids = re.findall(r'"([\w-]+)"', re.search(r"const HEAD_PHOTOS = new Set\(\[(.*?)\]\)", js, re.S).group(1))
         for i in ids:
             self.assertTrue((Path(__file__).resolve().parent.parent / "static" / "img" / "heads" / f"{i}.webp").exists(), i)
+
+
+class OfflineApp(unittest.TestCase):
+    """Installable and offline: the manifest's icons exist, and the service worker only ever handles this site's own
+    GET requests (never the feedback relay), network first so a new build is seen straight away."""
+    def test_manifest_and_icons(self):
+        m = json.loads((ROOT / "static" / "manifest.webmanifest").read_text())
+        self.assertEqual(m["display"], "standalone")
+        self.assertTrue(any(i.get("purpose") == "maskable" for i in m["icons"]))
+        for i in m["icons"]:
+            self.assertTrue((ROOT / "static" / i["src"]).exists(), i["src"])
+        page = (ROOT / "site_template.html").read_text()
+        self.assertIn('rel="manifest" href="manifest.webmanifest"', page)
+
+    def test_service_worker_is_network_first_and_same_site_only(self):
+        sw = (ROOT / "static" / "sw.js").read_text()
+        self.assertIn('req.method !== "GET" || url.origin !== self.location.origin', sw)
+        self.assertLess(sw.index("fetch(req)"), sw.index("caches.match(req"), "network first, cache only as the fallback")
+
+
+class PublishScript(unittest.TestCase):
+    """scripts/publish.py: the files kept apart between dev and production, and it never pushes."""
+    def test_keeps_dev_only_files_out_and_never_pushes(self):
+        src = (ROOT / "scripts" / "publish.py").read_text()
+        for f in ("CLAUDE.md", "AI_CONTEXT.md", "wrangler.jsonc", ".github/workflows/draft-preview.yml"):
+            self.assertIn(f'"{f}"', src)
+        self.assertNotIn('"push"', src, "publishing to production stays a separate, approved step")
+
+    def test_reads_the_last_published_dev_commit(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("publish", ROOT / "scripts" / "publish.py")
+        mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+        mod.run = lambda cmd, cwd, **k: "Notes only\x00Looks and feel\n\nPublished from the development repository (dev 8c7a9c7) with\x00older (dev 1111111)\x00"
+        self.assertEqual(mod.last_published(Path(".")), "8c7a9c7")

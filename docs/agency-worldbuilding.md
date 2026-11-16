@@ -31,6 +31,8 @@ Do not invent a vendor attribution just because a capability is common. For exam
 
 ## 3. Naming rules for infrastructure maps
 
+(The client-file map was replaced on 16 November by source cards built from each shift's `sources`; these rules still apply to source names and any future diagram.)
+
 1. **Name the actual platform where known.** Use `Microsoft 365` for Shift 02. Use `Amazon S3` for Shift 04 because its cloud evidence is explicitly modelled on AWS CloudTrail, `ListBucket`/`GetObject` events and an AWS-style `AKIA` access key.
 2. **Keep generic components generic.** Use labels such as `VPN`, `EDR / SIEM`, `Web app` or `WAF` when no vendor is supported.
 3. **Use real product names in the supporting node detail.** Shift 03's backup node can remain the fictional host `BACKUP02`, while its sublabel identifies the real Veeam backup software.
