@@ -2,6 +2,7 @@
  "id": "network-plus",
  "name": "CompTIA Network+",
  "exam": "N10-009",
+ "card": "Start here: how networks work and how to fix them. Suits IT support roles.",
  "source": {
   "label": "CompTIA: Network+ certification",
   "url": "https://www.comptia.org/en-us/certifications/network/"

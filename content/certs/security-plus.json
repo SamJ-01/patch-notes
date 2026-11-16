@@ -2,6 +2,7 @@
  "id": "security-plus",
  "name": "CompTIA Security+",
  "exam": "SY0-701",
+ "card": "The core security exam, and a common bar for a first security job.",
  "source": {
   "label": "CompTIA: Security+ certification",
   "url": "https://www.comptia.org/en-us/certifications/security/"

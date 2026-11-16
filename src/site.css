@@ -1350,7 +1350,8 @@ body.life { background-image: none; }
 .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; display: grid; gap: 4px; }
 .stat b { font: 700 1.4rem var(--font-display); font-variant-numeric: tabular-nums; }
 /* KPI tiles on the You page: the Agency dashboard's read-out, so your stats feel like a console, not a plain table. */
-.stat-row.kpi { gap: 12px; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+.stat-row.kpi { gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 600px) { .stat-row.kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } }
 .stat-row.kpi .stat { padding: 14px 16px; gap: 3px;
   border-top: 2px solid color-mix(in srgb, var(--brand) 42%, var(--line));
   background: linear-gradient(180deg, color-mix(in srgb, var(--brand) 6%, var(--surface)), var(--surface)); }
@@ -2612,14 +2613,23 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .ag-hero h1 { margin: 0; }
 .ag-hero p { margin: 0; max-width: 70ch; }
 .ag-hubgrid { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 18px; align-items: stretch; }
-.ag-idcard { display: grid; justify-items: center; gap: 4px; padding: 0 0 16px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); box-shadow: var(--elev); overflow: hidden; position: relative; }
+.ag-idcard { display: flex; flex-direction: column; align-items: center; gap: 4px; align-self: start; padding: 0 0 16px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); box-shadow: var(--elev); overflow: hidden; position: relative; }
 .ag-idcard::before { content: ""; width: 54px; height: 9px; border-radius: 5px; background: var(--surface-2); border: 1px solid var(--line); margin-top: 10px; }
 .ag-id-top { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; background: rgba(var(--sun-rgb), 0.12); border-block: 1px solid rgba(var(--sun-rgb), 0.35); margin-top: 8px; }
 .ag-id-no { font-size: 0.75rem; color: var(--muted); }
-.ag-id-face { width: 86px; height: 86px; margin-top: 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); fill: var(--muted); }
+.ag-id-face { width: 86px; height: 86px; margin-top: 12px; border-radius: 12px; border: 1px solid rgba(var(--sun-rgb), 0.4);
+  background: radial-gradient(circle at 50% 60%, rgba(var(--sun-rgb), 0.22), transparent 62%), repeating-linear-gradient(0deg, rgba(var(--sun-rgb), 0.06) 0 1px, transparent 1px 6px), var(--surface-2); }
+.ag-id-ring { fill: none; stroke: rgba(var(--sun-rgb), 0.35); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.ag-id-lamp { fill: none; stroke: var(--sun); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.ag-id-flame { fill: var(--sun); filter: drop-shadow(0 0 3px rgba(var(--sun-rgb), 0.7)); }
 .ag-id-name { font: 800 1.3rem var(--font-display, var(--font-body)); margin-top: 6px; }
 .ag-id-rank { font: 600 0.78rem var(--font-mono); color: var(--sun); text-transform: uppercase; letter-spacing: 0.08em; }
-.ag-id-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; padding: 10px 14px 0; margin: 6px 0 0; border-top: 1px dashed var(--line); }
+.ag-stamps { display: grid; justify-items: center; gap: 6px; margin-top: 14px; }
+.ag-stamps-h { font: 600 0.68rem var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.ag-stamps ol { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.ag-bstamp { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 1.5px dashed var(--line); color: var(--muted); font: 700 0.78rem var(--font-mono); transform: rotate(-8deg); }
+.ag-bstamp.on { border: 2px solid var(--sun); color: var(--sun); background: rgba(var(--sun-rgb), 0.12); box-shadow: inset 0 0 0 2px rgba(var(--sun-rgb), 0.18); }
+.ag-id-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; padding: 10px 14px 0; margin: 14px 0 0; border-top: 1px dashed var(--line); }
 .ag-id-stats dt { font-size: 0.72rem; color: var(--muted); }
 .ag-id-stats dd { margin: 0; font: 700 1rem var(--font-mono); }
 .ag-tc { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; padding: 18px; border-radius: 16px; border: 1px solid var(--line); border-top: 2px solid rgba(var(--sun-rgb), 0.5); box-shadow: var(--elev);
@@ -4676,3 +4686,43 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
   .ag-stats { gap: 10px; }
   .ag-grid, .ag-alert, .ag-worksplit { gap: 14px; }
 }
+
+/* Navigation and controls (16 Nov aesthetics audit).
+   - The section tabs wrapped to two rows at 601-700 and 900-1099 px (small laptops, tablets): one row there too, with
+     the keyboard numbers hidden (they're for keyboards, and the row needs the room).
+   - The decorative prompt (guest@patchnotes:~/…) was cut off with an ellipsis between 1100 and 1360 px: hidden there.
+   - Small controls: "Show me where" was 22 px tall (under the 24 px WCAG minimum); links styled as buttons, chips and
+     the cards/compact toggle are at least 32 px, and 44 px on touch screens.
+   - Buttons press down a pixel when clicked, so a click feels like it landed. */
+@media (min-width: 601px) and (max-width: 1099px) {
+  .tabs-inner { flex-wrap: nowrap; overflow-x: auto; gap: 2px 8px; scrollbar-width: none; }
+  .tabs-inner::-webkit-scrollbar { display: none; }
+  .tab-group { flex-wrap: nowrap; }
+  .tab-label { display: none; }
+  nav.tabs a kbd { display: none; }
+  nav.tabs a { white-space: nowrap; padding: 6px 9px; }
+  .tab-group + .tab-group { padding-left: 8px; }
+}
+@media (max-width: 1360px) { .cwd { display: none; } }
+.link-btn.where, button.link-btn { min-height: 32px; display: inline-flex; align-items: center; }
+.chip, .vt { min-height: 32px; }
+@media (pointer: coarse) {
+  .chip, .vt, .link-btn.where, button.link-btn, .em-tab, .em-cta { min-height: 44px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .btn, .chip, .opt { transition: transform 0.08s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease; }
+  .btn:active:not(:disabled), .chip:active, .opt:active:not(:disabled) { transform: translateY(1px); }
+}
+
+/* Exam hub: how prep works, then the three exams as numbered steps with their key numbers. */
+.exam-how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; list-style: none; margin: 0; padding: 0; }
+.exam-how li { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); }
+.exam-how li b { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: rgba(var(--sun-rgb), 0.14); color: var(--sun); border: 1px solid rgba(var(--sun-rgb), 0.45); font: 700 0.9rem var(--font-mono); }
+.exam-how li span { font-size: 0.9rem; color: var(--muted); }
+.exam-how li strong { display: block; color: var(--ink); font-size: 0.95rem; }
+.exam-card { gap: 10px; }
+.exam-facts { display: flex; gap: 8px; margin: 0; }
+.exam-facts > div { flex: 1; padding: 8px 10px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line); }
+.exam-facts dt { font: 600 0.66rem var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.exam-facts dd { margin: 2px 0 0; font: 700 1.05rem var(--font-mono); color: var(--ink); }
+@media (max-width: 700px) { .exam-how { grid-template-columns: minmax(0, 1fr); } }

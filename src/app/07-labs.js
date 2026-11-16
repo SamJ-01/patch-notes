@@ -331,8 +331,9 @@ VIEWS.agency = () => {
     <div class="ag-hubgrid">
       <section class="ag-idcard" aria-label="Your staff badge">
         <div class="ag-id-top"><span class="ag-logo sm" aria-hidden="true">LANTERNFIELD</span><span class="ag-id-no mono">LF-${String(1000 + worked * 37).padStart(4, "0")}</span></div>
-        <svg class="ag-id-face" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="22" r="11"/><path d="M9 57c2-12 10-19 21-19s19 7 21 19z"/></svg>
+        <svg class="ag-id-face" viewBox="0 0 60 60" aria-hidden="true"><path class="ag-id-ring" d="M30 6a24 24 0 1 1 0 48a24 24 0 1 1 0-48z"/><path class="ag-id-lamp" d="M24 17h12M26 17v-3h8v3M22 21h16l-2 22H24zM21 43h18v4H21z"/><path class="ag-id-flame" d="M30 26c3 4 4 6 4 9a4 4 0 0 1-8 0c0-3 1-5 4-9z"/></svg>
         <div class="ag-id-name">You</div><div class="ag-id-rank">${rank}</div>
+        <div class="ag-stamps"><span class="ag-stamps-h">Shift stamps</span><ol>${shifts.map((sh, i) => `<li class="ag-bstamp${rec(sh.id) ? " on" : ""}"><span aria-hidden="true">${String(i + 1).padStart(2, "0")}</span><span class="sr-only">Shift ${i + 1}, ${esc(sh.client || sh.title)}: ${rec(sh.id) ? "worked" : "not worked yet"}</span></li>`).join("")}</ol></div>
         <dl class="ag-id-stats"><div><dt>Shifts worked</dt><dd>${worked} of ${shifts.length}</dd></div><div><dt>Best report</dt><dd>${worked ? `${Math.round(best * 100)}%` : "–"}</dd></div></dl>
       </section>
       <section class="ag-tc ag-tc-hub" aria-labelledby="ag-next-h">

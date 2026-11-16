@@ -160,7 +160,9 @@ function reviewDeckIds() {
   return [...ids].filter(id => { const p = parseCard(id); return p.kind === "q" ? Q_BY_ID[p.key] : GLOSS[p.key]; });
 }
 // A quick synchronous due count for the home-page nudge (no scheduling, just the comparison).
-function reviewDueCount() { const t = revDay(), r = P.review || {}; return reviewDeckIds().filter(id => !r[id] || r[id].due <= t).length; }
+// Mirrors review.js dueCards: saved cards due today, plus at most 15 new ones (NEW_PER_SESSION).
+function reviewDueCount() { const t = revDay(), r = P.review || {}, ids = reviewDeckIds();
+  return ids.filter(id => r[id] && r[id].due <= t).length + Math.min(15, ids.filter(id => !r[id]).length); }
 function reviewCardHtml() {
   const ids = reviewDeckIds();
   if (!ids.length) return `<section class="panel rev-cta"><div class="eyebrow">New · spaced repetition</div><h2>Review</h2>

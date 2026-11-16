@@ -106,17 +106,23 @@ VIEWS.exams = () => {
   main.innerHTML = `<div class="view">
     <div class="view-head with-art">${headArt("exams")}<h1>Exam prep</h1>
       <p>CompTIA objectives mapped to what you can practise here, with practice questions, mock exams and an honest "Am I ready?" check.</p></div>
+    <ol class="exam-how" aria-label="How exam prep works">
+      <li><b>1</b><span><strong>Practise each objective</strong> with the lessons and labs mapped to it</span></li>
+      <li><b>2</b><span><strong>Take a timed mock</strong> at the real exam's pace and domain weights</span></li>
+      <li><b>3</b><span><strong>Check "Am I ready?"</strong> for an honest verdict and what to study next</span></li></ol>
     <div class="row" style="justify-content:flex-end">${viewToggle()}</div>
     <h2 class="sr-only">Certifications</h2>
-    ${compact ? `<div class="learn-list">${DATA.certs.map(certRow).join("")}</div>` : `<div class="paths">${DATA.certs.map(certCard).join("")}</div>`}
+    ${compact ? `<div class="learn-list">${DATA.certs.map(certRow).join("")}</div>` : `<div class="paths exam-cards">${DATA.certs.map(certCard).join("")}</div>`}
     <p class="muted cert-note">The questions are original, not real exam questions. It's preparation, not a guarantee of passing.</p>
   </div>`;
 };
-function certCard(c) {
+function certCard(c, i) {
   const objs = certObjectives(c), practised = objs.filter(o => { const p = objectiveProgress(o); return p.total && p.done === p.total; }).length;
   const unit = objs.length === c.domains.length ? "domains" : "objectives";  // Security+ and PenTest+ are mapped by domain
-  return `<a class="lcard" href="#cert-${esc(c.id)}"><span class="eyebrow">${esc(c.exam)} · ${objs.length} ${unit}</span><h3>${esc(c.name)}</h3>
-    <p>${c.questions.length} practice questions, timed mock exams, a step-by-step route and where to study the rest</p>
+  const route = (DATA.paths || []).find(p => p.exam === c.id), stops = route ? (route.steps || route.stops || []).length : 0;
+  return `<a class="lcard exam-card" href="#cert-${esc(c.id)}"><span class="eyebrow">${typeof i === "number" ? `Step ${i + 1} · ` : ""}${esc(c.exam)}</span><h3>${esc(c.name)}</h3>
+    <p>${esc(c.card || "Practice questions, timed mock exams, a step-by-step route and where to study the rest.")}</p>
+    <dl class="exam-facts"><div><dt>Questions</dt><dd>${c.questions.length}</dd></div><div><dt>${unit[0].toUpperCase() + unit.slice(1)}</dt><dd>${objs.length}</dd></div>${stops ? `<div><dt>Route</dt><dd>${stops} stops</dd></div>` : ""}</dl>
     <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(practised / objs.length * 100)}%"></i></span><span>${practised} of ${objs.length} practised</span></div></a>`;
 }
 // Practice question results: { [questionId]: { r: times right, w: times wrong, last: 1|0 } }

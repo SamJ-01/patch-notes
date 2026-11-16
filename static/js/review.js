@@ -23,9 +23,12 @@ export function schedule(card, grade, today = dayNum()) {
 
 // Which of `ids` are due now: cards with no saved state (new), plus saved cards due on or before today.
 // Order: the most overdue first, then new cards, so a session clears the backlog before adding more.
-export function dueCards(ids, review = {}, today = dayNum()) {
+// New cards come in batches of NEW_PER_SESSION, so finishing a few lessons (each adds its glossary terms) doesn't
+// greet the learner with 90 cards at once; the rest join the next session.
+export const NEW_PER_SESSION = 15;
+export function dueCards(ids, review = {}, today = dayNum(), newLimit = NEW_PER_SESSION) {
   const due = ids.filter(id => review[id] && review[id].due <= today).sort((a, b) => review[a].due - review[b].due);
-  const fresh = ids.filter(id => !review[id]);
+  const fresh = ids.filter(id => !review[id]).slice(0, Math.max(0, newLimit));
   return [...due, ...fresh];
 }
 

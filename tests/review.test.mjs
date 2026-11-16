@@ -1,7 +1,7 @@
 // Spaced-repetition scheduler tests. Run with:  node --test tests/review.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { schedule, dueCards, deckStats, nextDue, freshCard, dayNum } from "../static/js/review.js";
+import { schedule, dueCards, deckStats, nextDue, freshCard, dayNum, NEW_PER_SESSION } from "../static/js/review.js";
 
 test("good grade pushes the interval out on the SM-2 ladder", () => {
   const t = 1000;
@@ -53,4 +53,12 @@ test("dayNum advances by one each calendar day", () => {
   const a = dayNum(new Date("2026-03-01T23:30:00"));
   const b = dayNum(new Date("2026-03-02T00:30:00"));
   assert.equal(b - a, 1);
+});
+
+test("dueCards: new cards arrive in batches, due cards are never held back", () => {
+  const ids = Array.from({ length: 90 }, (_, i) => "t:" + i), review = { "t:0": { e: 2.5, i: 1, due: 3, reps: 1 } };
+  const q = dueCards(ids, review, 7);
+  assert.equal(q[0], "t:0");                                  // the overdue card first
+  assert.equal(q.length, 1 + NEW_PER_SESSION);                // then one batch of new cards, not all 89
+  assert.equal(dueCards(ids, review, 7, Infinity).length, 90);
 });
