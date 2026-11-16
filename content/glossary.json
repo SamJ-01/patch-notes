@@ -1041,7 +1041,7 @@
    "ATT&CK"
   ],
   "short": "A free, huge catalogue of real attacker techniques, used by defenders to check what they can and can't detect.",
-  "lesson": "nation-state"
+  "lesson": "attack-models"
  },
  {
   "id": "threat-intel",
@@ -5095,5 +5095,170 @@
   "auto": true,
   "short": "A legitimate command-line tool for copying files to and from cloud storage. Attackers abuse it to exfiltrate stolen data.",
   "lesson": "data-breach"
+ },
+ {
+  "id": "cyber-essentials",
+  "term": "Cyber Essentials",
+  "kind": "Governance",
+  "aliases": [
+   "Cyber Essentials",
+   "Cyber Essentials Plus"
+  ],
+  "auto": false,
+  "short": "The UK government-backed baseline certification: five controls (firewalls, secure configuration, security update management, user access control, malware protection). Plus adds a hands-on audit.",
+  "lesson": "frameworks",
+  "see": [
+   "nist-csf",
+   "iso-27001"
+  ]
+ },
+ {
+  "id": "cis-controls",
+  "term": "CIS Controls",
+  "kind": "Governance",
+  "aliases": [
+   "CIS Controls",
+   "CIS Critical Security Controls",
+   "Implementation Group 1",
+   "IG1"
+  ],
+  "auto": false,
+  "short": "18 prioritised controls from the Center for Internet Security. Implementation Group 1 is the essential starting set.",
+  "lesson": "frameworks",
+  "see": [
+   "nist-csf"
+  ]
+ },
+ {
+  "id": "risk-register",
+  "term": "Risk register",
+  "kind": "Governance",
+  "aliases": [
+   "risk register",
+   "risk registers"
+  ],
+  "auto": false,
+  "short": "The list of an organisation's risks, each with a score, an owner, a treatment and a review date.",
+  "lesson": "risk",
+  "see": [
+   "risk-appetite",
+   "residual-risk"
+  ]
+ },
+ {
+  "id": "risk-appetite",
+  "term": "Risk appetite",
+  "kind": "Governance",
+  "aliases": [
+   "risk appetite",
+   "risk tolerance"
+  ],
+  "auto": false,
+  "short": "How much risk leadership is willing to accept. Risks above it must be treated.",
+  "lesson": "risk",
+  "see": [
+   "risk-register"
+  ]
+ },
+ {
+  "id": "residual-risk",
+  "term": "Residual risk",
+  "kind": "Governance",
+  "aliases": [
+   "residual risk",
+   "inherent risk"
+  ],
+  "auto": false,
+  "short": "The risk left over after controls are in place (inherent risk is the risk before them).",
+  "lesson": "risk",
+  "see": [
+   "risk-register"
+  ]
+ },
+ {
+  "id": "computer-misuse-act",
+  "term": "Computer Misuse Act 1990",
+  "kind": "Governance",
+  "aliases": [
+   "Computer Misuse Act",
+   "CMA 1990"
+  ],
+  "auto": false,
+  "short": "The UK law that makes unauthorised access to computers, and impairing them, a crime. Authorisation is what matters.",
+  "lesson": "law",
+  "see": []
+ },
+ {
+  "id": "nis2",
+  "term": "NIS Regulations and NIS2",
+  "kind": "Governance",
+  "aliases": [
+   "NIS2",
+   "NIS Regulations",
+   "NIS Directive"
+  ],
+  "auto": false,
+  "short": "Rules requiring essential services (energy, transport, health and more) to manage cyber risk and report serious incidents. NIS2 is the EU's wider update.",
+  "lesson": "law",
+  "see": []
+ },
+ {
+  "id": "kill-chain",
+  "term": "Cyber Kill Chain",
+  "kind": "Governance",
+  "aliases": [
+   "Cyber Kill Chain",
+   "kill chain"
+  ],
+  "auto": false,
+  "short": "Lockheed Martin's seven stages of an intrusion, from reconnaissance to actions on objectives. Break one link and the attack fails.",
+  "lesson": "attack-models",
+  "see": [
+   "mitre-attack"
+  ]
+ },
+ {
+  "id": "diamond-model",
+  "term": "Diamond Model",
+  "kind": "Governance",
+  "aliases": [
+   "Diamond Model"
+  ],
+  "auto": false,
+  "short": "A model linking four parts of every intrusion event: adversary, capability, infrastructure and victim.",
+  "lesson": "attack-models",
+  "see": [
+   "kill-chain"
+  ]
+ },
+ {
+  "id": "stride",
+  "term": "STRIDE",
+  "kind": "Governance",
+  "aliases": [
+   "STRIDE"
+  ],
+  "auto": false,
+  "short": "A threat modelling checklist: spoofing, tampering, repudiation, information disclosure, denial of service, elevation of privilege.",
+  "lesson": "attack-models",
+  "see": [
+   "threat-modelling"
+  ]
+ },
+ {
+  "id": "threat-modelling",
+  "term": "Threat modelling",
+  "kind": "Governance",
+  "aliases": [
+   "threat modelling",
+   "threat model",
+   "threat modeling"
+  ],
+  "auto": false,
+  "short": "Working out what could go wrong with a system's design before it's built, and what to do about it.",
+  "lesson": "attack-models",
+  "see": [
+   "stride"
+  ]
  }
 ]

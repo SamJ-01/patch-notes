@@ -40,6 +40,21 @@ test("the MFA diagram shows the login and the phone, not just a moving dot", () 
   assert.equal(d.steps[1].screens.p.tone, "ask");
 });
 
+test("the MFA diagram follows the owner's choice: Approve lets the attacker in, Deny or no choice keeps them out", () => {
+  const d = diagrams.find(l => l.id === "identity").diagram;
+  assert.deepEqual(flow.validate(d), []);
+  const end = choice => flow.phonePath(d, choice).at(-1).screens;
+  assert.equal(end("approve").a.line, "Signed in", "approving the prompt ends with the attacker signed in");
+  assert.equal(end("approve").l.line, "Session created");
+  assert.equal(end("deny").a.line, "Access denied");
+  assert.equal(end(null).a.line, "Access denied", "pressing Next without choosing follows the owner refusing");
+  const k = flow.askIndex(d), approved = flow.phonePath(d, "approve");
+  assert.deepEqual(approved.slice(0, k + 1), d.steps.slice(0, k + 1), "both stories are the same up to the prompt");
+  assert.ok(approved.slice(k + 1).every(s => s.tone === "bad"), "the approve ending is the bad path");
+  assert.ok(approved.slice(k + 1).some(s => /number matching/i.test(s.stop)), "and says what stops MFA fatigue");
+  assert.ok(flow.validate({ ...d, scene: "stage" }).some(e => /approved branch/.test(e)), "an approve branch needs a phone prompt");
+});
+
 test("questions pointing at the diagram are answered by it", () => {
   for (const l of lessons) for (const c of l.checks) if (c.see === "diagram") assert.ok(l.diagram, l.id);
 });

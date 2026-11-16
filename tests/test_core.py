@@ -602,7 +602,8 @@ class SecurityControls(unittest.TestCase):
         for body in ("alert(1)", "\nlet x = 2;\n"):
             digest = base64.b64encode(hashlib.sha256(body.encode()).digest()).decode()
             self.assertIn(f"'sha256-{digest}'", meta)
-        self.assertNotIn("unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src", meta.split("script-src")[0])
+        self.assertNotIn("googleapis", meta, "fonts are served from this site, not a third party")
+        self.assertIn("font-src 'self'", meta)
         self.assertNotIn("'unsafe-inline'", re.search(r"script-src([^;]*)", meta).group(1), "scripts never allowed inline wholesale")
         self.assertIn("object-src 'none'", meta)
         static = build.with_csp('<meta charset="utf-8">\n<p>lesson</p>')
@@ -629,8 +630,23 @@ class QuizFairness(unittest.TestCase):
     def test_answer_position_is_shuffled_everywhere(self):
         """Most authored answers are option 2, so every quiz must mix its options before showing them."""
         page = build.assemble_template()
-        for use in ("mixOptions(pool[", "map(q => mixOptions(q))", "quizBlock(mixOptions(q)"):  # the daily question picks from a pool, then mixes
+        for use in ("mixOptions(pool[", "map(q => mixOptions(q))", "quizBlock(mixOptions(q)", "mixLabSteps(LAB[id])"):  # the daily question picks from a pool, then mixes; evidence labs mix too (answers were B 86% of the time)
             self.assertIn(use, page)
+
+
+class SecurityTxt(unittest.TestCase):
+    """A cyber security site publishes how to report a security problem (RFC 9116), and it never expires on a live site."""
+
+    def test_security_txt(self):
+        import datetime as dt
+        site = {"url": "https://example.org/", "feedback": "#feedback"}
+        txt = build.security_txt(site, today=dt.date(2026, 11, 16))
+        self.assertIn("Contact: https://example.org/#feedback\n", txt)
+        self.assertIn("Expires: 2027-11-16T00:00:00.000Z\n", txt)
+        self.assertIn("Canonical: https://example.org/.well-known/security.txt\n", txt)
+        self.assertNotIn("@", txt, "no email address published")
+        real = json.loads((ROOT / "content" / "site.json").read_text())
+        self.assertRegex(build.security_txt(real), r"Contact: https://")
 
 
 class FeedbackForm(unittest.TestCase):

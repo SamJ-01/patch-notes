@@ -53,7 +53,7 @@
       "certs": ["CompTIA Security+", "ISC2 CC", "ISO 27001 Foundation / Lead Implementer"],
       "start": ["Read the NIST Cybersecurity Framework 2.0", "Write a sample security policy for an imaginary company", "Do a risk assessment of a small business you know"],
       "titles": ["GRC Analyst", "Information Security Analyst", "Risk & Compliance Analyst"],
-      "lessons": ["vuln-management", "data-breach", "incident-response"]
+      "lessons": ["frameworks", "risk", "law", "attack-models"]
     }
   ],
   "directory": [

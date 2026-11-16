@@ -69,7 +69,7 @@ function pathCard(p) {
     <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(done / steps.length * 100)}%"></i></span><span>${done}/${steps.length}</span></div></a>`;
 }
 function pathView(id) {
-  const p = DATA.paths.find(x => x.id === id); if (!p) return VIEWS.learn();
+  const p = DATA.paths.find(x => x.id === id); if (!p) return notFound(VIEWS.learn);
   const steps = pathSteps(p), done = steps.filter(s => s.done).length;
   const career = p.career && DATA.careers.paths.find(c => c.id === p.career);
   main.innerHTML = `<div class="view"><article class="article">
@@ -107,6 +107,7 @@ VIEWS.exams = () => {
     <div class="view-head with-art">${headArt("exams")}<h1>Exam prep</h1>
       <p>CompTIA objectives mapped to what you can practise here, with practice questions, mock exams and an honest "Am I ready?" check.</p></div>
     <div class="row" style="justify-content:flex-end">${viewToggle()}</div>
+    <h2 class="sr-only">Certifications</h2>
     ${compact ? `<div class="learn-list">${DATA.certs.map(certRow).join("")}</div>` : `<div class="paths">${DATA.certs.map(certCard).join("")}</div>`}
     <p class="muted cert-note">The questions are original, not real exam questions. It's preparation, not a guarantee of passing.</p>
   </div>`;
@@ -211,9 +212,9 @@ function readinessPanel(c, progress) {
     const mock = r.lastMock ? `Last mock exam: <b>${r.lastMock.score}/${r.lastMock.total}</b> (${pctOf(r.mockPct)}%) on ${esc(new Date(r.lastMock.d + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }))}.` : r.qTotal ? "No mock exam yet." : "";
     el.innerHTML = `<div class="panel-title"><h2 id="ready-h">Am I ready?</h2><span class="eyebrow">${pctOf(r.overall)}% on what Patch Notes can check</span></div>
       <p class="ready-verdict ${tone}"><b>${esc(head)}.</b> ${esc(detail)}</p>
-      <ul class="ready-domains">${r.rows.map(x => `<li><span class="rd-name"><b class="mono">${esc(x.d.id)}</b> ${esc(x.d.name)} <span class="muted">${x.d.weight}% of the exam</span></span>
+      <details class="ready-each"${r.verdict === "start" ? "" : " open"}><summary>Each domain</summary><ul class="ready-domains">${r.rows.map(x => `<li><span class="rd-name"><b class="mono">${esc(x.d.id)}</b> ${esc(x.d.name)} <span class="muted">${x.d.weight}% of the exam</span></span>
         <span class="trk" aria-hidden="true"><i class="${x.score === null ? "" : readyTone(x.score)}" style="width:${pctOf(x.score)}%"></i></span>
-        <span class="rd-pct mono">${x.score === null ? "–" : pctOf(x.score) + "%"}</span><span class="muted rd-ev">${qLine(x)}${x.elsewhere ? ` · ${x.elsewhere} not taught here yet` : ""}</span></li>`).join("")}</ul>
+        <span class="rd-pct mono">${x.score === null ? "–" : pctOf(x.score) + "%"}</span><span class="muted rd-ev">${qLine(x)}${x.elsewhere ? ` · ${x.elsewhere} not taught here yet` : ""}</span></li>`).join("")}</ul></details>
       ${mock ? `<p class="muted" style="margin:0">${mock}</p>` : ""}
       ${r.plan.length ? `<h3 class="cert-h">Your study plan</h3><div class="try-list ready-plan">${r.plan.map(planRow).join("")}</div>` : ""}
       ${r.elsewhere && c.study ? `<p class="muted" style="margin:0">${r.elsewhere} objective${r.elsewhere === 1 ? " has" : "s have"} practice questions here but no lessons yet. Learn ${r.elsewhere === 1 ? "it" : "them"} with <a href="${esc(c.study.url)}" target="_blank" rel="noopener">${esc(c.study.label)} ↗</a>, then come back to test yourself.</p>` : ""}
@@ -221,7 +222,7 @@ function readinessPanel(c, progress) {
   }).catch(() => { const el = $("cert-ready"); if (el) el.innerHTML = `<div class="panel-title"><h2 id="ready-h">Am I ready?</h2></div><p class="muted" style="margin:0">Couldn't load the readiness check. Try reloading the page.</p>`; });
 }
 function certView(id) {
-  const c = DATA.certs.find(x => x.id === id); if (!c) return VIEWS.exams();
+  const c = DATA.certs.find(x => x.id === id); if (!c) return notFound(VIEWS.exams);
   const objs = certObjectives(c), cov = k => objs.filter(o => o.coverage === k).length;
   const progress = new Map(objs.map(o => [o.id, objectiveProgress(o)]));
   const practised = objs.filter(o => { const p = progress.get(o.id); return p.total && p.done === p.total; }).length;
@@ -239,11 +240,11 @@ function certView(id) {
       <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(practised / objs.length * 100)}%"></i></span></div>
       <p class="muted" style="margin:0">Coverage on Patch Notes: ${cov("strong")} with hands-on practice · ${cov("partial")} partly covered · ${cov("none")} not covered yet.</p>
     </section>
-    <section class="panel wide ready" id="cert-ready" aria-labelledby="ready-h"><div class="panel-title"><h2 id="ready-h">Am I ready?</h2></div><p class="muted" style="margin:0">Working it out…</p></section>
     ${c.questions.length ? `<section class="panel wide"><div class="panel-title"><h2>Practice questions</h2><span class="eyebrow">${c.questions.length} original questions · not real exam questions</span></div>
       <p class="muted" style="margin:0">Every answer explains why it's right or wrong. Your results mark each objective below as started, to revise, or all correct.</p>
       <div class="row"><button class="btn brand" type="button" data-practice="weak">Revise weak spots</button></div>
       ${mockOptions(c)}</section>` : ""}
+    <section class="panel wide ready" id="cert-ready" aria-labelledby="ready-h"><div class="panel-title"><h2 id="ready-h">Am I ready?</h2></div><p class="muted" style="margin:0">Working it out…</p></section>
     ${c.domains.map(d => `<section class="panel wide cert-domain"><div class="panel-title"><h2>${esc(d.id)} ${esc(d.name)}</h2><span class="eyebrow">${d.weight}% of the exam</span></div>
       <ul class="cert-list">${d.objectives.map(o => { const p = progress.get(o.id), [label, tone] = COVERAGE[o.coverage];
         return `<li class="cert-obj"><div class="cert-top"><b class="mono">${esc(o.id)}</b><span class="cert-title">${esc(o.title)}</span><span class="cert-badge ${tone}">${label}</span>${p.total ? `<span class="cert-done${p.done === p.total ? " ok" : ""}">${p.done}/${p.total} done</span>` : ""}${qCount(o.id) ? (() => { const m = objMastery(o.id), [ml, mt] = MASTERY_LABEL[m.level]; return `<span class="cert-badge ${mt}" title="${m.right} of ${m.total} questions right last time">Questions: ${ml}${m.answered ? ` ${m.right}/${m.total}` : ""}</span><button class="link-btn" type="button" data-practice-obj="${esc(o.id)}">Practise ${qCount(o.id)} ›</button>`; })() : ""}</div>
@@ -483,7 +484,7 @@ const ledeOf = text => {
   return { lede: parts.slice(0, 2).join(" ").trim(), more: parts.length > 2 };
 };
 function lessonView(id) {
-  const l = LESSON[id]; if (!l) return VIEWS.learn();
+  const l = LESSON[id]; if (!l) return notFound(VIEWS.learn);
   const internal = l.practice.url.startsWith("#");
   const ours = x => x.lesson === id || (x.also || []).includes(id);
   const practice = [...DATA.missions.filter(ours).map(m => ({ kind: "Mission", href: "#mission-" + m.id, title: m.title, sub: m.card || m.summary, min: m.minutes, done: count((P.missions || {})[m.id]) > 0 })),
@@ -513,9 +514,9 @@ function lessonView(id) {
     ${leadPicture ? seeBlock : ""}
     <section id="l-what" tabindex="-1"><p class="hook">${esc(l.hook)}</p><p>${gloss(lede.lede, 2, lseen)}</p>
       ${lede.more ? `<details class="more-what" id="l-what-more"><summary>Read the full explanation</summary><p>${gloss(l.what, 6, lseen)}</p></details>` : ""}</section>
-    ${l.tip ? `<aside class="qtip"><span class="qtip-k">★ Quick tip</span><p>${gloss(l.tip, 3, lseen)}</p></aside>` : ""}
+    ${l.tip ? `<div class="qtip" role="note"><span class="qtip-k">★ Quick tip</span><p>${gloss(l.tip, 3, lseen)}</p></div>` : ""}
     ${leadPicture ? "" : seeBlock}
-    <section class="case" id="l-example" tabindex="-1"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h3>${esc(l.example.title)}</h3><p>${gloss(l.example.text, 4, lseen)}</p>${l.example.source ? `<p class="muted" style="font-size:0.85rem">Source: <a href="${esc(l.example.source.url)}" target="_blank" rel="noopener">${esc(l.example.source.label)} ↗</a></p>` : ""}</section>
+    <section class="case" id="l-example" tabindex="-1"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h2 class="case-h">${esc(l.example.title)}</h2><p>${gloss(l.example.text, 4, lseen)}</p>${l.example.source ? `<p class="muted" style="font-size:0.85rem">Source: <a href="${esc(l.example.source.url)}" target="_blank" rel="noopener">${esc(l.example.source.label)} ↗</a></p>` : ""}</section>
     <section id="l-defend" tabindex="-1"><h2>How defenders stop it</h2><ul class="checklist">${l.defend.map(d => `<li>${esc(d)}</li>`).join("")}</ul></section>
     <section class="doc panel${practice.length > 1 ? " wide" : ""}"><h2>Try it</h2>
       ${practice.length ? `<div class="try-list">${practice.map(x => `<a class="try-row" href="${x.href}"><span class="eyebrow">${x.kind} · ${x.min} min${x.done ? ' · <span style="color:var(--good)">✓ done</span>' : ""}</span><b>${esc(x.title)}</b><span class="muted">${esc(x.sub)}</span></a>`).join("")}</div>` : ""}

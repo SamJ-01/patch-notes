@@ -364,5 +364,135 @@
     "id": "permissions"
    }
   ]
+ },
+ {
+  "id": "grc",
+  "title": "Path to GRC Analyst",
+  "blurb": "Governance, risk and compliance: frameworks, risk and the law, in practice.",
+  "career": "grc",
+  "steps": [
+   {
+    "type": "lesson",
+    "id": "security-controls"
+   },
+   {
+    "type": "lab",
+    "id": "name-the-control"
+   },
+   {
+    "type": "lesson",
+    "id": "frameworks"
+   },
+   {
+    "type": "lab",
+    "id": "frameworks-which-fits"
+   },
+   {
+    "type": "lab",
+    "id": "cyber-essentials-check"
+   },
+   {
+    "type": "lesson",
+    "id": "risk"
+   },
+   {
+    "type": "lab",
+    "id": "risk-register"
+   },
+   {
+    "type": "lesson",
+    "id": "law"
+   },
+   {
+    "type": "lab",
+    "id": "allowed-or-not"
+   },
+   {
+    "type": "lesson",
+    "id": "data-breach"
+   },
+   {
+    "type": "lab",
+    "id": "breach-clock"
+   },
+   {
+    "type": "lesson",
+    "id": "attack-models"
+   },
+   {
+    "type": "lab",
+    "id": "map-the-attack"
+   },
+   {
+    "type": "lab",
+    "id": "threat-model"
+   }
+  ]
+ },
+ {
+  "id": "it-support",
+  "title": "Path to IT Support",
+  "blurb": "The most common way in: networks, Linux, Wi-Fi and fixing what breaks.",
+  "career": "it-support",
+  "steps": [
+   {
+    "type": "lesson",
+    "id": "networking"
+   },
+   {
+    "type": "lab",
+    "id": "osi-model"
+   },
+   {
+    "type": "lab",
+    "id": "ports-protocols"
+   },
+   {
+    "type": "mission",
+    "id": "dhcp",
+    "mode": "practice"
+   },
+   {
+    "type": "mission",
+    "id": "dns",
+    "mode": "practice"
+   },
+   {
+    "type": "lesson",
+    "id": "wireless"
+   },
+   {
+    "type": "lab",
+    "id": "wifi-survey"
+   },
+   {
+    "type": "lesson",
+    "id": "linux"
+   },
+   {
+    "type": "lab",
+    "id": "linux-terminal"
+   },
+   {
+    "type": "lab",
+    "id": "permissions"
+   },
+   {
+    "type": "lesson",
+    "id": "identity"
+   },
+   {
+    "type": "lesson",
+    "id": "network-ops"
+   },
+   {
+    "type": "lab",
+    "id": "slow-network"
+   },
+   {
+    "type": "lesson",
+    "id": "phishing"
+   }
+  ]
  }
 ]

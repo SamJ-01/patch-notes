@@ -40,3 +40,55 @@ None. As of 12 November every file in `static/img/cards/` is unique (97 cards, 9
 If a picture is a poor match for its card, replace that one file only.
 
 Export 2:1, about 1200×600 webp, to `static/img/cards/<id>.webp`. Do not publish to production unless the owner asks.
+
+## To replace (audit, 15 November 2026)
+Found by a picture-similarity scan of all 97 card pictures and a look at them side by side. No new pictures yet: the image tool had no credits.
+
+Make them as two 2 x 3 grids, with an earlier grid attached as the style reference, using the prompt preamble in [image-style.md](image-style.md). Then crop to 2:1, about 1200 x 600, at `static/img/cards/<id>.webp`.
+
+**Grid A**
+
+| Card | Why it goes | Object | Light |
+|---|---|---|---|
+| cia-which-pillar | the same picture as cia-triad (a near-identical file) | three brass balance weights in a row on a shelf | desk lamp, shade in frame |
+| osint | teal wash with no source | a corkboard with blank index cards joined by string | desk lamp, shade in frame |
+| signin-spray | teal pool of light on the lanyard | a key rack of identical hooks, one key missing | LED on a door lock at the edge |
+| ai-security | teal wash across the wall | a smart speaker on a shelf | the speaker's own ring LED |
+| xss-review | a red pen: off palette | a fountain pen on a face-down printed card | desk lamp, shade in frame |
+| osi-model | abstract stripes, not a real object | a stack of seven thin slate coasters | desk lamp, shade in frame |
+
+**Grid B**
+
+| Card | Why it goes | Object | Light |
+|---|---|---|---|
+| vlans | two cable coils, almost the same shot as ddos-or-busy | patch leads tied into separate bundles at a switch | port LEDs |
+| slow-network | nearly black, nothing to see at card size | an hourglass beside a home router | router LED |
+| web-xss | nearly black | a tablet showing a blank web form | the screen (it is the subject) |
+| who-touched-the-file | nearly black | a fingerprint brush and powder beside a closed folder | desk lamp, shade in frame |
+| zero-trust-decision | nearly black | a security turnstile gate | LED on its card reader |
+| ddos-who-stops-it | nearly black | a rope crowd barrier on stanchions | downlight in frame |
+
+**For the owner's eye (not broken, but samey):** zero-day, zero-day-advisory, zero-day-or-known and trust-the-ai-output are all a blank sheet of paper on black; vishing-call and breach-clock carry a strong blue-teal cast.
+
+After replacing, add a similarity check to the `CardPictures` test (the current one only catches two cards pointing at the same file, which is how this pair slipped through).
+
+### Outcome (16 November 2026)
+Two Grok rounds. Kept only what matched the house look and brightness (average 21 to 25 against the site's 20), cropped but not recoloured:
+- **Replaced:** ai-security (smart speaker, its own ring light; cropped to drop a plant), ddos-who-stops-it (rope barrier in a dark corridor), slow-network (hourglass beside a router), zero-trust-decision (turnstile, reader LED; cropped to drop a white gutter).
+- **Not used:** the other eight. Round one was too bright and warm (desk lamps, brass, cork, props) and several ideas missed; round two had the right ideas but a grey-green haze over the whole frame and a soft rendered look, and `osi-model` had about ten slates instead of seven. Those cards keep their old pictures and stay on this list: cia-which-pillar (still the same picture as cia-triad), osint, signin-spray, xss-review, osi-model, vlans, web-xss, who-touched-the-file (about Linux file permissions, not forensics). Good ideas from round two to reuse: padlock + sealed letter + socket (CIA), one key in the first of a row of lockers (spray), three padlocks on one drawer (permissions), a note tucked under a review card (stored XSS), a sticky note over a form field (XSS).
+
+### Page headers and the network builder card (16 November 2026)
+- The Learn and Practise page headers were the withdrawn holographic style. Learn now uses the advisory-hunt lab picture (a clipboard on a dark desk) and Practise the linux lesson picture (a terminal cursor on a dark desk), each on the page where that card does not appear. Saved at 988 x 494 in `static/img/heads/`.
+- The network builder card had a teal LED on one patch-panel port (a lit dot with no reason). Removed: the port was rebuilt from its neighbour and the teal glow around it neutralised to the panel's own tone.
+- (The other six headers are covered in the next line.)
+- Later the same day the other six headers went too, each to a house-style card picture that page does not show: news ← soc (a monitor showing a list), cves ← patch-first, exams ← certificates (a ribboned folder), play ← play (dice), progress ← hashing (a stamp and ink pad), careers ← network-ops (a headset). Every header is now in the house look.
+
+### New cards waiting for photos (16 November 2026)
+The Governance track's seven cards use drawn scenes until photos are made in the house look (dark room, one real object, a light source in frame):
+- `risk`: a ledger or register book open on a desk, one line ruled off. Light: desk lamp edge.
+- `law`: a closed legal-style document with a seal, beside a laptop. Light: laptop screen edge.
+- `attack-models`: a chain of steel links on a desk, one link open. Light: a thin strip of light.
+- `cyber-essentials-check`: a clipboard with a five-item checklist (no readable text) by a small office router. Light: the router's LEDs.
+- `risk-register`: index cards in a tray, one pulled half out. Light: desk lamp edge.
+- `allowed-or-not`: a door with a keycard reader, the reader's light on. Light: the reader LED.
+- `threat-model`: a sheet of tracing paper over a printed plan, pencil beside it. Light: a lightbox under the paper.

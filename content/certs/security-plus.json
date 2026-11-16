@@ -768,14 +768,18 @@
       {
        "type": "lab",
        "id": "frameworks-which-fits"
+      },
+      {
+       "type": "lab",
+       "id": "cyber-essentials-check"
       }
      ],
-     "gap": "Frameworks are introduced and NIST CSF 2.0 functions are practised in a lab; policies, standards, procedures and roles are only in practice questions."
+     "gap": "NIST CSF 2.0, ISO 27001, the CIS Controls and Cyber Essentials are taught, and Cyber Essentials is checked hands-on; writing policies and governance roles are only in practice questions."
     },
     {
      "id": "5.2",
      "title": "Risk management",
-     "coverage": "partial",
+     "coverage": "strong",
      "activities": [
       {
        "type": "lesson",
@@ -784,9 +788,16 @@
       {
        "type": "lesson",
        "id": "network-ops"
+      },
+      {
+       "type": "lesson",
+       "id": "risk"
+      },
+      {
+       "type": "lab",
+       "id": "risk-register"
       }
-     ],
-     "gap": "Risk-based prioritisation and business impact (RTO, RPO) are taught; formal risk registers and analysis aren't."
+     ]
     },
     {
      "id": "5.3",
@@ -804,9 +815,13 @@
       {
        "type": "lab",
        "id": "which-dependency"
+      },
+      {
+       "type": "lab",
+       "id": "risk-register"
       }
      ],
-     "gap": "Supply chain attacks are taught and a typosquatted dependency is caught in a lab; vendor assessment and agreements are only in practice questions."
+     "gap": "Supply chain attacks and a typosquatted dependency are hands-on, and a supplier contract gap is spotted in the risk register lab; vendor assessment questionnaires are only in practice questions."
     },
     {
      "id": "5.4",
@@ -820,9 +835,17 @@
       {
        "type": "lab",
        "id": "breach-clock"
+      },
+      {
+       "type": "lesson",
+       "id": "law"
+      },
+      {
+       "type": "lab",
+       "id": "allowed-or-not"
       }
      ],
-     "gap": "UK GDPR breach reporting (the 72-hour clock, telling people, logging every breach) is practised in a lab; compliance monitoring isn't covered."
+     "gap": "UK GDPR, the Computer Misuse Act, NIS and PCI DSS are taught, with breach reporting and authorisation practised in labs; compliance monitoring and reporting aren't covered."
     },
     {
      "id": "5.5",
@@ -836,9 +859,13 @@
       {
        "type": "lab",
        "id": "validate-findings"
+      },
+      {
+       "type": "lab",
+       "id": "cyber-essentials-check"
       }
      ],
-     "gap": "Penetration test scoping and validating findings are hands-on; audits and attestation are only in practice questions."
+     "gap": "Penetration test scoping, validating findings and a Cyber Essentials readiness check are hands-on; internal and external audits are only in practice questions."
     },
     {
      "id": "5.6",

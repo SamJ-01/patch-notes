@@ -5,7 +5,7 @@
  "minutes": 15,
  "lesson": "soc",
  "scene": "room",
- "category": "Security operations",
+ "category": "SOC & incident response",
  "summary": "Overnight SSH alerts on a Linux server: search auth.log, find the one login that worked, contain the attacker and prove how they got in.",
  "card": "Overnight SSH alerts: did anyone get in?",
  "simplification": "Simplified simulation: a real brute-force run is often thousands of guesses from many addresses, so this log is cut down to stay readable. Log lines follow Ubuntu 22.04's OpenSSH and sudo formats; the IP addresses are reserved documentation ranges.",

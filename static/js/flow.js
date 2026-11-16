@@ -58,7 +58,8 @@ export function validate(d) {
     if (!n.label) errors.push(`node ${n.id}: missing label`);
   }
   if (d?.scene && d.scene !== "screens" && d.scene !== "stage" && d.scene !== "route") errors.push(`unknown scene "${d.scene}"`);
-  (d?.steps || []).forEach((s, i) => {
+  if (d?.approved && (d.scene !== "screens" || askIndex(d) < 0)) errors.push("an approved branch needs a screens scene with an ask step");
+  [...(d?.steps || []), ...(d?.approved || [])].forEach((s, i) => {
     if (!ids.has(s.from) || !ids.has(s.to)) errors.push(`step ${i + 1}: unknown node`);
     if (s.from === s.to) errors.push(`step ${i + 1}: from and to are the same`);
     if (!s.msg || !s.text) errors.push(`step ${i + 1}: needs msg and text`);
@@ -87,6 +88,14 @@ export function validate(d) {
   });
   if (!(d?.steps || []).length) errors.push("no steps");
   return errors;
+}
+
+// The MFA phone story branches on the owner's choice at its "ask" step: Approve follows d.approved (the attacker
+// gets in); Deny, no choice or just pressing Next follows the main steps (the owner refuses).
+export const askIndex = d => (d?.steps || []).findIndex(s => s.screens?.p?.tone === "ask");
+export function phonePath(d, choice) {
+  const k = askIndex(d);
+  return choice === "approve" && k >= 0 && d.approved?.length ? [...d.steps.slice(0, k + 1), ...d.approved] : d.steps;
 }
 
 // One step as a sentence, for the caption and the text version.
@@ -278,7 +287,9 @@ function mountRoute(el, d) {
 // The MFA lesson is one object: the sign-in, then the phone, then what the owner chose.
 function mountPhone(el, d) {
   let i = 0, choice = null;
-  const askStep = d.steps.findIndex(s => s.screens?.p?.tone === "ask");
+  const askStep = askIndex(d);
+  const path = () => phonePath(d, choice);  // the steps for the owner's choice so far
+  const asText = steps => steps.map((_, k) => { const s = describe({ ...d, steps }, k); return `<li><b>${esc(s.who)}</b>: ${esc(s.msg)}. ${esc(s.text)}${s.stop ? ` <em>Stopped by: ${esc(s.stop)}</em>` : ""}</li>`; }).join("");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   el.innerHTML = `<figure class="flow is-stage">
     <figcaption class="flow-title">${esc(d.title)}</figcaption>
@@ -289,14 +300,14 @@ function mountPhone(el, d) {
       <button class="btn brand" type="button" data-go="1">Next step ›</button>
       <button class="btn ghost" type="button" data-go="0">↺ Start again</button>
     </div>
-    <details class="flow-text"><summary>All steps as text</summary><ol>${d.steps.map((_, k) => { const s = describe(d, k); return `<li><b>${esc(s.who)}</b>: ${esc(s.msg)}. ${esc(s.text)}${s.stop ? ` <em>Stopped by: ${esc(s.stop)}</em>` : ""}</li>`; }).join("")}</ol></details>
+    <details class="flow-text"><summary>All steps as text</summary><ol>${asText(d.steps)}</ol>${d.approved?.length ? `<p>If the owner taps Approve instead:</p><ol start="${askStep + 2}">${asText(d.approved)}</ol>` : ""}</details>
   </figure>`;
   const card = el.querySelector("[data-stage]");
   const box = el.querySelector(".flow-step");
   const view = () => {
-    if (choice === "deny") return { tone: "stop", kicker: "Phone", rows: [{ k: "Prompt", v: "Denied" }, { k: "Session", v: "none" }] };
-    if (choice === "approve") return { tone: "bad", kicker: "Phone", rows: [{ k: "Prompt", v: "Approved" }, { k: "Session", v: "created" }] };
-    const s = d.steps[i], phone = s.screens?.p, login = s.screens?.a;
+    if (i === askStep && choice === "deny") return { tone: "stop", kicker: "Phone", rows: [{ k: "Prompt", v: "Denied" }, { k: "Session", v: "none" }], ask: true };
+    if (i === askStep && choice === "approve") return { tone: "bad", kicker: "Phone", rows: [{ k: "Prompt", v: "Approved" }, { k: "Session", v: "created" }], ask: true };
+    const s = path()[i], phone = s.screens?.p, login = s.screens?.a;
     if (phone?.tone === "ask") return { tone: "", kicker: "Phone", line: phone.line, ask: true };
     if (i === 0) return { tone: "bad", kicker: "Sign in", rows: [{ k: "Password", v: "accepted" }, { k: "Second factor", v: "still required", bad: true }] };
     const dest = s.screens?.[s.to] || login;
@@ -306,23 +317,23 @@ function mountPhone(el, d) {
   function draw(dir) {
     const v = view();
     card.className = "stage-card" + (v.tone ? " " + v.tone : "");
-    const buttons = (v.ask || choice) ? `<span class="flow-choice"><button type="button" data-act="deny" aria-pressed="${choice === "deny"}">Deny</button><button type="button" data-act="approve" aria-pressed="${choice === "approve"}">Approve</button></span>` : "";
+    const buttons = v.ask ? `<span class="flow-choice"><button type="button" data-act="deny" aria-pressed="${choice === "deny"}">Deny</button><button type="button" data-act="approve" aria-pressed="${choice === "approve"}">Approve</button></span>` : "";
     const body = v.rows ? v.rows.map(r => `<p class="obj-row${r.bad ? " bad" : ""}"><span>${esc(r.k)}</span><b>${esc(r.v)}</b></p>`).join("") : `<p class="stage-line">${esc(v.line || "")}</p>`;
     card.innerHTML = `<div class="obj field"><span class="mech-k">${esc(v.kicker)}</span>${body}${buttons}</div>`;
-    const t = describe(d, choice ? askStep : i);
-    box.innerHTML = choice
-      ? `<div class="eyebrow">Path: ${choice}</div><p>${choice === "deny" ? "The owner refuses. The password was not enough." : "The owner approves. That is the path the second factor is there to stop."}</p>`
-      : `<div class="eyebrow">Step ${i + 1} of ${d.steps.length}</div><p>${gl(t.text, 2)}</p>${t.stop ? `<p class="flow-stop"><b>How it's stopped here:</b> ${esc(t.stop)}</p>` : ""}`;
+    const steps = path(), t = describe({ ...d, steps }, i);
+    box.innerHTML = i === askStep && choice
+      ? `<div class="eyebrow">Step ${i + 1} of ${steps.length} · You chose ${choice === "deny" ? "Deny" : "Approve"}</div><p>${choice === "deny" ? "The owner refuses. Press Next to see what the attacker gets." : "The owner approves. Press Next to see what that lets the attacker do."}</p>`
+      : `<div class="eyebrow">Step ${i + 1} of ${steps.length}</div><p>${gl(t.text, 2)}</p>${t.stop ? `<p class="flow-stop"><b>How it's stopped here:</b> ${esc(t.stop)}</p>` : ""}`;
     if (!reduced && dir) {
       card.classList.remove("is-in");
       card.dataset.dir = dir > 0 ? "next" : "back";
       void card.offsetWidth;
       card.classList.add("is-in");
     }
-    el.querySelector('[data-go="-1"]').disabled = i === 0 && !choice;
-    const next = el.querySelector('[data-go="1"]');
-    next.disabled = i === d.steps.length - 1;
-    next.textContent = i === d.steps.length - 1 ? "End of the flow" : "Next step ›";
+    el.querySelector('[data-go="-1"]').disabled = i === 0;
+    const next = el.querySelector('[data-go="1"]'), last = i === steps.length - 1;
+    next.disabled = last;
+    next.textContent = last ? "End of the flow" : "Next step ›";
   }
   el.addEventListener("click", e => {
     const act = e.target.closest("[data-act]")?.dataset.act;
@@ -335,8 +346,9 @@ function mountPhone(el, d) {
     const b = e.target.closest("[data-go]"); if (!b) return;
     const go = Number(b.dataset.go);
     const prev = i;
+    // The choice stands while you go on from it (or come back to it); going back before the prompt clears it.
     if (go === 0) { i = 0; choice = null; }
-    else { choice = null; i = Math.max(0, Math.min(d.steps.length - 1, i + go)); }
+    else { i = Math.max(0, Math.min(path().length - 1, i + go)); if (i < askStep) choice = null; }
     draw(i === prev ? 0 : 1);
   });
   draw(0);

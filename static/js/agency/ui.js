@@ -140,13 +140,14 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
     // same facts for screen readers). Reads live state only, so it never drives the shift.
     const closedN = Math.max(0, pr.arrived - pr.open);
     const sevRank = { critical: 4, high: 3, medium: 2, low: 1 };
-    const topSev = state.arrived.filter(id => !(id in state.closed)).map(id => A.alertById(shift, id)?.severity)
-      .filter(Boolean).sort((a, b) => (sevRank[b] || 0) - (sevRank[a] || 0))[0];
+    const openSev = state.arrived.filter(id => !(id in state.closed)).map(id => A.alertById(shift, id)?.severity).filter(Boolean);
+    const topSev = openSev.slice().sort((a, b) => (sevRank[b] || 0) - (sevRank[a] || 0))[0];
+    const topN = openSev.filter(x => x === topSev).length;  // how many open alerts share it, so the tile visibly changes as they close
     const tile = (label, value, tone) => `<div class="ag-tile${tone ? " " + tone : ""}"><span class="ag-tile-v">${esc(String(value))}</span><span class="ag-tile-l">${esc(label)}</span></div>`;
     $("ag-stats").innerHTML =
       tile("Open", pr.open, pr.open ? "hot" : "cool") +
       tile("Closed", closedN, closedN ? "good" : "") +
-      tile("Top severity", topSev ? topSev[0].toUpperCase() + topSev.slice(1) : "None", topSev ? "sev-" + topSev : "cool") +
+      tile("Most urgent still open", topSev ? `${topN} ${topSev[0].toUpperCase() + topSev.slice(1)}` : "None", topSev ? "sev-" + topSev : "cool") +
       tile("Shift time", clockAt(state.clock), "");
     $("ag-queue").innerHTML = state.arrived.map(id => {
       const a = A.alertById(shift, id), closed = id in state.closed;

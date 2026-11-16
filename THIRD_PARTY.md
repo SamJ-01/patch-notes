@@ -3,7 +3,7 @@
 Patch Notes' own code and original content are © 2026 SamJ-01, all rights reserved (see [COPYRIGHT](COPYRIGHT)).
 Everything below belongs to its respective owners and is used under their terms.
 
-## Fonts (loaded from Google Fonts)
+## Fonts (served from this site, `static/fonts/`; originally from Google Fonts)
 
 | Font | Licence |
 |---|---|

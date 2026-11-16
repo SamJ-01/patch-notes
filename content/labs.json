@@ -2777,7 +2777,7 @@
  {
   "id": "telnet-ssh",
   "kind": "wiretap",
-  "category": "Networking",
+  "category": "Network security",
   "track": "Networking",
   "minutes": 6,
   "lesson": "encryption",
@@ -2800,7 +2800,7 @@
  },
  {
   "id": "wifi-survey",
-  "category": "Networking",
+  "category": "Network security",
   "track": "Networking",
   "minutes": 12,
   "lesson": "wireless",
@@ -2949,7 +2949,7 @@
  {
   "id": "vlans",
   "kind": "vlan",
-  "category": "Networking",
+  "category": "Network security",
   "track": "Networking",
   "minutes": 25,
   "lesson": "networking",
@@ -3319,7 +3319,7 @@
  {
   "id": "intervlan",
   "kind": "vlan",
-  "category": "Networking",
+  "category": "Network security",
   "track": "Networking",
   "minutes": 25,
   "lesson": "networking",
@@ -5020,7 +5020,7 @@
     "explain": "Contain first: stop the attacker's access and spread, but keep the evidence. 198.51.100.7 was just a user mistyping a password before logging in normally."
    }
   ],
-  "category": "Security operations",
+  "category": "SOC & incident response",
   "card": "Find the attack in a Linux auth log",
   "also": [
    "incident-response"
@@ -5095,7 +5095,7 @@
     "where": "dmarc="
    }
   ],
-  "category": "Security operations",
+  "category": "Identity & email",
   "card": "Spot a spoofed email from its headers",
   "primer": {
    "title": "Before you start: the three checks",
@@ -5166,7 +5166,7 @@
     "target": "AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
    }
   ],
-  "category": "Security operations",
+  "category": "Vulnerabilities",
   "card": "Turn a bug report into a CVSS score"
  },
  {
@@ -5661,7 +5661,7 @@
  {
   "id": "sqli-log",
   "kind": "log",
-  "category": "Security operations",
+  "category": "Web & cloud",
   "track": "Web security",
   "minutes": 10,
   "lesson": "web-sqli",
@@ -5803,7 +5803,7 @@
  {
   "id": "xss-review",
   "kind": "log",
-  "category": "Security operations",
+  "category": "Web & cloud",
   "track": "Web security",
   "minutes": 10,
   "lesson": "web-xss",
@@ -5911,7 +5911,7 @@
  {
   "id": "idor-log",
   "kind": "log",
-  "category": "Security operations",
+  "category": "Web & cloud",
   "track": "Web security",
   "minutes": 8,
   "lesson": "web-access",
@@ -6010,7 +6010,7 @@
  {
   "id": "ransomware-timeline",
   "kind": "log",
-  "category": "Security operations",
+  "category": "SOC & incident response",
   "track": "SOC",
   "minutes": 10,
   "lesson": "ransomware",
@@ -6109,7 +6109,7 @@
  {
   "id": "malware-tree",
   "kind": "log",
-  "category": "Security operations",
+  "category": "SOC & incident response",
   "track": "SOC",
   "minutes": 10,
   "lesson": "malware",
@@ -6221,7 +6221,7 @@
  {
   "id": "ddos-or-busy",
   "kind": "log",
-  "category": "Security operations",
+  "category": "SOC & incident response",
   "track": "SOC",
   "minutes": 8,
   "lesson": "ddos",
@@ -6349,7 +6349,7 @@
  {
   "id": "open-bucket",
   "kind": "log",
-  "category": "Security operations",
+  "category": "Web & cloud",
   "track": "Cloud",
   "minutes": 10,
   "lesson": "cloud",
@@ -6447,7 +6447,7 @@
  {
   "id": "cert-check",
   "kind": "log",
-  "category": "Security operations",
+  "category": "Cryptography",
   "track": "Foundations",
   "minutes": 8,
   "lesson": "certificates",
@@ -6549,7 +6549,7 @@
  {
   "id": "signin-spray",
   "kind": "log",
-  "category": "Security operations",
+  "category": "Identity & email",
   "track": "SOC",
   "minutes": 8,
   "lesson": "identity",
@@ -6653,7 +6653,7 @@
  {
   "id": "typosquat-pr",
   "kind": "log",
-  "category": "Security operations",
+  "category": "Web & cloud",
   "track": "Vulnerability management",
   "minutes": 8,
   "lesson": "supply-chain",
@@ -6751,7 +6751,7 @@
  {
   "id": "cia-incidents",
   "kind": "doc",
-  "category": "Security operations",
+  "category": "Governance",
   "track": "Foundations",
   "minutes": 7,
   "lesson": "cia-triad",
@@ -6849,7 +6849,7 @@
  {
   "id": "name-the-control",
   "kind": "doc",
-  "category": "Security operations",
+  "category": "Governance",
   "track": "Foundations",
   "minutes": 8,
   "lesson": "security-controls",
@@ -6965,7 +6965,7 @@
  {
   "id": "map-the-attack",
   "kind": "doc",
-  "category": "Security operations",
+  "category": "Governance",
   "track": "SOC",
   "minutes": 8,
   "lesson": "frameworks",
@@ -7089,7 +7089,7 @@
  {
   "id": "zero-day-advisory",
   "kind": "doc",
-  "category": "Security operations",
+  "category": "Vulnerabilities",
   "track": "Vulnerability management",
   "minutes": 8,
   "lesson": "zero-day",
@@ -7186,7 +7186,7 @@
  {
   "id": "breach-clock",
   "kind": "doc",
-  "category": "Security operations",
+  "category": "Governance",
   "track": "Foundations",
   "minutes": 8,
   "lesson": "data-breach",
@@ -7295,7 +7295,7 @@
  {
   "id": "advisory-hunt",
   "kind": "log",
-  "category": "Security operations",
+  "category": "SOC & incident response",
   "track": "SOC",
   "minutes": 10,
   "lesson": "nation-state",
@@ -7396,7 +7396,7 @@
  {
   "id": "prompt-injection",
   "kind": "log",
-  "category": "Security operations",
+  "category": "Web & cloud",
   "track": "Web security",
   "minutes": 8,
   "lesson": "ai-security",
@@ -7494,7 +7494,7 @@
  {
   "id": "factory-scan",
   "kind": "log",
-  "category": "Security operations",
+  "category": "Vulnerabilities",
   "track": "Networking",
   "minutes": 10,
   "lesson": "iot-ot",
@@ -7594,7 +7594,7 @@
  {
   "id": "cia-which-pillar",
   "kind": "doc",
-  "category": "Security operations",
+  "category": "Governance",
   "track": "Foundations",
   "minutes": 6,
   "lesson": "cia-triad",
@@ -7697,7 +7697,7 @@
  {
   "id": "frameworks-which-fits",
   "kind": "doc",
-  "category": "Security operations",
+  "category": "Governance",
   "track": "Foundations",
   "minutes": 7,
   "lesson": "frameworks",
@@ -7806,7 +7806,7 @@
  {
   "id": "controls-what-was-missing",
   "kind": "doc",
-  "category": "Security operations",
+  "category": "Governance",
   "track": "Foundations",
   "minutes": 7,
   "lesson": "security-controls",
@@ -7920,7 +7920,7 @@
  {
   "id": "zero-day-or-known",
   "kind": "doc",
-  "category": "Security operations",
+  "category": "Vulnerabilities",
   "track": "Vulnerability management",
   "minutes": 7,
   "lesson": "zero-day",
@@ -8006,7 +8006,7 @@
  {
   "id": "patch-first",
   "kind": "log",
-  "category": "Security operations",
+  "category": "Vulnerabilities",
   "track": "Vulnerability management",
   "minutes": 8,
   "lesson": "vuln-management",
@@ -8121,7 +8121,7 @@
  {
   "id": "which-dependency",
   "kind": "log",
-  "category": "Security operations",
+  "category": "Web & cloud",
   "track": "SOC",
   "minutes": 7,
   "lesson": "supply-chain",
@@ -8212,7 +8212,7 @@
  {
   "id": "apt-or-smash-grab",
   "kind": "doc",
-  "category": "Security operations",
+  "category": "SOC & incident response",
   "track": "SOC",
   "minutes": 7,
   "lesson": "nation-state",
@@ -8298,7 +8298,7 @@
  {
   "id": "ddos-who-stops-it",
   "kind": "log",
-  "category": "Security operations",
+  "category": "SOC & incident response",
   "track": "SOC",
   "minutes": 7,
   "lesson": "ddos",
@@ -8409,7 +8409,7 @@
  {
   "id": "trust-the-ai-output",
   "kind": "doc",
-  "category": "Security operations",
+  "category": "Web & cloud",
   "track": "SOC",
   "minutes": 7,
   "lesson": "ai-security",
@@ -8500,7 +8500,7 @@
  {
   "id": "ot-patch-window",
   "kind": "doc",
-  "category": "Security operations",
+  "category": "Vulnerabilities",
   "track": "SOC",
   "minutes": 7,
   "lesson": "iot-ot",
@@ -8596,7 +8596,7 @@
  {
   "id": "rogue-or-misconfig",
   "kind": "log",
-  "category": "Networking",
+  "category": "Network security",
   "track": "Networking",
   "minutes": 7,
   "lesson": "wireless",
@@ -8667,7 +8667,7 @@
  {
   "id": "change-broke-it",
   "kind": "doc",
-  "category": "Networking",
+  "category": "Network security",
   "track": "Networking",
   "minutes": 7,
   "lesson": "network-ops",
@@ -8763,7 +8763,7 @@
  {
   "id": "zero-trust-decision",
   "kind": "log",
-  "category": "Networking",
+  "category": "Network security",
   "track": "Networking",
   "minutes": 7,
   "lesson": "network-modern",
@@ -9160,7 +9160,7 @@
   "id": "port-corridor",
   "title": "The Port Corridor",
   "kind": "corridor",
-  "category": "Networking",
+  "category": "Network security",
   "track": "Networking",
   "minutes": 8,
   "lesson": "networking",
@@ -9280,7 +9280,7 @@
   "id": "firewall-packet",
   "title": "You Are the Packet",
   "kind": "firewall",
-  "category": "Networking",
+  "category": "Network security",
   "track": "Networking",
   "minutes": 8,
   "lesson": "networking",
@@ -9375,7 +9375,7 @@
   "id": "vishing-call",
   "title": "The Call",
   "kind": "vishing",
-  "category": "Threats",
+  "category": "Identity & email",
   "track": "Security",
   "minutes": 6,
   "lesson": "phishing",
@@ -9494,5 +9494,433 @@
    "title": "The red flags on this call",
    "safeLine": "On any call like this: slow down, hang up, and call the organisation back on a number you look up yourself. A real service desk never needs your password, never needs a one-time code, and will not mind you ringing back to check."
   }
+ },
+ {
+  "id": "cyber-essentials-check",
+  "kind": "doc",
+  "category": "Governance",
+  "track": "Governance",
+  "minutes": 10,
+  "lesson": "frameworks",
+  "title": "Would they pass Cyber Essentials?",
+  "skill": "Check a small business against Cyber Essentials' five controls",
+  "card": "Five controls, one honest answer",
+  "intro": "Pellow & Finch, your Agency client, wants Cyber Essentials so it can bid for a council contract. Read the IT summary and find what would fail.",
+  "artifact": {
+   "kind": "doc",
+   "name": "IT summary",
+   "text": "IT SUMMARY: Cyber Essentials readiness\nClient: Pellow & Finch Logistics (fictional), 38 staff, one office and one warehouse\nPrepared by: Lanternfield Security Operations (fictional), 16 Nov 2026\nSimplified: the real self-assessment asks far more questions; this covers the main points.\n\nBOUNDARY FIREWALLS\n  Office router: firewall on; admin page reachable only from the office network\n  Office router admin password: changed from the default in 2024\n  Warehouse router: admin password is still the default printed on the label\n  Inbound rule: port 3389 (Remote Desktop) open to the whole internet for one supplier; no record of why\n\nSECURE CONFIGURATION\n  Laptops: built from a standard image, unused software removed, auto-run disabled\n  Laptops lock after 10 minutes\n  File server FS01: a test account 'temp1' with no password\n\nSECURITY UPDATE MANAGEMENT\n  Windows 11 laptops: updates install automatically\n  VPN appliance: critical fix (CVSS 9.8) released 1 Oct 2026, installed 3 Nov 2026\n  Warehouse PC: Windows 10, out of support since 14 October 2025, no extended updates bought\n\nUSER ACCESS CONTROL\n  Staff use standard accounts; 2 IT staff have separate admin accounts\n  Microsoft 365: multi-factor authentication on for all staff\n  Leavers: accounts disabled the same day\n\nMALWARE PROTECTION\n  Microsoft Defender Antivirus on every laptop and PC, updating daily"
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "The warehouse router still has its default admin password. Which control does that fail?",
+    "options": [
+     "Firewalls: default admin passwords must be changed",
+     "Malware protection",
+     "User access control only",
+     "None: it's only the warehouse"
+    ],
+    "answer": 0,
+    "explain": "Every boundary firewall or router in scope needs its default password replaced with a strong one. The printed label is the first thing an attacker tries.",
+    "where": "default printed on the label"
+   },
+   {
+    "type": "choice",
+    "q": "The VPN fix was rated critical. Was it installed in time?",
+    "options": [
+     "No: Cyber Essentials expects high and critical fixes within 14 days of release, and this took 33",
+     "Yes: it went in within the month",
+     "Yes: VPNs are out of scope",
+     "Only if nobody exploited it"
+    ],
+    "answer": 0,
+    "explain": "High and critical updates (CVSS 7 and above) must be applied within 14 days. VPN appliances face the internet, so they are often attacked within days of a fix.",
+    "where": "installed 3 Nov 2026"
+   },
+   {
+    "type": "choice",
+    "q": "What should happen to the warehouse PC?",
+    "options": [
+     "Upgrade or replace it, or isolate it so it is out of scope: unsupported software fails",
+     "Nothing: it still works",
+     "Install a second antivirus",
+     "Turn off automatic updates"
+    ],
+    "answer": 0,
+    "explain": "Software in scope must be supported and receiving security updates. An out-of-support PC either gets upgraded, replaced, or moved to a separate network outside the scope.",
+    "where": "out of support since 14 October 2025"
+   },
+   {
+    "type": "text",
+    "q": "Which account would fail secure configuration?",
+    "answers": [
+     "temp1"
+    ],
+    "hint": "Look under SECURE CONFIGURATION.",
+    "explain": "Accounts that aren't needed should be removed, and every account needs a strong password or other protection. A passwordless test account on a file server fails both.",
+    "where": "temp1"
+   },
+   {
+    "type": "choice",
+    "q": "Remote Desktop is open to the whole internet with no record of why. What does Cyber Essentials expect?",
+    "options": [
+     "Close it, or record an approved business need and restrict it, for example to the supplier's address",
+     "Leave it: the firewall is on",
+     "Move it to port 3390",
+     "Allow it only at night"
+    ],
+    "answer": 0,
+    "explain": "Inbound connections are blocked by default. Any opening needs an approved, documented reason, and should be as narrow as possible and removed when no longer needed.",
+    "where": "3389"
+   },
+   {
+    "type": "choice",
+    "q": "Which control is in good shape?",
+    "options": [
+     "User access control: standard accounts, separate admin accounts, MFA and same-day leavers",
+     "Security update management",
+     "Firewalls",
+     "None of them"
+    ],
+    "answer": 0,
+    "explain": "Separate admin accounts, MFA on cloud services and prompt removal of leavers are exactly what the user access control requirement asks for.",
+    "where": "separate admin accounts"
+   },
+   {
+    "type": "choice",
+    "q": "What does Cyber Essentials Plus add to the basic certification?",
+    "options": [
+     "A hands-on technical audit by an assessor",
+     "A longer questionnaire",
+     "A penetration test of every system",
+     "Nothing: it's another name for the same thing"
+    ],
+    "answer": 0,
+    "explain": "Basic is a self-assessment checked by a certification body. Plus adds an assessor testing a sample of devices, for example that malware is blocked and updates are installed."
+   }
+  ]
+ },
+ {
+  "id": "risk-register",
+  "kind": "doc",
+  "category": "Governance",
+  "track": "Governance",
+  "minutes": 10,
+  "lesson": "risk",
+  "title": "Build the risk register",
+  "skill": "Score, rank and treat risks like a GRC analyst",
+  "card": "Likelihood × impact, then decide",
+  "intro": "Halstead & Rowe has asked for help with its risk register. Score each risk, find the ones above the appetite, and choose what to do.",
+  "artifact": {
+   "kind": "doc",
+   "name": "Risk register (draft)",
+   "text": "RISK REGISTER (draft): Halstead & Rowe, accountants (fictional)\nRegister owner: Marcus Bell, Practice Manager. Reviewed 16 Nov 2026\nScale: likelihood 1 (rare) to 5 (almost certain) × impact 1 (minor) to 5 (severe)\nRisk appetite: anything scoring 15 or more must be treated this quarter\n\nR1  Ransomware encrypts the file server            L 4  I 5   Owner: Marcus Bell\nR2  A laptop is left on a train                    L 3  I 3   Owner: Sana Iqbal (IT)\nR3  The basement server room floods                L 1  I 5   Owner: Marcus Bell\nR4  The payroll supplier is breached               L 2  I 4   Owner: Priya Shah (Finance)\nR5  Staff email client files to the wrong person   L 4  I 3   Owner: Sana Iqbal (IT)\n\nNOTES\n  R1: backups run nightly to a NAS in the same room; no offline copy\n  R2: every laptop has full-disk encryption (BitLocker)\n  R3: the insurance policy covers flood damage\n  R4: the supplier holds ISO 27001; the contract has no breach-notification clause\n  R5: Outlook gives no warning when a recipient is outside the firm"
+  },
+  "steps": [
+   {
+    "type": "text",
+    "q": "What does R1 score (likelihood × impact)?",
+    "answers": [
+     "20"
+    ],
+    "hint": "R1 is L 4 and I 5.",
+    "explain": "4 × 5 = 20 out of 25: almost certain and severe. It goes to the top of the list.",
+    "where": "L 4  I 5"
+   },
+   {
+    "type": "choice",
+    "q": "Which risks are at or above the appetite and must be treated this quarter?",
+    "options": [
+     "R1 (20) only",
+     "R1 (20) and R5 (12)",
+     "R1, R2 and R5",
+     "All five"
+    ],
+    "answer": 0,
+    "explain": "R1 scores 20, R5 12, R2 9, R4 8 and R3 5. Only R1 reaches 15. The others still need owners and review dates.",
+    "where": "15 or more"
+   },
+   {
+    "type": "choice",
+    "q": "What is the best way to bring R1 down?",
+    "options": [
+     "Mitigate: keep an offline or immutable backup copy and test restoring it",
+     "Accept it: backups already run",
+     "Transfer it by moving the NAS",
+     "Avoid it by not using a file server"
+    ],
+    "answer": 0,
+    "explain": "Ransomware usually encrypts any backup it can reach, and the NAS sits on the same network. An offline or immutable copy, restored in a test, is what lowers the impact.",
+    "where": "no offline copy"
+   },
+   {
+    "type": "choice",
+    "q": "R3 is covered by the insurance policy. Which treatment is that?",
+    "options": [
+     "Transfer",
+     "Mitigate",
+     "Avoid",
+     "Accept"
+    ],
+    "answer": 0,
+    "explain": "Insurance transfers the cost. The servers would still be under water, so a plan to recover elsewhere may still be worth having.",
+    "where": "covers flood damage"
+   },
+   {
+    "type": "choice",
+    "q": "R2 scores 9 and every laptop is encrypted. What is a sensible decision?",
+    "options": [
+     "Accept the residual risk, on record, and review it later",
+     "Ban all travel",
+     "Insure every laptop",
+     "Delete R2 from the register"
+    ],
+    "answer": 0,
+    "explain": "Encryption means a lost laptop is a hardware cost, not a data breach. Recording the acceptance keeps the decision visible.",
+    "where": "BitLocker"
+   },
+   {
+    "type": "choice",
+    "q": "For R4, what should the contract with the payroll supplier add?",
+    "options": [
+     "A clause requiring them to tell you promptly about any breach",
+     "A lower price",
+     "Nothing: they hold ISO 27001",
+     "A ban on their staff using email"
+    ],
+    "answer": 0,
+    "explain": "Certification shows a supplier runs a management system; it doesn't oblige them to tell you anything. Third-party risk is managed through contracts.",
+    "where": "no breach-notification clause"
+   },
+   {
+    "type": "choice",
+    "q": "R5 scores 12. Who decides what happens to it?",
+    "options": [
+     "Sana Iqbal, its owner",
+     "Whoever spotted it",
+     "The auditor",
+     "Marcus Bell, because he owns the register"
+    ],
+    "answer": 0,
+    "explain": "Each risk has its own owner. The register owner keeps the list; the risk owner decides on the treatment.",
+    "where": "Sana Iqbal"
+   }
+  ]
+ },
+ {
+  "id": "allowed-or-not",
+  "kind": "doc",
+  "category": "Governance",
+  "track": "Governance",
+  "minutes": 8,
+  "lesson": "law",
+  "title": "Allowed or not?",
+  "skill": "Apply the Computer Misuse Act and UK GDPR to real situations",
+  "card": "Permission, personal data and the 72-hour clock",
+  "intro": "Read the plain-English summary, then decide what's allowed in each situation. It's a summary for learning, not legal advice.",
+  "artifact": {
+   "kind": "doc",
+   "name": "The rules, in plain English",
+   "text": "THE RULES, IN PLAIN ENGLISH (a summary for learning, not legal advice)\n\nCOMPUTER MISUSE ACT 1990 (UK)\n  Section 1: accessing a computer, program or data without authorisation\n  Section 2: doing that with intent to commit, or help with, another offence\n  Section 3: any unauthorised act that impairs a computer or its data, or is reckless about it\n             (malware, deleting data, denial of service)\n  Section 3A: making, supplying or obtaining tools for use in these offences\n  Authorisation must come from someone entitled to give it, for that system\n\nUK GDPR AND THE DATA PROTECTION ACT 2018\n  Personal data: information about an identifiable living person\n  Principle: process it securely (integrity and confidentiality)\n  A personal data breach that is a risk to people's rights: tell the ICO within 72 hours of becoming aware\n  If the risk to people is high: tell them too, without undue delay\n  Record every breach in the internal breach log, reported or not\n\nPCI DSS\n  Required by the card brands, through contracts, of anyone who stores, processes or transmits card data"
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "On your home network you scan a router you bought and own. Is that allowed?",
+    "options": [
+     "Yes: it's your device, so you can authorise it",
+     "No: all scanning is illegal",
+     "Only with police permission",
+     "Only if you find nothing"
+    ],
+    "answer": 0,
+    "explain": "Authorisation comes from the owner. Scanning your own kit is how most people learn; scanning anyone else's is not.",
+    "where": "entitled to give it"
+   },
+   {
+    "type": "choice",
+    "q": "An old password still works on a former employer's system. You log in 'just to check', then log out. Which section could apply?",
+    "options": [
+     "Section 1: access without authorisation",
+     "None: you didn't change anything",
+     "Section 3A only",
+     "Only UK GDPR"
+    ],
+    "answer": 0,
+    "explain": "Access alone is the offence. Your permission ended when you left.",
+    "where": "Section 1"
+   },
+   {
+    "type": "choice",
+    "q": "A friend sells a 'stresser' service that floods websites, and you help write it. Which sections could apply?",
+    "options": [
+     "Section 3A for supplying the tool, and section 3 when it's used",
+     "None: you didn't launch an attack",
+     "Only section 1",
+     "Only PCI DSS"
+    ],
+    "answer": 0,
+    "explain": "Making or supplying tools for these offences is itself an offence, and a flood that knocks a site over impairs it.",
+    "where": "Section 3A"
+   },
+   {
+    "type": "choice",
+    "q": "Your employer gives you written permission to test its website this week. Another company's site is on the same server. Can you test that too?",
+    "options": [
+     "No: your employer can't authorise access to another company's site",
+     "Yes: it's the same server",
+     "Yes, if you only look",
+     "Yes, if your manager agrees verbally"
+    ],
+    "answer": 0,
+    "explain": "Authorisation has to come from someone entitled to give it for that system. Shared hosting doesn't make another customer's site yours to test.",
+    "where": "entitled to give it"
+   },
+   {
+    "type": "text",
+    "q": "Customers' names and home addresses are emailed to the wrong company, and you realise an hour later. Within how many hours must a notifiable breach be reported to the ICO?",
+    "answers": [
+     "72"
+    ],
+    "hint": "Look under UK GDPR.",
+    "explain": "72 hours from becoming aware. You don't need every detail before you report; you can add more later.",
+    "where": "72 hours"
+   },
+   {
+    "type": "choice",
+    "q": "The misdirected file held only names and work addresses already on the company website, and the recipient deleted it. What must still happen?",
+    "options": [
+     "Record it in the internal breach log, even if it isn't reported",
+     "Nothing at all",
+     "Tell every customer straight away",
+     "Pay a fine"
+    ],
+    "answer": 0,
+    "explain": "Low-risk breaches may not need reporting, but every breach is logged with the decision and the reason.",
+    "where": "breach log"
+   },
+   {
+    "type": "choice",
+    "q": "An online shop outside the EU takes card payments. Does PCI DSS apply?",
+    "options": [
+     "Yes: the card brands require it of anyone handling card data, wherever they are",
+     "No: it's EU law",
+     "No: it's UK law",
+     "Only once it has 1,000 customers"
+    ],
+    "answer": 0,
+    "explain": "PCI DSS comes from the card brands' contracts, so it follows the cards, not the country.",
+    "where": "card brands"
+   }
+  ]
+ },
+ {
+  "id": "threat-model",
+  "kind": "doc",
+  "category": "Governance",
+  "track": "Governance",
+  "minutes": 10,
+  "lesson": "attack-models",
+  "title": "Threat model a design",
+  "skill": "Use STRIDE on a small design and place an attack on the kill chain",
+  "card": "Find the flaws before it's built",
+  "intro": "Wrenfield & Co, your Agency client, is adding click and collect. Read the design note and find what could go wrong before it's built.",
+  "artifact": {
+   "kind": "doc",
+   "name": "Design note",
+   "text": "DESIGN NOTE (draft): click and collect\nClient: Wrenfield & Co, online shop (fictional)\n\n1. The customer pays online and gets a collection code by email, such as WRN-4821\n2. In the shop, staff type the code into the till tablet, which shows the order\n3. The tablet asks the shop's API: GET /api/orders?code=WRN-4821\n4. The API returns the order with the customer's name, phone number and home address\n5. Staff tick 'collected'; the tablet sends POST /api/orders/collect with the code and a staffId\n6. The API trusts the staffId sent by the tablet and writes it to the order history\n7. Codes are 4 digits after WRN-, never expire, and wrong guesses aren't limited\n8. Any till user can open Settings and change the refund limits"
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "Codes are 4 digits, never expire and guesses aren't limited. Someone guesses a code and collects another customer's order. Which STRIDE threat is that?",
+    "options": [
+     "Spoofing: pretending to be the customer",
+     "Repudiation",
+     "Denial of service",
+     "Tampering"
+    ],
+    "answer": 0,
+    "explain": "With only 10,000 possible codes and no limit on guesses, anyone can pass as a customer.",
+    "where": "wrong guesses aren't limited"
+   },
+   {
+    "type": "choice",
+    "q": "To hand over a parcel, the API returns the customer's home address and phone number. Which threat is that?",
+    "options": [
+     "Information disclosure",
+     "Elevation of privilege",
+     "Spoofing",
+     "Tampering"
+    ],
+    "answer": 0,
+    "explain": "Staff need the order, not the address. Return only what the task needs (data minimisation).",
+    "where": "home address"
+   },
+   {
+    "type": "choice",
+    "q": "The API trusts the staffId the tablet sends, so staff could mark an order collected under someone else's ID and later deny it was them. Which threat is that?",
+    "options": [
+     "Repudiation",
+     "Denial of service",
+     "Information disclosure",
+     "Elevation of privilege"
+    ],
+    "answer": 0,
+    "explain": "If the record can be forged, nobody can prove who did what. The server should take the identity from the signed-in session, not from the request.",
+    "where": "trusts the staffId"
+   },
+   {
+    "type": "choice",
+    "q": "Any till user can change the refund limits. Which threat is that?",
+    "options": [
+     "Elevation of privilege",
+     "Repudiation",
+     "Information disclosure",
+     "Denial of service"
+    ],
+    "answer": 0,
+    "explain": "A till user can take on a manager's powers. Settings like refund limits need a separate role.",
+    "where": "change the refund limits"
+   },
+   {
+    "type": "choice",
+    "q": "What is the best single fix for point 7?",
+    "options": [
+     "Long random codes that expire, with limited wrong guesses",
+     "Make the codes 5 digits",
+     "Hide the code in the email",
+     "Ask staff to remember faces"
+    ],
+    "answer": 0,
+    "explain": "Length, expiry and a guess limit together make guessing impractical. Any one alone leaves a gap.",
+    "where": "never expire"
+   },
+   {
+    "type": "choice",
+    "q": "An attacker emails shop staff a fake 'till update' attachment. Which Cyber Kill Chain stage is sending that email?",
+    "options": [
+     "Delivery",
+     "Reconnaissance",
+     "Installation",
+     "Actions on objectives"
+    ],
+    "answer": 0,
+    "explain": "Delivery is getting the weapon to the target. Email filtering and staff reporting break the chain here."
+   },
+   {
+    "type": "choice",
+    "q": "Once opened, the fake update contacts the attacker's server every minute for instructions. Which stage is that?",
+    "options": [
+     "Command and control",
+     "Weaponisation",
+     "Delivery",
+     "Exploitation"
+    ],
+    "answer": 0,
+    "explain": "A regular check-in to an outside server is command and control (C2), and the beat makes it easy to spot in network logs."
+   }
+  ]
  }
 ]

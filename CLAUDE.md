@@ -135,6 +135,11 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   lesson now has an Experiment step. Defender's view only. All have card photos (made as three 3 x 2 grids). Diagnose
   (missions and shifts) now covers phishing, networking, SOC, incident response, identity, malware, ransomware and
   data-breach, and (shift-04) the web attacks and cloud; the rest still have no Diagnose step.
+- Governance track (16 Nov): lessons `frameworks` (rewritten: NIST CSF 2.0, ISO/IEC 27001:2022, CIS Controls v8.1, Cyber Essentials,
+  NIST SP 800-53), `risk`, `law` (Computer Misuse Act, UK GDPR, NIS/NIS2, PCI DSS, DORA) and `attack-models` (Kill Chain, ATT&CK,
+  Diamond, STRIDE). Doc labs (Practise group "Governance"): `cyber-essentials-check`, `risk-register`, `allowed-or-not`, `threat-model`.
+  Paths `grc` and `it-support`. Practise is grouped by topic (CATEGORY_ORDER in 07-labs). Evidence lab options are mixed when shown
+  (`mixLabSteps`); tests pick lab answers by text. Fonts are self-hosted (`static/fonts`); the build writes `/.well-known/security.txt`.
 - Hashing lab (`#lab-hashing`, `static/js/labs/hashing.js`, tests `tests/hashing.test.mjs`): MD5/SHA-1/SHA-256, salts, slow hashes.
 - Device drawings (`static/js/hw.js`, `HW`): a 3/4 view (`hwBox` adds a lit top and shaded side, which also carry
   `hw-body` so state colours reach them; `--hw-face-top/side` per theme). Keep detail readable at ~50 px.

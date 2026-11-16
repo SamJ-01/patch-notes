@@ -92,8 +92,8 @@ export const MAIL = (() => {
         <div><dt>Real address</dt><dd class="mono">${showAddr(h.from.address, h.from.domain)}</dd></div>
         ${h.replyTo && h.replyTo.address.toLowerCase() !== h.from.address.toLowerCase() ? `<div class="warn"><dt>Replies go to</dt><dd class="mono">${showAddr(h.replyTo.address, h.replyTo.domain)}</dd></div>` : ""}
         ${h.returnPath.address && h.returnPath.domain !== h.from.domain ? `<div><dt>Bounces go to</dt><dd class="mono">${showAddr(h.returnPath.address, h.returnPath.domain)}</dd></div>` : ""}</dl>
-      ${h.received.length ? `<h4 class="em-h">How it reached you</h4><ol class="em-route">${h.received.map(hop).join("")}</ol>` : ""}
-      <h4 class="em-h">The receiving server's checks</h4><ul class="em-checks">${check("spf", "SPF", "Was the sending server allowed to send for this domain?")}${check("dkim", "DKIM", "Was it signed by the domain, unchanged?")}${check("dmarc", "DMARC", "Does the From domain match what SPF or DKIM proved?")}</ul>
+      ${h.received.length ? `<h3 class="em-h">How it reached you</h3><ol class="em-route">${h.received.map(hop).join("")}</ol>` : ""}
+      <h3 class="em-h">The receiving server's checks</h3><ul class="em-checks">${check("spf", "SPF", "Was the sending server allowed to send for this domain?")}${check("dkim", "DKIM", "Was it signed by the domain, unchanged?")}${check("dmarc", "DMARC", "Does the From domain match what SPF or DKIM proved?")}</ul>
       <p class="em-aside">Passing proves which domain sent it, not that the domain is honest.</p>`;
   }
 
@@ -125,7 +125,7 @@ export const MAIL = (() => {
           <div class="em-who"><span class="em-name">${esc(fromName || fromAddr)}${pin(pins, "from")}</span> <span class="em-addr">&lt;${showAddr(fromAddr, domain)}&gt;</span>${to ? `<span class="em-to">to ${esc(to)}</span>` : ""}</div>
           ${date ? `<span class="em-date">${esc(date)}</span>` : ""}</header>
         ${flags ? `<div class="em-flags">${flags}</div>` : ""}
-        <h3 class="em-subj">${esc(subject)}${pin(pins, "subject")}</h3>
+        <div class="em-subj">${esc(subject)}${pin(pins, "subject")}</div>
         <div class="em-body">${paras.map(p => `<p>${esc(p)}</p>`).join("")}${pin(pins, "body")}</div>
         ${links.length ? `<div class="em-links">${links.map((l, i) => `<div class="em-link"><button type="button" class="${l.shown ? "em-url" : "em-cta"}" data-em-link="${i}" data-em-href="${esc(l.href)}" aria-describedby="${esc(id)}-go-${i}">${esc(l.text)}</button>${i === 0 ? pin(pins, "link") : ""}
             <p class="em-go${l.mismatch ? " bad" : ""}" id="${esc(id)}-go-${i}"${opts.reveal ? "" : " hidden"}>${opts.reveal ? goes(l) : ""}</p></div>`).join("")}

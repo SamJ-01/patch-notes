@@ -66,6 +66,12 @@ await journey("skip navigation", async () => {
   const target = await page.evaluate(() => ({ id: document.activeElement?.id, tag: document.activeElement?.tagName }));
   if (target.id !== "main") problems.push(`skip navigation: Enter did not focus main (focused ${target.id || target.tag})`);
   await page.close();
+  // On any other page, skipping must keep you on that page (left to the browser, "#main" routed to the home page).
+  const lesson = await open("#lesson-phishing", 1280, "light");
+  await lesson.keyboard.press("Tab"); await lesson.keyboard.press("Enter"); await lesson.waitForTimeout(400);
+  const after = await lesson.evaluate(() => ({ hash: location.hash, h1: document.querySelector("main h1")?.textContent, focus: document.activeElement?.id }));
+  if (after.hash !== "#lesson-phishing" || !/phishing/i.test(after.h1 || "") || after.focus !== "main") problems.push(`skip navigation: on a lesson the skip link left the page (${JSON.stringify(after)})`);
+  await lesson.close();
 });
 
 // Progress survives a full reload, including on the phone-sized layout.
@@ -93,7 +99,8 @@ await journey("lab slow-network", async () => {
   const lab = labs.find(l => l.id === "slow-network"), page = await open("#lab-slow-network", 390, "light");
   await page.waitForSelector("#lab-steps");
   for (const [i, st] of lab.steps.entries()) {
-    if (st.type === "choice") await page.evaluate(([i, j]) => document.querySelector(`.lab-step[data-i="${i}"] .opt[data-j="${j}"]`).click(), [i, st.answer]);
+    // Options are shown in a mixed order, so pick the right one by its text, not its authored position.
+    if (st.type === "choice") await page.evaluate(([i, text]) => [...document.querySelectorAll(`.lab-step[data-i="${i}"] .opt`)].find(o => o.textContent.trim() === text).click(), [i, st.options[st.answer]]);
     else { await page.fill(`#ans-${i}`, st.answers[0]); await page.evaluate(i => document.querySelector(`[data-form="${i}"]`).requestSubmit(), i); }
   }
   const solved = await page.evaluate(() => document.querySelectorAll(".lab-step.got").length);
@@ -170,6 +177,15 @@ await journey("route", async () => {
   await page.click("#trail .trail-nav .btn.brand");
   await page.waitForTimeout(300);
   if (!/Stop 2 of \d+/.test(await bar())) problems.push(`route: Next stop didn't reach stop 2 (${await bar() || "hidden"})`);
+  await page.close();
+});
+
+// Wide screens: the Agency page (view-wide) is centred, not pushed right (it was, by double centring, above ~1600 px).
+await journey("agency on a wide screen", async () => {
+  const page = await open("#agency-shift-01", 1920, "dark");
+  await page.waitForSelector("#agency-root");
+  const r = await page.evaluate(() => { const b = document.querySelector("#agency-root").getBoundingClientRect(), m = document.querySelector("main").getBoundingClientRect(); return { left: Math.round(b.left - m.left), right: Math.round(m.right - b.right) }; });
+  if (Math.abs(r.left - r.right) > 4) problems.push(`agency on a wide screen: not centred (${r.left} px left, ${r.right} px right)`);
   await page.close();
 });
 

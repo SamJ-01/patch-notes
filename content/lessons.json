@@ -106,30 +106,30 @@
  },
  {
   "id": "frameworks",
-  "title": "Security frameworks & governance",
-  "track": "Foundations",
+  "title": "Security frameworks: NIST CSF, ISO 27001, CIS & Cyber Essentials",
+  "track": "Governance",
   "level": "Beginner",
-  "minutes": 5,
-  "hook": "The playbooks organisations use to decide what to protect and how.",
-  "what": "A security framework is a structured set of good practices so organisations don't have to invent security from scratch. The NIST Cybersecurity Framework groups work into six functions: Govern, Identify, Protect, Detect, Respond and Recover. ISO 27001 is an international standard for running an information security management system. MITRE ATT&CK catalogues how real attackers behave, so defenders can check their coverage. Governance is the layer above the tools: policies, risk decisions and making sure rules are actually followed. Compliance (meeting rules like GDPR, HIPAA or PCI DSS) overlaps with security but isn't the same thing: you can be compliant and still insecure.",
+  "minutes": 7,
+  "hook": "The playbooks organisations use to decide what to protect, and to prove they have.",
+  "what": "A security framework is a tested set of good practice, so an organisation doesn't invent security from scratch. Each does a different job. The NIST Cybersecurity Framework (CSF) 2.0 organises a whole security programme into six functions: Govern, Identify, Protect, Detect, Respond and Recover, split into 22 categories. A profile describes where you are now and where you want to be. ISO/IEC 27001:2022 is the international standard for an information security management system (ISMS): a managed cycle of risk assessment, controls and review that an accredited body can certify. Its Annex A lists 93 controls in four themes: organisational, people, physical and technological. The CIS Controls v8.1 are 18 prioritised controls, broken into specific safeguards, and Implementation Group 1 is the essential starting set. In the UK, Cyber Essentials is a government-backed scheme built on five controls: firewalls, secure configuration, security update management, user access control and malware protection. NIST SP 800-53 is the large control catalogue that US government systems use. Compliance (meeting rules like UK GDPR or PCI DSS) overlaps with security but isn't the same thing: you can be compliant and still insecure. How attackers behave (MITRE ATT&CK) is covered in How attacks are modelled.",
   "example": {
-   "title": "The NIST CSF in practice",
-   "year": "Everyday",
-   "text": "'Mapping to the NIST CSF' means asking, function by function: do we know what we have, can we stop and spot attacks, and can we respond and recover? Govern puts someone in charge of the risk.",
+   "title": "Cyber Essentials and government contracts",
+   "year": "2014",
+   "text": "Since 2014, suppliers bidding for some UK central government contracts, such as those handling personal data, have had to hold Cyber Essentials. A small firm's first framework is often the one a customer asks for.",
    "source": {
-    "label": "NIST Cybersecurity Framework",
-    "url": "https://www.nist.gov/cyberframework"
+    "label": "NCSC: Cyber Essentials",
+    "url": "https://www.ncsc.gov.uk/cyberessentials/overview"
    }
   },
   "defend": [
-   "Pick a framework that fits your size and sector rather than starting from nothing",
-   "Use MITRE ATT&CK to find gaps in what you can detect",
-   "Treat compliance as a floor, not the goal: meeting rules is not the same as being secure",
-   "Write policies people can actually follow, and review them"
+   "Choose a framework that fits your size, sector and what your customers ask for",
+   "Start with the basics: Cyber Essentials or CIS Implementation Group 1",
+   "Map one set of controls to several frameworks instead of running each separately",
+   "Treat certification as a floor: keep testing and reviewing between audits"
   ],
   "practice": {
-   "label": "Read the NIST Cybersecurity Framework",
-   "url": "https://www.nist.gov/cyberframework"
+   "label": "Would they pass Cyber Essentials?",
+   "url": "#lab-cyber-essentials-check"
   },
   "checks": [
    {
@@ -145,6 +145,42 @@
     "see": "what"
    },
    {
+    "q": "Which of these can an organisation be certified against by an accredited body?",
+    "options": [
+     "ISO/IEC 27001",
+     "NIST CSF 2.0",
+     "MITRE ATT&CK",
+     "CIS Controls"
+    ],
+    "answer": 0,
+    "why": "ISO 27001 is a certifiable management system standard. The CSF and the CIS Controls are frameworks you adopt, and ATT&CK is a catalogue of attacker behaviour.",
+    "see": "what"
+   },
+   {
+    "q": "Which of these is one of Cyber Essentials' five controls?",
+    "options": [
+     "Security update management",
+     "Annual penetration testing",
+     "24/7 security monitoring",
+     "Data loss prevention"
+    ],
+    "answer": 0,
+    "why": "The five are firewalls, secure configuration, security update management, user access control and malware protection.",
+    "see": "what"
+   },
+   {
+    "q": "What is CIS Implementation Group 1?",
+    "options": [
+     "The essential starting set of safeguards for any organisation",
+     "The controls only governments use",
+     "A certification exam",
+     "The most advanced controls, for large companies"
+    ],
+    "answer": 0,
+    "why": "IG1 is 'essential cyber hygiene': the safeguards every organisation should have first. IG2 and IG3 add more for larger or higher-risk organisations.",
+    "see": "what"
+   },
+   {
     "q": "Which statement about compliance is true?",
     "options": [
      "You can be compliant and still insecure",
@@ -155,44 +191,37 @@
     "answer": 0,
     "why": "Meeting rules like PCI DSS is a minimum bar; it doesn't guarantee you're actually secure.",
     "see": "what"
-   },
-   {
-    "q": "What is MITRE ATT&CK mainly used for?",
-    "options": [
-     "Mapping real attacker tactics so defenders can find gaps",
-     "Encrypting data at rest",
-     "Assigning IP addresses",
-     "Writing privacy policies"
-    ],
-    "answer": 0,
-    "why": "ATT&CK catalogues how attackers behave, so teams can check what they would and wouldn't detect.",
-    "see": "what"
    }
   ],
   "concept": {
-   "why": "Which rules apply depends on what you handle. Here is who each framework is for.",
+   "why": "Each framework does a different job. Here is what each one is for.",
    "type": "cards",
-   "title": "The playbooks and who they serve",
+   "title": "The frameworks and their jobs",
    "items": [
     {
-     "label": "NIST CSF",
+     "label": "NIST CSF 2.0",
      "icon": "cycle",
-     "text": "Six functions (Govern, Identify, Protect, Detect, Respond, Recover) to organise a whole security programme."
+     "text": "Organises a whole programme: Govern, Identify, Protect, Detect, Respond, Recover."
     },
     {
-     "label": "ISO 27001",
+     "label": "ISO/IEC 27001",
      "icon": "doc",
-     "text": "International standard for running an information security management system you can be certified against."
+     "text": "A management system you can be certified against, with 93 Annex A controls."
     },
     {
-     "label": "MITRE ATT&CK",
-     "icon": "search",
-     "text": "A catalogue of real attacker tactics and techniques, used to find gaps in what you can detect."
-    },
-    {
-     "label": "Governance & compliance",
+     "label": "CIS Controls v8.1",
      "icon": "shield",
-     "text": "Policies, risk ownership and meeting rules like GDPR or PCI DSS. Compliance is a floor, not a guarantee."
+     "text": "18 prioritised controls, broken into safeguards. Start with Implementation Group 1."
+    },
+    {
+     "label": "Cyber Essentials",
+     "icon": "lock",
+     "text": "The UK baseline: five controls, self-assessed, or audited for Plus."
+    },
+    {
+     "label": "NIST SP 800-53",
+     "icon": "database",
+     "text": "The big control catalogue US government systems are built on."
     }
    ]
   },
@@ -201,17 +230,17 @@
    {
     "icon": "doc",
     "label": "Don't start from scratch",
-    "text": "Tested good practice to build a security programme on."
+    "text": "Frameworks give you tested practice to build on."
    },
    {
-    "icon": "users",
-    "label": "Governance",
-    "text": "Policies, risk decisions and checking rules are followed."
+    "icon": "cycle",
+    "label": "Pick by job",
+    "text": "CSF organises, ISO certifies, CIS prioritises, Cyber Essentials sets a baseline."
    },
    {
     "icon": "alert",
     "label": "Compliant isn't secure",
-    "text": "Meeting GDPR or PCI DSS rules doesn't make you safe."
+    "text": "Passing an audit doesn't mean attackers can't get in."
    }
   ]
  },
@@ -1974,6 +2003,58 @@
        "kicker": "Owner's phone",
        "line": "Request denied",
        "tone": "stop"
+      }
+     }
+    }
+   ],
+   "approved": [
+    {
+     "from": "p",
+     "to": "l",
+     "msg": "Owner taps Approve",
+     "text": "Worn down by repeated prompts, or thinking it's a glitch, the owner taps Approve. This is MFA fatigue.",
+     "tone": "bad",
+     "stop": "Number matching: the phone asks for the number shown on the sign-in screen, which only the person signing in can see.",
+     "screens": {
+      "a": {
+       "kicker": "Sign in",
+       "line": "Still waiting",
+       "tone": "wait"
+      },
+      "l": {
+       "kicker": "Login service",
+       "line": "Owner approved",
+       "tone": "bad"
+      },
+      "p": {
+       "kicker": "Sign-in attempt",
+       "line": "Approved",
+       "tone": "bad"
+      }
+     }
+    },
+    {
+     "from": "l",
+     "to": "a",
+     "msg": "Session created",
+     "text": "The attacker is now signed in as the owner. Both factors were passed, so nothing looks wrong to the service.",
+     "tone": "bad",
+     "stop": "Passkeys or a security key leave nothing to approve by mistake, and only work on the real site.",
+     "screens": {
+      "a": {
+       "kicker": "Sign in",
+       "line": "Signed in",
+       "tone": "bad"
+      },
+      "l": {
+       "kicker": "Login service",
+       "line": "Session created",
+       "tone": "bad"
+      },
+      "p": {
+       "kicker": "Owner's phone",
+       "line": "Approved",
+       "tone": "bad"
       }
      }
     }
@@ -3747,6 +3828,404 @@
     "icon": "shield",
     "label": "Defenders too",
     "text": "See your organisation the way attackers do."
+   }
+  ]
+ },
+ {
+  "id": "risk",
+  "title": "Risk, simply",
+  "track": "Governance",
+  "level": "Beginner",
+  "minutes": 5,
+  "hook": "How organisations decide which dangers to fix first, and which to live with.",
+  "what": "Risk is the chance that a threat exploits a weakness, combined with how much it would hurt. Most organisations score both on a simple scale, often 1 to 5, so likelihood × impact gives a score from 1 to 25 and the biggest numbers get attention first. Each risk goes in a risk register with an owner: a named person who decides what happens to it. There are four ways to treat a risk: mitigate it (add controls so it is less likely or less harmful), transfer it (insurance or a contract), avoid it (stop doing the risky thing) or accept it (live with it, on record). Risk appetite is how much risk leadership is willing to take on; anything above it must be treated. What is left after controls is the residual risk. Some teams also put a money figure on it: single loss expectancy (SLE) × annual rate of occurrence (ARO) = annual loss expectancy (ALE). A business impact analysis (BIA) works out which systems matter most, how fast they must come back (RTO) and how much data you could afford to lose (RPO).",
+  "example": {
+   "title": "TSB's IT migration",
+   "year": "2018",
+   "text": "TSB moved 5.2 million customers to a new banking platform in April 2018. Many were locked out for days and some saw other customers' details. In 2022 the UK regulators fined TSB £48.65 million for failing to manage the risks of the change.",
+   "source": {
+    "label": "Wikipedia: TSB Bank",
+    "url": "https://en.wikipedia.org/wiki/TSB_Bank_(United_Kingdom)"
+   }
+  },
+  "defend": [
+   "Keep one risk register, with an owner and a review date for every risk",
+   "Agree the risk appetite with leadership, in writing",
+   "Record accepted risks so 'we decided' never turns into 'we forgot'",
+   "Re-assess after big changes: new systems, new suppliers or an incident"
+  ],
+  "practice": {
+   "label": "Build the risk register",
+   "url": "#lab-risk-register"
+  },
+  "checks": [
+   {
+    "q": "A risk scores 4 for likelihood and 5 for impact. What is its score?",
+    "options": [
+     "20",
+     "9",
+     "1",
+     "45"
+    ],
+    "answer": 0,
+    "why": "4 × 5 = 20 out of a possible 25, so it is near the top of the list.",
+    "see": "what"
+   },
+   {
+    "q": "A company buys cyber insurance against ransomware. Which treatment is that?",
+    "options": [
+     "Transfer",
+     "Avoid",
+     "Accept",
+     "Mitigate"
+    ],
+    "answer": 0,
+    "why": "Insurance moves some of the cost to someone else. It doesn't make the attack less likely, so it is usually combined with mitigation.",
+    "see": "what"
+   },
+   {
+    "q": "What is residual risk?",
+    "options": [
+     "The risk left after controls are in place",
+     "The risk before any controls",
+     "A risk that nobody owns",
+     "A risk that has been insured"
+    ],
+    "answer": 0,
+    "why": "Controls rarely remove a risk completely. What remains is the residual risk, which the owner then accepts or treats further.",
+    "see": "what"
+   },
+   {
+    "q": "Who decides what happens to a risk in the register?",
+    "options": [
+     "Its risk owner",
+     "Whoever found it",
+     "The auditor",
+     "The IT helpdesk"
+    ],
+    "answer": 0,
+    "why": "Every risk needs a named owner with the authority to fund a fix or accept it.",
+    "see": "what"
+   },
+   {
+    "q": "A loss would cost £20,000 (SLE) and is expected once every two years (ARO 0.5). What is the ALE?",
+    "options": [
+     "£10,000",
+     "£40,000",
+     "£20,000",
+     "£0.50"
+    ],
+    "answer": 0,
+    "why": "ALE = SLE × ARO = £20,000 × 0.5 = £10,000 a year, a guide to how much a control is worth spending.",
+    "see": "what"
+   }
+  ],
+  "concept": {
+   "why": "Risk management never finishes: risks change as the business and the attackers do.",
+   "type": "cycle",
+   "title": "The risk cycle",
+   "items": [
+    {
+     "label": "Identify",
+     "icon": "search",
+     "text": "What could go wrong?"
+    },
+    {
+     "label": "Analyse",
+     "icon": "gauge",
+     "text": "How likely, and how bad?"
+    },
+    {
+     "label": "Evaluate",
+     "icon": "alert",
+     "text": "Is it above our appetite?"
+    },
+    {
+     "label": "Treat",
+     "icon": "shield",
+     "text": "Mitigate, transfer, avoid or accept."
+    },
+    {
+     "label": "Monitor",
+     "icon": "cycle",
+     "text": "Review it: risks change."
+    }
+   ]
+  },
+  "tip": "Accepting a risk is a valid choice, but only on record and signed off by its owner. An accepted risk that nobody wrote down is just a forgotten one.",
+  "keys": [
+   {
+    "icon": "gauge",
+    "label": "Likelihood × impact",
+    "text": "Score both, then fix the biggest numbers first."
+   },
+   {
+    "icon": "users",
+    "label": "Every risk has an owner",
+    "text": "A named person decides what happens to it."
+   },
+   {
+    "icon": "shield",
+    "label": "Four choices",
+    "text": "Mitigate, transfer, avoid or accept, and write it down."
+   }
+  ]
+ },
+ {
+  "id": "law",
+  "title": "The law and compliance",
+  "track": "Governance",
+  "level": "Beginner",
+  "minutes": 6,
+  "hook": "The rules that decide what you're allowed to touch, and what must happen after a breach.",
+  "what": "Laws set the floor, and some apply to you as soon as you start practising. In the UK, the Computer Misuse Act 1990 makes it an offence to access a computer without authorisation (section 1), to do so in order to commit another offence (section 2), or to impair a system, for example with malware or a denial-of-service attack (section 3). Making, supplying or obtaining tools for these offences is covered too (section 3A). Good intentions are no defence: what matters is authorisation from someone entitled to give it, which is why testers work from a signed scope. UK GDPR and the Data Protection Act 2018 cover personal data. They set seven principles, including keeping data secure (integrity and confidentiality); a notifiable breach must be reported to the ICO within 72 hours of becoming aware of it; and fines can reach £17.5 million or 4% of global turnover. The NIS Regulations 2018 cover essential services such as energy and transport, and the EU's NIS2 widens this across Europe. Some rules are contracts, not laws: PCI DSS is required by the card brands of anyone who stores, processes or transmits card data. In the EU, DORA covers financial firms' digital resilience. Breaking these rules can bring fines, lost contracts or licences, and lasting damage to reputation. This is a plain-English summary for learning, not legal advice.",
+  "example": {
+   "title": "TalkTalk",
+   "year": "2015",
+   "text": "Attackers used SQL injection on old web pages to steal data on about 157,000 customers. Several were convicted under the Computer Misuse Act, and the ICO fined TalkTalk £400,000 for failing to protect the data: both sides of the law in one breach.",
+   "source": {
+    "label": "Wikipedia: TalkTalk Group",
+    "url": "https://en.wikipedia.org/wiki/TalkTalk_Group"
+   }
+  },
+  "defend": [
+   "Get written permission before testing anything you don't own",
+   "Know where your personal data is, so you can report a breach in time",
+   "Keep a breach log, including breaches you didn't have to report",
+   "Check which rules apply to you: your sector, your customers and where you trade"
+  ],
+  "practice": {
+   "label": "Allowed or not?",
+   "url": "#lab-allowed-or-not"
+  },
+  "checks": [
+   {
+    "q": "A friend asks you to 'see if you can hack' their employer's website. The employer hasn't agreed. Can you?",
+    "options": [
+     "No: only someone entitled to authorise access to that system can give permission",
+     "Yes, because your friend works there",
+     "Yes, as long as you don't change anything",
+     "Yes, if you report what you find"
+    ],
+    "answer": 0,
+    "why": "Under the Computer Misuse Act, unauthorised access alone is an offence. Good intentions and 'just looking' are no defence.",
+    "see": "what"
+   },
+   {
+    "q": "How long does UK GDPR give an organisation to report a notifiable personal data breach to the ICO?",
+    "options": [
+     "72 hours from becoming aware of it",
+     "24 hours from the breach",
+     "30 days",
+     "Only if customers complain"
+    ],
+    "answer": 0,
+    "why": "The 72 hours start when the organisation becomes aware, not when the breach happened.",
+    "see": "what"
+   },
+   {
+    "q": "Which of these is a contractual standard rather than a law?",
+    "options": [
+     "PCI DSS",
+     "UK GDPR",
+     "The Computer Misuse Act 1990",
+     "The NIS Regulations 2018"
+    ],
+    "answer": 0,
+    "why": "PCI DSS is required by the card brands through contracts with banks and merchants. The others are law.",
+    "see": "what"
+   },
+   {
+    "q": "Which part of the Computer Misuse Act covers a denial-of-service attack?",
+    "options": [
+     "Section 3: impairing a computer's operation",
+     "Section 1: unauthorised access",
+     "Section 2: access to commit another offence",
+     "None: DoS isn't covered"
+    ],
+    "answer": 0,
+    "why": "Section 3 covers unauthorised acts that impair a computer, which includes flooding it so it stops working.",
+    "see": "what"
+   },
+   {
+    "q": "Which of these is one of UK GDPR's principles?",
+    "options": [
+     "Integrity and confidentiality (keeping data secure)",
+     "Encrypt everything",
+     "Annual penetration tests",
+     "Use only UK suppliers"
+    ],
+    "answer": 0,
+    "why": "The seven principles include integrity and confidentiality, often called the security principle. They don't prescribe specific tools.",
+    "see": "what"
+   }
+  ],
+  "concept": {
+   "why": "Which rules apply depends on what you do and what you handle.",
+   "type": "cards",
+   "title": "The rules you'll meet",
+   "items": [
+    {
+     "label": "Computer Misuse Act 1990",
+     "icon": "lock",
+     "text": "Accessing or impairing a computer without permission is a crime."
+    },
+    {
+     "label": "UK GDPR and DPA 2018",
+     "icon": "users",
+     "text": "Personal data: seven principles, 72-hour breach reporting, large fines."
+    },
+    {
+     "label": "NIS Regulations and NIS2",
+     "icon": "server",
+     "text": "Essential services must manage risk and report serious incidents."
+    },
+    {
+     "label": "PCI DSS",
+     "icon": "key",
+     "text": "Required by the card brands of anyone handling card data. A contract, not a law."
+    }
+   ]
+  },
+  "tip": "Before any test, ask two questions: who owns this system, and have they agreed in writing? If you can't answer both, don't touch it.",
+  "keys": [
+   {
+    "icon": "lock",
+    "label": "Permission is everything",
+    "text": "Without authorisation, testing a system can be a crime."
+   },
+   {
+    "icon": "clock",
+    "label": "72 hours",
+    "text": "Report a notifiable personal data breach to the ICO quickly."
+   },
+   {
+    "icon": "coin",
+    "label": "Not all rules are laws",
+    "text": "PCI DSS is enforced through contracts with the card brands."
+   }
+  ]
+ },
+ {
+  "id": "attack-models",
+  "title": "How attacks are modelled",
+  "track": "Threats",
+  "level": "Intermediate",
+  "minutes": 5,
+  "hook": "Shared maps of how attacks unfold, so defenders can spot them and break them.",
+  "what": "Defenders use models to describe attacks in a shared language. The Cyber Kill Chain (Lockheed Martin, 2011) breaks an intrusion into seven stages: reconnaissance, weaponisation, delivery, exploitation, installation, command and control, and actions on objectives. Break any link and the attack fails, ideally early. MITRE ATT&CK is a far more detailed catalogue built from real incidents: tactics are the attacker's goals (such as initial access or persistence) and techniques are how they achieve them, each with an ID such as T1566 for phishing. The Diamond Model links four parts of every intrusion event: adversary, capability, infrastructure and victim, so one known piece helps you find the others. Threat modelling turns this round before anything is built: STRIDE asks what could go wrong with a design under six headings: spoofing, tampering, repudiation, information disclosure, denial of service and elevation of privilege.",
+  "example": {
+   "title": "Advisories written in ATT&CK",
+   "year": "Ongoing",
+   "text": "#StopRansomware advisories from CISA and the FBI, often with partners such as the UK NCSC, list each technique a ransomware group uses with its ATT&CK ID, so defenders everywhere can check their detections against the same list.",
+   "source": {
+    "label": "CISA: #StopRansomware",
+    "url": "https://www.cisa.gov/stopransomware"
+   }
+  },
+  "defend": [
+   "Map your detections to ATT&CK to see which techniques you'd miss",
+   "Aim to break the chain early: email filtering and patching beat clean-up",
+   "Threat model new systems with STRIDE before they go live",
+   "Share what you see using ATT&CK IDs, so others can act on it"
+  ],
+  "practice": {
+   "label": "Threat model a design",
+   "url": "#lab-threat-model"
+  },
+  "checks": [
+   {
+    "q": "In the Cyber Kill Chain, which stage comes straight after delivery?",
+    "options": [
+     "Exploitation",
+     "Installation",
+     "Reconnaissance",
+     "Command and control"
+    ],
+    "answer": 0,
+    "why": "Delivery gets the weapon to the target (an email, a link); exploitation is when it runs and takes advantage of a weakness.",
+    "see": "what"
+   },
+   {
+    "q": "In MITRE ATT&CK, what is a tactic?",
+    "options": [
+     "The attacker's goal at that point, such as persistence",
+     "A specific piece of malware",
+     "A CVE number",
+     "A defender's control"
+    ],
+    "answer": 0,
+    "why": "Tactics are the 'why' (initial access, persistence, exfiltration); techniques are the 'how', each with an ID like T1566.",
+    "see": "what"
+   },
+   {
+    "q": "An attacker changes the price in a request before it reaches the shop's server. Which STRIDE threat is that?",
+    "options": [
+     "Tampering",
+     "Spoofing",
+     "Repudiation",
+     "Elevation of privilege"
+    ],
+    "answer": 0,
+    "why": "Tampering is changing data you shouldn't be able to change. It breaks integrity.",
+    "see": "what"
+   },
+   {
+    "q": "Which four parts does the Diamond Model link?",
+    "options": [
+     "Adversary, capability, infrastructure, victim",
+     "Identify, protect, detect, respond",
+     "People, process, technology, data",
+     "Confidentiality, integrity, availability, authenticity"
+    ],
+    "answer": 0,
+    "why": "Every intrusion event has someone (adversary) using something (capability) over something (infrastructure) against someone (victim).",
+    "see": "what"
+   }
+  ],
+  "concept": {
+   "why": "Four models, four questions: how does it unfold, what do they do, how is it connected, and what could go wrong?",
+   "type": "cards",
+   "title": "Four ways to model an attack",
+   "items": [
+    {
+     "label": "Cyber Kill Chain",
+     "icon": "cycle",
+     "text": "Seven stages from reconnaissance to actions on objectives. Break one link."
+    },
+    {
+     "label": "MITRE ATT&CK",
+     "icon": "search",
+     "text": "Tactics (goals) and techniques (methods) from real incidents, each with an ID."
+    },
+    {
+     "label": "Diamond Model",
+     "icon": "users",
+     "text": "Adversary, capability, infrastructure, victim: find one, follow it to the rest."
+    },
+    {
+     "label": "STRIDE",
+     "icon": "shield",
+     "text": "Six kinds of threat to check a design for before it's built."
+    }
+   ]
+  },
+  "tip": "STRIDE lines up with what each threat breaks: spoofing breaks authenticity, tampering integrity, repudiation non-repudiation, information disclosure confidentiality, denial of service availability, and elevation of privilege authorisation.",
+  "keys": [
+   {
+    "icon": "link",
+    "label": "Break one link",
+    "text": "Stopping any stage of the chain stops the attack."
+   },
+   {
+    "icon": "search",
+    "label": "Speak ATT&CK",
+    "text": "Technique IDs like T1566 give everyone the same words."
+   },
+   {
+    "icon": "shield",
+    "label": "Model before you build",
+    "text": "STRIDE finds design flaws before attackers do."
    }
   ]
  }

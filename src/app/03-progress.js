@@ -79,6 +79,8 @@ function renderXP() {
 }
 
 // Toasts queue up so a badge unlocked by the same action doesn't hide the XP message.
+// A link to a page that doesn't exist (mistyped, or a page since renamed): show the nearest section and say why.
+function notFound(view) { view(); toast("That page doesn't exist, so here's the nearest section instead."); }
 const toasts = [];
 function toast(text) {
   toasts.push(text);

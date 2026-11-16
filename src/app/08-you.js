@@ -99,6 +99,13 @@ VIEWS.progress = () => {
   </div>`;
   const pt = $("patch-toggle");
   if (pt) { pt.checked = !patchHidden(); pt.addEventListener("change", () => { setPatchHidden(!pt.checked); pt.checked ? mountCompanion() : unmountCompanion(); }); }
+  // Restoring replaces what's in this browser, so ask first when there's progress here to lose.
+  const replaceOk = restored => {
+    if (!P.xp && !Object.keys(P.done).length) return true;
+    const ok = confirm(`Replace the progress in this browser (${P.xp} XP) with the backup (${restored.xp} XP)? This can't be undone.`);
+    if (!ok) $("reset-msg").textContent = "Nothing was changed.";
+    return ok;
+  };
   // A compact, copy-pasteable backup that works on any device (handy on phones, where downloading a file is fiddly).
   const encodeProgress = () => btoa(unescape(encodeURIComponent(JSON.stringify({ app: "patch-notes", version: 1, progress: P }))));
   const pcodeEl = $("pcode"); if (pcodeEl) pcodeEl.value = encodeProgress();
@@ -111,6 +118,7 @@ VIEWS.progress = () => {
     if (!code) { $("reset-msg").textContent = "Paste a progress code first."; return; }
     try {
       const restored = restoreProgress(JSON.parse(decodeURIComponent(escape(atob(code)))));
+      if (!replaceOk(restored)) return;
       P = restored; saveP(); renderXP(); VIEWS.progress(); toast("Progress restored");
     } catch (err) { $("reset-msg").textContent = "That code isn't a valid Patch Notes progress code, so nothing was changed."; }
   });
@@ -124,6 +132,8 @@ VIEWS.progress = () => {
     const f = e.target.files[0]; if (!f) return;
     try {
       const restored = restoreProgress(JSON.parse(await f.text()));
+      e.target.value = "";  // so choosing the same file again still fires
+      if (!replaceOk(restored)) return;
       P = restored; saveP(); renderXP(); VIEWS.progress(); toast("Progress restored");
     } catch (err) { $("reset-msg").textContent = "That file isn't a Patch Notes progress file, so nothing was changed."; }
   });

@@ -111,7 +111,7 @@ function roleCards() {
       <span class="role-meta">${steps} stops</span><span class="start-cta">${esc(r.cta)} →</span></a>`;
   };
   return `<section class="start roles" aria-labelledby="roles-h"><h2 id="roles-h">Where are you headed?</h2>
-    <p class="muted start-note">Pick a direction and follow its ladder, one stop at a time. No account needed — your progress stays in this browser.</p>
+    <p class="muted start-note">Pick a direction and follow its ladder, one stop at a time. No account needed: your progress stays in this browser.</p>
     <div class="start-grid">${ROLES.map(card).join("")}</div>
     <p class="roles-foot">Chasing a certificate? <a href="#exams">Network+, Security+ and PenTest+ prep lives in Exams →</a></p></section>`;
 }

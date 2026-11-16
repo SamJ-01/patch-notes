@@ -215,8 +215,13 @@ function parseRoute() {
   if (h === "glossary") return { tab: "learn", path: "learn/glossary", draw: VIEWS.glossary };
   if (h === "stack") return { tab: "today", path: "today/stack", draw: VIEWS.stack };
   const view = VIEWS[h] ? h : "today";
-  return { tab: NAV_PARENT[view] || view, path: view, draw: VIEWS[view] };
+  // An unknown route (a mistyped or retired link) says so, rather than silently showing the home page.
+  const unknown = !VIEWS[h] && h !== "main";
+  return { tab: NAV_PARENT[view] || view, path: view, draw: unknown ? () => notFound(VIEWS.today) : VIEWS[view] };
 }
+// The skip link moves focus to the page content. Left to the browser, its "#main" would be read as a route and
+// send a keyboard user from any page back to the home page.
+document.querySelector(".skip-link")?.addEventListener("click", e => { e.preventDefault(); main.focus(); main.scrollIntoView(); });
 let lastHash = location.hash;
 function pageName(h) {
   const k = h.slice(1), id = k.slice(k.indexOf("-") + 1);

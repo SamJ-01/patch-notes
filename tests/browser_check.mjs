@@ -218,7 +218,7 @@ for (const theme of ["dark", "light"]) for (const [vw, width] of [["desktop", 12
     if (statusStrip.display !== "grid" || statusStrip.columns !== expectedColumns || statusStrip.count !== 4) {
       errs.push(`status strip layout mismatch: expected grid with ${expectedColumns} columns and 4 tiles; saw ${JSON.stringify(statusStrip)}`);
     }
-    if (statusStrip.labels.join("|") !== "Open|Closed|Top severity|Shift time") {
+    if (statusStrip.labels.join("|") !== "Open|Closed|Most urgent still open|Shift time") {
       errs.push(`status strip labels changed: ${statusStrip.labels.join(", ")}`);
     }
     await audit("desk-queue");

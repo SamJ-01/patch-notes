@@ -303,6 +303,7 @@ details.explain summary { cursor: pointer; font-weight: 700; color: var(--brand)
 .article section > p { max-width: 68ch; font-size: 1.02rem; }
 .case { background: var(--panel-bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; display: grid; gap: 6px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 32px rgba(0, 0, 0, 0.28); }
 .case .eyebrow { color: var(--exploited); }
+.case .case-h { font-size: 1.05rem; font-weight: 600; margin: 0; }  /* an h2 for the outline, sized as before */
 .checklist { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
 .checklist li { display: grid; grid-template-columns: 1.4rem minmax(0, 1fr); gap: 8px; }
 .checklist li::before { content: "✓"; font-weight: 700; color: var(--good); }
@@ -785,7 +786,7 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .ag-notes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .ag-notes > div { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; }
 .ag-notes p { margin: 6px 0 0; font-size: 0.88rem; white-space: pre-wrap; overflow-wrap: anywhere; }
-@media (max-width: 1180px) { .ag-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr); } .ag-comms { grid-column: 1 / -1; } }
+@media (max-width: 1300px) { .ag-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr); } .ag-comms { grid-column: 1 / -1; } }
 @media (max-width: 900px) { .ag-grid, .ag-notes { grid-template-columns: 1fr; } .ag-bar { top: 0; } }
 
 /* The shift desk uses more of a wide screen than a normal reading column, so the three panes breathe. */
@@ -945,7 +946,8 @@ body.life { background-image: none; }
 .ag-worksplit { display: grid; gap: 14px; min-width: 0; }
 .ag-worksplit > .ag-card { display: grid; gap: 12px; align-content: start; min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius); }
 .ag-worksplit > .ag-card > .ag-work:first-child { margin-top: 0; }
-@media (min-width: 1300px) { .ag-worksplit { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; } }
+/* (They used to sit side by side from 1300 px, but the middle column is only ~800 px there: log lines were cut off and
+   the request menu truncated. Stacked, the log and both forms get the full width.) */
 @media (max-width: 560px) { .ag-worksplit > .ag-card { padding: 0; border: 0; } }
 
 /* "See it at work": an optional, inline explainer on an alert. Opening it never leaves the shift or changes its state. */
@@ -2002,6 +2004,7 @@ a.loop-node:hover { border-color: var(--brand); }
 .cert-badge.bad { color: var(--bad); }
 .ready-verdict { margin: 0; padding: 10px 14px; border-left: 3px solid var(--muted); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); }
 .ready-verdict.good { border-left-color: var(--good); } .ready-verdict.sun { border-left-color: var(--sun); } .ready-verdict.bad { border-left-color: var(--bad); }
+.ready-each > summary { cursor: pointer; font: 600 0.82rem var(--font-mono); color: var(--muted); margin-bottom: 8px; }
 .ready-domains { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .ready-domains li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; }
 .ready-domains .rd-name { grid-column: 1 / -1; }
@@ -2255,6 +2258,7 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
   color-scheme: dark;
   --ink: #DCE6F2; --muted: #9AA9BF; --line: #243244; --surface: #0F1621; --bg: #070A10;
   --brand: #3FE0E8; --brand-rgb: 63, 224, 232; --sun-rgb: 255, 176, 0;
+  --brand-ink: #03171B;  /* dark text on the bright teal button, in either theme (light theme's white failed contrast) */
   margin: -6px 0 4px; padding: clamp(48px, 12vh, 128px) clamp(26px, 6vw, 76px) clamp(44px, 9vh, 104px);
   min-height: clamp(380px, 54vh, 580px); display: flex; align-items: center;
   border: 1px solid var(--line); border-radius: calc(var(--radius) + 4px); background: #070A10; }
@@ -3053,7 +3057,9 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .pn-co-bubble a { color: var(--brand); font-weight: 600; white-space: nowrap; }
 .pn-co-close { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font: 700 0.9rem/1 var(--font-body); cursor: pointer; display: grid; place-items: center; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); }
 .pn-co-close:hover { color: var(--ink); border-color: var(--brand); }
-@media (max-width: 520px) { .pn-co-figure .patch { width: 56px; } .pn-companion { right: 18px; bottom: calc(52px + env(safe-area-inset-bottom, 0px)); } }
+/* On a phone Patch tucks into the corner and shrinks (the status bar is hidden there), so it covers less of the text. */
+@media (max-width: 520px) { .pn-co-figure .patch { width: 40px; } .pn-co-figure { min-width: 44px; min-height: 44px; display: grid; place-items: end; }
+  .pn-companion { right: 6px; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); } }
 @media (prefers-reduced-motion: no-preference) { .pn-co-bubble { animation: pn-co-in 0.25s ease-out; } @keyframes pn-co-in { from { opacity: 0; transform: translateY(6px); } } }
 .pn-set { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 0.9rem; color: var(--muted); cursor: pointer; }
 .pn-set input { width: 16px; height: 16px; accent-color: var(--brand); }
@@ -3131,6 +3137,7 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
   position: relative;
   left: 50%;
   transform: translateX(-50%);
+  margin-inline: 0;  /* centred once, by left + transform: .view's auto margins centred it too, pushing it right on wide screens */
   width: min(1460px, calc(100vw - 48px));
   max-width: none;
   min-width: 0;
@@ -3171,7 +3178,8 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .ag-tile-v { font-size: 1.12rem; }
 .ag-tile-l { font-size: .66rem; letter-spacing: .1em; }
 .ag-grid {
-  grid-template-columns: minmax(250px, 280px) minmax(0, 1fr) minmax(270px, 300px);
+  /* The chat gets the most extra room: its messages were wrapping at about 27 characters. */
+  grid-template-columns: minmax(250px, 300px) minmax(0, 1fr) minmax(290px, 360px);
   gap: 18px;
   align-items: start;
 }
@@ -3235,7 +3243,8 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
   border-radius: 10px;
   background: color-mix(in srgb, var(--brand-soft) 45%, var(--surface));
 }
-@media (max-width: 1180px) {
+/* Up to 1300 px the chat drops below: three columns there left the alert under 460 px wide. */
+@media (max-width: 1300px) {
   .ag-grid { grid-template-columns: minmax(220px, 260px) minmax(0, 1fr); }
   .ag-comms { grid-column: 1 / -1; }
 }
@@ -3390,9 +3399,7 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 }
 .ag-decide .ag-close button[type="submit"],
 .ag-decide .ag-ask button[type="submit"] { min-height: 40px; }
-@container (min-width: 780px) {
-  .ag-worksplit { grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); align-items: start; }
-}
+/* Investigate and Decide stay stacked: side by side (from a 780 px column) cut log lines off and truncated the request menu. */
 @media (max-width: 700px) {
   .ag-alert > .dk-ticket { padding: 15px 15px 15px 19px; }
   .ag-alert > .dk-ticket .dk-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -4631,3 +4638,41 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .ex-choice input:checked + span { border-color: var(--brand); background: var(--brand-soft); color: var(--ink); box-shadow: inset 0 0 0 1px var(--brand); }
 .ex-choice input:focus-visible + span { outline: 2px solid var(--brand); outline-offset: 2px; }
 .ex-setup-note { margin: 0; font-size: 0.88rem; }
+
+/* The shift desk on a wide screen (16 Nov): the queue and the chat stay in view beside the long alert column instead of
+   leaving empty space under them (top 84 px clears the sticky shift bar), and the chat title sits with its marker. */
+@media (min-width: 901px) {
+  .ag-queue { position: sticky; top: 84px; max-height: calc(100vh - 100px); overflow: auto; }
+}
+@media (min-width: 1301px) {
+  .ag-comms { position: sticky; top: 84px; max-height: calc(100vh - 100px); }
+}
+.ag-comms h2 { justify-content: flex-start; }
+
+/* Phones: the section tabs sit in one row that scrolls sideways (they wrapped to three rows, about 170 px, above every
+   page). A fade at the right edge shows there are more. (The row isn't scrolled to the current tab: that pushes
+   "home" off the left edge, which accessibility checkers read as a hidden skip link. The page title says where you are.) */
+@media (max-width: 600px) {
+  .tabs-inner { flex-wrap: nowrap; overflow-x: auto; gap: 2px; scrollbar-width: none; overscroll-behavior-x: contain;
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent); padding-right: 24px; }
+  .tabs-inner::-webkit-scrollbar { display: none; }
+  .tab-group { flex-wrap: nowrap; }
+  .tab-label { display: none; }
+  nav.tabs a { white-space: nowrap; min-height: 40px; }
+}
+
+/* PATCH//AGENCY desk spacing (16 Nov): one scale, last in the file so it wins over the earlier layers. The shift bar,
+   status tiles and columns were stacked with no gap at all (0 px), and the other gaps ranged from 7 to 18 px.
+   Regions and columns 20 px apart, tiles 14, queue items 10; a little tighter on phones. */
+.ag-desk:not([hidden]) { display: grid; gap: 20px; min-width: 0; }
+.ag-stats { gap: 14px; padding: 0; }
+.ag-grid { gap: 20px; }
+.ag-alert { gap: 20px; }
+.ag-worksplit { gap: 20px; }
+.ag-queue ol { gap: 10px; }
+.ag-comms { gap: 12px; }
+@media (max-width: 900px) {
+  .ag-desk:not([hidden]) { gap: 14px; }
+  .ag-stats { gap: 10px; }
+  .ag-grid, .ag-alert, .ag-worksplit { gap: 14px; }
+}

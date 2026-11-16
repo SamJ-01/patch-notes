@@ -79,7 +79,8 @@ def snapshot(name, data=None):
     return data
 
 
-FONT_SOURCES = "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com"
+# Fonts are served from this site (static/fonts), so no visitor request goes to a third party.
+FONT_SOURCES = "style-src 'self' 'unsafe-inline'; font-src 'self'"
 
 
 def feedback_origin():
@@ -217,7 +218,8 @@ def assemble_template():
 
 def page_css(template):
     """Reuse the app's own fonts and stylesheet for the static lesson pages."""
-    fonts = re.search(r'<link rel="stylesheet" href="https://fonts[^>]+>', template).group(0)
+    # The lesson pages live in lessons/, one level down from the fonts.
+    fonts = re.search(r'<link rel="stylesheet" href="fonts/fonts.css">', template).group(0).replace('href="fonts/', 'href="../fonts/')
     css = re.search(r"<style>(.*?)</style>", template, re.S).group(1)
     return fonts, css
 
@@ -339,6 +341,20 @@ def serve(directory, port=8000):
         httpd.serve_forever()
 
 
+def security_txt(site, today=None):
+    """RFC 9116 security.txt: how to report a security problem with the site. The contact is the on-site feedback form
+    (no email address in the page); Expires is a year from the build, so a daily build never lets it lapse."""
+    today = today or dt.date.today()
+    base = site["url"].rstrip("/")
+    expires = (today + dt.timedelta(days=365)).isoformat()
+    contact = site.get("feedback", "")
+    contact = base + "/" + contact if contact.startswith("#") else contact
+    return (f"Contact: {contact}\nExpires: {expires}T00:00:00.000Z\nPreferred-Languages: en\n"
+            f"Canonical: {base}/.well-known/security.txt\n"
+            "# Patch Notes is a static site: no accounts, no server-side code, and progress stays in your browser.\n"
+            "# Please describe the issue and how to reproduce it. Thank you for reporting responsibly.\n")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Build the Patch Notes site.")
     parser.add_argument("--days", type=int, default=7, help="look-back window for news and CVEs")
@@ -441,6 +457,8 @@ def main():
     if STATIC.exists():
         # Contents only: copying file metadata fails on macOS when a target file carries the 'compressed' flag.
         shutil.copytree(STATIC, SITE_DIR, dirs_exist_ok=True, copy_function=shutil.copyfile)
+    (SITE_DIR / ".well-known").mkdir(exist_ok=True)
+    (SITE_DIR / ".well-known" / "security.txt").write_text(security_txt(site))
     (SITE_DIR / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {site['url'].rstrip('/')}/sitemap.xml\n")
 
     kev = len(data["kev"])

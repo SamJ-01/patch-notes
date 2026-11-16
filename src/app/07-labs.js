@@ -40,6 +40,14 @@ const SCENE = {
   wireless: { d: [["ap", 100, 40, 0.8], ["laptop", 38, 78, 0.45], ["phone", 164, 78, 0.45]], g: [["lock", 146, 24, 1.1, "good"]] },
   "slow-network": { d: [["pc", 34, 56, 0.42], ["router", 100, 56, 0.5], ["server", 166, 52, 0.55]], g: [["gauge", 133, 22, 1.1, "bad"]], l: [[50, 56, 86, 56], [114, 56, 150, 54]], t: [["<1 ms", 67, 86, "good"], ["212 ms", 133, 86, "bad"]], p: ["M34 56L166 52"], tone: "bad" },
   "wifi-survey": { d: [["ap", 62, 46, 0.7], ["ap", 140, 46, 0.7]], g: [["alert", 172, 22, 1.1, "bad"]], t: [["Staff", 62, 90], ["Staff?", 140, 90, "bad"]] },
+  // GRC track (16 Nov): drawn until they get card photos (listed in docs/card-shot-list.md).
+  risk: { g: [["gauge", 64, 42, 1.8, "bad"], ["doc", 146, 42, 1.6]], l: [[88, 42, 124, 42]], t: [["4 × 5 = 20", 64, 86, "bad"], ["owner", 146, 86]] },
+  law: { g: [["lock", 62, 42, 1.8], ["doc", 140, 42, 1.6]], l: [[84, 42, 120, 42]], t: [["CMA 1990", 62, 86], ["72 h", 140, 86, "bad"]] },
+  "attack-models": { d: [["attacker", 34, 50, 0.5], ["server", 166, 50, 0.56]], g: [["link", 100, 28, 1.2, "bad"]], l: [[52, 50, 148, 50]], t: [["T1566", 100, 82]], p: ["M34 50L166 50"], tone: "bad" },
+  "cyber-essentials-check": { g: [["doc", 56, 42, 1.8], ["shield", 146, 42, 1.6, "good"]], l: [[78, 42, 124, 42]], t: [["5 controls", 100, 88]] },
+  "risk-register": { g: [["doc", 56, 42, 1.8], ["gauge", 146, 42, 1.5, "bad"]], l: [[78, 42, 124, 42]], t: [["R1 · 20", 146, 86, "bad"]] },
+  "allowed-or-not": { d: [["laptop", 40, 52, 0.5], ["server", 160, 50, 0.56]], g: [["lock", 100, 26, 1.2, "good"]], l: [[58, 52, 142, 50]], t: [["authorised?", 100, 84]] },
+  "threat-model": { d: [["server", 150, 48, 0.58]], g: [["doc", 52, 44, 1.7], ["alert", 184, 20, 1, "bad"]], l: [[74, 44, 132, 48]], t: [["STRIDE", 100, 88]] },
   "scope-roe": { g: [["doc", 62, 46, 2], ["lock", 140, 46, 1.6, "good"]], l: [[84, 46, 120, 46]], t: [["IN SCOPE", 140, 82, "good"]] },
   "nmap-read": { d: [["laptop", 40, 54, 0.55], ["server", 156, 50, 0.6]], g: [["search", 98, 30, 1.2]], l: [[60, 52, 138, 50]], t: [["22 · 80 · 443", 156, 88]], p: ["M40 54L156 50"] },
   "validate-findings": { g: [["alert", 48, 46, 1.6, "bad"], ["search", 100, 46, 1.6], ["shield", 152, 46, 1.6, "good"]], l: [[66, 46, 82, 46], [118, 46, 134, 46]], t: [["false positive?", 100, 84]] },
@@ -176,19 +184,20 @@ document.addEventListener("mouseover", e => {
   setTimeout(() => delete card.dataset.playing, 2200);
 });
 // Practise page: security tracks first, so networking (the biggest track) doesn't bury the rest.
-const CATEGORY_ORDER = ["Security operations", "Your own evidence", "Cryptography", "Linux", "Networking", "Ethical hacking", "Games"];
+// Grouped by topic (16 Nov): "Security operations" had grown to 35 items while "Threats" held one.
+const CATEGORY_ORDER = ["SOC & incident response", "Identity & email", "Web & cloud", "Vulnerabilities", "Governance", "Your own evidence", "Cryptography", "Linux", "Network security", "Networking", "Ethical hacking", "Games"];
 // "Start here": one pick per track. When a pick is done, the next unfinished item in its track takes its place.
 const PRACTISE_PICKS = ["agency:shift-01", "lab:hashing", "lab:permissions", "lab:network-builder"];
 const PS = { track: "All", open: {} };  // the chosen filter and which tracks are expanded, for this visit
 function practiseItems() {
   // Each item carries its card html and the fields the compact one-line row needs (label, href, sub).
   return [
-    ...(DATA.agency || []).map(sh => ({ key: `agency:${sh.id}`, cat: "Security operations", done: !!(P.agency || {})[sh.id], html: shiftCard(sh), label: `PATCH//AGENCY: ${sh.title}`, href: `#agency-${esc(sh.id)}`, sub: `${sh.minutes} min` })),
+    ...(DATA.agency || []).map(sh => ({ key: `agency:${sh.id}`, cat: "SOC & incident response", done: !!(P.agency || {})[sh.id], html: shiftCard(sh), label: `PATCH//AGENCY: ${sh.title}`, href: `#agency-${esc(sh.id)}`, sub: `${sh.minutes} min` })),
     { key: "tool:headers-check", cat: "Your own evidence", done: false, html: headerToolCard(), label: "Email header checker", href: "#headers-check", sub: "Tool" },
     { key: "tool:log-search", cat: "Your own evidence", done: false, html: logToolCard(), label: "Log search", href: "#log-search", sub: "Tool" },
     { key: "tool:cvss-decode", cat: "Your own evidence", done: false, html: cvssToolCard(), label: "CVSS decoder", href: "#cvss-decode", sub: "Tool" },
     ...DATA.missions.map(m => ({ key: `mission:${m.id}`, cat: m.category || "Networking", done: Object.keys((P.missions || {})[m.id] || {}).length === Object.keys(m.modes).length, html: missionCard(m), label: m.title, href: `#mission-${esc(m.id)}`, sub: `Mission · ${m.minutes} min` })),
-    ...DATA.labs.map(l => ({ key: `lab:${l.id}`, cat: l.category || "Security operations", done: !!P.labs[l.id], html: labCard(l), label: l.title, href: `#lab-${esc(l.id)}`, sub: `Lab · ${l.minutes} min` })),
+    ...DATA.labs.map(l => ({ key: `lab:${l.id}`, cat: l.category || "SOC & incident response", done: !!P.labs[l.id], html: labCard(l), label: l.title, href: `#lab-${esc(l.id)}`, sub: `Lab · ${l.minutes} min` })),
     { key: "tool:subnet-calc", cat: "Networking", done: false, html: toolCard(), label: "Subnet calculator", href: "#subnet-calc", sub: "Tool" },
     { key: "games", cat: "Games", done: false, html: gamesCard(), label: "Phish or Legit, quizzes and a flag hunt", href: "#play", sub: "Game" },
   ];
@@ -209,7 +218,7 @@ VIEWS.missions = () => {
     </div>
     <div class="stack" id="pr-grid" style="gap:30px"></div>
   </div>`;
-  const SHOW = 4;
+  const SHOW = matchMedia("(max-width: 600px)").matches ? 2 : 4;  // a row of four on a desktop; two stacked cards on a phone
   const draw = () => {
     const shown = PS.track === "All" ? cats : [PS.track];
     const st = main.querySelector(".pr-start"); if (st) st.hidden = PS.track !== "All";  // the picks only repeat cards once a track is chosen
@@ -354,7 +363,7 @@ VIEWS.agency = () => {
 // A PATCH//AGENCY shift. Leaving mid-shift restarts it, so route() asks first (agencyShift.inProgress).
 let agencyShift = null;
 function agencyView(id, { shadow = false } = {}) {
-  const sh = SHIFT(id); if (!sh) return VIEWS.missions();
+  const sh = SHIFT(id); if (!sh) return notFound(VIEWS.agency);
   main.innerHTML = `<div class="view view-wide" id="agency-root"><div class="empty">Loading the shift…</div></div>`;
   import("./js/agency/ui.js").then(ui => {
     if (parseRoute().path !== "agency/" + id) return;
@@ -377,7 +386,7 @@ function agencyView(id, { shadow = false } = {}) {
 const LEAVE_SHIFT = "Leave this shift? It isn't saved part-way, so you'll start again next time.";
 addEventListener("beforeunload", e => { if (agencyShift?.inProgress && main.contains($("agency-root"))) e.preventDefault(); });
 function missionView(id) {
-  const m = MISSION(id); if (!m) return VIEWS.missions();
+  const m = MISSION(id); if (!m) return notFound(VIEWS.missions);
   main.innerHTML = `<div class="view" id="mission-root"><div class="empty">Loading mission…</div></div>`;
   import("./js/missions/ui.js").then(ui => {
     if (parseRoute().path !== "missions/" + id) return;  // the learner navigated away while it loaded
@@ -435,8 +444,13 @@ function mountVisual(v, here) {
   };
   (dispatch[v.kind] || (() => import("./js/caseart.js").then(a => done(t => a.mount(t, v)))))().catch(fail);
 }
+// Evidence labs are authored with the right answer mostly second, so options are mixed before they're shown: seeded by
+// lab and question, so the order is the same on every visit and redraw, but differs from question to question.
+const labSeed = (id, i) => [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 7 + i * 101);
+const mixLabSteps = l => ({ ...l, steps: l.steps.map((st, i) => st.type === "choice" ? mixOptions(st, seededRand(labSeed(l.id, i))) : st) });
 function labView(id) {
-  const l = LAB[id]; if (!l) return VIEWS.missions();
+  if (!LAB[id]) return notFound(VIEWS.missions);
+  const l = LAB[id].steps ? mixLabSteps(LAB[id]) : LAB[id];
   if (l.kind === "cvss") return cvssLab(l);
   if (MODULE_LABS.includes(l.kind)) return moduleLab(l);
   const solved = new Set(P.labSteps[id] || []);
