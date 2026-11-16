@@ -140,6 +140,8 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   Diamond, STRIDE). Doc labs (Practise group "Governance"): `cyber-essentials-check`, `risk-register`, `allowed-or-not`, `threat-model`.
   Paths `grc` and `it-support`. Practise is grouped by topic (CATEGORY_ORDER in 07-labs). Evidence lab options are mixed when shown
   (`mixLabSteps`); tests pick lab answers by text. Fonts are self-hosted (`static/fonts`); the build writes `/.well-known/security.txt`.
+- Review deck (`#review`, `static/js/review.js`, tests `tests/review.test.mjs`): due cards first, then new cards 15 per session
+  (`NEW_PER_SESSION`; `reviewDueCount` in 08-you mirrors it). Exam hub cards show each cert's `card` line (who it suits) and study order.
 - Hashing lab (`#lab-hashing`, `static/js/labs/hashing.js`, tests `tests/hashing.test.mjs`): MD5/SHA-1/SHA-256, salts, slow hashes.
 - Device drawings (`static/js/hw.js`, `HW`): a 3/4 view (`hwBox` adds a lit top and shaded side, which also carry
   `hw-body` so state colours reach them; `--hw-face-top/side` per theme). Keep detail readable at ~50 px.
