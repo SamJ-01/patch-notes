@@ -42,7 +42,9 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - Avoid reading fatigue: pictures before paragraphs. Lessons open with three `keys` ({ icon, label, text ≤12 words }, tested)
   and fold the full `what` away; cards use a short `card` line; keep intros and notes to about 30 words. Jargon is
   underlined by `gloss()` on the page and `globalThis.PN_gloss` in modules (questions and explanations too, never inside
-  buttons): add missing terms to `content/glossary.json`. Question-and-evidence labs can add a `primer` (picture cards, plus
+  buttons): add missing terms to `content/glossary.json`. `"auto": false` (never underlined) is only for everyday words
+  (vulnerability, malware, patch, cloud...); acronym plurals ("IPs", "VLANs") match their alias. Avoid aliases that are ordinary
+  phrases in news ("A record", "RIP", "common name"). Question-and-evidence labs can add a `primer` (picture cards, plus
   what result words mean) and a `where` per step for "Show me where" (`MAIL.highlight` for emails, the grep box for logs; tested).
 
 ## Status (Oct 2026)
@@ -50,7 +52,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   phishing triage ("Which email was it?", `phish-triage.json`: the email inspector, `scenario.emails` with raw headers parsed by
   `engine.parseHeaders`; findings come from `engine.inspectEmail`). Keep its headers, log lines and findings in step: tests check they agree.
 - Exam prep has its own tab (`#exams`, `VIEWS.exams` in 06-learn; cert pages `#cert-<id>` sit under it), so lessons stay free of
-  exam clutter (a lesson only shows its "Prove it" stage). Network+ N10-009 (25 objectives, 60 questions, "Am I ready?" panel), Security+ SY0-701 (28 objectives, 147 questions, mock exams; every objective now has a lesson, lab or shift). Mock options on each cert page (`mockOptions` in 06-learn, saved as `P.mockPrefs`; pure `mockLengths`/`mockSettings` in exam.js, tested): 10/20/45/90 questions (only lengths the bank fills at the domain weights; 90 = full length, Security+ only), timed at exam pace or untimed, feedback at the end or after each question. Only timed, end-feedback mocks of 20+ count towards "Am I ready?" (others are saved with `practice: 1`). PenTest+ PT0-003 (26 objectives, 47 questions;
+  exam clutter (a lesson only shows its "Prove it" stage). Network+ N10-009 (25 objectives, 69 questions, "Am I ready?" panel), Security+ SY0-701 (28 objectives, 149 questions, mock exams; every objective now has a lesson, lab or shift). Mock options on each cert page (`mockOptions` in 06-learn, saved as `P.mockPrefs`; pure `mockLengths`/`mockSettings` in exam.js, tested): 10/20/45/90 questions (only lengths the bank fills at the domain weights; 90 = full length, Security+ only), timed at exam pace or untimed, feedback at the end or after each question. Only timed, end-feedback mocks of 20+ count towards "Am I ready?" (others are saved with `practice: 1`). PenTest+ PT0-003 (26 objectives, 48 questions;
   mostly defender-side coverage, said in its note), with three evidence labs for it:
   `scope-roe` (rules of engagement, kind "doc"), `nmap-read` (Nmap 7.94 -sV output) and `validate-findings` (false positives, backports). `build.load_certs()` orders them Network+, Security+, PenTest+ (tested). All three map
   and tag questions per objective (not per domain), every objective has a question, and each domain holds at least twice
@@ -149,6 +151,55 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   The risk lesson uses the matrix; tested that risks over its appetite aren't simply accepted.
   `cards` render as a spotlight (picture tiles, the chosen one large beneath, Back/Next); `ordered: true` numbers them
   with arrows (zero-day, wireless, certificates).
+- Photo scenes (16-17 Nov): a lesson concept of type `scene` is a real photo with numbered hotspots: `image { src: "img/....webp", width, height, alt }` and items
+  `{ label, text, at: [x%, y%], tone: c|i|a|good|bad, tag?, breaks? }`; pin hotspots by reading the finished image; tested that
+  the file exists at its declared size. The CIA lesson uses it (`img/scenes/cia-pharmacy.webp`, six hotspots, two per pillar). Security controls uses `img/scenes/security-controls-entrance.webp` (one hotspot per control type; tones only mean CIA, so none there).
+  A lesson can also have `scene` beside its `concept` (malware, data-breach, wireless, iot-ot, network-ops, osint,
+  supply-chain): the See it panel opens on the photo with
+  a Photo / Diagram switch (`data-view`, not `data-see`, which the glossary and checks already use). Scene items may carry `fix`
+  ("How to fix it") instead of `breaks`. Tested: valid, and never beside a flow diagram or explainer. Its faceless cast (matte off-white heads,
+  navy staff, grey public) is the standard for every scene: `docs/image-style.md`; next scenes in `docs/scene-shot-list.md`.
+- Ransomware lesson "See it" (17 Nov): explainer kind `ransomware` (`static/js/ransomware.js`, loaded by explainers.js; tests
+  `tests/ransomware.test.mjs`). The attack walks attacker > VPN > admin laptop > file server > backups over six days (device
+  drawings, a day clock, "How it's stopped here"), then "Stop it": pick `BUDGET` (2) defences and run it again. Pure `runAttack`
+  (each stage done / blocked / survived / never; what was lost; outcome stopped / recovered / lost) and `deviceStates`. Stacks
+  vertically under 560 px. Replaced the lesson's old text-card diagram (same five stages).
+- Flag hunt (#play, Flag hunt): a "Is this safe? Yes" note with the self-XSS rule, and a "Show me how" fold per flag
+  (`FLAG_INFO[i].how` steps per browser and a `phone` line, in 09-shell). The console prints a red "Stop." self-XSS warning
+  before the flag 2 message.
+- Safety notes (17 Nov): `safeNote(key, { how })` in 02-glossary (also `globalThis.PN_safeNote` for modules), copy in
+  `content/safety.json` (`DATA.safety`): a green "Is this safe?" or amber real-life caution, one line, then a fold
+  ("Show me how" steps per lab kind, or further points). Labs and lessons opt in with `"safety": key | [keys]`: `sim` on
+  every command-line lab (kinds terminal, nettools, vlan, perms; placed above the terminal), `scan` on recon/Nmap labs
+  (Computer Misuse Act, practise safely), `osint`. Also on the paste tools (`paste`, `cvss`), You page (`progress`,
+  `install`), Agency hub and client file (`fictional`), CVE Radar (`cve`), feedback (`feedback`), and the exam date
+  (`examdate`). Tested (`SafetyNotes` in test_core, page.test): keys exist, terminal labs carry `sim` with steps, short copy,
+  Agency public IPs are documentation ranges (the `fictional` note says so). Keep each note's claims true when content changes.
+- Command-line shorthand (17 Nov): every terminal takes what people really type, and says "[Simulator: X is a real ... command,
+  but this lab doesn't model it]" for real commands it lacks (never a caret or "command not found", which suggest a typo).
+  IOS (vlan.js): unique prefixes as before, plus wr / wr mem / copy run start and sh start (`st(dev).saved`), sh ip int br on
+  switches, sh run int X, sh hist, description; real-but-unmodelled shows (version, mac, cdp, spanning-tree, vtp, clock...) are
+  in the grammar so abbreviations stay ambiguous exactly as on a real device (sh v is ambiguous). Windows PCs: ping -n/-t,
+  hostname. Linux (terminal.js): Ubuntu's ll/la/l, ls -A/-F, grep -r/-v/-c/-l, awk '{print $N}' (fields only), less, id,
+  --help. Network tools: ping -c/-n with values, dig (+short, @server, BIND 9.18 layout), host, ip a/r/n (iproute2), quoted
+  words, nmap points to discover. Permissions: ll, whoami, groups, chmod/chown -R. Tested in vlan, labs and perms tests.
+  Exam bridge: Network+ 5.5 has 12 questions (show commands, IOS abbreviations and ambiguity, saving, ping -c vs -n, ip a,
+  dig +short) and maps the VLAN and inter-VLAN labs; Security+ 4.9 (the auth.log awk pipeline) and 4.6 (reading ls -l), PenTest+
+  2.4 (nmap -p-). A question `scenario` that is command output (a prompt, an ls -l line, or several lines) renders monospaced
+  (`isCli` in exam.js, `.ex-cli`; tested).
+- PBQs (17 Nov): performance-based questions, `static/js/pbq.js` (pure `grade`/`modelAnswer`/`startOrder`/`cliNet` + `mount`;
+  tests `tests/pbq.test.mjs`), content `content/pbq/<cert>.json` (attached as `cert.pbqs` by `build.load_certs`), route
+  `#pbq-<id>` (`pbqView` in 06-learn), a "Performance-based questions" panel on each cert page, a PBQs fact on the hub card.
+  Kinds: `match` (selects; `mono` for log lines), `order` (up/down; fixed seeded start, never already right), `subnet`
+  (answers computed by `subnetInfo`, not stored), `firewall` (ordered rule rows from option lists, graded by sending `tests`
+  packets through `labs/firewall.js` `evaluate`; no rules = no credit; `explicitDeny` adds a policy part), `cli` (a broken
+  `start` state on a lab's topology via vlan.js `createNet`, `tasks` with net checks incl. `saved` = `isSaved`, `model` commands
+  per device). Partial credit per part; Check / Show the answer (not counted) / Start again; a count-up clock against
+  `minutes`. Best score per PBQ in `P.pbq` (cleaned, tested); 70%+ counts the objective activity as done (`PBQ_PASS`, +30 XP
+  once). PBQs are added to their objectives' activities at runtime (`certObjectives`), so maps don't list them. Tested: well
+  formed, real objectives, every model answer scores 100%, no PBQ solved at the start. Smoke: one answered by hand, one firewall
+  built rule by rule. Ten so far: Network+ ports, subnet table, fix the S3 trunk (cli), troubleshooting order; Security+ DMZ
+  firewall, attacks in log lines, IR phases; PenTest+ nmap options, scope, remediation. Next: PBQs inside mock exams.
 - Practise page: length filters and "Not done yet" (`PS.time`/`PS.todo`, pure `practiseMatch`, tested) and "Pick up where you
   left off" (`pn-last` in localStorage, a convenience not progress; `lastActivity` only offers a known unfinished lab, mission
   or shift; tested). Labs and shifts don't save mid-way yet, so it reopens them from the start.
