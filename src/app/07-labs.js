@@ -40,7 +40,7 @@ const SCENE = {
   wireless: { d: [["ap", 100, 40, 0.8], ["laptop", 38, 78, 0.45], ["phone", 164, 78, 0.45]], g: [["lock", 146, 24, 1.1, "good"]] },
   "slow-network": { d: [["pc", 34, 56, 0.42], ["router", 100, 56, 0.5], ["server", 166, 52, 0.55]], g: [["gauge", 133, 22, 1.1, "bad"]], l: [[50, 56, 86, 56], [114, 56, 150, 54]], t: [["<1 ms", 67, 86, "good"], ["212 ms", 133, 86, "bad"]], p: ["M34 56L166 52"], tone: "bad" },
   "wifi-survey": { d: [["ap", 62, 46, 0.7], ["ap", 140, 46, 0.7]], g: [["alert", 172, 22, 1.1, "bad"]], t: [["Staff", 62, 90], ["Staff?", 140, 90, "bad"]] },
-  // GRC track (16 Nov): drawn until they get card photos (listed in docs/card-shot-list.md).
+  // Drawn scenes: the fallback for any card without a photo (threat-model still uses its drawn scene).
   risk: { g: [["gauge", 64, 42, 1.8, "bad"], ["doc", 146, 42, 1.6]], l: [[88, 42, 124, 42]], t: [["4 × 5 = 20", 64, 86, "bad"], ["owner", 146, 86]] },
   law: { g: [["lock", 62, 42, 1.8], ["doc", 140, 42, 1.6]], l: [[84, 42, 120, 42]], t: [["CMA 1990", 62, 86], ["72 h", 140, 86, "bad"]] },
   "attack-models": { d: [["attacker", 34, 50, 0.5], ["server", 166, 50, 0.56]], g: [["link", 100, 28, 1.2, "bad"]], l: [[52, 50, 148, 50]], t: [["T1566", 100, 82]], p: ["M34 50L166 50"], tone: "bad" },
@@ -152,7 +152,7 @@ const headArt = k => (HEAD_PHOTOS.has(k)
   : `<span class="head-art card-art" aria-hidden="true">${sceneSvg(HEAD_SCENE[k])}</span>`);
 // Card pictures: an illustration where one exists (img/cards/<id>.webp, 2:1, one style, made in batches of six),
 // otherwise the drawn scene. Photos fade in once loaded, in space that's already reserved.
-const CARD_PHOTOS = new Set(["firewall-packet", "vishing-call", "dhcp", "dns", "phish-triage", "ssh-brute", "hashing", "permissions",
+const CARD_PHOTOS = new Set(["threat-model", "risk", "law", "attack-models", "cyber-essentials-check", "risk-register", "allowed-or-not", "asset-register", "soar-playbook", "firewall-packet", "vishing-call", "dhcp", "dns", "phish-triage", "ssh-brute", "hashing", "permissions",
   "osi-model", "topologies", "ports-protocols", "subnetting", "tcp-handshake", "cable-wiring",
   "finding-the-server", "one-request", "vlans", "network-builder", "telnet-ssh", "linux-terminal",
   "net-detective", "log-detective", "header-inspector", "cvss-builder", "recon-basics", "play",
@@ -307,6 +307,7 @@ function cvssToolCard() {
 function logToolView() {
   main.innerHTML = `<div class="view"><div class="view-head"><a class="link-btn" href="#missions">← Practise</a><div class="eyebrow">Tool · your own evidence</div><h1>Log search</h1>
     <p>Paste or open a real log. Search it like ${gloss("grep", 1)}, and see the summary an analyst would build first.</p></div>
+    ${safeNote("paste")}
     <div id="lg-root"><div class="empty">Loading…</div></div></div>`;
   import("./js/tools/logs.js").then(mod => { if (parseRoute().path === "tools/log-search") mod.mount($("lg-root"), { samples: DATA.tools?.logSamples || [] }); })
     .catch(() => { $("lg-root").innerHTML = `<div class="empty">Couldn't load the log search. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
@@ -319,6 +320,7 @@ function headerToolCard() {
 function headersToolView() {
   main.innerHTML = `<div class="view"><div class="view-head"><a class="link-btn" href="#missions">← Practise</a><div class="eyebrow">Tool · Security operations</div><h1>Email header checker</h1>
     <p>Paste the headers of a real email you're unsure about. See who really sent it, the route it took and whether it passed ${gloss("SPF, DKIM and DMARC", 3)}.</p></div>
+    ${safeNote("paste")}
     <div id="hc-root"><div class="empty">Loading…</div></div></div>`;
   import("./js/tools/headers.js").then(mod => { if (parseRoute().path === "tools/headers-check") mod.mount($("hc-root"), { samples: DATA.tools?.headerSamples || [] }); })
     .catch(() => { $("hc-root").innerHTML = `<div class="empty">Couldn't load the checker. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
@@ -372,6 +374,7 @@ VIEWS.agency = () => {
     <header class="ag-hero"><div class="ag-logo" aria-hidden="true">PATCH<b>//</b>AGENCY</div>
       <h1>${esc(next.agency)}</h1>
       <p>A security operations centre (SOC) watching its clients' systems around the clock. You take the desk: read the alerts, work out what's real, get other teams to act, and hand over to the next shift.</p></header>
+    ${safeNote("fictional")}
     <div class="ag-hubgrid">
       <section class="ag-idcard" aria-label="Your staff badge">
         <div class="ag-id-top"><span class="ag-logo sm" aria-hidden="true">LANTERNFIELD</span><span class="ag-id-no mono">LF-${String(1000 + worked * 37).padStart(4, "0")}</span></div>
@@ -453,6 +456,8 @@ function missionView(id) {
     $("mission-root").innerHTML = `<div class="empty">Couldn't load the mission code (js/missions/ui.js). If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`;
   });
 }
+// A lab's safety notes (content/safety.json): "safety": key or [keys]; terminal labs get "Show me how" steps for their kind.
+const labSafety = l => [].concat(l.safety || []).map(k => safeNote(k, { how: l.kind })).join("");
 const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring", "wiretap", "vlan", "hashing", "netbuilder", "perms", "journey", "corridor", "firewall", "vishing"];  // labs with their own module in static/js/labs/<kind>.js
 function moduleLab(l) {
   main.innerHTML = `<div class="view" id="lab-root"><div class="empty">Loading lab…</div></div>`;
@@ -465,6 +470,9 @@ function moduleLab(l) {
       onReset: () => resetLab(l.id),
     });
     topicTop($("lab-root"), pageTopic(l), labStage(l));
+    // The note sits just above the terminal (where the "is this my real computer?" worry starts), else under the title.
+    const notes = labSafety(l), at = $("lab-root").querySelector(".term-grid");
+    if (notes) at ? at.insertAdjacentHTML("beforebegin", notes) : $("lab-root").querySelector(".view-head")?.insertAdjacentHTML("afterend", notes);
   }).catch(() => { $("lab-root").innerHTML = `<div class="empty">Couldn't load this lab. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
 }
 function completeLab(l) {
@@ -503,6 +511,7 @@ function labView(id) {
     <a class="link-btn" href="#missions">← Practise</a>
     <header class="lesson-open"><p class="eyebrow">Lab · ${esc(l.track)} · ${l.minutes} min</p><h1>${esc(l.title)}</h1></header>
     ${loopStrip(pageTopic(l), labStage(l))}
+    ${labSafety(l)}
     ${l.artifact.kind === "headers" ? `<section class="lesson-mail">${MAIL.card({ headers: l.artifact.text, body: l.artifact.body, links: l.artifact.links }, { id: "lab-mail", views: ["message", "original"], org: "halcyonlabs.example", client: true })}</section>` : `<section class="panel screen"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
       ${l.artifact.kind === "log" ? `<div class="row"><label class="sr" for="lab-f">Filter lines</label><span class="mono" style="color:var(--sun)">grep</span><input id="lab-f" type="search" placeholder="${esc(l.artifact.placeholder || "e.g. Failed password")}" autocomplete="off" spellcheck="false"></div>` : ""}
       <pre class="evidence" id="lab-pre" tabindex="0" aria-label="Evidence"></pre></section>`}
@@ -625,6 +634,7 @@ function cvssToolView(h) {
   const EX = [["Log4Shell (3.1)", "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"], ["A phishing-style bug (3.1)", "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N"], ["A local bug (4.0)", "CVSS:4.0/AV:L/AC:L/AT:N/PR:L/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N"]];
   main.innerHTML = `<div class="view"><div class="view-head"><a class="link-btn" href="#missions">← Practise</a><div class="eyebrow">Tool · your own evidence</div><h1>CVSS decoder</h1>
     <p>Paste a ${gloss("CVSS", 1)} vector from an advisory and see what each part means, with the score.</p></div>
+    ${safeNote("cvss")}
     <section class="panel hc-in"><label for="cv-in" class="sr-only">CVSS vector</label><input id="cv-in" class="mono cv-in" placeholder="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H" autocomplete="off" spellcheck="false" value="${esc(start)}">
       <div class="row"><button class="btn brand" type="button" id="cv-go">Decode</button><span class="muted hc-try">or try:</span>${EX.map(([l, v]) => `<button class="chip" type="button" data-cv="${esc(v)}">${esc(l)}</button>`).join("")}</div></section>
     <div id="cv-out" aria-live="polite"></div></div>`;

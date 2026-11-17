@@ -116,6 +116,7 @@ function certActivity(a) {
   if (a.type === "lab") { const l = DATA.labs.find(x => x.id === a.id); return l && { label: l.title, href: "#lab-" + a.id, done: !!P.labs[a.id] }; }
   if (a.type === "mission") { const m = MISSION(a.id); return m && { label: m.title, href: "#mission-" + a.id, done: count((P.missions || {})[a.id]) > 0 }; }
   if (a.type === "agency") { const sh = SHIFT(a.id); return sh && { label: `PATCH//AGENCY: ${sh.title}`, href: "#agency-" + a.id, done: !!(P.agency || {})[a.id] }; }
+  if (a.type === "pbq") { const f = PBQ(a.id); return f && { label: `PBQ: ${f.q.title}`, href: "#pbq-" + a.id, done: (P.pbq[a.id] ?? -1) >= PBQ_PASS }; }
   if (a.type === "tool" && CERT_TOOLS[a.id]) return { label: CERT_TOOLS[a.id], href: "#" + a.id, done: null };  // a tool: nothing to complete
   return null;
 }
@@ -125,7 +126,11 @@ function objectiveProgress(o) {
   return { acts, done: countable.filter(a => a.done).length, total: countable.length };
 }
 const CERT_TOOLS = { "subnet-calc": "Subnet calculator", "headers-check": "Email header checker", "log-search": "Log search", "cvss-decode": "CVSS decoder" };
-const certObjectives = c => c.domains.flatMap(d => d.objectives.map(o => ({ ...o, domain: d })));
+const certObjectives = c => c.domains.flatMap(d => d.objectives.map(o => ({ ...o, domain: d,
+  activities: [...o.activities, ...(c.pbqs || []).filter(q => q.objectives.includes(o.id)).map(q => ({ type: "pbq", id: q.id }))] })));
+// Performance-based questions (content/pbq/<cert>.json, static/js/pbq.js): find one, with its exam.
+const PBQ = id => { for (const c of DATA.certs) { const q = (c.pbqs || []).find(x => x.id === id); if (q) return { q, c }; } return null; };
+const PBQ_PASS = 70;  // a best score at or above this counts the PBQ as practised
 // Exam prep has its own tab, so certification material doesn't crowd the lessons.
 VIEWS.exams = () => {
   const compact = viewMode() === "compact";
@@ -135,7 +140,7 @@ VIEWS.exams = () => {
     <div class="view-head with-art">${headArt("exams")}<h1>Exam prep</h1>
       <p>CompTIA objectives mapped to what you can practise here, with practice questions, mock exams and an honest "Am I ready?" check.</p></div>
     <ol class="exam-how" aria-label="How exam prep works">
-      <li><b>1</b><span><strong>Practise each objective</strong> with the lessons and labs mapped to it</span></li>
+      <li><b>1</b><span><strong>Practise each objective</strong> with the lessons, labs and hands-on PBQs mapped to it</span></li>
       <li><b>2</b><span><strong>Take a timed mock</strong> at the real exam's pace and domain weights</span></li>
       <li><b>3</b><span><strong>Check "Am I ready?"</strong> for an honest verdict and what to study next</span></li></ol>
     <div class="row" style="justify-content:flex-end">${viewToggle()}</div>
@@ -144,13 +149,40 @@ VIEWS.exams = () => {
     <p class="muted cert-note">The questions are original, not real exam questions. It's preparation, not a guarantee of passing.</p>
   </div>`;
 };
+// The exam's performance-based questions: the hands-on tasks that open the real exam.
+function pbqPanel(c) {
+  if (!(c.pbqs || []).length) return "";
+  return `<section class="panel wide pbq-panel" aria-labelledby="pbq-h"><div class="panel-title"><h2 id="pbq-h">Performance-based questions</h2><span class="eyebrow">${c.pbqs.length} PBQs · original, not real exam tasks</span></div>
+    <p class="muted" style="margin:0">The real exam opens with a few hands-on tasks like these, marked part by part. Practise them here with no time pressure, then against the clock.</p>
+    <div class="try-list">${c.pbqs.map(q => { const best = P.pbq[q.id];
+      return `<a class="try-row" href="#pbq-${esc(q.id)}"><span class="eyebrow">${esc(PBQ_KINDS[q.kind] || q.kind)} · about ${q.minutes} min · ${q.objectives.map(esc).join(", ")}${best != null ? ` · <span style="color:var(${best >= PBQ_PASS ? "--good" : "--sun"})">best ${best}%</span>` : ""}</span><b>${esc(q.title)}</b></a>`; }).join("")}</div></section>`;
+}
+const PBQ_KINDS = { match: "Match", order: "Put in order", subnet: "Fill in the table", firewall: "Configure the firewall", cli: "Command line" };
+// One PBQ on its own page (#pbq-<id>), under the Exams tab.
+function pbqView(id) {
+  const f = PBQ(id); if (!f) return notFound(VIEWS.exams);
+  const { q, c } = f, names = Object.fromEntries(certObjectives(c).map(o => [o.id, o.title]));
+  main.innerHTML = `<div class="view"><article class="article lesson" style="max-width:940px"><a class="link-btn" href="#cert-${esc(c.id)}">← ${esc(c.name)}</a>
+    <header class="lesson-open"><p class="eyebrow">PBQ · ${esc(c.exam)} · ${q.objectives.map(o => `${esc(o)} ${esc(names[o] || "")}`).join(" · ")}</p><h1>${esc(q.title)}</h1></header>
+    <div id="pbq-root"><div class="empty">Loading…</div></div>
+    ${toTopButton()}</article></div>`;
+  import("./js/pbq.js").then(m => {
+    if (parseRoute().path !== "exams/pbq/" + id) return;
+    m.mount($("pbq-root"), q, { lab: q.lab ? DATA.labs.find(l => l.id === q.lab) : null, best: P.pbq[id] ?? null, onScore: pct => {
+      const before = P.pbq[id];
+      if (before == null || pct > before) P.pbq[id] = pct;
+      if ((before ?? -1) < PBQ_PASS && pct >= PBQ_PASS) { award(30, `PBQ: ${q.title}`); celebrate("PBQ passed!", `${q.title} · ${pct}%`); }
+      saveP();
+    } });
+  }).catch(() => { $("pbq-root").innerHTML = `<div class="empty">Couldn't load this PBQ. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
+}
 function certCard(c, i) {
   const objs = certObjectives(c), practised = objs.filter(o => { const p = objectiveProgress(o); return p.total && p.done === p.total; }).length;
   const unit = objs.length === c.domains.length ? "domains" : "objectives";  // Security+ and PenTest+ are mapped by domain
   const route = (DATA.paths || []).find(p => p.exam === c.id), stops = route ? (route.steps || route.stops || []).length : 0;
   return `<a class="lcard exam-card" href="#cert-${esc(c.id)}"><span class="eyebrow">${typeof i === "number" ? `Step ${i + 1} · ` : ""}${esc(c.exam)}</span><h3>${esc(c.name)}</h3>
     <p>${esc(c.card || "Practice questions, timed mock exams, a step-by-step route and where to study the rest.")}</p>
-    <dl class="exam-facts"><div><dt>Questions</dt><dd>${c.questions.length}</dd></div><div><dt>${unit[0].toUpperCase() + unit.slice(1)}</dt><dd>${objs.length}</dd></div>${stops ? `<div><dt>Route</dt><dd>${stops} stops</dd></div>` : ""}</dl>
+    <dl class="exam-facts"><div><dt>Questions</dt><dd>${c.questions.length}</dd></div>${(c.pbqs || []).length ? `<div><dt>PBQs</dt><dd>${c.pbqs.length}</dd></div>` : ""}<div><dt>${unit[0].toUpperCase() + unit.slice(1)}</dt><dd>${objs.length}</dd></div>${stops ? `<div><dt>Route</dt><dd>${stops} stops</dd></div>` : ""}</dl>
     <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(practised / objs.length * 100)}%"></i></span><span>${practised} of ${objs.length} practised</span></div></a>`;
 }
 // Practice question results: { [questionId]: { r: times right, w: times wrong, last: 1|0 } }
@@ -271,7 +303,8 @@ function examDateHtml(c, ex, r) {
           ${w.mocks && w.focus.length ? `<span>Then a timed mock exam.</span>` : ""}</span></li>`).join("")}</ol>`;
   return `<section class="exam-date" aria-labelledby="ed-h"><h3 class="cert-h" id="ed-h">Your exam date</h3>
     <div class="row ed-set"><label class="ed-label">I sit ${esc(c.exam)} on <input type="date" id="ed-input" value="${esc(date)}" min="${esc(todayStr())}"></label>
-      ${date ? `<button type="button" class="btn ghost" id="ed-clear">Clear the date</button>` : ""}</div>${body}</section>`;
+      ${date ? `<button type="button" class="btn ghost" id="ed-clear">Clear the date</button>` : ""}</div>${body}
+    ${DATA.safety?.examdate ? `<p class="muted ed-saved">${esc(DATA.safety.examdate.text)}</p>` : ""}</section>`;
 }
 function wireExamDate(c, progress) {
   const inp = $("ed-input"); if (!inp) return;
@@ -301,6 +334,7 @@ function certView(id) {
       <p class="muted" style="margin:0">Every answer explains why it's right or wrong. Your results mark each objective below as started, to revise, or all correct.</p>
       <div class="row"><button class="btn brand" type="button" data-practice="weak">Revise weak spots</button></div>
       ${mockOptions(c)}</section>` : ""}
+    ${pbqPanel(c)}
     <section class="panel wide ready" id="cert-ready" aria-labelledby="ready-h"><div class="panel-title"><h2 id="ready-h">Am I ready?</h2></div><p class="muted" style="margin:0">Working it out…</p></section>
     ${c.domains.map(d => `<section class="panel wide cert-domain"><div class="panel-title"><h2>${esc(d.id)} ${esc(d.name)}</h2><span class="eyebrow">${d.weight}% of the exam</span></div>
       <ul class="cert-list">${d.objectives.map(o => { const p = progress.get(o.id), [label, tone] = COVERAGE[o.coverage];
@@ -534,6 +568,7 @@ function showDoneCard(type, item, title) {
   setTimeout(() => { const c = root.querySelector("#done-card"); c?.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); c?.focus({ preventScroll: true }); }, 400);
 }
 
+const picturePre = l => !!(l.diagram || l.explainer);
 const SECTION_NAME = { what: "What it is", diagram: "See it", concept: "See it", xpl: "See it", example: "Real case", defend: "How defenders stop it" };
 // The first two sentences are the lesson. The rest stays one click away. A picture never shares the page with a second "See it".
 const ledeOf = text => {
@@ -554,7 +589,10 @@ function lessonView(id) {
   const showDiagram = !!l.diagram && (scene || !l.explainer);
   const showExplainer = !!l.explainer && (!showDiagram || both);
   const showConcept = !!l.concept && !showExplainer && !showDiagram;
-  const picture = showDiagram || showExplainer || showConcept;
+  // A lesson can also have a photo scene (l.scene) beside its concept diagram: the panel then opens on the photo,
+  // with a Photo / Diagram switch, so neither teaching picture is lost.
+  const showScene = !!l.scene && (showConcept || !picturePre(l));
+  const picture = showDiagram || showExplainer || showConcept || showScene;
   const leadMail = l.diagram?.steps?.[0]?.stage?.kind === "mail";
   const leadPicture = leadMail || l.diagram?.scene === "route";
   const seeBlock = picture ? (leadPicture
@@ -562,7 +600,9 @@ function lessonView(id) {
     : `<section class="panel wide screen" id="l-see"><div class="panel-title"><h2>See it</h2></div>
       ${showExplainer ? `<div id="l-xpl" tabindex="-1">${l.explainer.why ? `<p class="muted xpl-why">${gloss(l.explainer.why, 2)}</p>` : ""}<div id="lxpl"><div class="empty">Loading…</div></div></div>` : ""}
       ${showDiagram ? `<div id="l-diagram" tabindex="-1">${l.diagram.why ? `<p class="muted xpl-why">${gloss(l.diagram.why, 2)}</p>` : ""}<div id="lflow"><div class="empty">Loading the diagram…</div></div></div>` : ""}
-      ${showConcept ? `<div id="l-concept" tabindex="-1">${l.concept.why ? `<p class="muted xpl-why">${gloss(l.concept.why, 2)}</p>` : ""}<div id="lconcept"><div class="empty">Loading the diagram…</div></div></div>` : ""}
+      ${showScene && showConcept ? `<div class="see-switch" role="group" aria-label="What to show"><button type="button" class="chip" data-view="photo" aria-pressed="true">Photo</button><button type="button" class="chip" data-view="diagram" aria-pressed="false">Diagram</button></div>` : ""}
+      ${showScene ? `<div id="l-scene" tabindex="-1">${l.scene.why ? `<p class="muted xpl-why">${gloss(l.scene.why, 2)}</p>` : ""}<div id="lscene"><div class="empty">Loading the photo…</div></div></div>` : ""}
+      ${showConcept ? `<div id="l-concept" tabindex="-1"${showScene ? " hidden" : ""}>${l.concept.why ? `<p class="muted xpl-why">${gloss(l.concept.why, 2)}</p>` : ""}<div id="lconcept"><div class="empty">Loading the diagram…</div></div></div>` : ""}
     </section>`) : "";
   main.innerHTML = `<div class="view"><article class="article lesson">
     <a class="link-btn" href="#learn">← All lessons</a>
@@ -575,6 +615,7 @@ function lessonView(id) {
     <section class="case" id="l-example" tabindex="-1"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h2 class="case-h">${esc(l.example.title)}</h2><p>${gloss(l.example.text, 4, lseen)}</p>${l.example.source ? `<p class="muted" style="font-size:0.85rem">Source: <a href="${esc(l.example.source.url)}" target="_blank" rel="noopener">${esc(l.example.source.label)} ↗</a></p>` : ""}</section>
     <section id="l-defend" tabindex="-1"><h2>How defenders stop it</h2><ul class="checklist">${l.defend.map(d => `<li>${esc(d)}</li>`).join("")}</ul></section>
     <section class="doc panel${practice.length > 1 ? " wide" : ""}"><h2>Try it</h2>
+      ${[].concat(l.safety || []).map(k => safeNote(k)).join("")}
       ${practice.length ? `<div class="try-list">${practice.map(x => `<a class="try-row" href="${x.href}"><span class="eyebrow">${x.kind} · ${x.min} min${x.done ? ' · <span style="color:var(--good)">✓ done</span>' : ""}</span><b>${esc(x.title)}</b><span class="muted">${esc(x.sub)}</span></a>`).join("")}</div>` : ""}
       ${internal ? (practice.length ? "" : `<a class="btn brand" href="${esc(l.practice.url)}" style="justify-self:start">${esc(l.practice.label)}</a>`)
         : `<p class="muted try-else">${practice.length ? "More practice elsewhere" : "Practise elsewhere"}: <a href="${esc(l.practice.url)}" target="_blank" rel="noopener">${esc(l.practice.label)} ↗</a></p>`}
@@ -585,6 +626,14 @@ function lessonView(id) {
   </article></div>`;
   if (showDiagram) import("./js/flow.js").then(f => { if (parseRoute().path === "learn/" + id && $("lflow")) f.mount($("lflow"), l.diagram); })
     .catch(() => { if ($("lflow")) $("lflow").innerHTML = `<div class="empty">Couldn't load the diagram.</div>`; });
+  if (showScene) { const el = $("lscene"); if (el) el.id = "lscene-" + id; import("./js/concept.js").then(c => { const t = $("lscene-" + id); if (parseRoute().path === "learn/" + id && t) c.mount(t, l.scene); })
+    .catch(() => { const t = $("lscene-" + id); if (t) t.innerHTML = `<div class="empty">Couldn't load the photo.</div>`; }); }
+  main.querySelector(".see-switch")?.addEventListener("click", e => {
+    const b = e.target.closest("[data-view]"); if (!b) return;
+    const photo = b.dataset.view === "photo";
+    main.querySelectorAll(".see-switch [data-view]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    $("l-scene").hidden = !photo; $("l-concept").hidden = photo;
+  });
   if (showConcept) { const el = $("lconcept"); if (el) el.id = "lconcept-" + id; import("./js/concept.js").then(c => { const t = $("lconcept-" + id); if (parseRoute().path === "learn/" + id && t) c.mount(t, l.concept); })
     .catch(() => { const t = $("lconcept-" + id); if (t) t.innerHTML = `<div class="empty">Couldn't load the diagram.</div>`; }); }
   if (showExplainer) import("./js/explainers.js").then(x => { if (parseRoute().path === "learn/" + id && $("lxpl")) x.mount($("lxpl"), l.explainer.kind, { ...(l.explainer.opts || {}), head: false }); })

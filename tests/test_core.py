@@ -465,6 +465,52 @@ class FictionalDomains(unittest.TestCase):
                 self.assertTrue(self.ok(addr), f"{f.relative_to(ROOT)} uses the address domain {addr}")
 
 
+class SafetyNotes(unittest.TestCase):
+    """The "Is this safe?" notes (content/safety.json, safeNote in 02-glossary). Every key a lab or lesson names must
+    exist, every terminal lab says it's a simulator with "Show me how" steps for its kind, the copy stays short, and
+    the claims the notes make about the content stay true."""
+    NOTES = json.loads((CONTENT / "safety.json").read_text())
+    TERMINALS = {"terminal", "nettools", "vlan", "perms"}
+
+    def test_notes_are_complete_and_short(self):
+        for key, n in self.NOTES.items():
+            if key.startswith("_"):
+                continue
+            self.assertIn(n.get("tone"), {"good", "warn"}, key)
+            self.assertLessEqual(len(n["text"].split()), 32, f"{key}: keep the line to about 30 words")
+            for part in [n["title"], n["text"], *(n.get("more") or {}).get("items", []), *sum((n.get("how") or {}).values(), [])]:
+                self.assertNotIn("\u2014", part, f"{key}: no em dashes")
+            if n.get("more"):
+                self.assertTrue(n["more"]["summary"] and n["more"]["items"], key)
+
+    def test_every_named_note_exists(self):
+        lessons = content("lessons.json")
+        lessons = lessons["lessons"] if isinstance(lessons, dict) else lessons
+        for item in [*content("labs.json"), *lessons]:
+            for key in ([item["safety"]] if isinstance(item.get("safety"), str) else item.get("safety", [])):
+                self.assertIn(key, self.NOTES, f"{item['id']} names the note {key}")
+
+    def test_terminal_labs_say_they_are_simulators_with_steps(self):
+        for lab in content("labs.json"):
+            if lab.get("kind") in self.TERMINALS:
+                keys = [lab["safety"]] if isinstance(lab.get("safety"), str) else lab.get("safety", [])
+                self.assertIn("sim", keys, f"{lab['id']} has a command line: say it's a simulator")
+                self.assertTrue(self.NOTES["sim"]["how"].get(lab["kind"]), f"no Show me how steps for {lab['kind']}")
+
+    def test_agency_public_addresses_are_documentation_ranges(self):
+        """Backs the note "the public IP addresses come from ranges kept for examples"."""
+        import ipaddress
+        doc = [ipaddress.ip_network(n) for n in ("192.0.2.0/24", "198.51.100.0/24", "203.0.113.0/24")]
+        for f in sorted((CONTENT / "agency").glob("*.json")):
+            # Version numbers (Chrome/129.0.0.0) look like addresses; skip anything straight after a slash or letter.
+            for ip in re.findall(r"(?<![\w./])(\d{1,3}(?:\.\d{1,3}){3})(?![\d.])", f.read_text()):
+                try:
+                    a = ipaddress.ip_address(ip)
+                except ValueError:
+                    continue
+                self.assertTrue(a.is_private or a.is_loopback or a.is_unspecified or any(a in n for n in doc), f"{f.name}: {ip}")
+
+
 class Markup(unittest.TestCase):
     def test_glossary_terms_are_never_put_inside_buttons(self):
         """A glossary term is itself a button. Inside another button it can't be reached by keyboard, a tap
@@ -742,7 +788,7 @@ class ContentIntegrity(unittest.TestCase):
         import re
         kinds = set(re.findall(r"^  (\w+): `", (ROOT / "static" / "js" / "hw.js").read_text(), re.M))
         with_diagram = [l for l in self.lessons.values() if "diagram" in l]
-        self.assertGreaterEqual(len(with_diagram), 6)
+        self.assertGreaterEqual(len(with_diagram), 5)  # ransomware moved to its own explainer (17 Nov)
         for l in with_diagram:
             d = l["diagram"]; ids = {n["id"] for n in d["nodes"]}
             self.assertTrue(2 <= len(d["nodes"]) <= 5, l["id"])
@@ -760,7 +806,7 @@ class ContentIntegrity(unittest.TestCase):
         for l in with_concept:
             self.assertNotIn("diagram", l, f"{l['id']}: a lesson should have a flow diagram or a concept visual, not both")
             c = l["concept"]
-            self.assertIn(c["type"], {"triad", "cycle", "cards", "matrix"}, l["id"])
+            self.assertIn(c["type"], {"triad", "cycle", "cards", "matrix", "scene"}, l["id"])
             self.assertTrue(c.get("title"), f"{l['id']}: concept needs a title")
             items = c["items"]
             if c["type"] == "triad":
@@ -773,7 +819,7 @@ class ContentIntegrity(unittest.TestCase):
                 self.assertTrue(it.get("label"), f"{l['id']}: every item needs a label")
                 if it.get("icon"):
                     self.assertIn(it["icon"], icons, f"{l['id']}: no icon '{it['icon']}' in concept.js")
-                if c["type"] in ("triad", "cards", "matrix"):
+                if c["type"] in ("triad", "cards", "matrix", "scene"):
                     self.assertTrue(it.get("text"), f"{l['id']}: {it['label']} needs text")
 
     def test_labs_and_missions_point_to_real_lessons(self):
@@ -1013,3 +1059,26 @@ class PublishScript(unittest.TestCase):
         mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
         mod.run = lambda cmd, cwd, **k: "Notes only\x00Looks and feel\n\nPublished from the development repository (dev 8c7a9c7) with\x00older (dev 1111111)\x00"
         self.assertEqual(mod.last_published(Path(".")), "8c7a9c7")
+
+
+class PhotoScenes(unittest.TestCase):
+    """A lesson photo scene's picture must exist at the size it declares, so hotspots (placed in percent) land where they
+    were pinned, and the page reserves the right space before the image loads."""
+    def test_scene_images_exist_at_their_declared_size(self):
+        import struct
+        lessons = json.loads((ROOT / "content" / "lessons.json").read_text())
+        scenes = [(l["id"], c) for l in lessons for c in (l.get("concept") or {}, l.get("scene") or {}) if c.get("type") == "scene"]
+        self.assertGreaterEqual(len(scenes), 5)
+        for lid, c in scenes:
+            f = ROOT / "static" / c["image"]["src"]
+            self.assertTrue(f.exists(), f"{lid}: {c['image']['src']} is missing")
+            data = f.read_bytes()
+            self.assertEqual(data[:4] + data[8:12], b"RIFFWEBP", f"{lid}: scene image must be WebP")
+            if data[12:16] == b"VP8X":
+                w = 1 + int.from_bytes(data[24:27], "little"); h = 1 + int.from_bytes(data[27:30], "little")
+            elif data[12:16] == b"VP8 ":
+                w, h = (v & 0x3FFF for v in struct.unpack("<HH", data[26:30]))
+            else:  # VP8L
+                b = int.from_bytes(data[21:25], "little"); w = (b & 0x3FFF) + 1; h = ((b >> 14) & 0x3FFF) + 1
+            self.assertEqual((w, h), (c["image"]["width"], c["image"]["height"]), lid)
+

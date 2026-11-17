@@ -51,6 +51,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
             <button class="btn brand" type="button" id="ag-desk-go">Take the desk</button></div>
         </div>
       </div>
+      ${globalThis.PN_safeNote?.("fictional") || ""}
       <details class="tbl simplification"><summary>How this simulation differs from a real shift</summary><p>${esc(shift.simplification)}</p></details>
     </section>
     <div class="ag-desk" id="ag-desk" hidden>

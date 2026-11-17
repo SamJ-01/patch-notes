@@ -78,6 +78,13 @@ test("glossary respects case and word boundaries", () => {
   assert.deepEqual(terms("New infostealers spotted"), [["infostealers", "infostealer"]]);
 });
 
+test("glossary: acronym plurals match, without swallowing a different acronym", () => {
+  assert.deepEqual(terms("Two VLANs and three IPs"), [["VLANs", "vlan"], ["IPs", "ip-address"]]);
+  assert.deepEqual(terms("An IPS blocks it"), [["IPS", "ids-ips"]]);     // exact alias wins over IP + s
+  assert.deepEqual(terms("Root CAs sign certificates"), [["CAs", "ca"], ["certificates", "certificate"]]);
+  assert.deepEqual(terms("FIN7 struck again"), []);                      // FIN must be a whole word
+});
+
 test("researcher placeholder names match via regex", () => {
   assert.deepEqual(terms("Group UNC3944 and Storm-0501 return"), [["UNC3944", "scattered-spider"], ["Storm-0501", "unc"]]);
 });
@@ -127,6 +134,9 @@ test("progress: restored or stored data is cleaned before use", () => {
   const ed = cleanProgress({ xp: 1, examDates: { "security-plus": "2027-01-12", "network-plus": evil, [evil]: "2027-01-01", "pentest-plus": 20270101 } });
   assert.deepEqual(JSON.parse(JSON.stringify(ed.examDates)), { "security-plus": "2027-01-12" }, "exam dates keep only cert ids with real dates");
   assert.deepEqual(JSON.parse(JSON.stringify(cleanProgress({ xp: 1 }).examDates)), {}, "older saves without exam dates still load");
+  const pb = cleanProgress({ xp: 1, pbq: { "np-pbq-ports": 75, "sp-pbq-firewall": 140, "pt-pbq-scope": -5, "np-pbq-subnet": "88.6", [evil]: 50, "x-bad": "<b>", "y-bad": null, "z-bad": true } });
+  assert.deepEqual(JSON.parse(JSON.stringify(pb.pbq)), { "np-pbq-ports": 75, "sp-pbq-firewall": 100, "pt-pbq-scope": 0, "np-pbq-subnet": 89 }, "PBQ best scores are whole percentages for plain ids");
+  assert.deepEqual(JSON.parse(JSON.stringify(cleanProgress({ xp: 1 }).pbq)), {}, "older saves without PBQs still load");
   // Review deck (spaced repetition): each card is clamped to sane numbers; junk shapes are dropped.
   const rev = cleanProgress({ xp: 1, review: { http: { e: "2.9", i: 999, due: 1234.7, reps: "3" }, [evil]: { e: 5, i: 2, due: 1, reps: 1 }, bad: "nope", arr: [1] } });
   assert.deepEqual(JSON.parse(JSON.stringify(rev.review.http)), { e: 2.9, i: 365, due: 1235, reps: 3 }, "review cards are clamped numbers");
@@ -348,4 +358,23 @@ test("pick up where you left off: only a known, unfinished activity is offered",
   assert.equal(c.f("mission:dns").label, "DNS");
   assert.equal(c.f("agency:shift-01").kind, "Agency shift");
   for (const bad of ["lab:nope", "lab:<img src=x>", "javascript:alert(1)", "agency:shift-01\nlab:x", "", null, "lesson:phishing"]) assert.equal(c.f(bad), null, String(bad));
+});
+test("safety notes: escaped, steps picked by lab kind, folds only when there is something to fold", () => {
+  const safety = JSON.parse(readFileSync(new URL("content/safety.json", root), "utf8"));
+  const c = { DATA: { safety: { ...safety, evil: { tone: "warn", title: "<b>x</b>", text: "<img src=x onerror=alert(1)>", more: { summary: "<i>s</i>", items: ["<script>"] } } } }, gloss: (t) => c.esc(t) };
+  vm.createContext(c);
+  vm.runInContext([template.match(/const esc = .*\n/)[0], template.match(/function safeNote\(key[\s\S]*?\n}\n/)[0], "this.esc = esc; this.f = safeNote;"].join("\n"), c);
+  const vlan = c.f("sim", { how: "vlan" });
+  assert.match(vlan, /data-safe="sim"/);
+  assert.match(vlan, /Show me how/);
+  assert.equal((vlan.match(/<li>/g) || []).length, safety.sim.how.vlan.length);
+  assert.match(vlan, /On a phone:/);
+  assert.doesNotMatch(c.f("sim"), /Show me how/, "no kind, no steps");
+  assert.doesNotMatch(c.f("sim", { how: "nope" }), /Show me how/);
+  assert.match(c.f("scan"), /class="safe-note warn"/);
+  assert.match(c.f("scan"), /href="#lab-scope-roe"/);
+  assert.doesNotMatch(c.f("cvss"), /<details/, "a one-line note has no fold");
+  assert.equal(c.f("missing"), "");
+  const evil = c.f("evil");
+  assert.doesNotMatch(evil, /<img|<script|<b>x|<i>s/);
 });

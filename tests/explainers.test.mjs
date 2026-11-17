@@ -123,5 +123,5 @@ test("hashing: real SHA-256, same input same hash, one change totally different"
 });
 
 test("KINDS lists every explainer mount can draw", () => {
-  for (const k of ["vpn", "idor", "cloud", "inbox-rule", "spray", "mfa-fatigue", "ddos", "cert", "chain", "zero-trust", "sqli", "xss", "hashing"]) assert.ok(KINDS.includes(k), `KINDS missing ${k}`);
+  for (const k of ["vpn", "idor", "cloud", "inbox-rule", "spray", "mfa-fatigue", "ddos", "cert", "chain", "zero-trust", "sqli", "xss", "hashing", "ransomware"]) assert.ok(KINDS.includes(k), `KINDS missing ${k}`);
 });

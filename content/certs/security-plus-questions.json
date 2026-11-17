@@ -3972,6 +3972,62 @@
      "why": "Testing systems without permission can be a crime, for example under the Computer Misuse Act in the UK."
     }
    ]
+  },
+  {
+   "id": "sp-4.9-6",
+   "objective": "4.9",
+   "scenario": "$ grep \"Failed password\" /var/log/auth.log | awk '{print $(NF-3)}' | sort | uniq -c | sort -nr\n    214 203.0.113.45\n      3 198.51.100.7",
+   "stem": "What has the analyst found?",
+   "options": [
+    {
+     "text": "203.0.113.45 failed 214 SSH logins: most likely password guessing",
+     "correct": true,
+     "why": "grep keeps the failed logins, awk prints the source address, and sort | uniq -c | sort -nr counts and ranks them."
+    },
+    {
+     "text": "203.0.113.45 logged in successfully 214 times",
+     "correct": false,
+     "why": "The grep kept only failed passwords."
+    },
+    {
+     "text": "214 accounts were locked out",
+     "correct": false,
+     "why": "It counts failed attempts per address, not accounts or lockouts."
+    },
+    {
+     "text": "The server sent 214 packets to 203.0.113.45",
+     "correct": false,
+     "why": "auth.log records logins, not network traffic."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.6-6",
+   "objective": "4.6",
+   "scenario": "-rw-r----- 1 alice finance 18432 Oct 21 09:14 salaries.csv",
+   "stem": "Who can read this file?",
+   "options": [
+    {
+     "text": "alice and members of the finance group",
+     "correct": true,
+     "why": "rw- is the owner's, r-- the group's and --- everyone else's: chmod 640."
+    },
+    {
+     "text": "Everyone on the server",
+     "correct": false,
+     "why": "The last three characters (---) give everyone else nothing."
+    },
+    {
+     "text": "Only alice",
+     "correct": false,
+     "why": "The group has r--, so finance members can read it too."
+    },
+    {
+     "text": "Only root",
+     "correct": false,
+     "why": "root can read any file, but so can alice and the finance group."
+    }
+   ]
   }
  ]
 }

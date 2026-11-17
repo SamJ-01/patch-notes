@@ -612,9 +612,17 @@
       {
        "type": "lab",
        "id": "network-builder"
+      },
+      {
+       "type": "lab",
+       "id": "vlans"
+      },
+      {
+       "type": "lab",
+       "id": "intervlan"
       }
      ],
-     "gap": "ping, traceroute and nslookup are practised in Network detective, ping statistics, tracert and show interfaces in the slow network lab, and nmap output in Read the scan; tcpdump and Wireshark aren't covered yet."
+     "gap": "ping, traceroute, nslookup, dig, ip and arp are practised in Network detective; ping statistics, tracert and show interfaces in the slow network lab; show vlan brief, show interfaces trunk, show ip interface brief, show running-config and saving the configuration in the VLAN and inter-VLAN labs; nmap output in Read the scan. tcpdump, Wireshark, show mac address-table and show arp are only in practice questions."
     }
    ]
   }

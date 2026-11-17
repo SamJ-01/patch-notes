@@ -121,3 +121,36 @@ Grid C → `risk`, `law`, `attack-models`, `cyber-essentials-check`, `risk-regis
 Grid D → `threat-model`, `asset-register`, `soar-playbook`.
 Then add each id to `CARD_PHOTOS` in `src/app/07-labs.js` (the drawn scene stays as the fallback). Keep only frames that
 match the house look; a card is better on its drawn scene than with a picture that doesn't fit.
+
+### Outcome (16 November 2026, GPT round)
+Eight sheets of all nine cards (3 x 3 contact sheets) plus a standalone risk image. Picked one frame per card, preferring
+the 2:1 sheets, cropped to 2:1 and enlarged to 1200 x 600 (frames were about 570 x 280, so slightly softer than older cards
+at full size; fine at card size). Brightness 14 to 29, inside the site's range (middle half 15 to 27).
+- **In:** risk (standalone image), law (sheet 01), attack-models (07), cyber-essentials-check (07), risk-register (07),
+  allowed-or-not (01), asset-register (04), soar-playbook (01).
+- **Not used:** threat-model. Every version was far too bright (58 to 84) because a lit lightbox fills the frame; it keeps
+  its drawn scene. Next try: "the lightbox dimmed to a faint glow, most of the frame dark, the plan only just visible".
+- Single full-size images (1536 x 1024, cropped to 2:1) would be sharper than contact-sheet frames if any are redone.
+
+### Photo audit replacements (16 November 2026)
+One image per prompt, landscape 1536 x 1024, cropped to 2:1. Attach `img/cards/soar-playbook.webp` and
+`img/cards/allowed-or-not.webp` as style references. Shared opening for every card:
+> Match the darkness, grade and restraint of the attached reference photos exactly. Photoreal cinematic still, landscape
+> 1536 x 1024, the subject in the middle band of the frame. A quiet dark room at night, no people, matte black surroundings,
+> one real object lit only by its own small light or the edge of a screen just out of frame. Cool, low light, deep blacks,
+> no haze, no warm lamps, no props, no readable text, no logos, no neon. Restrained film photograph.
+
+- `play`: two plain black dice on a dark table, one showing five on top and the other showing two, every face with the
+  correct standard pip layout, lit by the cold edge of a screen.
+- `who-touched-the-file`: three small padlocks of different sizes hanging on the handle of one closed desk drawer, one small
+  green LED on a lock beside them.
+- `zero-day`: a sealed envelope with an unbroken wax seal lying on a dark desk, the seal catching a thin cool strip of light.
+- `zero-day-advisory`: a red emergency phone handset resting in its wall cradle, its small status LED lit.
+- `zero-day-or-known`: two identical keys on a dark desk, one with a small paper tag, one without, lit by a thin cool light.
+- `trust-the-ai-output`: a smart speaker on a shelf with its ring light on, beside a closed notebook.
+- `map-the-attack`: a dark wall with five pins in a row joined by a taut thread, one small LED below, lit from the side.
+
+Portrait (Agency, same style as the other portraits; attach `img/agency/marcus.webp` and `img/agency/morgan.webp`):
+- `owen` (Fernhollow Vets practice manager): replace with a clearly different person from `tomasz`, for example a man in
+  his early thirties, dark curly hair, clean-shaven, round glasses, dark green fleece over a shirt, same warm-and-blue
+  studio light, square 1:1.

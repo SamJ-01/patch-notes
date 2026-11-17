@@ -1,0 +1,143 @@
+{
+  "_about": "Short safety and how-to notes shown by safeNote(key) in src/app/01-core.js. Keep each text under about 30 words. Labs and lessons pick one with \"safety\": key or [keys]. tone good = reassurance (green), warn = a real-life caution (amber).",
+  "sim": {
+    "tone": "good",
+    "title": "Is this safe? Yes.",
+    "text": "This is a simulator. Commands run inside this page only, never on your computer or any network, so you can't break anything. Reset starts it again.",
+    "how": {
+      "terminal": [
+        "Click the dark box and type a command, such as ls, then press Enter.",
+        "Type help to list the commands, or man and a command's name to learn one.",
+        "Flags combine (ls -la), and Ubuntu's shortcuts work: ll is ls -alF.",
+        "Press ↑ to bring back an earlier command and Tab to finish a file name.",
+        "Stuck? Show a hint under the objectives, or Reset lab."
+      ],
+      "nettools": [
+        "Click the dark box and type a command, such as ping, then press Enter.",
+        "Type help to list the commands, or man and a command's name to learn one.",
+        "Use the options you know from Linux or Windows: ping -c 4, ping -n 4, dig +short, ip a.",
+        "Press ↑ to bring back an earlier command and Tab to finish a word.",
+        "Stuck? Show a hint under the objectives, or Reset lab."
+      ],
+      "vlan": [
+        "Pick a switch, router or PC above the console. Each has its own command line.",
+        "Type a command and press Enter. On a switch or router, a ? lists what can come next: try show ? to see everything show can display.",
+        "Shorthand works as on real Cisco kit: sh vl br, conf t, int f0/11, no shut, wr.",
+        "Press ↑ to bring back an earlier command and Tab to finish a word.",
+        "Stuck? Show a hint under the objectives, or Reset lab."
+      ],
+      "perms": [
+        "Pick a file, then flip its switches or change the owner and group.",
+        "Or type commands such as ls -l and chmod in the dark box and press Enter.",
+        "Shortcuts work too: ll, chmod -R, chown user:group, and symbolic modes such as u+x.",
+        "The table shows who can read, change and run the file as you go.",
+        "Stuck? Show a hint under the objectives, or Reset lab."
+      ]
+    },
+    "phone": "Tap the line at the bottom of the dark box to bring up the keyboard, and use its Return key to run a command."
+  },
+  "scan": {
+    "tone": "warn",
+    "title": "Reading this is fine. Doing it for real needs permission.",
+    "text": "Scanning or probing computers you don't own, without written permission, can be a crime under the Computer Misuse Act 1990, and similar laws elsewhere. Here you only read the results.",
+    "more": {
+      "summary": "How to practise safely",
+      "items": [
+        "Scan only devices you own, on your own network.",
+        "Or use targets made for it: the Nmap Project lets you scan scanme.nmap.org (gently, not over and over), and practice sites such as TryHackMe and Hack The Box give you machines to attack.",
+        "At work, get a written scope and permission first, every time."
+      ],
+      "link": {
+        "href": "#lab-scope-roe",
+        "label": "Practise reading a scope in the rules of engagement lab"
+      }
+    }
+  },
+  "osint": {
+    "tone": "warn",
+    "title": "Looking is legal. Using it against people isn't.",
+    "text": "OSINT uses what anyone can see. Practise on yourself, or on your organisation with permission. Never use it to track, expose or pressure a real person.",
+    "more": {
+      "summary": "How to practise safely",
+      "items": [
+        "Search for yourself: your name, usernames and email address, to see what others could find.",
+        "Don't log in to anything that isn't yours, guess passwords or message people under a false name.",
+        "Stalking, harassment and publishing someone's details to target them are crimes, even when the details were public."
+      ]
+    }
+  },
+  "paste": {
+    "tone": "good",
+    "title": "Is it OK to paste real data?",
+    "text": "It stays in this browser tab: nothing is uploaded or saved, and it's gone when you leave the page.",
+    "more": {
+      "summary": "Before you paste work data",
+      "items": [
+        "Check your employer's rules. Some data mustn't be copied anywhere, even onto your own screen.",
+        "Take out what you don't need: passwords, tokens, session cookies, and customers' names or email addresses.",
+        "Remove internal server names and addresses before you share a screenshot.",
+        "This tool never says something is safe. It shows what the evidence says, and you decide."
+      ]
+    }
+  },
+  "cvss": {
+    "tone": "good",
+    "title": "Nothing leaves this page.",
+    "text": "The vector is decoded in your browser. It's added to the page's address so you can share a link; vectors aren't secret, advisories publish them."
+  },
+  "progress": {
+    "tone": "good",
+    "title": "Where your progress lives",
+    "text": "Only in this browser, on this device. There's no account, no server and no sync, so nobody else can see it.",
+    "more": {
+      "summary": "What can lose it, and what's in a backup",
+      "items": [
+        "Clearing your browsing history or site data deletes it.",
+        "Private or incognito windows forget it when you close them.",
+        "Another browser or device starts fresh: restore a code or file there.",
+        "A backup holds only your progress and settings: no name, email address or password."
+      ]
+    }
+  },
+  "install": {
+    "tone": "good",
+    "title": "Use it like an app (optional)",
+    "text": "Installing from your browser gives Patch Notes its own window and lets pages you've opened work offline. It asks for no extra permissions.",
+    "more": {
+      "summary": "How to install it",
+      "items": [
+        "Chrome or Edge on a computer: the install icon at the right of the address bar, or the browser's menu.",
+        "Android (Chrome): menu ⋮, then Add to Home screen or Install app.",
+        "iPhone or iPad (Safari): Share, then Add to Home Screen. The app keeps its own progress, separate from Safari, so move it across with a progress code.",
+        "Uninstalling can delete what the app saved, so back up first."
+      ]
+    }
+  },
+  "fictional": {
+    "tone": "good",
+    "title": "Real techniques, made-up people.",
+    "text": "Every client, person and company in a shift is fictional, and the public IP addresses come from ranges kept for examples. The attacks and logs follow how real ones look."
+  },
+  "cve": {
+    "tone": "warn",
+    "title": "These are real flaws.",
+    "text": "Use this list to decide what to patch. Never try an exploit on a system you don't own or have written permission to test."
+  },
+  "feedback": {
+    "tone": "good",
+    "title": "What gets sent",
+    "text": "Only what you fill in here. Formspree, a form service, emails it to the site owner. Your email address goes only if you type it. Nothing is saved in your browser.",
+    "more": {
+      "summary": "Anything else?",
+      "items": [
+        "Like any website you send something to, Formspree sees your IP address.",
+        "Don't include passwords or anything you'd rather keep private."
+      ]
+    }
+  },
+  "examdate": {
+    "tone": "good",
+    "title": "",
+    "text": "Saved only in this browser, with your progress."
+  }
+}

@@ -56,9 +56,24 @@ const RESERVED = { 1002: "fddi-default", 1003: "token-ring-default", 1004: "fddi
 // ---------- command grammar. Each node: help text, whether the command may end here, and what can follow.
 // Special children: $vlan (one VLAN id), $vlans (a list), $word, $port (one or two words), $rest (anything).
 const N = (help, kids = {}, end = true) => ({ help, kids, end });
+// Real show commands this lab doesn't model. They're in the grammar so IOS abbreviations resolve (and stay ambiguous)
+// as on a real device, and the learner hears "not modelled here" instead of a caret that suggests they typed it wrong.
+const UNMODELLED_SHOW = { arp: "ARP table", cdp: "CDP information", clock: "Display the system clock", flash: "display information about flash: file system",
+  logging: "Show the contents of logging buffers", "mac-address-table": "MAC forwarding table", mac: "MAC configuration", users: "Display information about terminal lines",
+  version: "System hardware and software status" };
+const SWITCH_UNMODELLED = { "spanning-tree": "Spanning tree topology", vtp: "VTP information" };
+const unmodelledShow = extra => Object.fromEntries(Object.entries({ ...UNMODELLED_SHOW, ...extra }).map(([k, h]) => [k, N(h, { $rest: N("Arguments") })]));
+// Saving the configuration: write [memory] and copy running-config startup-config, in privileged mode.
+const SAVE = {
+  copy: N("Copy from one file to another", { "running-config": N("Copy from current system configuration", { "startup-config": N("Copy to startup configuration") }, false) }, false),
+  write: N("Write running configuration to memory, network, or terminal", { memory: N("Write to NV memory") }),
+};
 const SHOW = (priv) => N("Show running system information", {
-  interfaces: N("Interface status and configuration", { trunk: N("Show interface trunk information"), $port: N("Interface name", { switchport: N("Show interface switchport information") }) }),
-  ...(priv ? { "running-config": N("Current operating configuration") } : {}),
+  ...unmodelledShow(SWITCH_UNMODELLED),
+  history: N("Display the session command history"),
+  interfaces: N("Interface status and configuration", { trunk: N("Show interface trunk information"), status: N("Show interface line status"), switchport: N("Show interface switchport information"), $port: N("Interface name", { switchport: N("Show interface switchport information") }) }),
+  ip: N("IP information", { interface: N("IP interface status and configuration", { brief: N("Brief summary of IP status and configuration") }) }, false),
+  ...(priv ? { "running-config": N("Current operating configuration", { interface: N("Show interface configuration", { $port: N("Interface name") }, false) }), "startup-config": N("Contents of startup configuration") } : {}),
   vlan: N("VTP VLAN status", { brief: N("VTP all VLAN status in brief") }),
 }, false);
 const VLAN_ARG = { $vlan: N("VLAN ID of the VLAN") };
@@ -75,7 +90,7 @@ const MLS = (no) => N("Multi-Layer Switch configuration", { qos: N("qos interfac
 const COMMON = { do: N("To run exec commands in config mode", { $rest: N("Exec Command") }, false), end: N("Exit from configure mode"), exit: N("Exit from the current mode") };
 const GRAMMAR = {
   user: { enable: N("Turn on privileged commands"), exit: N("Exit from the EXEC"), show: SHOW(false) },
-  priv: { configure: N("Enter configuration mode", { terminal: N("Configure from the terminal") }, false), disable: N("Turn off privileged commands"), enable: N("Turn on privileged commands"), exit: N("Exit from the EXEC"), show: SHOW(true) },
+  priv: { configure: N("Enter configuration mode", { terminal: N("Configure from the terminal") }, false), disable: N("Turn off privileged commands"), enable: N("Turn on privileged commands"), exit: N("Exit from the EXEC"), show: SHOW(true), ...SAVE },
   config: {
     ...COMMON,
     hostname: N("Set system's network name", { $word: N("This system's network name") }, false),
@@ -85,8 +100,9 @@ const GRAMMAR = {
   },
   vlan: { ...COMMON, name: N("Ascii name of the VLAN", { $word: N("The ascii name for the VLAN") }, false) },
   if: {
-    ...COMMON, mls: MLS(false), shutdown: N("Shutdown the selected interface"), switchport: SWITCHPORT(false),
-    no: N("Negate a command or set its defaults", { mls: MLS(true), shutdown: N("Shutdown the selected interface"), switchport: SWITCHPORT(true) }, false),
+    ...COMMON, description: N("Interface specific description", { $rest: N("Up to 240 characters describing this interface") }, false),
+    mls: MLS(false), shutdown: N("Shutdown the selected interface"), switchport: SWITCHPORT(false),
+    no: N("Negate a command or set its defaults", { description: N("Interface specific description"), mls: MLS(true), shutdown: N("Shutdown the selected interface"), switchport: SWITCHPORT(true) }, false),
   },
 };
 GRAMMAR.range = GRAMMAR.if;
@@ -102,9 +118,11 @@ export function parseRouterPort(text) {
 }
 const rName = (port, sub) => `GigabitEthernet${port.slice(1)}${sub != null ? "." + sub : ""}`;
 const RSHOW = priv => N("Show running system information", {
+  ...unmodelledShow({ interfaces: "Interface status and configuration", protocols: "Active network routing protocols" }),
   "access-lists": N("List access lists"),
+  history: N("Display the session command history"),
   ip: N("IP information", { interface: N("IP interface status and configuration", { brief: N("Brief summary of IP status and configuration") }), route: N("IP routing table") }, false),
-  ...(priv ? { "running-config": N("Current operating configuration") } : {}),
+  ...(priv ? { "running-config": N("Current operating configuration", { interface: N("Show interface configuration", { $rport: N("Interface name") }, false) }), "startup-config": N("Contents of startup configuration") } : {}),
 }, false);
 const R_IP_IF = (no) => N("Interface Internet Protocol config commands", {
   address: N("Set the IP address of an interface", no ? {} : { $ip: N("IP address", { $ip: N("IP subnet mask") }, false) }, no),
@@ -114,11 +132,11 @@ const R_IF = {
   ...COMMON, description: N("Interface specific description", { $rest: N("Up to 240 characters describing this interface") }, false),
   encapsulation: N("Set encapsulation type for an interface", { dot1q: N("IEEE 802.1Q Virtual LAN", { $vlan: N("IEEE 802.1Q VLAN ID", { native: N("Make this as native vlan") }) }, false) }, false),
   ip: R_IP_IF(false), shutdown: N("Shutdown the selected interface"),
-  no: N("Negate a command or set its defaults", { ip: R_IP_IF(true), shutdown: N("Shutdown the selected interface"), encapsulation: N("Set encapsulation type for an interface") }, false),
+  no: N("Negate a command or set its defaults", { description: N("Interface specific description"), ip: R_IP_IF(true), shutdown: N("Shutdown the selected interface"), encapsulation: N("Set encapsulation type for an interface") }, false),
 };
 const RGRAMMAR = {
   user: { enable: N("Turn on privileged commands"), exit: N("Exit from the EXEC"), show: RSHOW(false) },
-  priv: { configure: N("Enter configuration mode", { terminal: N("Configure from the terminal") }, false), disable: N("Turn off privileged commands"), enable: N("Turn on privileged commands"), exit: N("Exit from the EXEC"), show: RSHOW(true) },
+  priv: { configure: N("Enter configuration mode", { terminal: N("Configure from the terminal") }, false), disable: N("Turn off privileged commands"), enable: N("Turn on privileged commands"), exit: N("Exit from the EXEC"), show: RSHOW(true), ...SAVE },
   config: {
     ...COMMON,
     "access-list": N("Add an access list entry", { $rest: N("IP access list number and entry") }, false),
@@ -231,6 +249,25 @@ export function createCli(topo) {
   const opMode = (s, p) => M.opMode(topo, s, p);
   const peerOf = (s, p) => { const l = M.linkOf(topo, s, p); return l ? (l.a[0] === s && l.a[1] === p ? l.b : l.a) : null; };
   const allowed = (port, v) => !port.allowed || port.allowed.includes(v);
+  // Real commands outside this lab: say so (with what is modelled) rather than a caret that implies a typing mistake.
+  const unmodelled = (line, modelled) => ({ out: `[Simulator: "${line.trim().replace(/^do\s+/i, "")}" is a real IOS command, but this lab doesn't model it. Modelled here: ${modelled}.]`, error: true });
+  // Saving: write memory / copy running-config startup-config keep a copy of the running configuration as it is now,
+  // which show startup-config prints. NVRAM sizes: 64 KB on a 2960, 255 KB on a 2911.
+  const save = (dev, runText, prompted) => { st(dev).saved = runText.split("\n").slice(2).join("\n"); return { out: `${prompted ? "Destination filename [startup-config]? \n" : ""}Building configuration...\n[OK]` }; };
+  const startup = (dev, nvram) => {
+    const t = st(dev).saved;
+    return t ? { out: `Using ${t.length} out of ${nvram} bytes\n${t}` } : { out: "startup-config is not present", error: true };
+  };
+  // show running-config interface X: that interface's block from the full configuration.
+  const runBlock = (runText, name) => {
+    const lines = runText.split("\n"), i = lines.indexOf(`interface ${name}`);
+    if (i < 0) return { out: "% Invalid input: that interface isn't in the configuration.", error: true };
+    const block = [];
+    for (let j = i; j < lines.length && lines[j] !== "!"; j++) block.push(lines[j]);
+    const text = [...block, "end"].join("\n");
+    return { out: `Building configuration...\n\nCurrent configuration : ${text.length} bytes\n!\n${text}` };
+  };
+  const historyOut = dev => ({ out: st(dev).history.slice(-10).map(h => `  ${h}`).join("\n") });
 
   // ---------- IOS output
   function showVlanBrief(s) {
@@ -275,11 +312,21 @@ export function createCli(topo) {
       "[Simulator: the rest of this output (private VLANs, pruning, capture and so on) is left out.]",
     ].join("\n");
   }
+  function showIpBriefSwitch(s) {
+    const S = sw(s), rows = [`${pad("Interface", 23)}${pad("IP-Address", 16)}${pad("OK?", 4)}${pad("Method", 7)}${pad("Status", 22)}Protocol`];
+    for (const p of PORTS) {
+      const x = S.ports[p], pe = peerOf(s, p), up = !x.shutdown && pe && !sw(pe[0])?.ports?.[pe[1]]?.shutdown;
+      rows.push(`${pad(longName(p), 23)}${pad("unassigned", 16)}${pad("YES", 4)}${pad("unset", 7)}${pad(x.shutdown ? "administratively down" : up ? "up" : "down", 22)}${up ? "up" : "down"}`);
+    }
+    return [...rows, "[Simulator: the management interface (Vlan1) isn't modelled, so it's left out.]"].join("\n");
+  }
+  const SWITCH_SHOWS = "show vlan brief, show interfaces trunk, show interfaces <port> switchport, show ip interface brief, show running-config, show startup-config, show history";
   function showRun(s) {
     const S = sw(s), out = ["Building configuration...", "", "[Simulator: only the hostname and interfaces are shown. VLANs 1-1005 live in vlan.dat, not here.]", "!", `hostname ${s}`, "!"];
     for (const p of PORTS) {
       const x = S.ports[p];
       out.push(`interface ${longName(p)}`);
+      if (x.desc) out.push(` description ${x.desc}`);
       if (x.access !== 1) out.push(` switchport access vlan ${x.access}`);
       if (x.native !== 1) out.push(` switchport trunk native vlan ${x.native}`);
       if (x.allowed) out.push(` switchport trunk allowed vlan ${compress(x.allowed) || "none"}`);
@@ -335,6 +382,7 @@ export function createCli(topo) {
   }
   function run(s, path, args, line, words) {
     const S = sw(s), C = st(s);
+    if (/^show (arp|cdp|clock|flash|logging|mac-address-table|mac|users|version|spanning-tree|vtp)( |$)/.test(path) || path === "show interfaces status") return unmodelled(line, SWITCH_SHOWS);
     const each = fn => C.ctx.forEach(p => fn(S.ports[p], p));
     const create = (v, kind) => (hasVlan(s, v) ? "" : ((S.vlans[v] = `VLAN${String(v).padStart(4, "0")}`), `% ${kind} VLAN does not exist. Creating vlan ${v}`));
     // Ports only go in VLANs 2 to 1001 here: 1002-1005 are the reserved Token Ring/FDDI VLANs, and 1006+ need VTP transparent mode.
@@ -362,7 +410,16 @@ export function createCli(topo) {
       case "show interfaces trunk": return { out: showTrunk(s) };
       case "show interfaces": case "show interfaces $port": return { out: "[Simulator: interface counters aren't modelled. Try show interfaces trunk, or show interfaces fa0/11 switchport.]" };
       case "show interfaces $port switchport": return { out: showSwitchport(s, args[0]) };
+      case "show interfaces switchport": return { out: "[Simulator: every port's switchport details at once isn't modelled. Name one port: show interfaces fa0/11 switchport]" };
       case "show running-config": return { out: showRun(s) };
+      case "show running-config interface $port": return runBlock(showRun(s), longName(args[0]));
+      case "show startup-config": return startup(s, 65536);
+      case "show ip interface brief": return { out: showIpBriefSwitch(s) };
+      case "show history": return historyOut(s);
+      case "write": case "write memory": return save(s, showRun(s), false);
+      case "copy running-config startup-config": return save(s, showRun(s), true);
+      case "description $rest": each(p => { p.desc = args[0].slice(0, 240); }); return { out: "" };
+      case "no description": each(p => { delete p.desc; }); return { out: "" };
       case "hostname $word": return { out: `[Simulator: switch names are fixed here (${s}).]` };
       case "vlan $vlans": {
         const ext = args[0].filter(v => v > 1005);
@@ -494,12 +551,14 @@ export function createCli(topo) {
     const out = ["Building configuration...", "", "[Simulator: only the hostname, interfaces and access lists are shown; speed, duplex and the rest are left out.]", "!", `hostname ${r}`, "!"];
     for (const [p, x] of Object.entries(rt(r).ifs)) {
       out.push(`interface ${rName(p, null)}`);
+      if (x.desc) out.push(` description ${x.desc}`);
       if (x.ip) out.push(` ip address ${x.ip} ${x.mask}`); else out.push(" no ip address");
       if (x.aclIn) out.push(` ip access-group ${x.aclIn} in`);
       if (!ifUp(r, p)) out.push(" shutdown");
       out.push("!");
       for (const [n, y] of Object.entries(x.subs).sort((a, b) => a[0] - b[0])) {
         out.push(`interface ${rName(p, n)}`);
+        if (y.desc) out.push(` description ${y.desc}`);
         if (y.tag != null) out.push(` encapsulation dot1Q ${y.tag}${y.native ? " native" : ""}`);
         if (y.ip) out.push(` ip address ${y.ip} ${y.mask}`);
         if (y.aclIn) out.push(` ip access-group ${y.aclIn} in`);
@@ -515,6 +574,9 @@ export function createCli(topo) {
   function routerLine(r, line) {
     const C = st(r), words = line.trim().split(/\s+/).filter(Boolean);
     if (!words.length) return { out: "" };
+    // A real router can ping, but this lab's model sends pings from the PCs. Point there rather than show a caret.
+    if (["ping", "traceroute", "tracert"].includes(words[0].toLowerCase()))
+      return { out: `[Simulator: in this lab, ping runs from the PCs. Pick a PC console above (for example PC1) and run "ping <ip>".${["if", "subif", "nacl", "config"].includes(C.mode) ? " Type end first to leave configuration mode." : ""}]`, error: true };
     if (words.at(-1).endsWith("?")) {
       const last = words.at(-1).slice(0, -1);
       const opts = options(C.mode, words.slice(0, -1), RGRAMMAR).filter(o => !last || o.word.startsWith(last.toLowerCase()));
@@ -541,6 +603,8 @@ export function createCli(topo) {
     const cur = () => (C.mode === "subif" ? R.ifs[C.ctx.port].subs[C.ctx.sub] : R.ifs[C.ctx.port]);
     const curName = () => rName(C.ctx.port, C.mode === "subif" ? C.ctx.sub : null);
     const done = (o = "") => { sync(r); return { out: o }; };
+    if (/^show (arp|cdp|clock|flash|logging|mac-address-table|mac|users|version|interfaces|protocols)( |$)/.test(path))
+      return unmodelled(line, "show ip interface brief, show ip route, show access-lists, show running-config, show startup-config, show history");
     switch (path) {
       case "enable": C.mode = "priv"; return { out: "" };
       case "disable": C.mode = "user"; return { out: "" };
@@ -564,6 +628,11 @@ export function createCli(topo) {
       case "show ip route": return { out: showIpRoute(r) };
       case "show access-lists": return { out: showAcls() };
       case "show running-config": return { out: showRouterRun(r) };
+      case "show running-config interface $rport": return runBlock(showRouterRun(r), rName(args[0].port, args[0].sub));
+      case "show startup-config": return startup(r, 262136);
+      case "show history": return historyOut(r);
+      case "write": case "write memory": return save(r, showRouterRun(r), false);
+      case "copy running-config startup-config": return save(r, showRouterRun(r), true);
       case "hostname $word": return { out: `[Simulator: device names are fixed here (${r}).]` };
       case "ip routing": return { out: "" };  // already on: a router routes by default
       case "access-list $rest": return { out: "[Simulator: numbered access lists aren't modelled here. Use a named one: ip access-list extended NAME]", error: true };
@@ -576,7 +645,8 @@ export function createCli(topo) {
         R.ifs[port].subs[sub] ||= { tag: null, ip: "", mask: "", shutdown: false };
         C.mode = "subif"; C.ctx = { port, sub }; return done();
       }
-      case "description $rest": return { out: "" };
+      case "description $rest": cur().desc = args[0].slice(0, 240); return { out: "" };
+      case "no description": delete cur().desc; return { out: "" };
       case "shutdown": case "no shutdown": {
         const down = path === "shutdown";
         if (C.mode === "subif") {
@@ -649,22 +719,36 @@ export function createCli(topo) {
       ran.push(`${id}:ipconfig`);
       return { out: `\nWindows IP Configuration\n\n\nEthernet adapter Ethernet:\n\n   Connection-specific DNS Suffix  . :\n   IPv4 Address. . . . . . . . . . . : ${pc.ip}\n   Subnet Mask . . . . . . . . . . . : ${pc.mask}\n   Default Gateway . . . . . . . . . : ${pc.gw || ""}\n` };
     }
+    if (cmd === "hostname") return { out: id };
+    if (["tracert", "arp", "nslookup", "netstat", "getmac", "route", "pathping", "nbtstat", "net", "systeminfo"].includes(cmd))
+      return { out: `[Simulator: ${cmd} is a real Windows command, but these PCs only model ipconfig, ping and hostname.]`, error: true };
     if (cmd !== "ping") return { out: `'${words[0]}' is not recognized as an internal or external command,\noperable program or batch file.`, error: true };
-    const ip = words[1];
+    // Windows ping options: -n count, -t (until Ctrl+C), -a, -4, and -l size / -w timeout, which take a value.
+    let count = 4, forever = false, ip = null;
+    for (let i = 1; i < words.length; i++) {
+      const w = words[i].toLowerCase();
+      if (w === "-n" || w === "/n") { count = Number(words[++i]); if (!Number.isInteger(count) || count < 1) return { out: `Bad value for option -n, valid range is from 1 to 4294967295.`, error: true }; }
+      else if (w === "-t" || w === "/t") forever = true;
+      else if (["-l", "-w", "-i", "/l", "/w", "/i"].includes(w)) i++;
+      else if (/^[-/]/.test(w)) continue;
+      else if (!ip) ip = words[i];
+    }
+    const shown = Math.min(forever ? 4 : count, 10);
     if (!ip) return { out: "\nUsage: ping [-t] [-a] [-n count] [-l size] target_name\n[Simulator: try ping followed by an IP address, e.g. ping 10.10.10.14]", error: true };
     if (M.ipNum(ip) == null) return { out: `Ping request could not find host ${ip}. Please check the name and try again.`, error: true };
     const r = M.ping(topo, id, ip), to = M.owners(topo, ip)[0]?.id;
-    const head = `\nPinging ${ip} with 32 bytes of data:`, four = l => `${l}\n`.repeat(4);
-    const stats = (rx, rtt) => `\nPing statistics for ${ip}:\n    Packets: Sent = 4, Received = ${rx}, Lost = ${4 - rx} (${(4 - rx) * 25}% loss),${rtt ? "\nApproximate round trip times in milli-seconds:\n    Minimum = 0ms, Maximum = 0ms, Average = 0ms" : ""}`;
+    const head = `\nPinging ${ip} with 32 bytes of data:`, four = l => `${l}\n`.repeat(shown);
+    const note = forever ? "[Simulator: -t pings until you press Ctrl+C; four are shown.]\n" : count > 10 ? `[Simulator: ${count} pings asked for; the first 10 are shown.]\n` : "";
+    const stats = (rx, rtt) => `${note}\nPing statistics for ${ip}:\n    Packets: Sent = ${shown}, Received = ${rx}, Lost = ${shown - rx} (${Math.floor((shown - rx) * 100 / shown)}% loss),${rtt ? "\nApproximate round trip times in milli-seconds:\n    Minimum = 0ms, Maximum = 0ms, Average = 0ms" : ""}`;
     const body = {
-      ok: () => `${four(`Reply from ${ip}: bytes=32 time<1ms TTL=${to && kind(to) === "router" ? 255 : 128}`)}${stats(4, true)}`,
+      ok: () => `${four(`Reply from ${ip}: bytes=32 time<1ms TTL=${to && kind(to) === "router" ? 255 : 128}`)}${stats(shown, true)}`,
       general: () => `${four("PING: transmit failed. General failure.")}${stats(0)}`,
-      host: () => `${four(`Reply from ${pc.ip}: Destination host unreachable.`)}${stats(4)}`,  // Windows counts these as "received"
-      net: () => `${four(`Reply from ${r.reply}: Destination net unreachable.`)}${stats(4)}`,
+      host: () => `${four(`Reply from ${pc.ip}: Destination host unreachable.`)}${stats(shown)}`,  // Windows counts these as "received"
+      net: () => `${four(`Reply from ${r.reply}: Destination net unreachable.`)}${stats(shown)}`,
       timeout: () => `${four("Request timed out.")}${stats(0)}`,
     }[r.result]();
     // Each ACL line the ping met counts four matches (four echoes, or four replies), as show access-lists reports.
-    for (const a of r.acl || []) { const e = a.seq != null && topo.acls[a.name]?.find(x => x.seq === a.seq); if (e) e.matches = (e.matches || 0) + 4; }
+    for (const a of r.acl || []) { const e = a.seq != null && topo.acls[a.name]?.find(x => x.seq === a.seq); if (e) e.matches = (e.matches || 0) + shown; }
     const withAcl = Object.values(topo.devices).some(d => d.kind === "router" && Object.values(d.ports).some(p => p.subs.some(x => x.aclIn)));
     pings.push({ from: id, to: to || ip, ok: r.result === "ok", vlan: M.vlanOf(topo, id), result: r.result, reason: r.reason, blocked: !!r.blocked, withAcl });
     return { out: `${head}\n${body}`, ping: r };
@@ -698,7 +782,9 @@ export function createCli(topo) {
     const hits = options(st(dev).mode, words.filter(Boolean), kind(dev) === "router" ? RGRAMMAR : GRAMMAR).map(o => o.word).filter(w => /^[a-z]/.test(w) && w.startsWith(last.toLowerCase()));
     return hits.length === 1 && last ? [...words, hits[0]].join(" ") + " " : line;
   }
-  return { prompt, exec, complete, history: dev => st(dev).history, recipe: dev => st(dev).recipe, ran, pings, forget: id => { delete cli[id]; } };
+  // Saved since the last change: the startup copy matches the running configuration now (PBQs check this).
+  const isSaved = dev => !!st(dev).saved && st(dev).saved === (kind(dev) === "router" ? showRouterRun(dev) : showRun(dev)).split("\n").slice(2).join("\n");
+  return { prompt, exec, complete, history: dev => st(dev).history, recipe: dev => st(dev).recipe, ran, pings, isSaved, forget: id => { delete cli[id]; } };
 }
 
 export function createNet(lab) {
@@ -718,6 +804,7 @@ export function createNet(lab) {
     if (c.voice) { const p = sw(c.voice.device).ports[c.voice.port]; return p.voice === c.voice.vlan && p.trust === c.voice.trust; }
     if (c.trunks) return c.trunks.every(([s, p]) => opMode(s, p) === "trunk" && !sw(s).ports[p].shutdown);
     if (c.native) return c.native.ports.every(([s, p]) => sw(s).ports[p].native === c.native.vlan);
+    if (c.saved) return cli.isSaved(c.saved);
     if (c.all) return c.all.every(isDone);
     return false;
   }

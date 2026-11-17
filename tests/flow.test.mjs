@@ -9,7 +9,7 @@ const lessons = JSON.parse(readFileSync(new URL("../content/lessons.json", impor
 const diagrams = lessons.filter(l => l.diagram);
 
 test("every lesson diagram is valid", () => {
-  assert.ok(diagrams.length >= 6);
+  assert.ok(diagrams.length >= 5);  // ransomware moved to its own explainer (17 Nov)
   for (const l of diagrams) assert.deepEqual(flow.validate(l.diagram), [], l.id);
 });
 

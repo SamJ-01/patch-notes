@@ -45,3 +45,24 @@ test("risk matrix: scores and bands, and the risk lesson's heat map is consisten
   assert.ok(over.length && over.length < risk.items.length, "some risks over the appetite and some within it");
   for (const it of over) assert.match(it.treat, /^(Mitigate|Avoid|Transfer)/, `${it.label} is over the appetite, so it can't just be accepted`);
 });
+
+test("photo scenes: hotspots in percent, a real webp with its size and alt text", () => {
+  const ok = { type: "scene", title: "t", image: { src: "img/scenes/x.webp", width: 1536, height: 1024, alt: "A counter" },
+    items: [{ label: "a", text: "x", at: [10, 20], tone: "c" }, { label: "b", text: "y", at: [90, 80] }] };
+  assert.deepEqual(concept.validate(ok), []);
+  assert.match(concept.validate({ ...ok, items: [{ label: "a", text: "x", at: [120, 20] }, ok.items[1]] }).join(), /percent/);
+  assert.match(concept.validate({ ...ok, items: [{ label: "a", text: "x", at: [1, 2], tone: "pink" }, ok.items[1]] }).join(), /tone/);
+  assert.match(concept.validate({ ...ok, image: { src: "https://evil.example/x.webp", width: 1, height: 1, alt: "a" } }).join(), /img\//);
+  assert.match(concept.validate({ ...ok, image: { ...ok.image, alt: "" } }).join(), /alt/);
+  assert.match(concept.validate({ ...ok, items: [ok.items[0]] }).join(), /2–8 hotspots/);
+});
+
+test("lesson photo scenes (the 'scene' field beside a diagram) are valid scenes", () => {
+  const withScene = lessons.filter(l => l.scene);
+  assert.ok(withScene.length >= 3);
+  for (const l of withScene) {
+    assert.equal(l.scene.type, "scene", l.id);
+    assert.deepEqual(concept.validate(l.scene), [], l.id);
+    assert.ok(!l.diagram && !l.explainer, `${l.id}: a scene sits beside a concept, never a second picture beside a diagram`);
+  }
+});

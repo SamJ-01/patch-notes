@@ -40,7 +40,8 @@ test("the parser takes unique abbreviations and reports IOS errors", () => {
   assert.deepEqual(parse("priv", ["conf", "t"]), { path: "configure terminal", args: [] });
   assert.deepEqual(parse("if", ["sw", "mo", "dyn", "des"]), { path: "switchport mode dynamic desirable", args: [] });
   assert.deepEqual(parse("priv", ["show", "int", "fa", "0/11", "sw"]), { path: "show interfaces $port switchport", args: ["Fa0/11"] });
-  assert.deepEqual(parse("priv", ["s", "v", "b"]), { path: "show vlan brief", args: [] });
+  assert.deepEqual(parse("priv", ["s", "vl", "b"]), { path: "show vlan brief", args: [] });
+  assert.equal(parse("priv", ["sh", "v"]).error, "ambiguous", "version, vlan or vtp, as on a real switch");
   assert.equal(parse("priv", ["e"]).error, "ambiguous", "enable or exit");
   assert.equal(parse("priv", ["show", "vlam"]).at, 1);
   assert.equal(parse("priv", ["configure"]).error, "incomplete");
@@ -261,4 +262,39 @@ test("found in review: ports stay out of reserved and extended VLANs; an unplugg
   assert.equal(on(net, "S1", "no shutdown").out, "%LINK-3-UPDOWN: Interface FastEthernet0/21, changed state to down");
   on(net, "S1", "int gi0/1", "shutdown");
   assert.match(on(net, "S1", "no shutdown").out, /^%LINK-3-UPDOWN: Interface GigabitEthernet0\/1, changed state to up\n%LINEPROTO-5-UPDOWN/);
+});
+
+test("the shorthand people really type: save, startup, brief, history, description, and honest notes", () => {
+  const net = createNet(lab);
+  on(net, "S1", "en");
+  assert.equal(on(net, "S1", "sh start").out, "startup-config is not present");
+  assert.equal(on(net, "S1", "wr").out, "Building configuration...\n[OK]");
+  assert.match(on(net, "S1", "sh start").out, /^Using \d+ out of 65536 bytes\n(\[Simulator: .*\]\n)?!\nhostname S1/);
+  assert.equal(on(net, "S1", "copy run start").out, "Destination filename [startup-config]? \nBuilding configuration...\n[OK]");
+  assert.equal(on(net, "S1", "wr mem").out, "Building configuration...\n[OK]");
+  const brief = on(net, "S1", "sh ip int br").out.split("\n");
+  assert.match(brief[0], /^Interface\s+IP-Address\s+OK\? Method Status\s+Protocol$/);
+  assert.equal(brief.filter(l => /^(Fast|Gigabit)Ethernet/.test(l)).length, PORTS.length);
+  on(net, "S1", "conf t", "int fa0/5", "desc Reception printer", "shut", "end");
+  assert.match(on(net, "S1", "sh run int f0/5").out, /^Building configuration\.\.\.\n\nCurrent configuration : \d+ bytes\n!\ninterface FastEthernet0\/5\n description Reception printer\n( switchport .*\n)* shutdown\nend$/);
+  assert.match(on(net, "S1", "sh ip int br").out, /FastEthernet0\/5\s+unassigned\s+YES unset\s+administratively down\s+down/);
+  assert.match(on(net, "S1", "sh hist").out, /^  .*\n  sh hist$/s);
+  for (const real of ["sh mac address-table", "sh ver", "sh cdp nei", "sh spanning-tree", "sh vtp status", "sh int status"])
+    assert.match(on(net, "S1", real).out, /^\[Simulator: ".+" is a real IOS command, but this lab doesn't model it/, real);
+  assert.match(on(net, "S1", "conf t").out, /Enter configuration/);
+  assert.match(on(net, "S1", "do sh mac add").out, /real IOS command/, "do reaches the same note");
+});
+
+test("Windows PCs: ping options and honest notes for commands that aren't modelled", () => {
+  const net = createNet(lab), [pc, other] = Object.keys(lab.pcs);
+  const two = on(net, pc, `ping -n 2 ${lab.pcs[pc].ip}`).out;
+  assert.equal((two.match(/^Reply from/gm) || []).length, 2);
+  assert.match(two, /Packets: Sent = 2, Received = 2, Lost = 0 \(0% loss\)/);
+  const t = on(net, pc, `ping -t ${lab.pcs[other].ip}`).out;
+  assert.match(t, /Ctrl\+C/);
+  const lines = (t.match(/^(Reply from|Request timed out|PING: transmit failed)/gm) || []).length, sent = Number(t.match(/Sent = (\d+)/)[1]);
+  assert.equal(lines, sent, "the summary agrees with the reply lines");
+  assert.equal(on(net, pc, "hostname").out, pc);
+  assert.match(on(net, pc, "tracert 10.10.10.12").out, /^\[Simulator: tracert is a real Windows command/);
+  assert.match(on(net, pc, "frobnicate").out, /'frobnicate' is not recognized as an internal or external command/);
 });

@@ -1562,6 +1562,7 @@
  },
  {
   "id": "net-detective",
+  "safety": "sim",
   "kind": "nettools",
   "category": "Networking",
   "track": "Networking",
@@ -2948,6 +2949,7 @@
  },
  {
   "id": "vlans",
+  "safety": "sim",
   "kind": "vlan",
   "category": "Network security",
   "track": "Networking",
@@ -2956,7 +2958,7 @@
   "title": "VLANs: one network, kept apart",
   "skill": "Create VLANs, assign access and voice ports, and trunk them between Cisco switches",
   "intro": "Harbourside College puts staff, students and guests on one flat network. Split them with VLANs on three Cisco switches.",
-  "simplification": "Simplified simulation of Cisco Catalyst 2960 switches running IOS 15: only the commands this lab needs are modelled, and some long outputs are shortened (marked [Simulator]). VLAN changes apply at once (real IOS applies them when you leave VLAN mode). Spanning tree, VTP and CDP are not modelled, except the CDP native VLAN mismatch warning. On a real 2960, mls qos trust cos only takes effect once QoS is enabled with the global command mls qos. PCs are Windows and have no default gateway; ping output follows Windows. Addresses are private (10.10.x.x) and the college is fictional.",
+  "simplification": "Simplified simulation of Cisco Catalyst 2960 switches running IOS 15: only the commands this lab needs are modelled, and some long outputs are shortened (marked [Simulator]). VLAN changes apply at once (real IOS applies them when you leave VLAN mode). Spanning tree, VTP and CDP are not modelled, except the CDP native VLAN mismatch warning. On a real 2960, mls qos trust cos only takes effect once QoS is enabled with the global command mls qos. IOS abbreviations work as on a real switch (sh vl br, conf t, int f0/11, wr). Saving (wr, copy run start) only feeds show startup-config: nothing is reloaded. PCs are Windows (ipconfig, ping, hostname) and have no default gateway; ping output follows Windows. Addresses are private (10.10.x.x) and the college is fictional.",
   "vlans": {
    "10": "Staff",
    "20": "Students",
@@ -3318,6 +3320,7 @@
  },
  {
   "id": "intervlan",
+  "safety": "sim",
   "kind": "vlan",
   "category": "Network security",
   "track": "Networking",
@@ -3327,7 +3330,7 @@
   "skill": "Route between VLANs with a router on a stick (802.1Q subinterfaces), then filter it with an extended ACL",
   "card": "Route between VLANs with one router, then lock it down",
   "intro": "Harbourside College's VLANs keep staff, students and guests apart. Now they need to reach each other: route between them with one router, then keep students out of staff.",
-  "simplification": "Simplified simulation of a Cisco 2911 router and Catalyst 2960 switches running IOS 15: only the commands this lab needs are modelled, and some long outputs are shortened (marked [Simulator]). Access lists: only named extended lists with ip and icmp entries, applied inbound. When an access list denies a packet, a real router answers with an ICMP \"administratively prohibited\" message unless no ip unreachables is set on the interface (security baselines ask for it); this lab behaves as if it is set, so a blocked ping times out. The switches start where the VLAN lab ends. PCs are Windows and only run ping and ipconfig. Addresses are private (10.10.x.x) and the college is fictional.",
+  "simplification": "Simplified simulation of a Cisco 2911 router and Catalyst 2960 switches running IOS 15: only the commands this lab needs are modelled, and some long outputs are shortened (marked [Simulator]). Access lists: only named extended lists with ip and icmp entries, applied inbound. When an access list denies a packet, a real router answers with an ICMP \"administratively prohibited\" message unless no ip unreachables is set on the interface (security baselines ask for it); this lab behaves as if it is set, so a blocked ping times out. The switches start where the VLAN lab ends. IOS abbreviations work as on a real router (sh ip int br, int g0/0.10, enc dot1q 10, wr); pings are sent from the PCs, which are Windows (ipconfig, ping, hostname). Addresses are private (10.10.x.x) and the college is fictional.",
   "vlans": {
    "10": "Staff",
    "20": "Students",
@@ -4180,6 +4183,7 @@
  },
  {
   "id": "linux-terminal",
+  "safety": "sim",
   "title": "Linux terminal basics",
   "kind": "terminal",
   "category": "Linux",
@@ -4420,6 +4424,7 @@
  },
  {
   "id": "permissions",
+  "safety": "sim",
   "kind": "perms",
   "category": "Linux",
   "track": "Linux",
@@ -5171,6 +5176,7 @@
  },
  {
   "id": "recon-basics",
+  "safety": ["sim", "scan"],
   "kind": "nettools",
   "category": "Ethical hacking",
   "track": "Ethical hacking",
@@ -5422,6 +5428,7 @@
  },
  {
   "id": "nmap-read",
+  "safety": "scan",
   "kind": "log",
   "category": "Ethical hacking",
   "track": "Ethical hacking",
@@ -5559,6 +5566,7 @@
  },
  {
   "id": "validate-findings",
+  "safety": "scan",
   "kind": "log",
   "category": "Ethical hacking",
   "track": "Ethical hacking",
@@ -7493,6 +7501,7 @@
  },
  {
   "id": "factory-scan",
+  "safety": "scan",
   "kind": "log",
   "category": "Vulnerabilities",
   "track": "Networking",
@@ -9067,6 +9076,7 @@
  },
  {
   "id": "what-did-we-leak",
+  "safety": "osint",
   "kind": "doc",
   "category": "Ethical hacking",
   "track": "Ethical hacking",

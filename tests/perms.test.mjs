@@ -75,7 +75,21 @@ test("terminal: ls -l like GNU ls, chmod and chown change the world, errors like
   assert.match(run(w, D, "chmod 640 nope.txt").out, /^chmod: cannot access 'nope.txt': No such file or directory/);
   assert.match(run(w, D, "chown mallory salaries.csv").out, /^chown: invalid user: 'mallory'/);
   assert.equal(run(w, D, "id dave").out, "uid=1004(dave) gid=1000(staff) groups=1000(staff)");
-  assert.match(run(w, D, "rm -rf /").out, /rm: command not found/);
+  const files = Object.keys(w.files).length;
+  assert.match(run(w, D, "rm -rf /").out, /^\[Simulator: rm is a real Linux command, but this lab models permissions only/);
+  assert.equal(Object.keys(w.files).length, files, "nothing is deleted");
+  assert.match(run(w, D, "frobnicate").out, /^frobnicate: command not found/);
+});
+
+test("shorthand: ll, whoami, groups, and -R on chmod and chown", () => {
+  const w = fresh();
+  assert.match(run(w, D, "ll").out, /^total \d+\n-.*salaries\.csv/);
+  assert.equal(run(w, D, "whoami").out, "root");
+  assert.equal(run(w, D, "groups dave").out, "dave : staff");
+  assert.equal(run(w, D, "chmod -R 750 " + D).error, undefined);
+  for (const p of Object.keys(w.files).filter(p => p === D || p.startsWith(D + "/"))) assert.equal(w.files[p].mode, 0o750, p);
+  run(w, D, "chown -R dave:staff " + D);
+  for (const p of Object.keys(w.files).filter(p => p.startsWith(D + "/"))) assert.deepEqual([w.files[p].owner, w.files[p].group], ["dave", "staff"], p);
 });
 
 test("every objective is unmet at the start and met by its own hint", () => {

@@ -13,9 +13,24 @@ function renderStatus() {
 /* ---------- flags (CTF) ---------- */
 const FLAG_HASHES = ['8e56d2c0ff602c062fe196851ca7e6d98494aeb046610bd39a249636f73d638d', '82bca24faea43b9cb01f070becad83ea46445f0b53ab5fe7cd2c408e54ce3563', '3cf31ccd9563cd1d76c9ef4da9fe5584181a561e662d66a1ad30bc6a57bafc5e'];
 const FLAG_INFO = [
-  { name: "Recon", hint: "Every web page has a source. Attackers read it first, and so should you. (Right-click → View Page Source, then search for flag.)" },
-  { name: "Developer tools", hint: "Developers leave notes in the browser console. This one is base64-encoded. Open DevTools (F12 or ⌥⌘I), then decode it, e.g. with CyberChef or atob() in the console." },
-  { name: "Old-school crypto", hint: "Something at the very bottom of this page has been scrambled with ROT13, a cousin of the 2,000-year-old Caesar cipher. Shift every letter back by 13." },
+  { name: "Recon", hint: "Every web page has a source. Attackers read it first, and so should you.",
+    how: ["On a computer, press Ctrl+U (Windows, Linux) or Option+Cmd+U (Mac). Safari: turn on Settings > Advanced > Show features for web developers first.",
+      "A new tab opens with the page's HTML: the raw text your browser turns into this page.",
+      "Press Ctrl+F (Cmd+F on a Mac) and search for the word flag. It sits inside a comment near the top.",
+      "Copy everything from flag{ to } and paste it in the box below."],
+    phone: "On Android Chrome, type view-source: in front of the address. iPhones can't view source; use a computer." },
+  { name: "Developer tools", hint: "Developers leave notes in the browser console. This one is base64-encoded, so it needs decoding.",
+    how: ["On a computer, press F12 (or Ctrl+Shift+J on Windows, Option+Cmd+J on a Mac) and choose the Console tab.",
+      "Look for the PATCH//NOTES message. It has a scrambled-looking line of letters and numbers: that's base64.",
+      "Base64 isn't secret, just encoded. Paste it into CyberChef with the From Base64 recipe, or type atob(\"the letters\") in the console yourself.",
+      "Paste the result in the box below. (Typing your own atob is fine. Never paste code someone else gives you.)"],
+    phone: "Phones don't have a console. Use a computer for this one." },
+  { name: "Old-school crypto", hint: "Something at the very bottom of every page has been scrambled with ROT13, a cousin of the 2,000-year-old Caesar cipher.",
+    how: ["Scroll to the very bottom of this page, below the footer links. You'll see a line starting rot13 //.",
+      "ROT13 swaps each letter for the one 13 places along the alphabet: a becomes n, n becomes a. Doing it twice gets you back where you started.",
+      "Decode the part in curly brackets, either by hand or with CyberChef's ROT13 recipe. synt becomes flag.",
+      "Paste the decoded flag{...} in the box below."],
+    phone: "This one works on a phone too." },
 ];
 async function checkFlag(input) {
   const f = String(input || "").trim();
@@ -32,6 +47,7 @@ async function checkFlag(input) {
   return { ok: true, msg: `Flag ${i + 1} captured: ${FLAG_INFO[i].name}. +50 XP. We checked it by comparing SHA-256 hashes, so the answers aren't stored in this page.` };
 }
 try {
+  console.log("%cStop.", "font: 700 28px sans-serif; color: #FF5470", "\nIf someone told you to paste something here, don't. Code pasted into the console runs as you (\"self-XSS\").\nOn sites with accounts it can take over your login. Typing your own commands to learn is fine.");
   console.log("%cPATCH//NOTES", "font: 700 22px monospace; color: #3FE0E8", "\nLooking around in DevTools? Good instinct.\nFlag 2 of 3, base64-encoded: ZmxhZ3tkM3Z0MDBsc19hcjNfeTB1cl9mcjEzbmR9\nDecode it with atob(\"...\") and submit it: press / on the page, then type submit flag{...}");
 } catch (e) {}
 
@@ -203,6 +219,7 @@ function parseRoute() {
   const h = (location.hash || "#today").slice(1);
   if (h.startsWith("lesson-")) return { tab: "learn", path: "learn/" + h.slice(7), draw: () => lessonView(h.slice(7)) };
   if (h.startsWith("path-")) return { tab: "learn", path: "learn/paths/" + h.slice(5), draw: () => pathView(h.slice(5)) };
+  if (h.startsWith("pbq-")) return { tab: "exams", path: "exams/pbq/" + h.slice(4), draw: () => pbqView(h.slice(4)) };
   if (h.startsWith("cert-")) return { tab: "exams", path: "exams/" + h.slice(5), draw: () => certView(h.slice(5)) };
   if (h.startsWith("lab-")) return { tab: "missions", path: "missions/" + h.slice(4), draw: () => labView(h.slice(4)) };
   if (h.startsWith("agency-")) return { tab: "agency", path: "agency/" + h.slice(7), draw: () => agencyView(h.slice(7)) };

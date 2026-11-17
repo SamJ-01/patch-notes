@@ -32,17 +32,26 @@ const icon = (k, cls = "") => `<svg class="cc-ic ${cls}" viewBox="-14 -14 28 28"
 export function validate(c) {
   const errors = [];
   if (!c || !c.type) return ["missing type"];
-  if (!["triad", "cycle", "cards", "matrix"].includes(c.type)) errors.push(`unknown type ${c.type}`);
+  if (!["triad", "cycle", "cards", "matrix", "scene"].includes(c.type)) errors.push(`unknown type ${c.type}`);
   const items = c.items || [];
   if (c.type === "triad" && items.length !== 3) errors.push("a triad needs exactly 3 items");
   if (c.type === "cycle" && (items.length < 3 || items.length > 7)) errors.push("a cycle needs 3–7 items");
   if (c.type === "cards" && (items.length < 2 || items.length > 8)) errors.push("cards need 2–8 items");
   if (c.type === "matrix" && (items.length < 2 || items.length > 8)) errors.push("a matrix needs 2–8 risks");
+  if (c.type === "scene") {
+    if (items.length < 2 || items.length > 8) errors.push("a scene needs 2–8 hotspots");
+    const im = c.image || {};
+    if (!/^img\/[a-z0-9/_-]+\.webp$/.test(im.src || "")) errors.push("a scene needs image.src as img/....webp");
+    if (!(im.width > 0 && im.height > 0)) errors.push("a scene needs image.width and image.height");
+    if (!im.alt) errors.push("a scene needs image.alt");
+  }
   if (c.type === "matrix" && c.appetite != null && !(Number.isInteger(c.appetite) && c.appetite >= 1 && c.appetite <= 25)) errors.push("appetite must be a score from 1 to 25");
   items.forEach((it, i) => {
     if (!it.label) errors.push(`item ${i + 1}: missing label`);
     if (it.icon && !ICONS[it.icon]) errors.push(`item ${i + 1}: no icon "${it.icon}"`);
-    if ((c.type === "triad" || c.type === "cards" || c.type === "matrix") && !it.text) errors.push(`item ${i + 1}: needs text`);
+    if ((c.type === "triad" || c.type === "cards" || c.type === "matrix" || c.type === "scene") && !it.text) errors.push(`item ${i + 1}: needs text`);
+    if (c.type === "scene" && !(Array.isArray(it.at) && it.at.length === 2 && it.at.every(v => typeof v === "number" && v >= 0 && v <= 100))) errors.push(`item ${i + 1}: needs at: [x, y] in percent`);
+    if (c.type === "scene" && it.tone && !SCENE_TONES.includes(it.tone)) errors.push(`item ${i + 1}: unknown tone "${it.tone}"`);
     if (c.type === "matrix" && !([it.l, it.i].every(v => Number.isInteger(v) && v >= 1 && v <= 5))) errors.push(`item ${i + 1}: needs likelihood l and impact i from 1 to 5`);
   });
   return errors;
@@ -57,6 +66,7 @@ export function riskBand(score) {
 export function mount(el, c) {
   if (c.type === "cards") return mountCards(el, c);
   if (c.type === "matrix") return mountMatrix(el, c);
+  if (c.type === "scene") return mountScene(el, c);
   return mountNodes(el, c);  // triad and cycle share the click-a-node + caption pattern
 }
 
@@ -121,6 +131,36 @@ function mountNodes(el, c) {
   svg.addEventListener("click", e => { const g = e.target.closest(".cc-node"); if (g) select(Number(g.dataset.i)); });
   svg.addEventListener("keydown", e => { const g = e.target.closest(".cc-node"); if (g && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); select(Number(g.dataset.i)); } });
   el.querySelector(".cc-step").addEventListener("click", e => { const b = e.target.closest("[data-step]"); if (b) select(cur + Number(b.dataset.step)); });
+  select(0);
+}
+
+// Scene: one real photograph with numbered hotspots pinned to the things that matter in it (a seal, a screen, a
+// window). Each hotspot is a button; choosing one shows what it is and what would break it beside the photo. Opens
+// on the first, so the photo explains itself. Hotspots are placed by hand on the finished image (at: [x%, y%]).
+// tone: c / i / a colour the three CIA pillars; anything else uses the brand colour.
+export const SCENE_TONES = ["c", "i", "a", "good", "bad"];
+function mountScene(el, c) {
+  const n = c.items.length, im = c.image;
+  el.innerHTML = `<figure class="concept cc-scene"><figcaption class="cc-title">${esc(c.title)}</figcaption>
+    <div class="sc-stage">
+      <div class="sc-photo"><img src="${esc(im.src)}" width="${Number(im.width)}" height="${Number(im.height)}" alt="${esc(im.alt)}" loading="lazy" decoding="async">
+        ${c.items.map((it, i) => `<button type="button" class="sc-spot${it.tone ? " t-" + esc(it.tone) : ""}" data-i="${i}" aria-pressed="false" aria-label="${i + 1}: ${esc(it.label)}"
+          style="left:${Number(it.at[0])}%;top:${Number(it.at[1])}%"><span aria-hidden="true">${i + 1}</span></button>`).join("")}</div>
+      <div class="cc-side"><div class="sc-detail" aria-live="polite"></div>
+        <div class="cc-step"><button type="button" class="btn ghost sm" data-step="-1">‹ Back</button><button type="button" class="btn brand sm" data-step="1">Next ›</button></div></div>
+    </div></figure>`;
+  const detail = el.querySelector(".sc-detail");
+  let cur = 0;
+  const select = i => {
+    cur = (i + n) % n;
+    el.querySelectorAll(".sc-spot").forEach((b, k) => { b.classList.toggle("on", k === cur); b.setAttribute("aria-pressed", String(k === cur)); });
+    const it = c.items[cur];
+    detail.className = `sc-detail${it.tone ? " t-" + it.tone : ""}`;
+    detail.innerHTML = `<span class="eyebrow">${cur + 1} of ${n}${it.tag ? ` · ${esc(it.tag)}` : ""}</span><b>${esc(it.label)}</b><p>${esc(it.text)}</p>
+      ${it.breaks ? `<p class="sc-breaks"><span class="eyebrow">What would break it</span> ${esc(it.breaks)}</p>` : ""}
+      ${it.fix ? `<p class="sc-breaks"><span class="eyebrow">How to fix it</span> ${esc(it.fix)}</p>` : ""}`;
+  };
+  el.addEventListener("click", e => { const s = e.target.closest(".sc-spot"); if (s) return select(Number(s.dataset.i)); const b = e.target.closest("[data-step]"); if (b) select(cur + Number(b.dataset.step)); });
   select(0);
 }
 

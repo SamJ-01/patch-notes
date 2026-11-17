@@ -1,0 +1,323 @@
+{
+ "cert": "network-plus",
+ "note": "Original performance-based questions written for Patch Notes, in the style of CompTIA's. They are not real exam questions.",
+ "pbqs": [
+  {
+   "id": "np-pbq-ports",
+   "kind": "match",
+   "objectives": [
+    "1.4"
+   ],
+   "minutes": 4,
+   "title": "Match the service to its port",
+   "scenario": "You're writing firewall rules for a small office and need the default port for each service.",
+   "prompt": "Choose the default port for each service.",
+   "choices": [
+    "22",
+    "23",
+    "25",
+    "53",
+    "67",
+    "161",
+    "443",
+    "445",
+    "636",
+    "3389"
+   ],
+   "items": [
+    {
+     "id": "ssh",
+     "text": "SSH (secure remote shell)",
+     "answer": "22",
+     "why": "TCP 22. Telnet (23) does the same job without encryption."
+    },
+    {
+     "id": "smtp",
+     "text": "SMTP (mail between servers)",
+     "answer": "25",
+     "why": "TCP 25. Mail clients usually submit on 587 instead."
+    },
+    {
+     "id": "dns",
+     "text": "DNS (name lookups)",
+     "answer": "53",
+     "why": "UDP 53 for most lookups, TCP 53 for large answers and zone transfers."
+    },
+    {
+     "id": "dhcp",
+     "text": "DHCP (the server's port)",
+     "answer": "67",
+     "why": "The server listens on UDP 67 and the client on 68."
+    },
+    {
+     "id": "snmp",
+     "text": "SNMP (polling a device)",
+     "answer": "161",
+     "why": "UDP 161 for polling; traps arrive on 162."
+    },
+    {
+     "id": "https",
+     "text": "HTTPS",
+     "answer": "443",
+     "why": "TCP 443 (HTTP/3 uses UDP 443)."
+    },
+    {
+     "id": "ldaps",
+     "text": "LDAPS (directory lookups over TLS)",
+     "answer": "636",
+     "why": "Plain LDAP is 389; LDAPS is 636."
+    },
+    {
+     "id": "rdp",
+     "text": "RDP (Windows remote desktop)",
+     "answer": "3389",
+     "why": "TCP 3389. Exposed to the internet, it's a favourite way in for ransomware gangs."
+    }
+   ]
+  },
+  {
+   "id": "np-pbq-subnet",
+   "kind": "subnet",
+   "objectives": [
+    "1.7"
+   ],
+   "minutes": 7,
+   "title": "Fill in the subnet table",
+   "scenario": "A colleague has noted three addresses from the network. For each, work out its subnet's details.",
+   "fields": [
+    "network",
+    "broadcast",
+    "first",
+    "last",
+    "hosts"
+   ],
+   "rows": [
+    {
+     "ip": "192.168.10.77",
+     "prefix": 26
+    },
+    {
+     "ip": "10.20.30.130",
+     "prefix": 25
+    },
+    {
+     "ip": "172.16.45.9",
+     "prefix": 22
+    }
+   ]
+  },
+  {
+   "id": "np-pbq-trunk",
+   "kind": "cli",
+   "objectives": [
+    "2.2",
+    "5.5"
+   ],
+   "minutes": 8,
+   "title": "Fix the staff VLAN on S3",
+   "lab": "vlans",
+   "scenario": "After last night's change, PC4 (Staff, on S3) can't reach PC1 (Staff, on S2), though PC1 and the other staff PCs work. VLANs 10, 20, 30, 99 and 150 exist on every switch, and the S1 to S2 trunk is fine. Find and fix what's wrong on S3, prove it, and save your work.",
+   "devices": [
+    "S3",
+    "S1",
+    "PC4"
+   ],
+   "start": {
+    "switches": {
+     "S1": {
+      "vlans": {
+       "10": "Staff",
+       "20": "Students",
+       "30": "Guest",
+       "99": "Management",
+       "150": "Voice"
+      },
+      "ports": {
+       "Gi0/1": {
+        "mode": "trunk",
+        "native": 99
+       },
+       "Gi0/2": {
+        "mode": "trunk",
+        "native": 99
+       }
+      }
+     },
+     "S2": {
+      "vlans": {
+       "10": "Staff",
+       "20": "Students",
+       "30": "Guest",
+       "99": "Management",
+       "150": "Voice"
+      },
+      "ports": {
+       "Gi0/1": {
+        "mode": "trunk",
+        "native": 99
+       },
+       "Fa0/11": {
+        "mode": "access",
+        "access": 10
+       },
+       "Fa0/18": {
+        "mode": "access",
+        "access": 20
+       },
+       "Fa0/6": {
+        "mode": "access",
+        "access": 30
+       }
+      }
+     },
+     "S3": {
+      "vlans": {
+       "10": "Staff",
+       "20": "Students",
+       "30": "Guest",
+       "99": "Management",
+       "150": "Voice"
+      },
+      "ports": {
+       "Gi0/1": {
+        "mode": "access"
+       },
+       "Fa0/11": {
+        "mode": "access",
+        "access": 20
+       },
+       "Fa0/18": {
+        "mode": "access",
+        "access": 20
+       },
+       "Fa0/6": {
+        "mode": "access",
+        "access": 30
+       }
+      }
+     }
+    }
+   },
+   "tasks": [
+    {
+     "text": "S3's uplink (Gi0/1) is a trunk.",
+     "check": {
+      "trunks": [
+       [
+        "S3",
+        "Gi0/1"
+       ]
+      ]
+     },
+     "why": "It had been set to access mode, so only VLAN 1 crossed it. show interfaces trunk on S1 shows no trunk on Gi0/2 until it's fixed."
+    },
+    {
+     "text": "Both ends of the S1 to S3 trunk use native VLAN 99, like the rest of the network.",
+     "check": {
+      "native": {
+       "vlan": 99,
+       "ports": [
+        [
+         "S1",
+         "Gi0/2"
+        ],
+        [
+         "S3",
+         "Gi0/1"
+        ]
+       ]
+      }
+     },
+     "why": "A new trunk starts with native VLAN 1. A mismatch leaks untagged traffic between VLANs, and CDP warns about it."
+    },
+    {
+     "text": "PC4's port (S3 Fa0/11) is an access port in VLAN 10, Staff.",
+     "check": {
+      "access": {
+       "device": "S3",
+       "ports": {
+        "Fa0/11": 10
+       }
+      }
+     },
+     "why": "It had been put in VLAN 20 (Students). show vlan brief on S3 lists Fa0/11 under the wrong VLAN."
+    },
+    {
+     "text": "From PC4, a ping to PC1 (10.10.10.11) succeeds.",
+     "check": {
+      "pinged": {
+       "from": "PC4",
+       "to": "PC1",
+       "ok": true
+      }
+     },
+     "why": "Proving the fix: PC4 and PC1 are now in the same VLAN, joined by working trunks."
+    },
+    {
+     "text": "S3's configuration is saved, so the fix survives a reload.",
+     "check": {
+      "saved": "S3"
+     },
+     "why": "copy running-config startup-config (or wr) after the last change. Unsaved changes are lost when a switch restarts."
+    }
+   ],
+   "model": {
+    "S3": [
+     "enable",
+     "conf t",
+     "int g0/1",
+     "switchport mode trunk",
+     "switchport trunk native vlan 99",
+     "int f0/11",
+     "switchport access vlan 10",
+     "end",
+     "copy run start"
+    ],
+    "PC4": [
+     "ping 10.10.10.11"
+    ]
+   },
+   "simplification": "The same simulated Cisco 2960 switches (IOS 15) as the VLAN lab: only the commands it models work. On the exam a PBQ like this may show a diagram and ask you to choose settings rather than type."
+  },
+  {
+   "id": "np-pbq-troubleshoot",
+   "kind": "order",
+   "objectives": [
+    "5.1"
+   ],
+   "minutes": 4,
+   "title": "Follow the troubleshooting method",
+   "scenario": "A user can't open the file server. Put these actions in the order CompTIA's troubleshooting method uses.",
+   "steps": [
+    {
+     "text": "Ask the user what changed and when, and check whether others are affected",
+     "why": "Identify the problem: gather information and question users."
+    },
+    {
+     "text": "Suspect last night's switch change put their port in the wrong VLAN",
+     "why": "Establish a theory of probable cause."
+    },
+    {
+     "text": "Check the port with show vlan brief: it's in VLAN 20, not 10",
+     "why": "Test the theory to confirm the cause."
+    },
+    {
+     "text": "Plan to move the port back during the next change window, and tell the team",
+     "why": "Establish a plan of action and identify its effects."
+    },
+    {
+     "text": "Move the port to VLAN 10",
+     "why": "Implement the solution, or escalate."
+    },
+    {
+     "text": "Have the user open the file server, and add the port to the change checklist",
+     "why": "Verify full functionality and put preventive measures in place."
+    },
+    {
+     "text": "Write the cause and the fix in the ticket",
+     "why": "Document findings, actions and outcomes."
+    }
+   ]
+  }
+ ]
+}

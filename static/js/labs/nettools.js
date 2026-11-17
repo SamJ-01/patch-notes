@@ -12,11 +12,15 @@ export const inCidr = (ip, cidr) => { const [net, p] = cidr.split("/"); const m 
 const MAN = {
   help: "help: list the commands",
   ipconfig: "ipconfig (or ip a): show this computer's IP address, mask, gateway and DNS servers",
-  ping: "ping host: send echo requests. Tests whether a host answers and how quickly",
+  ping: "ping host: send echo requests. Tests whether a host answers and how quickly. -c N (Linux) or -n N (Windows) sets how many",
   traceroute: "traceroute host (or tracert): list each router hop on the way to a host",
-  nslookup: "nslookup name [server] (or dig name): ask DNS for a name's IP address",
+  nslookup: "nslookup name [server]: ask DNS for a name's IP address",
+  dig: "dig name [@server] [+short]: ask DNS for a name's address, showing the full answer (+short prints just the address)",
+  host: "host name: the shortest way to ask DNS for a name's address",
   arp: "arp -a: show the local cache of IP addresses and their MAC addresses",
   netstat: "netstat -an: show this computer's connections and listening ports",
+  ip: "ip a (addresses), ip r (routes) or ip n (neighbours, like arp): Linux's network commands",
+  hostname: "hostname: print this computer's name",
   curl: "curl url: fetch a web page and show the response headers",
   discover: "discover target: list which hosts are up and which well-known ports answer. Only works inside this lab's authorised scope",
   cat: "cat file: print a file",
@@ -59,14 +63,15 @@ export function createNetShell(lab) {
       return { out: [`Adapter Ethernet0:`, `   IPv4 address . . . : ${me.ip}`, `   Subnet mask  . . . : ${intToIp(maskOf(me.prefix))}`,
         `   Default gateway  . : ${me.gateway}`, `   DNS servers  . . . : ${me.dns.join(", ")}`].join("\n") };
     },
-    ping: a => {
+    ping: (a, f, all, opt = {}) => {
       const target = a[0]; if (!target) return err("Usage: ping host");
+      const n = Math.min(opt.count || 4, 10);
       const r = resolve(target);
       log({ cmd: "ping", target, ip: r.ip || null, ok: !!(r.ip && reachable(r.ip)) });
       if (!r.ip) return err(`ping: cannot resolve ${target}: Unknown host`);
-      if (!reachable(r.ip)) return { out: `Pinging ${r.ip} with 32 bytes of data:\n` + "Request timed out.\n".repeat(4) + `\nPackets: Sent = 4, Received = 0 (100% loss)`, error: true };
+      if (!reachable(r.ip)) return { out: `Pinging ${r.ip} with 32 bytes of data:\n` + "Request timed out.\n".repeat(n) + `\nPackets: Sent = ${n}, Received = 0 (100% loss)`, error: true };
       const ms = host(r.ip).ms || (sameSubnet(r.ip) ? 1 : 18), ttl = sameSubnet(r.ip) ? 64 : 57;
-      return { out: `Pinging ${nameTag(r.ip)} with 32 bytes of data:\n` + [0, 1, 2, 3].map(k => `Reply from ${r.ip}: bytes=32 time=${ms + (k % 2)}ms TTL=${ttl}`).join("\n") + `\n\nPackets: Sent = 4, Received = 4 (0% loss)` };
+      return { out: `Pinging ${nameTag(r.ip)} with 32 bytes of data:\n` + Array.from({ length: n }, (_, k) => `Reply from ${r.ip}: bytes=32 time=${ms + (k % 2)}ms TTL=${ttl}`).join("\n") + `\n\nPackets: Sent = ${n}, Received = ${n} (0% loss)` };
     },
     traceroute: a => {
       const target = a[0]; if (!target) return err("Usage: traceroute host");
@@ -92,6 +97,50 @@ export function createNetShell(lab) {
       if (r.timeout) return err(`Server:  ${server}\nAddress:  ${server}\n\n*** Request to ${server} timed out.`);
       if (r.nx) return err(`Server:  ${server}\nAddress:  ${server}\n\n*** ${server} can't find ${name}: Non-existent domain`);
       return { out: `Server:  ${host(server)?.name || server}\nAddress:  ${server}\n\nNon-authoritative answer:\nName:    ${name}\nAddress:  ${r.ip}` };
+    },
+    dig: (a, f = []) => {
+      if (f.includes("-x") || (a[0] && isIp(a.filter(x => !/^[+@]/.test(x))[0] || ""))) return err("[Simulator: reverse lookups (dig -x) aren't modelled here.]");
+      const short = a.includes("+short"), words = a.filter(x => !x.startsWith("+"));
+      const server = (words.find(x => x.startsWith("@")) || "").slice(1) || me.dns[0];
+      const [name, type = "A"] = words.filter(x => !x.startsWith("@"));
+      if (!name) return err("Usage: dig name [@server] [+short]");
+      if (type.toUpperCase() !== "A") return err(`[Simulator: this lab's DNS only holds A records (IPv4 addresses), so dig ${name} ${type} isn't modelled.]`);
+      const r = resolve(name, server), banner = `; <<>> DiG 9.18.28 <<>> ${a.join(" ")}\n;; global options: +cmd`;
+      log({ cmd: "nslookup", target: name, server, ok: !!r.ip });
+      if (r.timeout) return err(`${`;; communications error to ${server}#53: timed out\n`.repeat(3)}\n${banner}\n;; no servers could be reached`);
+      if (short) return { out: r.ip && !isIp(name) ? r.ip : "" };
+      const status = r.nx ? "NXDOMAIN" : "NOERROR", fq = name.replace(/\.?$/, ".");
+      return { out: [`\n${banner}`, ";; Got answer:", `;; ->>HEADER<<- opcode: QUERY, status: ${status}, id: 4242`,
+        `;; flags: qr rd ra; QUERY: 1, ANSWER: ${r.nx ? 0 : 1}, AUTHORITY: 0, ADDITIONAL: 1`, "", ";; QUESTION SECTION:", `;${fq}\t\t\tIN\tA`,
+        ...(r.nx ? [] : ["", ";; ANSWER SECTION:", `${fq}\t\t300\tIN\tA\t${r.ip}`]), "", `;; Query time: ${host(server)?.ms || 12} msec`,
+        `;; SERVER: ${server}#53(${server}) (UDP)`, "[Simulator: the EDNS, authority and timing lines are left out.]"].join("\n"), error: !!r.nx };
+    },
+    host: a => {
+      const name = a[0]; if (!name) return err("Usage: host name");
+      const r = resolve(name);
+      log({ cmd: "nslookup", target: name, server: me.dns[0], ok: !!r.ip });
+      if (r.timeout) return err(`;; communications error to ${r.server}#53: timed out\n;; no servers could be reached`);
+      if (r.nx) return err(`Host ${name} not found: 3(NXDOMAIN)`);
+      return { out: isIp(name) ? `[Simulator: reverse lookups aren't modelled here.]` : `${name} has address ${r.ip}` };
+    },
+    hostname: () => ({ out: me.name || "pc" }),
+    // iproute2: ip a / ip addr [show], ip r / ip route, ip n / ip neigh. Shown as on a Linux machine with one wired NIC (eth0).
+    ip: a => {
+      const sub = (a[0] || "a").toLowerCase(), mac = (me.mac || "").replace(/-/g, ":").toLowerCase();
+      const net4 = intToIp((ipToInt(me.ip) & maskOf(me.prefix)) >>> 0), bcast = intToIp(((ipToInt(me.ip) & maskOf(me.prefix)) | (~maskOf(me.prefix) >>> 0)) >>> 0);
+      if ("address".startsWith(sub)) {
+        log({ cmd: "ipconfig" });
+        return { out: ["1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000", "    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00",
+          "    inet 127.0.0.1/8 scope host lo", "       valid_lft forever preferred_lft forever",
+          "2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000", `    link/ether ${mac} brd ff:ff:ff:ff:ff:ff`,
+          `    inet ${me.ip}/${me.prefix} brd ${bcast} scope global eth0`, "       valid_lft forever preferred_lft forever"].join("\n") };
+      }
+      if ("route".startsWith(sub)) { log({ cmd: "ipconfig" }); return { out: `default via ${me.gateway} dev eth0\n${net4}/${me.prefix} dev eth0 proto kernel scope link src ${me.ip}` }; }
+      if ("neighbour".startsWith(sub) || "neighbor".startsWith(sub)) {
+        log({ cmd: "arp" });
+        return { out: net.hosts.filter(h => sameSubnet(h.ip) && h.up && h.mac).map(h => `${h.ip} dev eth0 lladdr ${h.mac.replace(/-/g, ":").toLowerCase()} REACHABLE`).join("\n") };
+      }
+      return err(`Object "${a[0]}" is unknown, try "ip help".`);
     },
     arp: () => {
       log({ cmd: "arp" });
@@ -138,19 +187,37 @@ export function createNetShell(lab) {
     },
   };
   // Aliases to the real-world command names people type.
-  const ALIAS = { tracert: "traceroute", dig: "nslookup", ss: "netstat", ifconfig: "ipconfig", "ip": "ipconfig" };
+  const ALIAS = { tracert: "traceroute", tracepath: "traceroute", ss: "netstat", ifconfig: "ipconfig" };
+  // Options that take a value (so "ping -c 4 host" doesn't read 4 as the host).
+  const VALUE = { ping: /^-[cnwWilsI]$/, traceroute: /^-[mqwpf]$/, curl: /^-[oHXdAumebcx]$/, discover: /^-p$/ };
+  // Real tools this shell doesn't model, with where to look instead.
+  const REAL = { whois: "it isn't part of this lab", telnet: "try curl for web servers", nc: "try curl for web servers", ssh: "it isn't part of this lab",
+    wget: "try curl", mtr: "try traceroute", pathping: "try traceroute", route: "try ip r", getmac: "try arp -a", nbtstat: "it isn't part of this lab" };
 
   function run(line) {
     const raw = line.trim(); if (!raw) return { out: "" };
     state.history.push(raw);
-    const parts = raw.split(/\s+/);
+    // Words as a shell splits them: "quoted text" stays one word, without its quotes.
+    const parts = (raw.match(/"[^"]*"|'[^']*'|\S+/g) || []).map(w => w.replace(/^(["'])(.*)\1$/, "$2"));
     let cmd = parts[0].toLowerCase();
     cmd = ALIAS[cmd] || cmd;
     const rest = parts.slice(1);
-    // `ip a` / `ip addr` means ipconfig; otherwise drop a leading sub-word like `arp -a`.
-    const args = rest.filter(x => !x.startsWith("-"));
+    if (rest.includes("--help") && MAN[cmd]) return { out: `Usage: ${MAN[cmd]}` };
+    if (cmd === "nmap") return err(net.scope ? `[Simulator: in this lab the scanner is called discover, and it only scans the authorised scope. Try: discover ${net.scope}]` : "[Simulator: nmap isn't part of this lab.]");
+    if (REAL[cmd]) return err(`[Simulator: ${cmd} is a real tool, but this shell doesn't model it: ${REAL[cmd]}.]`);
+    // Words that aren't options, skipping an option's value; ping's count is kept (-c 4, -c4, -n 4).
+    const args = [], opt = {};
+    for (let i = 0; i < rest.length; i++) {
+      const x = rest[i], m = x.match(/^-([cn])(\d+)$/);
+      if (m && cmd === "ping") { opt.count = Number(m[2]); continue; }
+      if (VALUE[cmd]?.test(x) && rest[i + 1] != null && (cmd !== "ping" && cmd !== "traceroute" || /^\d+$/.test(rest[i + 1]))) {
+        if (cmd === "ping" && /^-[cn]$/.test(x)) opt.count = Number(rest[i + 1]);
+        i++; continue;
+      }
+      if (!x.startsWith("-")) args.push(x);
+    }
     if (!cmds[cmd]) return err(`${parts[0]}: command not found. Type help to list commands.`);
-    return cmds[cmd](args, rest.filter(x => x.startsWith("-")), rest);
+    return cmds[cmd](args, rest.filter(x => x.startsWith("-")), rest, opt);
   }
 
   function isDone(check) {
@@ -186,7 +253,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     <div class="term-grid">
       <section class="term-shell" aria-label="Simulated terminal">
         <div class="term-bar"><span>${esc((lab.net.me.name || "pc"))}@${esc(lab.host || "workstation")}</span><span class="tag">Simulated</span></div>
-        <div class="term-out" id="t-out" aria-live="polite"></div>
+        <div class="term-out" id="t-out" aria-live="polite" tabindex="0" aria-label="Terminal output"></div>
         <form class="term-in" id="t-form"><label class="sr" for="t-in">Command</label><span class="term-ps" id="t-ps"></span><input id="t-in" autocomplete="off" autocapitalize="off" spellcheck="false"></form>
       </section>
       <aside class="panel term-tasks"><div class="panel-title"><h2>Objectives</h2><span class="mono" id="t-count"></span></div><ol id="t-tasks"></ol>

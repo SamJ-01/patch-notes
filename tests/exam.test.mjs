@@ -155,3 +155,14 @@ test("weekPlan: weakest and heaviest objectives first, the last week kept for mo
   assert.equal(ex.weekPlan({ examDate: "<script>", today: "2026-11-16", rows }), null);
   assert.equal(ex.weekPlan({ examDate: "2030-01-01", today: "2026-11-16", rows }).weeks.length, 52, "capped at a year of weeks");
 });
+
+test("command-line scenarios show as terminal text; prose scenarios don't", () => {
+  const bank = ["network-plus", "security-plus", "pentest-plus"].flatMap(c => {
+    const d = JSON.parse(readFileSync(new URL(`../content/certs/${c}-questions.json`, import.meta.url), "utf8"));
+    return (d.questions || d).filter(q => q.scenario);
+  });
+  const cli = bank.filter(q => ex.isCli(q.scenario)).map(q => q.id).sort();
+  assert.deepEqual(cli, ["np-5.5-12", "np-5.5-7", "np-5.5-8", "sp-4.6-6", "sp-4.9-6"]);
+  assert.ok(!ex.isCli("A user can reach 8.8.8.8 but not websites."));
+  assert.ok(ex.isCli("R1> en") && ex.isCli("$ ls -la") && ex.isCli("drwxr-xr-x 2 root root 4096 Oct 1 09:00 etc"));
+});

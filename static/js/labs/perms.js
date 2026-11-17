@@ -85,8 +85,22 @@ const resolve = (world, cwd, name) => { const p = name.startsWith("/") ? name.re
 export function run(world, cwd, line) {
   const words = line.trim().split(/\s+/).filter(Boolean);
   if (!words.length) return { out: "" };
-  const [cmd, ...args] = words;
+  let [cmd, ...args] = words;
   const err = msg => ({ out: msg, error: true });
+  // Ubuntu's ll and la shortcuts; whoami and groups; -R (and the harmless -v/-c/-f) on chmod, chown and chgrp.
+  if (cmd === "ll" || cmd === "la") { const r = run(world, cwd, ["ls", "-l", ...args].join(" ")); return r.error ? r : { out: r.out + "\n[Simulator: . and .. are left out of this listing.]" }; }
+  if (cmd === "whoami") return { out: "root" };
+  if (cmd === "groups") {
+    const u = args[0] || "root", info = world.users[u];
+    if (u === "root") return { out: args[0] ? "root : root" : "root" };
+    return info ? { out: `${u} : ${info.groups.join(" ")}` } : err(`groups: '${u}': no such user`);
+  }
+  let recursive = false;
+  if (["chmod", "chown", "chgrp"].includes(cmd)) {
+    recursive = args.some(a => /^-[a-zA-Z]*R/.test(a) || a === "--recursive");
+    args = args.filter(a => !/^-[Rvcf]+$/.test(a) && a !== "--recursive");
+  }
+  const under = path => Object.keys(world.files).filter(p => p === path || (recursive && p.startsWith(path + "/")));
   if (cmd === "ls") {
     const flags = args.filter(a => a.startsWith("-")).join(""), names = args.filter(a => !a.startsWith("-"));
     if (!flags.includes("l")) return { out: "[Simulator: use ls -l to see permissions, owners and groups.]" };
@@ -108,9 +122,8 @@ export function run(world, cwd, line) {
     if (args.length !== 2) return err("chmod: missing operand\nTry 'chmod --help' for more information.");
     const path = resolve(world, cwd, args[1]);
     if (!path) return err(`chmod: cannot access '${args[1]}': No such file or directory`);
-    const m = applyChmod(world.files[path].mode, args[0]);
-    if (m == null) return err(`chmod: invalid mode: '${args[0]}'\nTry 'chmod --help' for more information.`);
-    world.files[path].mode = m;
+    if (applyChmod(world.files[path].mode, args[0]) == null) return err(`chmod: invalid mode: '${args[0]}'\nTry 'chmod --help' for more information.`);
+    for (const p of under(path)) world.files[p].mode = applyChmod(world.files[p].mode, args[0]);
     return { out: "", changed: path };
   }
   if (cmd === "chown" || cmd === "chgrp") {
@@ -120,11 +133,12 @@ export function run(world, cwd, line) {
     let [owner, group] = cmd === "chgrp" ? [null, args[0]] : args[0].split(":");
     if (owner && !world.users[owner] && owner !== "root") return err(`chown: invalid user: '${args[0]}'`);
     if (group && !(group in world.groups)) return err(`${cmd}: invalid group: '${args[0]}'`);
-    if (owner) world.files[path].owner = owner;
-    if (group) world.files[path].group = group;
+    for (const p of under(path)) { if (owner) world.files[p].owner = owner; if (group) world.files[p].group = group; }
     return { out: "", changed: path };
   }
   if (cmd === "cd" || cmd === "cat" || cmd === "sudo") return { out: `[Simulator: this lab models permissions only. Try ls -l, chmod, chown or id.]` };
+  if (["stat", "touch", "mkdir", "rm", "cp", "mv", "umask", "getfacl", "setfacl", "su", "passwd", "useradd", "usermod", "groupadd", "find", "nano", "vi", "vim", "echo"].includes(cmd))
+    return { out: `[Simulator: ${cmd} is a real Linux command, but this lab models permissions only. Try ls -l, chmod, chown or id.]`, error: true };
   return err(`${cmd}: command not found`);
 }
 
@@ -219,5 +233,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   $("pm-reset").addEventListener("click", onReset);
   out = `<div class="muted">You're root on ${esc(lab.host)} (on a real server you'd use sudo). Try ls -l, chmod, chown and id.</div>`;
   $("pm-out").innerHTML = out;
+  // Like the other terminals: a click on the output puts the cursor on the command line (unless text is being selected).
+  $("pm-out").addEventListener("click", () => { if (!String(getSelection())) $("pm-in").focus(); });
   changed();
 }

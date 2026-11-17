@@ -1,7 +1,7 @@
 // Patch Notes offline support. Network first: online, every request goes to the network as normal, so a new
 // build is seen straight away; a copy of each successful same-site response is kept, and used only when the
 // network fails (offline). Nothing from other sites is touched (the feedback form, outlet links), and only GETs.
-const CACHE = "pn-offline-v1";
+const CACHE = "pn-offline-v2";
 const CORE = ["./", "fonts/fonts.css", "manifest.webmanifest", "icons/icon-192.png"];
 
 self.addEventListener("install", e => {

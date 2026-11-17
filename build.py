@@ -125,6 +125,8 @@ def load_certs():
         cert = json.loads(f.read_text())
         qfile = f.with_name(f"{f.stem}-questions.json")
         cert["questions"] = json.loads(qfile.read_text())["questions"] if qfile.exists() else []
+        pfile = CONTENT / "pbq" / f"{f.stem}.json"  # performance-based questions, if the exam has any
+        cert["pbqs"] = json.loads(pfile.read_text())["pbqs"] if pfile.exists() else []
         certs.append(cert)
     # The usual study order, so the exams tab and each lesson's "Prove it" reach the gentler exam first.
     order = {"network-plus": 0, "security-plus": 1, "pentest-plus": 2}
@@ -418,6 +420,7 @@ def main():
         "quiz": load("quiz.json"),
         "phish": load("phish.json"),
         "tools": load("tools.json"),
+        "safety": load("safety.json"),
         "careers": load("careers.json"),
         "cwe": cwe,
         "glossary": load("glossary.json"),

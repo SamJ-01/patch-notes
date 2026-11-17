@@ -12,6 +12,7 @@ VIEWS.feedback = () => {
     <a class="link-btn" href="#today">← Home</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">Feedback</div><h1>Tell me what you think</h1>
       <p class="hook">Two minutes, no name or account needed, and it stays between us. Anything that confused or annoyed you is the most useful thing you can say.</p></div>
+    ${safeNote("feedback")}
     <form id="fb-form" class="panel stack" style="gap:20px" novalidate>
       <fieldset class="fb-set"><legend>What did you try?</legend>
         <div class="fb-opts">${checks("tried", ["Lessons", "Labs", "Missions", "Agency (SOC shift)", "Exam prep or a mock", "News or CVE Radar", "Games"], "checkbox")}</div></fieldset>
@@ -82,7 +83,8 @@ VIEWS.progress = () => {
       <li><span></span><span>Capture a hidden flag</span><b>+50</b></li><li><span></span><span>Complete a learning path</span><b>+${PATH_XP}</b></li><li><span></span><span>Unlock a badge</span><b>+${BADGE_XP}</b></li>
       <li><span></span><span>Correct quiz answer / spotted phish</span><b>+10 / +15</b></li><li><span></span><span>Set up your stack</span><b>+10</b></li><li><span></span><span>New glossary term or story explanation</span><b>+2</b></li></ul></details>
     <section class="panel"><h2>Keep your progress</h2>
-      <p class="muted" style="max-width:70ch">Saved <b>in this browser only</b>, with no account. Some browsers (Safari especially) clear it after a while, so back it up: copy a code or download a file.</p>
+      ${safeNote("progress")}
+      <p class="muted" style="max-width:70ch">Some browsers (Safari especially) clear it after a while, so back it up: copy a code or download a file.</p>
       <p class="notice" role="note">Restoring a progress code or file replaces the progress currently saved in this browser. Download a backup first if you want to keep the current progress too.</p>
       <details class="tbl" id="pcode-box"><summary>Back up / restore with a code</summary>
         <div class="stack" style="gap:10px;margin-top:10px">
@@ -95,7 +97,8 @@ VIEWS.progress = () => {
         </div></details>
       <div class="row"><button class="btn brand" type="button" id="export">Download a backup file</button><label class="btn ghost" for="import-file">Restore from a file</label><input type="file" id="import-file" accept="application/json,.json" class="sr-only"><button class="btn ghost" type="button" id="reset">Reset my progress</button></div>
       <p class="muted" id="reset-msg" role="status"></p>
-      <label class="pn-set"><input type="checkbox" id="patch-toggle"> Show Patch, the guide, in the corner</label></section>
+      <label class="pn-set"><input type="checkbox" id="patch-toggle"> Show Patch, the guide, in the corner</label>
+      ${safeNote("install")}</section>
   </div>`;
   const pt = $("patch-toggle");
   if (pt) { pt.checked = !patchHidden(); pt.addEventListener("change", () => { setPatchHidden(!pt.checked); pt.checked ? mountCompanion() : unmountCompanion(); }); }
@@ -261,8 +264,11 @@ function drawGame() { GS.mode === "phish" ? drawPhish() : GS.mode === "flags" ? 
 function drawFlags() {
   const got = P.flags || {};
   $("game").innerHTML = `<div class="game-bar"><span>Capture the flag</span><span>${Object.keys(got).length}/3 captured · 50 XP each</span></div>
-    <p class="muted">Three flags are hidden in this site. Each looks like <span class="mono">flag{...}</span>.</p>
-    <div class="flags">${FLAG_INFO.map((f, i) => `<div class="flag ${got[i] ? "got" : ""}"><span class="st">${i + 1}${got[i] ? '<span class="st-tick" aria-hidden="true">✓</span><span class="sr-only"> (captured)</span>' : ""}</span><div class="stack" style="gap:4px"><h3>${esc(f.name)}</h3><p>${esc(f.hint)}</p></div></div>`).join("")}</div>
+    <p class="muted">Three flags are hidden in this site. Each looks like <span class="mono">flag{...}</span>. Stuck? Open "Show me how" under any flag.</p>
+    <div class="flag-safe" role="note"><b>Is this safe? Yes.</b> Viewing a page's source and opening the browser console only shows your own copy of the page. Nothing you do there changes the site for anyone else, and developers do it all day.
+      <details><summary>The one rule: never paste code someone gives you</summary><p>The console runs code as you, in your logged-in tab. Scammers send people a line to paste ("to unlock a prize" or "to verify your account") and it quietly takes over the account. This is called <b>self-XSS</b>. Typing your own commands to learn is fine. On Patch Notes there are no accounts, so the worst a pasted script could do is wipe your saved progress, but the habit matters everywhere else.</p></details></div>
+    <div class="flags">${FLAG_INFO.map((f, i) => `<div class="flag ${got[i] ? "got" : ""}"><span class="st">${i + 1}${got[i] ? '<span class="st-tick" aria-hidden="true">✓</span><span class="sr-only"> (captured)</span>' : ""}</span><div class="stack" style="gap:4px"><h2 class="flag-name">${esc(f.name)}</h2><p>${esc(f.hint)}</p>
+      <details class="flag-how"><summary>Show me how</summary><ol>${f.how.map(x => `<li>${esc(x)}</li>`).join("")}</ol><p class="muted flag-phone"><b>On a phone:</b> ${esc(f.phone)}</p></details></div></div>`).join("")}</div>
     <form class="flag-form" id="flag-form"><label class="sr" for="flag-in">Flag</label><input id="flag-in" placeholder="flag{...}" autocomplete="off" spellcheck="false"><button class="btn brand" type="submit">Submit</button></form>
     <div id="flag-msg" aria-live="polite"></div>
     <p class="muted" style="font-size:0.88rem">Useful free tool: <a href="https://gchq.github.io/CyberChef/" target="_blank" rel="noopener">CyberChef ↗</a>, made by GCHQ for decoding and transforming data.</p>`;

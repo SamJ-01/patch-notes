@@ -8,10 +8,10 @@ const MAN = {
   help: "help: list the commands this terminal supports",
   pwd: "pwd: print the folder you're in (print working directory)",
   whoami: "whoami: print the user you're logged in as",
-  ls: "ls [-a] [-l] [path]: list a folder. -a shows hidden files (names starting with .), -l shows permissions, owner and size",
+  ls: "ls [-a] [-l] [path]: list a folder. -a shows hidden files (names starting with .), -l shows permissions, owner and size. Flags combine: ls -la. On Ubuntu, ll is short for ls -alF",
   cd: "cd [path]: change folder. cd .. goes up one, cd ~ (or just cd) goes home, cd - goes back",
   cat: "cat file...: print a file's contents",
-  grep: "grep [-i] [-n] pattern file: print only lines containing pattern. -i ignores case, -n shows line numbers",
+  grep: "grep [-i] [-n] [-v] [-c] [-r] pattern file: print lines containing pattern. -i ignores case, -n numbers lines, -v shows lines that don't match, -c counts, -r searches a whole folder",
   find: "find [path] -name pattern: search for files by name. * matches anything, e.g. find / -name \"*.sh\"",
   mkdir: "mkdir [-p] folder: make a new folder",
   touch: "touch file: create an empty file (or update its time)",
@@ -27,7 +27,16 @@ const MAN = {
   sort: "sort [-r] [-n] [file]: sort lines (-r reverses, -n sorts by number)",
   uniq: "uniq [-c] [file]: collapse repeated neighbouring lines (-c counts them). Run sort first so repeats sit together",
   cut: "cut -d ' ' -f N [file]: print field N of each line, splitting on the -d character",
+  awk: "awk '{print $N}' [file]: print field N of each line (split on spaces). $NF is the last field, $(NF-1) the one before",
+  less: "less file: read a file a screen at a time (here it prints the whole file, like cat)",
+  id: "id: show your user ID and groups",
 };
+// Ubuntu's default ~/.bashrc defines these shortcuts.
+const ALIASES = { ll: "ls -alF", la: "ls -A", l: "ls -CF" };
+// Real commands this terminal doesn't model: say so, rather than "command not found", which suggests they don't exist.
+const REAL = ["cp", "mv", "nano", "vi", "vim", "ps", "top", "htop", "kill", "uname", "df", "du", "free", "ip", "ifconfig", "ping", "ssh", "scp", "curl", "wget",
+  "apt", "apt-get", "systemctl", "journalctl", "chown", "chgrp", "tar", "zip", "unzip", "who", "w", "last", "which", "file", "stat", "diff", "sed", "tr", "tee",
+  "xargs", "su", "passwd", "useradd", "crontab", "netstat", "ss", "lsof", "dig", "nslookup", "more", "tree", "ln"];
 
 export const normalize = parts => {
   const out = [];
@@ -142,9 +151,12 @@ export function createShell(lab) {
   }
 
   function exec(raw, stdin, piped = false) {
-    const [cmd, ...args] = tokenize(raw);
+    let [cmd, ...args] = tokenize(raw);
+    if (ALIASES[cmd]) { const [c, ...a] = tokenize(ALIASES[cmd]); cmd = c; args = [...a, ...args]; }
+    if (cmd === "more") cmd = "less";
     const flags = args.filter(a => /^-[a-zA-Z]+$/.test(a)).join("").replace(/-/g, "");
     const words = args.filter(a => !/^-[a-zA-Z]+$/.test(a));
+    if (args.includes("--help") && MAN[cmd]) return { out: `Usage: ${MAN[cmd]}\n[Simulator: a short version of the real --help text. man ${cmd} says the same.]` };
 
     // Running a program by path: ./script.sh or /opt/backup/backup.sh
     if (cmd.includes("/")) {
@@ -163,6 +175,7 @@ export function createShell(lab) {
       case "man": return words[0] && MAN[words[0]] ? { out: MAN[words[0]] } : err(`No manual entry for ${words[0] || "(nothing)"}`);
       case "pwd": log({ cmd }); return { out: state.cwd };
       case "whoami": log({ cmd }); return { out: user };
+      case "id": log({ cmd }); return { out: `uid=1000(${user}) gid=1000(${user}) groups=1000(${user})` };
       case "echo": return { out: words.join(" ") };
       case "history": return { out: state.history.map((h, i) => `${String(i + 1).padStart(4)}  ${h}`).join("\n") };
       case "clear": return { out: "", clear: true };
@@ -181,11 +194,14 @@ export function createShell(lab) {
         const n = node(target);
         if (!n) return err(`ls: cannot access '${words[0]}': No such file or directory`);
         log({ cmd, path: target, flags });
-        if (n.type === "file") return { out: flags.includes("l") ? longLine(target, n) : base(target) };
+        // -F marks folders with / and runnable files with *; -A shows hidden files but not . and ..
+        const mark = (p, x) => (!flags.includes("F") ? "" : x.type === "dir" ? "/" : /x/.test(x.mode) ? "*" : "");
+        if (n.type === "file") return { out: (flags.includes("l") ? longLine(target, n) : base(target)) + mark(target, n) };
         let names = children(target);
-        if (!flags.includes("a")) names = names.filter(p => !base(p).startsWith("."));
-        if (flags.includes("l")) return { out: [`total ${names.length * 4}`, ...(flags.includes("a") ? [longLine(".", n).replace(/ \.$/, " ."), longLine("..", node(parent(target))).replace(/ \.\.$/, " ..")] : []), ...names.map(p => longLine(p, node(p)))].join("\n"), dirs: names.filter(p => node(p).type === "dir").map(base) };
-        const listed = (flags.includes("a") ? [".", ".."] : []).concat(names.map(base));
+        const dots = flags.includes("a");
+        if (!dots && !flags.includes("A")) names = names.filter(p => !base(p).startsWith("."));
+        if (flags.includes("l")) return { out: [`total ${names.length * 4}`, ...(dots ? [longLine(".", n).replace(/ \.$/, " .") + (flags.includes("F") ? "/" : ""), longLine("..", node(parent(target))).replace(/ \.\.$/, " ..") + (flags.includes("F") ? "/" : "")] : []), ...names.map(p => longLine(p, node(p)) + mark(p, node(p)))].join("\n"), dirs: names.filter(p => node(p).type === "dir").map(base) };
+        const listed = (dots ? [".", ".."] : []).concat(names.map(p => base(p) + mark(p, node(p))));
         return { out: listed.join(piped ? "\n" : "  "), dirs: [".", "..", ...names.filter(p => node(p).type === "dir").map(base)] };
       }
       case "cat": {
@@ -201,19 +217,34 @@ export function createShell(lab) {
         return { out: outs.join("\n") };
       }
       case "grep": {
-        if (words.length < (stdin === null ? 2 : 1)) return err("Usage: grep [-i] [-n] pattern file");
-        const [pattern, file] = words;
-        let text, p = null;
-        if (file) {
-          p = resolve(file); const n = node(p);
-          if (!n) return err(`grep: ${file}: No such file or directory`);
-          if (n.type === "dir") return err(`grep: ${file}: Is a directory`);
-          text = n.content || "";
-        } else text = stdin;
-        const ci = flags.includes("i");
-        const hits = text.split("\n").map((l, i) => [i + 1, l]).filter(([, l]) => (ci ? l.toLowerCase().includes(pattern.toLowerCase()) : l.includes(pattern)));
-        log({ cmd, path: p, pattern, ci, matched: hits.length });
-        return { out: hits.map(([i, l]) => (flags.includes("n") ? `${i}:` : "") + l).join("\n"), highlight: pattern, ci };
+        if (words.length < (stdin === null ? 2 : 1)) return err("Usage: grep [-i] [-n] [-v] [-c] [-r] pattern file");
+        const [pattern, ...targets] = words;
+        const ci = flags.includes("i"), invert = flags.includes("v"), rec = /[rR]/.test(flags);
+        const hit = l => (ci ? l.toLowerCase().includes(pattern.toLowerCase()) : l.includes(pattern)) !== invert;
+        // Each source: { shown (the path as grep prints it), p, text } or an error line. -r walks a folder's files.
+        const sources = [];
+        if (!targets.length) sources.push({ shown: null, p: null, text: stdin });
+        for (const t of targets) {
+          const p = resolve(t), n = node(p);
+          if (!n) return err(`grep: ${t}: No such file or directory`);
+          if (n.type === "dir") {
+            if (!rec) return err(`grep: ${t}: Is a directory`);
+            const pre = t.replace(/\/+$/, "");
+            for (const q of Object.keys(state.fs).filter(q => q.startsWith(p === "/" ? "/" : p + "/") && state.fs[q].type === "file").sort())
+              sources.push(may(state.fs[q], "r") ? { shown: `${pre}/${q.slice(p === "/" ? 1 : p.length + 1)}`, p: q, text: state.fs[q].content || "" } : { error: `grep: ${pre}/${q.slice(p === "/" ? 1 : p.length + 1)}: Permission denied` });
+          } else sources.push(may(n, "r") ? { shown: t, p, text: n.content || "" } : { error: `grep: ${t}: Permission denied` });
+        }
+        const many = rec || targets.length > 1, out = [];
+        for (const src of sources) {
+          if (src.error) { out.push(src.error); continue; }
+          const hits = src.text.split("\n").map((l, i) => [i + 1, l]).filter(([, l]) => hit(l));
+          log({ cmd, path: src.p, pattern, ci, matched: invert ? 0 : hits.length });
+          const tag = many ? `${src.shown}:` : "";
+          if (flags.includes("l")) { if (hits.length) out.push(src.shown ?? "(standard input)"); }
+          else if (flags.includes("c")) out.push(`${tag}${hits.length}`);
+          else out.push(...hits.map(([i, l]) => tag + (flags.includes("n") ? `${i}:` : "") + l));
+        }
+        return { out: out.join("\n"), highlight: invert ? "" : pattern, ci };
       }
       case "find": {
         const iName = args.indexOf("-name");
@@ -303,7 +334,27 @@ export function createShell(lab) {
         const inp = input(cmd, files, stdin); if (inp.error) return inp;
         log({ cmd }); return { out: lines(inp.text).map(l => l.split(delim)[f - 1] ?? "").join("\n") };
       }
-      default: return err(`${cmd}: command not found. Type help to see the commands this terminal supports.`);
+      case "less": {
+        if (!words.length) return err("Missing filename (\"less --help\" for help)");
+        return exec(["cat", ...words].join(" "), stdin, piped);
+      }
+      case "awk": {
+        // Only the everyday form: awk [-F sep] '{print $1, $NF, $(NF-3)}' [file].
+        let i = 0, sep = null;
+        if (args[i] === "-F") { sep = args[i + 1]; i += 2; } else if (/^-F./.test(args[i] || "")) { sep = args[i].slice(2); i += 1; }
+        const prog = args[i] || "", files = args.slice(i + 1);
+        const m = prog.match(/^\{\s*print\s+(.+?)\s*;?\s*\}$/);
+        const items = m && m[1].split(/\s*,\s*/);
+        if (!items || !items.every(x => /^\$(\d+|NF|\(NF-\d+\))$/.test(x)))
+          return err(`[Simulator: this terminal's awk only prints fields, e.g. awk '{print $1}' or awk '{print $(NF-3)}'. Real awk can do far more.]`);
+        const inp = input(cmd, files, stdin); if (inp.error) return inp;
+        const field = (f, x) => { if (x === "$0") return f.join(" "); const k = x === "$NF" ? f.length : x.startsWith("$(") ? f.length - Number(x.match(/\d+/)[0]) : Number(x.slice(1)); return k === 0 ? f.join(" ") : f[k - 1] ?? ""; };
+        log({ cmd });
+        return { out: lines(inp.text).map(l => { const f = sep == null ? l.trim().split(/\s+/) : l.split(sep); return items.map(x => field(f, x)).join(" "); }).join("\n") };
+      }
+      default:
+        if (REAL.includes(cmd)) return err(`[Simulator: ${cmd} is a real Linux command, but this terminal doesn't model it. Type help to see the ones it does.]`);
+        return err(`${cmd}: command not found. Type help to see the commands this terminal supports.`);
     }
   }
 
@@ -349,7 +400,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     <div class="term-grid">
       <section class="term-shell" aria-label="Simulated terminal">
         <div class="term-bar"><span>${esc(lab.user)}@${esc(lab.host)}</span><span class="tag">Simulated</span></div>
-        <div class="term-out" id="t-out" aria-live="polite"></div>
+        <div class="term-out" id="t-out" aria-live="polite" tabindex="0" aria-label="Terminal output"></div>
         <form class="term-in" id="t-form"><label class="sr" for="t-in">Command</label><span class="term-ps" id="t-ps"></span><input id="t-in" autocomplete="off" autocapitalize="off" spellcheck="false"></form>
       </section>
       <aside class="panel term-tasks"><div class="panel-title"><h2>Objectives</h2><span class="mono" id="t-count"></span></div><ol id="t-tasks"></ol>

@@ -707,7 +707,10 @@
    "MitM",
    "man-in-the-middle",
    "phishing kit",
-   "phishing kits"
+   "phishing kits",
+   "on-path attack",
+   "on-path attacks",
+   "on-path attacker"
   ],
   "short": "A fake login page that sits between you and the real site, passing everything through, including your MFA code, and stealing your session.",
   "lesson": "identity",
@@ -1074,7 +1077,8 @@
    "incident response",
    "incident responders",
    "DFIR",
-   "digital forensics"
+   "digital forensics",
+   "IR"
   ],
   "short": "The process of handling an attack: contain it, investigate, remove the attacker, recover and learn. DFIR adds digital forensics.",
   "lesson": "incident-response"
@@ -1803,13 +1807,15 @@
    "certificates",
    "rogue certificate",
    "rogue certificates",
-   "certificate authority",
-   "certificate authorities",
    "code-signing",
    "code signing"
   ],
-  "short": "A digital ID proving a website or program is genuine, issued by a certificate authority (CA). Rogue or stolen certificates let fakes look trusted.",
-  "lesson": "certificates"
+  "short": "A digital ID proving a website or program is genuine, signed by a certificate authority (CA). Rogue or stolen certificates let fakes look trusted.",
+  "lesson": "certificates",
+  "see": [
+   "ca",
+   "pki"
+  ]
  },
  {
   "id": "encryption",
@@ -1833,7 +1839,6 @@
    "hash",
    "hashes",
    "hashed",
-   "SHA-256",
    "MD5",
    "password hash",
    "password hashes"
@@ -2088,15 +2093,20 @@
  },
  {
   "id": "data-protection",
-  "term": "GDPR / data protection law",
+  "term": "UK GDPR and data protection law",
   "kind": "Concept",
   "aliases": [
    "GDPR",
    "data protection authority",
    "privacy regulator",
-   "data protection law"
+   "data protection law",
+   "UK GDPR",
+   "EU GDPR",
+   "Data Protection Act 2018",
+   "DPA 2018"
   ],
-  "short": "Laws controlling how organisations handle personal data. Europe's GDPR allows big fines for misuse or poor protection."
+  "short": "Laws on how organisations handle personal data. In the UK that's the UK GDPR and the Data Protection Act 2018; serious failures can bring large fines.",
+  "lesson": "law"
  },
  {
   "id": "cisa",
@@ -3050,9 +3060,13 @@
   "kind": "Concept",
   "aliases": [
    "three-way handshake",
-   "TCP handshake"
+   "TCP handshake",
+   "SYN",
+   "SYN-ACK",
+   "FIN",
+   "RST"
   ],
-  "short": "How TCP opens a connection: SYN, SYN-ACK, ACK. Both sides agree starting numbers before any data flows.",
+  "short": "How TCP opens a connection: SYN, SYN-ACK, ACK. Both sides agree starting numbers before data flows. FIN closes a connection politely; RST cuts it off.",
   "lesson": "networking",
   "see": [
    "tcp"
@@ -3395,9 +3409,12 @@
   "kind": "Concept",
   "aliases": [
    "localhost",
-   "127.0.0.1"
+   "127.0.0.1",
+   "loopback",
+   "loopback address",
+   "::1"
   ],
-  "short": "The machine itself. A service listening on 127.0.0.1 can only be reached by programs on the same machine.",
+  "short": "The machine itself, reached through the loopback address (127.0.0.1 or ::1). A service listening there can only be reached by programs on the same machine.",
   "lesson": "networking",
   "see": [
    "port"
@@ -3776,7 +3793,6 @@
    "root CA",
    "intermediate CA"
   ],
-  "auto": false,
   "short": "The system of certificate authorities, certificates and trust stores that lets you trust a stranger's public key.",
   "lesson": "certificates",
   "see": [
@@ -3795,7 +3811,6 @@
    "certificate signing request",
    "certificate signing requests"
   ],
-  "auto": false,
   "short": "What you send a certificate authority to ask for a certificate: your public key and name. The private key stays with you.",
   "lesson": "certificates",
   "see": [
@@ -3817,7 +3832,6 @@
    "revoked certificate",
    "revoked certificates"
   ],
-  "auto": false,
   "short": "Ways to check a certificate hasn't been cancelled early: a CRL is the CA's full list of revoked certificates; OCSP asks about one.",
   "lesson": "certificates",
   "see": [
@@ -3837,7 +3851,6 @@
    "intrusion prevention system",
    "intrusion prevention systems"
   ],
-  "auto": false,
   "short": "Watches network or host activity for attacks. An IDS alerts; an IPS sits in the path and can also block.",
   "lesson": "soc",
   "see": [
@@ -3860,7 +3873,6 @@
    "deterrent control",
    "directive control"
   ],
-  "auto": false,
   "short": "What a control does: prevent, deter, detect, correct, direct, or compensate when the usual control can't be used.",
   "lesson": "security-controls"
  },
@@ -3875,7 +3887,6 @@
    "router-on-a-stick",
    "inter-VLAN routing"
   ],
-  "auto": false,
   "short": "A virtual interface on one router cable, one per VLAN (G0/0.10 for VLAN 10), so a single trunk link routes between VLANs.",
   "lesson": "networking",
   "see": [
@@ -3896,7 +3907,6 @@
    "access lists",
    "implicit deny"
   ],
-  "auto": false,
   "short": "An ordered list of permit and deny rules a router checks each packet against. First match wins; anything unmatched is denied.",
   "lesson": "networking",
   "see": [
@@ -3911,7 +3921,6 @@
    "wildcard mask",
    "wildcard masks"
   ],
-  "auto": false,
   "short": "The inverse of a subnet mask, used in Cisco ACLs: 0 bits must match, 1 bits can be anything (0.0.0.255 = any last octet).",
   "lesson": "networking",
   "see": [
@@ -3928,7 +3937,6 @@
    "connected route",
    "connected routes"
   ],
-  "auto": false,
   "short": "A router's list of networks it knows and which interface or next hop leads to each. Directly connected networks appear on their own.",
   "lesson": "networking"
  },
@@ -3940,7 +3948,6 @@
    "rules of engagement",
    "RoE"
   ],
-  "auto": false,
   "short": "The agreed terms of a penetration test: what may be tested, when, how, and who to call if something breaks."
  },
  {
@@ -3951,7 +3958,6 @@
    "OSINT",
    "open-source intelligence"
   ],
-  "auto": false,
   "short": "Information gathered from public sources (websites, social media, public records) without touching the target's systems.",
   "lesson": "osint"
  },
@@ -3962,7 +3968,6 @@
   "aliases": [
    "nmap"
   ],
-  "auto": false,
   "short": "A free network scanner that finds which hosts are up, which ports are open and what's running on them.",
   "lesson": "networking"
  },
@@ -3974,7 +3979,6 @@
    "Burp Suite",
    "OWASP ZAP"
   ],
-  "auto": false,
   "short": "An intercepting proxy for web testing: it sits between your browser and a site so you can inspect and change requests."
  },
  {
@@ -3987,7 +3991,6 @@
    "NTLM hash",
    "NTLM"
   ],
-  "auto": false,
   "short": "Logging in to Windows systems with a stolen password hash instead of the password, because NTLM accepts the hash as proof.",
   "lesson": "identity"
  },
@@ -3999,7 +4002,6 @@
    "IDOR",
    "insecure direct object reference"
   ],
-  "auto": false,
   "short": "Changing an ID in a request (invoice 1001 to 1002) to reach someone else's data, because the server doesn't check ownership.",
   "lesson": "web-access"
  },
@@ -4011,7 +4013,6 @@
    "CSRF",
    "cross-site request forgery"
   ],
-  "auto": false,
   "short": "Tricking a logged-in user's browser into sending a request they didn't mean to, such as changing their email address.",
   "lesson": "web-xss"
  },
@@ -4025,7 +4026,6 @@
    "rogue access point",
    "rogue access points"
   ],
-  "auto": false,
   "short": "A fake Wi-Fi access point with the same name as a real one, so devices connect to the attacker instead.",
   "lesson": "wireless"
  },
@@ -4036,7 +4036,6 @@
   "aliases": [
    "pivoting"
   ],
-  "auto": false,
   "short": "Using a compromised machine as a stepping stone to reach networks the attacker can't reach directly."
  },
  {
@@ -4047,7 +4046,6 @@
    "false positive",
    "false positives"
   ],
-  "auto": false,
   "short": "A finding or alert that looks like a problem but isn't. Validating results before reporting them weeds these out.",
   "lesson": "vuln-management"
  },
@@ -4061,7 +4059,6 @@
    "static application security testing",
    "dynamic application security testing"
   ],
-  "auto": false,
   "short": "SAST reads an app's source code without running it; DAST tests the running app from outside with crafted requests."
  },
  {
@@ -4073,7 +4070,6 @@
    "zone transfers",
    "AXFR"
   ],
-  "auto": false,
   "short": "Copying every record in a DNS zone to another server. Left open to anyone, it hands attackers a list of internal hostnames.",
   "lesson": "networking"
  },
@@ -4086,7 +4082,6 @@
    "piggybacking",
    "shoulder surfing"
   ],
-  "auto": false,
   "short": "Following someone through a secure door without using your own pass. Shoulder surfing is watching someone type their PIN or password.",
   "lesson": "phishing"
  },
@@ -4099,7 +4094,6 @@
    "fuzzer",
    "fuzzers"
   ],
-  "auto": false,
   "short": "Sending huge amounts of unexpected or malformed input to a program to find inputs that crash it or behave oddly."
  },
  {
@@ -4111,7 +4105,6 @@
    "double tagging",
    "switch spoofing"
   ],
-  "auto": false,
   "short": "Getting traffic into a VLAN you shouldn't reach, by double-tagging frames or tricking a switch port into trunking.",
   "lesson": "networking"
  },
@@ -4122,7 +4115,6 @@
   "aliases": [
    "MAC flooding"
   ],
-  "auto": false,
   "short": "Filling a switch's MAC address table with fake entries so it floods traffic out of every port, where an attacker can capture it.",
   "lesson": "networking"
  },
@@ -4133,10 +4125,10 @@
   "aliases": [
    "FTP",
    "SFTP",
-   "FTPS"
+   "FTPS",
+   "TFTP"
   ],
-  "auto": false,
-  "short": "FTP moves files but sends logins and data unencrypted. SFTP (over SSH) and FTPS (over TLS) encrypt them.",
+  "short": "FTP moves files but sends logins and data unencrypted. SFTP (over SSH) and FTPS (over TLS) encrypt them. TFTP has no login at all; it's used to load device configs.",
   "lesson": "networking"
  },
  {
@@ -4149,7 +4141,6 @@
    "backported",
    "backporting"
   ],
-  "auto": false,
   "short": "A security fix copied into an older version without changing its main version number, so a version check alone can wrongly flag it.",
   "lesson": "vuln-management",
   "see": [
@@ -4163,7 +4154,6 @@
   "aliases": [
    "WannaCry"
   ],
-  "auto": false,
   "short": "Ransomware that spread worldwide in 2017 through a Windows SMB flaw, hitting hundreds of thousands of computers including NHS trusts.",
   "lesson": "ransomware"
  },
@@ -4178,10 +4168,12 @@
    "WPA2-Personal",
    "WPA3-Personal",
    "WPA2-Enterprise",
-   "WPA3-Enterprise"
+   "WPA3-Enterprise",
+   "TKIP",
+   "CCMP",
+   "SAE"
   ],
-  "auto": false,
-  "short": "Wi-Fi security protocols. WEP is broken; WPA2 is common; WPA3 adds SAE, which stops offline password guessing.",
+  "short": "Wi-Fi security protocols. WEP is broken; WPA2 is common (CCMP encryption, with TKIP the weak legacy option); WPA3 adds SAE, which stops offline password guessing.",
   "lesson": "wireless"
  },
  {
@@ -4194,7 +4186,6 @@
    "BSSID",
    "BSSIDs"
   ],
-  "auto": false,
   "short": "The SSID is a Wi-Fi network's name; a BSSID is one access point radio's MAC address. Anyone can broadcast any SSID.",
   "lesson": "wireless",
   "see": [
@@ -4210,7 +4201,6 @@
    "RADIUS",
    "Enterprise mode"
   ],
-  "auto": false,
   "short": "Network login per person: the access point or switch checks each user's credentials with a RADIUS server before letting them on.",
   "lesson": "wireless"
  },
@@ -4222,7 +4212,6 @@
    "captive portal",
    "captive portals"
   ],
-  "auto": false,
   "short": "The sign-in page on guest Wi-Fi. It controls who gets online, but doesn't encrypt the connection.",
   "lesson": "wireless"
  },
@@ -4234,7 +4223,6 @@
    "WPS",
    "Wi-Fi Protected Setup"
   ],
-  "auto": false,
   "short": "A push-button or PIN way to join Wi-Fi. The PIN method can be guessed quickly, so turn WPS off.",
   "lesson": "wireless"
  },
@@ -4245,7 +4233,6 @@
   "aliases": [
    "KRACK"
   ],
-  "auto": false,
   "short": "Key reinstallation attacks (2017): a flaw in WPA2's handshake that let someone in range decrypt some traffic until devices were patched.",
   "lesson": "wireless"
  },
@@ -4265,7 +4252,6 @@
    "Wi-Fi 5",
    "Wi-Fi 4"
   ],
-  "auto": false,
   "short": "Wi-Fi generations: 802.11n is Wi-Fi 4, ac is Wi-Fi 5, ax is Wi-Fi 6 (6E adds 6 GHz), be is Wi-Fi 7.",
   "lesson": "wireless"
  },
@@ -4276,9 +4262,10 @@
   "aliases": [
    "access point",
    "access points",
-   "wireless access point"
+   "wireless access point",
+   "AP",
+   "APs"
   ],
-  "auto": false,
   "short": "The device that puts a Wi-Fi network on the air and connects wireless devices to the wired network.",
   "lesson": "wireless",
   "see": [
@@ -4751,9 +4738,12 @@
   "term": "Subject Alternative Name (SAN)",
   "kind": "Technology",
   "aliases": [
-   "Subject Alternative Name"
+   "Subject Alternative Name",
+   "SAN list",
+   "subject alternative name",
+   "subject alternative names"
   ],
-  "short": "The list of names a certificate is valid for. Browsers check the address you visited against it.",
+  "short": "The list of names a certificate is valid for. Browsers check the address you typed against it and ignore the older common name (CN) field.",
   "lesson": "certificates"
  },
  {
@@ -4847,7 +4837,6 @@
    "HTTP",
    "HyperText Transfer Protocol"
   ],
-  "auto": true,
   "short": "The language web browsers and servers use to request and send pages. Plain HTTP is unencrypted; HTTPS adds encryption.",
   "lesson": "web-sqli",
   "see": [
@@ -4861,7 +4850,6 @@
   "aliases": [
    "URL"
   ],
-  "auto": true,
   "short": "A web address: where something lives, like https://example.com/page. What counts is the host in the link, not the words shown.",
   "see": [
    "http"
@@ -4875,7 +4863,6 @@
    "operating system",
    "OS"
   ],
-  "auto": true,
   "short": "The core software that runs a device and its apps, such as Windows, macOS, Linux, Android or iOS."
  },
  {
@@ -4886,7 +4873,6 @@
    "ISP",
    "internet service provider"
   ],
-  "auto": true,
   "short": "Internet service provider: the company that connects you to the internet. Only they, or an upstream service, can stop a flood that fills your link.",
   "lesson": "ddos",
   "see": [
@@ -4901,7 +4887,6 @@
    "LAN",
    "local area network"
   ],
-  "auto": true,
   "short": "Local area network: the network inside one site, like an office or a home.",
   "lesson": "networking"
  },
@@ -4913,7 +4898,6 @@
    "WAN",
    "wide area network"
   ],
-  "auto": true,
   "short": "Wide area network: a network that spans sites or cities, such as the link from an office to the internet.",
   "lesson": "networking"
  },
@@ -4924,7 +4908,6 @@
   "aliases": [
    "ICO"
   ],
-  "auto": true,
   "short": "The UK's Information Commissioner's Office, the data-protection regulator. Serious personal-data breaches must be reported to it within 72 hours.",
   "lesson": "data-breach"
  },
@@ -4936,7 +4919,6 @@
    "PCI DSS",
    "PCI-DSS"
   ],
-  "auto": true,
   "short": "A mandatory security standard for any organisation that stores, processes or transmits payment card data.",
   "lesson": "frameworks"
  },
@@ -4949,7 +4931,6 @@
    "ISO/IEC 27001",
    "ISMS"
   ],
-  "auto": true,
   "short": "An international standard for an information security management system (ISMS) that an organisation can be certified against.",
   "lesson": "frameworks"
  },
@@ -4962,7 +4943,6 @@
    "AES-256",
    "AES-GCM"
   ],
-  "auto": true,
   "short": "Advanced Encryption Standard: a strong, widely used symmetric cipher. AES-GCM also checks the data has not been tampered with.",
   "lesson": "encryption",
   "see": [
@@ -4977,7 +4957,6 @@
    "HSM",
    "hardware security module"
   ],
-  "auto": true,
   "short": "Hardware security module: a tamper-resistant device that stores and uses encryption keys so they never sit in plain software.",
   "lesson": "encryption"
  },
@@ -4987,10 +4966,8 @@
   "kind": "Cryptography",
   "aliases": [
    "SHA",
-   "SHA-256",
-   "SHA-1"
+   "SHA-256"
   ],
-  "auto": true,
   "short": "Secure Hash Algorithm: a family of one-way hash functions. SHA-256 is standard today; SHA-1 is broken for security use.",
   "lesson": "encryption"
  },
@@ -5001,7 +4978,6 @@
   "aliases": [
    "SYN flood"
   ],
-  "auto": true,
   "short": "A denial-of-service attack that opens many half-finished TCP connections to use up a server's resources.",
   "lesson": "ddos",
   "see": [
@@ -5017,7 +4993,6 @@
    "NTP",
    "Network Time Protocol"
   ],
-  "auto": true,
   "short": "Network Time Protocol keeps clocks in sync. Its servers can be abused to reflect and amplify traffic in a volumetric DDoS.",
   "lesson": "ddos",
   "see": [
@@ -5032,7 +5007,6 @@
    "CDN",
    "content delivery network"
   ],
-  "auto": true,
   "short": "Content delivery network: servers spread worldwide that cache a site close to users, which also helps absorb traffic floods."
  },
  {
@@ -5043,7 +5017,6 @@
    "TLD",
    "top-level domain"
   ],
-  "auto": true,
   "short": "The last part of a domain name, such as .com, .uk or .org."
  },
  {
@@ -5053,7 +5026,6 @@
   "aliases": [
    "dependency confusion"
   ],
-  "auto": true,
   "short": "A supply-chain attack where a public package with the same name as a private one, and a higher version, is pulled into a build instead.",
   "lesson": "supply-chain",
   "see": [
@@ -5067,7 +5039,6 @@
   "aliases": [
    "Base64"
   ],
-  "auto": true,
   "short": "A way to write binary data as text. It is encoding, not encryption: anyone can reverse it, so on its own it protects nothing.",
   "lesson": "encryption",
   "see": [
@@ -5081,7 +5052,6 @@
   "aliases": [
    "ping"
   ],
-  "auto": true,
   "short": "A basic test that sends a small packet to a host and times the reply, to check it is reachable and how fast it responds.",
   "lesson": "networking"
  },
@@ -5092,7 +5062,6 @@
   "aliases": [
    "rclone"
   ],
-  "auto": true,
   "short": "A legitimate command-line tool for copying files to and from cloud storage. Attackers abuse it to exfiltrate stolen data.",
   "lesson": "data-breach"
  },
@@ -5104,7 +5073,6 @@
    "Cyber Essentials",
    "Cyber Essentials Plus"
   ],
-  "auto": false,
   "short": "The UK government-backed baseline certification: five controls (firewalls, secure configuration, security update management, user access control, malware protection). Plus adds a hands-on audit.",
   "lesson": "frameworks",
   "see": [
@@ -5120,9 +5088,9 @@
    "CIS Controls",
    "CIS Critical Security Controls",
    "Implementation Group 1",
-   "IG1"
+   "IG1",
+   "CIS"
   ],
-  "auto": false,
   "short": "18 prioritised controls from the Center for Internet Security. Implementation Group 1 is the essential starting set.",
   "lesson": "frameworks",
   "see": [
@@ -5137,7 +5105,6 @@
    "risk register",
    "risk registers"
   ],
-  "auto": false,
   "short": "The list of an organisation's risks, each with a score, an owner, a treatment and a review date.",
   "lesson": "risk",
   "see": [
@@ -5153,7 +5120,6 @@
    "risk appetite",
    "risk tolerance"
   ],
-  "auto": false,
   "short": "How much risk leadership is willing to accept. Risks above it must be treated.",
   "lesson": "risk",
   "see": [
@@ -5168,7 +5134,6 @@
    "residual risk",
    "inherent risk"
   ],
-  "auto": false,
   "short": "The risk left over after controls are in place (inherent risk is the risk before them).",
   "lesson": "risk",
   "see": [
@@ -5183,7 +5148,6 @@
    "Computer Misuse Act",
    "CMA 1990"
   ],
-  "auto": false,
   "short": "The UK law that makes unauthorised access to computers, and impairing them, a crime. Authorisation is what matters.",
   "lesson": "law",
   "see": []
@@ -5197,7 +5161,6 @@
    "NIS Regulations",
    "NIS Directive"
   ],
-  "auto": false,
   "short": "Rules requiring essential services (energy, transport, health and more) to manage cyber risk and report serious incidents. NIS2 is the EU's wider update.",
   "lesson": "law",
   "see": []
@@ -5210,7 +5173,6 @@
    "Cyber Kill Chain",
    "kill chain"
   ],
-  "auto": false,
   "short": "Lockheed Martin's seven stages of an intrusion, from reconnaissance to actions on objectives. Break one link and the attack fails.",
   "lesson": "attack-models",
   "see": [
@@ -5224,7 +5186,6 @@
   "aliases": [
    "Diamond Model"
   ],
-  "auto": false,
   "short": "A model linking four parts of every intrusion event: adversary, capability, infrastructure and victim.",
   "lesson": "attack-models",
   "see": [
@@ -5238,7 +5199,6 @@
   "aliases": [
    "STRIDE"
   ],
-  "auto": false,
   "short": "A threat modelling checklist: spoofing, tampering, repudiation, information disclosure, denial of service, elevation of privilege.",
   "lesson": "attack-models",
   "see": [
@@ -5254,11 +5214,979 @@
    "threat model",
    "threat modeling"
   ],
-  "auto": false,
   "short": "Working out what could go wrong with a system's design before it's built, and what to do about it.",
   "lesson": "attack-models",
   "see": [
    "stride"
   ]
+ },
+ {
+  "id": "sql",
+  "term": "SQL",
+  "kind": "Technology",
+  "aliases": [
+   "SQL"
+  ],
+  "short": "Structured Query Language: how apps ask a database for data, such as 'find the user with this email'. Mixing user input into SQL is what makes SQL injection possible.",
+  "lesson": "web-sqli",
+  "see": [
+   "sqli"
+  ]
+ },
+ {
+  "id": "ca",
+  "term": "Certificate authority (CA)",
+  "kind": "Technology",
+  "aliases": [
+   "CA",
+   "CAs",
+   "certificate authority",
+   "certificate authorities"
+  ],
+  "short": "An organisation trusted to vouch for identities by signing certificates. Browsers and operating systems ship with a short list of root CAs they trust.",
+  "lesson": "certificates",
+  "see": [
+   "certificate",
+   "pki"
+  ]
+ },
+ {
+  "id": "cia-triad",
+  "term": "CIA triad",
+  "kind": "Concept",
+  "aliases": [
+   "CIA triad",
+   "confidentiality, integrity and availability"
+  ],
+  "short": "Confidentiality (only the right people can read it), integrity (it can't be changed unnoticed) and availability (it works when needed): the three things security protects.",
+  "lesson": "cia-triad"
+ },
+ {
+  "id": "nas",
+  "term": "NAS (network-attached storage)",
+  "kind": "Technology",
+  "aliases": [
+   "NAS",
+   "network-attached storage"
+  ],
+  "short": "A box of disks that shares files over the network. Handy for backups, but if it's always connected, ransomware can reach it too."
+ },
+ {
+  "id": "comptia",
+  "term": "CompTIA",
+  "kind": "Organisation",
+  "aliases": [
+   "CompTIA"
+  ],
+  "short": "The non-profit IT trade body behind vendor-neutral certifications such as A+, Network+, Security+ and PenTest+."
+ },
+ {
+  "id": "risk-maths",
+  "term": "SLE, ARO and ALE",
+  "kind": "Governance",
+  "aliases": [
+   "SLE",
+   "ARO",
+   "ALE",
+   "single loss expectancy",
+   "annual rate of occurrence",
+   "annualised rate of occurrence",
+   "annual loss expectancy",
+   "annualised loss expectancy"
+  ],
+  "short": "Putting money on a risk: single loss expectancy (the cost of one incident) times annual rate of occurrence (how often a year) gives annual loss expectancy.",
+  "lesson": "risk",
+  "see": [
+   "risk-register"
+  ]
+ },
+ {
+  "id": "stp",
+  "term": "Spanning Tree Protocol (STP)",
+  "kind": "Networking",
+  "aliases": [
+   "STP",
+   "RSTP",
+   "spanning tree",
+   "Spanning Tree Protocol"
+  ],
+  "short": "Switches agree to block spare links so traffic can't loop forever, and unblock one if the main link fails.",
+  "lesson": "networking"
+ },
+ {
+  "id": "dynamic-routing",
+  "term": "Dynamic routing (OSPF, EIGRP)",
+  "kind": "Networking",
+  "aliases": [
+   "OSPF",
+   "EIGRP",
+   "dynamic routing",
+   "routing protocol",
+   "routing protocols"
+  ],
+  "short": "Routers sharing routes so paths update on their own. OSPF and EIGRP run inside an organisation, BGP links networks across the internet, and RIP is an old, simple one.",
+  "lesson": "networking",
+  "see": [
+   "bgp",
+   "routing-table"
+  ]
+ },
+ {
+  "id": "nist-800-53",
+  "term": "NIST SP 800-53",
+  "kind": "Governance",
+  "aliases": [
+   "NIST SP 800-53",
+   "SP 800-53",
+   "NIST 800-53"
+  ],
+  "short": "NIST's large catalogue of security and privacy controls, required for US federal systems and widely borrowed elsewhere.",
+  "lesson": "frameworks",
+  "see": [
+   "nist",
+   "nist-csf"
+  ]
+ },
+ {
+  "id": "cloudtrail",
+  "term": "AWS CloudTrail",
+  "kind": "Product",
+  "aliases": [
+   "CloudTrail"
+  ],
+  "short": "Amazon Web Services' audit log: who called which API, when and from where. The first place to look when a cloud key is misused.",
+  "lesson": "cloud"
+ },
+ {
+  "id": "vpc",
+  "term": "VPC (virtual private cloud)",
+  "kind": "Technology",
+  "aliases": [
+   "VPC",
+   "VPCs",
+   "virtual private cloud"
+  ],
+  "short": "Your own private network inside a cloud provider, with its own subnets, routes and firewall rules.",
+  "lesson": "cloud"
+ },
+ {
+  "id": "javascript",
+  "term": "JavaScript",
+  "kind": "Technology",
+  "aliases": [
+   "JavaScript"
+  ],
+  "short": "The programming language that runs inside web pages. Cross-site scripting works by getting a site to run an attacker's JavaScript.",
+  "lesson": "web-xss",
+  "see": [
+   "xss"
+  ]
+ },
+ {
+  "id": "apipa",
+  "term": "APIPA",
+  "kind": "Networking",
+  "aliases": [
+   "APIPA"
+  ],
+  "short": "When a Windows PC can't reach a DHCP server it gives itself a 169.254.x.x address. Seeing one means DHCP failed.",
+  "lesson": "networking",
+  "see": [
+   "dhcp"
+  ]
+ },
+ {
+  "id": "ldap",
+  "term": "LDAP",
+  "kind": "Technology",
+  "aliases": [
+   "LDAP",
+   "LDAPS"
+  ],
+  "short": "The protocol apps use to look up users and groups in a directory such as Active Directory. LDAPS is the encrypted version.",
+  "lesson": "identity",
+  "see": [
+   "active-directory"
+  ]
+ },
+ {
+  "id": "tacacs",
+  "term": "TACACS+",
+  "kind": "Technology",
+  "aliases": [
+   "TACACS+"
+  ],
+  "short": "A protocol, from Cisco, that checks who may log in to network devices and records what they do. Like RADIUS, but it encrypts the whole exchange.",
+  "lesson": "network-ops",
+  "see": [
+   "dot1x"
+  ]
+ },
+ {
+  "id": "cloud-models",
+  "term": "IaaS, PaaS and SaaS",
+  "kind": "Technology",
+  "aliases": [
+   "IaaS",
+   "PaaS",
+   "infrastructure as a service",
+   "platform as a service"
+  ],
+  "short": "How much the cloud provider runs for you: the infrastructure (you run the operating system up), the platform (you bring the code) or the whole app (you just use it).",
+  "lesson": "cloud",
+  "see": [
+   "saas",
+   "shared-responsibility"
+  ]
+ },
+ {
+  "id": "agreements",
+  "term": "Agreement types (SLA, NDA, MOU, SOW)",
+  "kind": "Governance",
+  "aliases": [
+   "SLA",
+   "SLAs",
+   "service level agreement",
+   "service level agreements",
+   "NDA",
+   "NDAs",
+   "non-disclosure agreement",
+   "MOU",
+   "memorandum of understanding",
+   "SOW",
+   "statement of work",
+   "MSA",
+   "master service agreement"
+  ],
+  "short": "SLA: the service level promised. NDA: keep it confidential. MOU: an informal agreement to work together. SOW: the exact work to be done. MSA: the overall terms.",
+  "lesson": "law"
+ },
+ {
+  "id": "mdm",
+  "term": "Mobile device management (MDM)",
+  "kind": "Defence",
+  "aliases": [
+   "MDM",
+   "mobile device management",
+   "BYOD",
+   "bring your own device"
+  ],
+  "short": "Central control of staff phones and laptops: encryption, passcodes, apps and remote wipe. BYOD means staff use their own devices, which MDM can only partly manage.",
+  "lesson": "security-controls"
+ },
+ {
+  "id": "dlp",
+  "term": "Data loss prevention (DLP)",
+  "kind": "Defence",
+  "aliases": [
+   "DLP",
+   "data loss prevention"
+  ],
+  "short": "Tools that spot sensitive data (card numbers, health records) leaving by email, upload or USB stick, and block or flag it.",
+  "lesson": "data-breach"
+ },
+ {
+  "id": "captcha",
+  "term": "CAPTCHA",
+  "kind": "Defence",
+  "aliases": [
+   "CAPTCHA",
+   "CAPTCHAs"
+  ],
+  "short": "A test meant to tell people from bots, such as picking out images. It slows automated login guessing but won't stop a determined attacker.",
+  "lesson": "identity"
+ },
+ {
+  "id": "asymmetric",
+  "term": "Symmetric and asymmetric encryption",
+  "kind": "Cryptography",
+  "aliases": [
+   "symmetric encryption",
+   "asymmetric encryption",
+   "public-key cryptography",
+   "public key cryptography",
+   "public key",
+   "private key",
+   "RSA",
+   "elliptic curve",
+   "ECC"
+  ],
+  "short": "Symmetric encryption uses one shared key (AES). Asymmetric uses a pair: a public key anyone can use, and a private key only the owner holds (RSA, elliptic curve).",
+  "lesson": "encryption",
+  "see": [
+   "aes",
+   "digital-signature"
+  ]
+ },
+ {
+  "id": "dtp",
+  "term": "DTP (Dynamic Trunking Protocol)",
+  "kind": "Networking",
+  "aliases": [
+   "DTP",
+   "Dynamic Trunking Protocol"
+  ],
+  "short": "Cisco's way for two switches to agree a link should be a trunk. Left on, it lets an attacker's device ask for a trunk too, so admins switch it off.",
+  "lesson": "networking",
+  "see": [
+   "vlan-hopping",
+   "vlan"
+  ]
+ },
+ {
+  "id": "cdp",
+  "term": "CDP and LLDP",
+  "kind": "Networking",
+  "aliases": [
+   "CDP",
+   "LLDP"
+  ],
+  "short": "Protocols that let network devices announce their name, model and port to their neighbours (CDP is Cisco's, LLDP the open standard). Useful for mapping, and to attackers too.",
+  "lesson": "networking"
+ },
+ {
+  "id": "dmz",
+  "term": "DMZ (screened subnet)",
+  "kind": "Defence",
+  "aliases": [
+   "DMZ",
+   "screened subnet",
+   "screened subnets"
+  ],
+  "short": "A separate network zone for servers the internet must reach (web, mail), with firewalls on both sides so a break-in there doesn't reach the internal network.",
+  "lesson": "networking",
+  "see": [
+   "firewall"
+  ]
+ },
+ {
+  "id": "crc",
+  "term": "CRC errors",
+  "kind": "Networking",
+  "aliases": [
+   "CRC",
+   "FCS"
+  ],
+  "short": "Every Ethernet frame ends with a checksum. Rising CRC errors on an interface usually mean a bad cable, interference or a duplex mismatch.",
+  "lesson": "network-ops",
+  "see": [
+   "duplex-mismatch"
+  ]
+ },
+ {
+  "id": "dns-records",
+  "term": "DNS record types",
+  "kind": "Networking",
+  "aliases": [
+   "AAAA",
+   "AAAA record",
+   "MX",
+   "MX record",
+   "MX records",
+   "CNAME",
+   "TXT record",
+   "TXT records",
+   "PTR record",
+   "NS record"
+  ],
+  "short": "A and AAAA give a name's IPv4 and IPv6 address, MX says where its mail goes, CNAME points to another name, and TXT holds notes such as SPF.",
+  "lesson": "networking",
+  "see": [
+   "dns",
+   "spf"
+  ]
+ },
+ {
+  "id": "hipaa",
+  "term": "HIPAA",
+  "kind": "Governance",
+  "aliases": [
+   "HIPAA"
+  ],
+  "short": "The US law protecting patients' health information, with rules on how it's secured and when breaches must be reported.",
+  "lesson": "law",
+  "see": [
+   "data-protection"
+  ]
+ },
+ {
+  "id": "itil",
+  "term": "ITIL",
+  "kind": "Governance",
+  "aliases": [
+   "ITIL"
+  ],
+  "short": "A widely used set of practices for running IT services: the service desk, and incident, problem and change management.",
+  "lesson": "network-ops"
+ },
+ {
+  "id": "sca",
+  "term": "SCA (software composition analysis)",
+  "kind": "Defence",
+  "aliases": [
+   "SCA",
+   "software composition analysis"
+  ],
+  "short": "Tools that list the open-source packages in your code and flag known vulnerable or badly licensed ones.",
+  "lesson": "supply-chain",
+  "see": [
+   "sbom",
+   "sast-dast"
+  ]
+ },
+ {
+  "id": "eternalblue",
+  "term": "EternalBlue",
+  "kind": "Attack",
+  "aliases": [
+   "EternalBlue",
+   "MS17-010"
+  ],
+  "short": "An NSA-built exploit for Windows file sharing (SMBv1), leaked in 2017 and used by WannaCry and NotPetya to spread. Microsoft's MS17-010 update fixes it.",
+  "lesson": "malware",
+  "see": [
+   "wannacry"
+  ]
+ },
+ {
+  "id": "notpetya",
+  "term": "NotPetya",
+  "kind": "Malware",
+  "aliases": [
+   "NotPetya"
+  ],
+  "short": "A 2017 wiper disguised as ransomware, spread through a hijacked Ukrainian accounting software update. Damage worldwide was estimated at $10 billion.",
+  "lesson": "supply-chain",
+  "see": [
+   "wiper",
+   "eternalblue"
+  ]
+ },
+ {
+  "id": "wmi",
+  "term": "WMI",
+  "kind": "Technology",
+  "aliases": [
+   "WMI",
+   "Windows Management Instrumentation"
+  ],
+  "short": "Windows' built-in way to query and control machines, locally or remotely. Admins rely on it, so attackers use it to blend in.",
+  "lesson": "malware",
+  "see": [
+   "lotl"
+  ]
+ },
+ {
+  "id": "grc",
+  "term": "GRC (governance, risk and compliance)",
+  "kind": "Governance",
+  "aliases": [
+   "GRC",
+   "governance, risk and compliance"
+  ],
+  "short": "The side of security that sets policy, manages risk and proves the rules are met. A common way into security without deep technical work.",
+  "lesson": "risk",
+  "see": [
+   "risk-register"
+  ]
+ },
+ {
+  "id": "business-continuity",
+  "term": "Business continuity and disaster recovery",
+  "kind": "Governance",
+  "aliases": [
+   "business continuity",
+   "business continuity plan",
+   "BCP",
+   "disaster recovery",
+   "disaster recovery plan",
+   "BIA",
+   "business impact analysis"
+  ],
+  "short": "Business continuity keeps the organisation running through an incident; disaster recovery restores the IT. A business impact analysis (BIA) decides which systems come back first.",
+  "lesson": "network-ops",
+  "see": [
+   "rto",
+   "rpo"
+  ]
+ },
+ {
+  "id": "whois",
+  "term": "WHOIS",
+  "kind": "Tool",
+  "aliases": [
+   "WHOIS"
+  ],
+  "short": "A lookup showing who registered a domain and when. A brand-new domain is a common phishing warning sign; many owners' details are now hidden for privacy.",
+  "lesson": "osint"
+ },
+ {
+  "id": "msp",
+  "term": "MSP (managed service provider)",
+  "kind": "Concept",
+  "aliases": [
+   "MSP",
+   "MSPs",
+   "managed service provider",
+   "managed service providers"
+  ],
+  "short": "A company paid to run other organisations' IT. Its remote access into many customers makes it a prized target, as in the 2021 Kaseya attack.",
+  "lesson": "supply-chain"
+ },
+ {
+  "id": "virustotal",
+  "term": "VirusTotal",
+  "kind": "Product",
+  "aliases": [
+   "VirusTotal"
+  ],
+  "short": "A free Google-owned service that checks a file, hash or link against dozens of antivirus engines. Files you upload can be seen by others, so look up the hash first.",
+  "lesson": "malware",
+  "see": [
+   "hash"
+  ]
+ },
+ {
+  "id": "dora",
+  "term": "DORA (Digital Operational Resilience Act)",
+  "kind": "Governance",
+  "aliases": [
+   "Digital Operational Resilience Act"
+  ],
+  "short": "The EU law, applying since January 2025, requiring banks, insurers and other financial firms to manage IT risk, test their resilience and report major incidents.",
+  "lesson": "law",
+  "see": [
+   "nis2"
+  ]
+ },
+ {
+  "id": "voip",
+  "term": "VoIP",
+  "kind": "Technology",
+  "aliases": [
+   "VoIP"
+  ],
+  "short": "Voice over IP: phone calls carried as network traffic. Calls suffer from delay and jitter, so networks often give them their own VLAN and priority.",
+  "lesson": "network-ops"
+ },
+ {
+  "id": "cookie",
+  "term": "Cookie",
+  "kind": "Technology",
+  "aliases": [
+   "cookie",
+   "cookies"
+  ],
+  "short": "A small piece of data a website stores in your browser. A session cookie keeps you logged in, so stealing it can be as good as stealing the password.",
+  "lesson": "web-xss",
+  "see": [
+   "session-hijacking",
+   "httponly"
+  ]
+ },
+ {
+  "id": "playbook",
+  "term": "Playbook",
+  "kind": "Defence",
+  "aliases": [
+   "playbook",
+   "playbooks",
+   "runbook",
+   "runbooks"
+  ],
+  "short": "Written step-by-step responses to one type of incident, so responders act the same way every time. SOAR tools can run parts of them automatically.",
+  "lesson": "incident-response",
+  "see": [
+   "siem"
+  ]
+ },
+ {
+  "id": "honeypot",
+  "term": "Honeypot",
+  "kind": "Defence",
+  "aliases": [
+   "honeypot",
+   "honeypots",
+   "honeytoken",
+   "honeytokens",
+   "honeynet"
+  ],
+  "short": "A decoy system, file or account with no real use, so anyone touching it is almost certainly an attacker. Cheap, high-confidence alerts.",
+  "lesson": "soc"
+ },
+ {
+  "id": "digital-signature",
+  "term": "Digital signature",
+  "kind": "Cryptography",
+  "aliases": [
+   "digital signature",
+   "digital signatures",
+   "non-repudiation"
+  ],
+  "short": "A hash of a message signed with the sender's private key. Anyone can check it with the public key, proving who sent it and that it wasn't changed (non-repudiation).",
+  "lesson": "encryption",
+  "see": [
+   "hash",
+   "asymmetric"
+  ]
+ },
+ {
+  "id": "beacon",
+  "term": "Beaconing",
+  "kind": "Attack",
+  "aliases": [
+   "beacon",
+   "beacons",
+   "beaconing"
+  ],
+  "short": "Malware checking in with its command-and-control server at regular intervals. Steady, repeated connections to one outside address are a classic sign.",
+  "lesson": "malware",
+  "see": [
+   "c2"
+  ]
+ },
+ {
+  "id": "watering-hole",
+  "term": "Watering hole attack",
+  "kind": "Attack",
+  "aliases": [
+   "watering hole",
+   "watering holes",
+   "watering-hole attack"
+  ],
+  "short": "Compromising a website a target group already visits, such as an industry forum or a supplier's site, so their own visits infect them.",
+  "lesson": "nation-state"
+ },
+ {
+  "id": "shadow-it",
+  "term": "Shadow IT",
+  "kind": "Concept",
+  "aliases": [
+   "shadow IT",
+   "Shadow IT"
+  ],
+  "short": "Apps and services staff use for work without IT knowing, such as a personal file-sharing account. Systems nobody knows about can't be secured or watched.",
+  "lesson": "cloud"
+ },
+ {
+  "id": "jump-box",
+  "term": "Jump box",
+  "kind": "Defence",
+  "aliases": [
+   "jump box",
+   "jump boxes",
+   "jump server",
+   "jump servers",
+   "bastion host",
+   "bastion hosts"
+  ],
+  "short": "A hardened server admins connect to first, and only from there to sensitive systems, so admin access has one watched way in.",
+  "lesson": "network-ops"
+ },
+ {
+  "id": "reconnaissance",
+  "term": "Reconnaissance",
+  "kind": "Attack",
+  "aliases": [
+   "reconnaissance",
+   "recon",
+   "enumeration"
+  ],
+  "short": "Gathering information before an attack. Passive recon reads public sources; active recon (scanning, enumerating users and services) touches the target's systems and needs permission.",
+  "lesson": "osint",
+  "see": [
+   "osint",
+   "nmap"
+  ]
+ },
+ {
+  "id": "hallucination",
+  "term": "AI hallucination",
+  "kind": "Concept",
+  "aliases": [
+   "hallucination",
+   "hallucinations",
+   "hallucinated"
+  ],
+  "short": "When an AI model states something false with confidence, such as a made-up package name or source. Check its output before acting on it.",
+  "lesson": "ai-security"
+ },
+ {
+  "id": "sanitisation",
+  "term": "Media sanitisation",
+  "kind": "Defence",
+  "aliases": [
+   "sanitisation",
+   "sanitization",
+   "media sanitisation",
+   "NIST SP 800-88",
+   "crypto-shredding",
+   "degaussing"
+  ],
+  "short": "Making data on a drive unrecoverable before it's reused or thrown away: clear, purge or destroy (NIST SP 800-88). Deleting files or reformatting isn't enough.",
+  "lesson": "data-breach"
+ },
+ {
+  "id": "stateful-firewall",
+  "term": "Stateful firewall",
+  "kind": "Defence",
+  "aliases": [
+   "stateful firewall",
+   "stateful firewalls",
+   "stateless firewall",
+   "stateful inspection"
+  ],
+  "short": "A stateful firewall remembers connections, so replies to traffic you started are let back in. A stateless one judges every packet on its own, like an ACL.",
+  "lesson": "networking",
+  "see": [
+   "firewall",
+   "acl"
+  ]
+ },
+ {
+  "id": "cast-types",
+  "term": "Unicast, multicast and anycast",
+  "kind": "Networking",
+  "aliases": [
+   "unicast",
+   "multicast",
+   "anycast"
+  ],
+  "short": "Unicast goes to one device, broadcast to every device on the network, multicast to a group that asked for it, and anycast to the nearest of several servers sharing one address.",
+  "lesson": "networking"
+ },
+ {
+  "id": "data-masking",
+  "term": "Masking and tokenisation",
+  "kind": "Defence",
+  "aliases": [
+   "data masking",
+   "tokenisation",
+   "tokenization",
+   "pseudonymisation",
+   "pseudonymization",
+   "anonymisation"
+  ],
+  "short": "Hiding real data: masking shows only part (**** 1234), tokenisation swaps it for a stand-in kept elsewhere, and pseudonymisation replaces names in a way a key can reverse.",
+  "lesson": "data-breach"
+ },
+ {
+  "id": "impossible-travel",
+  "term": "Impossible travel",
+  "kind": "Defence",
+  "aliases": [
+   "impossible travel"
+  ],
+  "short": "An alert when one account signs in from places too far apart to travel between in the time. Often a VPN, sometimes stolen credentials.",
+  "lesson": "identity"
+ },
+ {
+  "id": "hardening",
+  "term": "Hardening",
+  "kind": "Defence",
+  "aliases": [
+   "hardening",
+   "hardened",
+   "secure configuration",
+   "CIS Benchmark",
+   "CIS Benchmarks"
+  ],
+  "short": "Shrinking what an attacker can use: removing unused software and accounts, closing ports, changing defaults and applying a secure baseline such as a CIS Benchmark.",
+  "lesson": "security-controls"
+ },
+ {
+  "id": "duplex-mismatch",
+  "term": "Duplex mismatch",
+  "kind": "Networking",
+  "aliases": [
+   "duplex mismatch",
+   "half duplex",
+   "full duplex",
+   "half-duplex",
+   "full-duplex"
+  ],
+  "short": "The two ends of a link disagree on whether they can send and receive at once. The link works, but slowly, with late collisions and CRC errors.",
+  "lesson": "network-ops",
+  "see": [
+   "crc"
+  ]
+ },
+ {
+  "id": "aup",
+  "term": "Acceptable use policy (AUP)",
+  "kind": "Governance",
+  "aliases": [
+   "acceptable use policy",
+   "acceptable use policies",
+   "AUP"
+  ],
+  "short": "The rules staff agree to for using company systems: what's allowed, what's monitored, and what happens if they break them.",
+  "lesson": "law"
+ },
+ {
+  "id": "rainbow-table",
+  "term": "Rainbow table",
+  "kind": "Attack",
+  "aliases": [
+   "rainbow table",
+   "rainbow tables"
+  ],
+  "short": "A precomputed list of passwords and their hashes for fast cracking. A unique salt for each password makes it useless.",
+  "lesson": "encryption",
+  "see": [
+   "salt",
+   "hash"
+  ]
+ },
+ {
+  "id": "race-condition",
+  "term": "Race condition",
+  "kind": "Attack",
+  "aliases": [
+   "race condition",
+   "race conditions",
+   "TOCTOU",
+   "time-of-check to time-of-use"
+  ],
+  "short": "A bug where the outcome depends on timing, such as a file being swapped between a program checking it and using it (TOCTOU).",
+  "lesson": "vuln-management"
+ },
+ {
+  "id": "rate-limiting",
+  "term": "Rate limiting",
+  "kind": "Defence",
+  "aliases": [
+   "rate limiting",
+   "rate limit",
+   "rate limits",
+   "rate-limited",
+   "account lockout"
+  ],
+  "short": "Capping how many requests or login attempts one user or address can make in a time window. Slows down guessing and scraping.",
+  "lesson": "identity"
+ },
+ {
+  "id": "split-tunnel",
+  "term": "Split tunnelling",
+  "kind": "Networking",
+  "aliases": [
+   "split tunnel",
+   "split tunnelling",
+   "split tunneling",
+   "full tunnel"
+  ],
+  "short": "A VPN setting that sends only work traffic through the VPN and everything else straight to the internet. Faster, but that traffic skips company protections.",
+  "lesson": "network-modern",
+  "see": [
+   "vpn"
+  ]
+ },
+ {
+  "id": "csp",
+  "term": "Content Security Policy",
+  "kind": "Defence",
+  "aliases": [
+   "Content Security Policy",
+   "content security policy"
+  ],
+  "short": "A header telling the browser which scripts a page may run and where it may send data. A strict one blunts XSS even when a bug slips through.",
+  "lesson": "web-xss",
+  "see": [
+   "xss"
+  ]
+ },
+ {
+  "id": "kerberoasting",
+  "term": "Kerberoasting",
+  "kind": "Attack",
+  "aliases": [
+   "Kerberoasting",
+   "kerberoasting"
+  ],
+  "short": "Asking Active Directory for service tickets, then cracking them offline to recover service account passwords. Long, random service account passwords defeat it.",
+  "lesson": "identity",
+  "see": [
+   "active-directory"
+  ]
+ },
+ {
+  "id": "chain-of-custody",
+  "term": "Chain of custody",
+  "kind": "Governance",
+  "aliases": [
+   "chain of custody"
+  ],
+  "short": "The record of who handled evidence, when and why, from collection onwards, so nobody can claim it was tampered with.",
+  "lesson": "incident-response"
+ },
+ {
+  "id": "allow-list",
+  "term": "Allow list",
+  "kind": "Defence",
+  "aliases": [
+   "allow list",
+   "allow lists",
+   "allowlist",
+   "allowlists",
+   "allowlisting",
+   "deny list",
+   "deny lists",
+   "blocklist",
+   "blocklists",
+   "block list"
+  ],
+  "short": "An allow list permits only named items (apps, addresses) and blocks everything else. A deny list blocks named bad items and allows the rest, so allow lists are stricter.",
+  "lesson": "security-controls"
+ },
+ {
+  "id": "emi",
+  "term": "EMI (electromagnetic interference)",
+  "kind": "Networking",
+  "aliases": [
+   "EMI",
+   "electromagnetic interference"
+  ],
+  "short": "Electrical noise from motors, lights or power cables that corrupts signals on copper cable. Shielded cable or fibre avoids it.",
+  "lesson": "network-ops"
+ },
+ {
+  "id": "federation",
+  "term": "Identity federation",
+  "kind": "Technology",
+  "aliases": [
+   "identity federation",
+   "federated identity",
+   "federated login"
+  ],
+  "short": "Trust between organisations' login systems, so your home account can sign you in to a partner's apps without another password.",
+  "lesson": "identity",
+  "see": [
+   "sso"
+  ]
+ },
+ {
+  "id": "diginotar",
+  "term": "DigiNotar",
+  "kind": "Organisation",
+  "aliases": [
+   "DigiNotar"
+  ],
+  "short": "A Dutch certificate authority hacked in 2011. Fake Google certificates it issued were used to spy on users in Iran, browsers stopped trusting it, and it went bankrupt.",
+  "lesson": "certificates",
+  "see": [
+   "ca"
+  ]
+ },
+ {
+  "id": "pbq",
+  "term": "PBQ (performance-based question)",
+  "kind": "Concept",
+  "aliases": [
+   "PBQ",
+   "PBQs",
+   "performance-based question",
+   "performance-based questions"
+  ],
+  "short": "A hands-on exam task, such as configuring a firewall or matching logs to attacks, marked part by part. CompTIA exams usually open with a few."
  }
 ]

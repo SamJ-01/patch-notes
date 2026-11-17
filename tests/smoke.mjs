@@ -6,7 +6,7 @@
 //
 //   python3 build.py --offline && node tests/smoke.mjs
 import { createServer } from "node:http";
-import { readFileSync, existsSync } from "node:fs";
+import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { extname, join, normalize } from "node:path";
@@ -180,6 +180,26 @@ await journey("route", async () => {
   await page.close();
 });
 
+// 5. A PBQ answered by hand: choose every answer in its selects, check, see 100%, and find the best score saved on the
+// exam page. Then a firewall PBQ built rule by rule. Grading is unit-tested; this checks the page's wiring drives it.
+await journey("PBQ answered by hand", async () => {
+  const page = await open("#pbq-np-pbq-ports", 390, "light");
+  await page.waitForSelector(".pbq-match select");
+  const answers = await page.evaluate(() => Object.fromEntries(DATA.certs.find(c => c.id === "network-plus").pbqs.find(q => q.id === "np-pbq-ports").items.map(i => [i.id, i.answer])));
+  for (const [id, a] of Object.entries(answers)) await page.selectOption(`select[data-id="${id}"]`, a);
+  await page.click('[data-act="check"]');
+  if (!/8 of 8 parts right \(100%\)/.test(await page.textContent(".pbq-score"))) problems.push("PBQ: answering every item right didn't score 100%");
+  await page.goto(base + "#cert-network-plus"); await page.waitForSelector(".pbq-panel");
+  if (!/best 100%/i.test(await page.locator(".pbq-panel").textContent())) problems.push("PBQ: the best score wasn't saved to the exam page");
+  await page.goto(base + "#pbq-sp-pbq-firewall"); await page.waitForSelector('select[data-r="0"][data-f="action"]');
+  const rules = [["allow", "tcp", "any", "10.0.0.5", "443"], ["allow", "tcp", "10.0.5.0/24", "10.0.0.5", "22"], ["deny", "any", "any", "any", "any"]];
+  for (const [k, r] of rules.entries()) for (const [j, f] of ["action", "proto", "src", "dst", "port"].entries()) await page.selectOption(`select[data-r="${k}"][data-f="${f}"]`, r[j]);
+  await page.click('[data-act="check"]');
+  if (!/9 of 9 parts right/.test(await page.textContent(".pbq-score"))) problems.push("PBQ: a correct firewall rule set didn't score 9 of 9");
+  await overflow(page, "#pbq-sp-pbq-firewall @390");
+  await page.close();
+});
+
 // Wide screens: the Agency page (view-wide) is centred, not pushed right (it was, by double centring, above ~1600 px).
 await journey("agency on a wide screen", async () => {
   const page = await open("#agency-shift-01", 1920, "dark");
@@ -189,18 +209,46 @@ await journey("agency on a wide screen", async () => {
   await page.close();
 });
 
+// Card pictures must look different, not just have different names: two re-encoded copies of one picture slipped
+// through once (cia-triad and cia-which-pillar). The browser decodes each card and compares a 16 x 16 difference hash:
+// a re-encoded copy scores 0 of 256, the closest genuinely different cards (16 Nov) about 22.
+await journey("no two card pictures are the same image", async () => {
+  const page = await browser.newPage(); await page.goto(base);
+  const files = readdirSync(new URL("../site/img/cards/", import.meta.url)).filter(f => f.endsWith(".webp"));
+  await page.waitForLoadState("networkidle");
+  const hashes = [];
+  for (const f of files) hashes.push(await page.evaluate(async f => {
+    const img = new Image(); img.src = "img/cards/" + f;
+    try { await img.decode(); } catch (e) { return [f, null]; }
+    const c = document.createElement("canvas"); c.width = 17; c.height = 16; const x = c.getContext("2d"); x.drawImage(img, 0, 0, 17, 16);
+    const d = x.getImageData(0, 0, 17, 16).data, g = i => d[i * 4] * 0.3 + d[i * 4 + 1] * 0.59 + d[i * 4 + 2] * 0.11;
+    let bits = ""; for (let r = 0; r < 16; r++) for (let k = 0; k < 16; k++) bits += g(r * 17 + k) > g(r * 17 + k + 1) ? "1" : "0";
+    return [f, bits];
+  }, f));
+  const broken = hashes.filter(h => !h[1]).map(h => h[0]);
+  if (broken.length) problems.push(`card pictures that won't load: ${broken.join(", ")}`);
+  const ok = hashes.filter(h => h[1]);
+  for (let i = 0; i < ok.length; i++) for (let j = i + 1; j < ok.length; j++) {
+    let dist = 0; for (let k = 0; k < 256; k++) dist += ok[i][1][k] !== ok[j][1][k];
+    if (dist <= 8) problems.push(`card pictures look identical: ${ok[i][0]} and ${ok[j][0]}`);
+  }
+  await page.close();
+});
+
 // Offline: after one online visit the service worker (static/sw.js) serves the page and a lesson with no connection.
 await journey("works offline after a visit", async () => {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: "reduce" }), page = await ctx.newPage();
   await page.goto(base); await page.evaluate(() => localStorage.setItem("pn-hello", "1"));
   await page.evaluate(() => navigator.serviceWorker.ready); await page.reload();
-  await page.goto(base + "#lesson-malware"); await page.waitForSelector(".cs-tile");
+  await page.goto(base + "#lesson-malware"); await page.waitForSelector(".sc-spot");  // the photo scene, and its image
+  await page.waitForFunction(() => document.querySelector(".sc-photo img")?.complete);
   await ctx.setOffline(true); await page.reload();
-  await page.waitForSelector(".cs-tile", { timeout: 8000 });
+  await page.waitForSelector(".sc-spot", { timeout: 8000 });
+  if (!(await page.evaluate(() => document.querySelector(".sc-photo img")?.naturalWidth))) problems.push("offline: the lesson's photo didn't load from the cache");
   if (!/Malware/i.test(await page.locator("h1").first().textContent())) problems.push("offline: the lesson didn't load from the cache");
   await ctx.close();
 });
 
 await browser.close(); server.close();
 if (problems.length) { console.error(problems.join("\n")); console.error(`\n${problems.length} problem(s)`); process.exit(1); }
-console.log(`Smoke test passed: ${ROUTES.length} routes at desktop and phone, a lab, a shadowed shift, a route and offline.`);
+console.log(`Smoke test passed: ${ROUTES.length} routes at desktop and phone, a lab, a shadowed shift, a route, two PBQs and offline.`);

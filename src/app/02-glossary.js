@@ -8,16 +8,19 @@ const MATCH = (() => {
     if (g.auto === false) return;
     g.aliases.forEach(a => /[A-Z]/.test(a) ? cs.set(a, g.id) : ci.set(a.toLowerCase(), g.id));
   });
-  const make = (map, flags, plural) => {
+  // Plurals: "routers" for a lowercase alias; for an acronym, a lowercase s only ("IPs", "VLANs"), so "IPS" stays
+  // its own term. Longer aliases are tried first, so an exact alias always wins over a plural.
+  const make = (map, flags) => {
     const keys = [...map.keys()].sort((a, b) => b.length - a.length);
+    const tail = k => flags.includes("i") ? (/[a-z]$/.test(k) ? "(?:e?s)?" : "") : (/[A-Z]$/.test(k) ? "s?" : "");
     // Prefix group instead of a lookbehind so older Safari (< 16.4) can parse it.
-    return new RegExp(`(^|[^A-Za-z0-9_])(${keys.map(k => reEsc(k) + (plural && /[a-z]$/.test(k) ? "(?:e?s)?" : "")).join("|")})(?![A-Za-z0-9_])`, flags);
+    return new RegExp(`(^|[^A-Za-z0-9_])(${keys.map(k => reEsc(k) + tail(k)).join("|")})(?![A-Za-z0-9_])`, flags);
   };
-  return { cs, ci, rx, csRe: make(cs, "g", false), ciRe: make(ci, "gi", true) };
+  return { cs, ci, rx, csRe: make(cs, "g"), ciRe: make(ci, "gi") };
 })();
 function findTerms(text) {
   const hits = [];
-  for (const m of text.matchAll(MATCH.csRe)) hits.push({ i: m.index + m[1].length, len: m[2].length, id: MATCH.cs.get(m[2]) });
+  for (const m of text.matchAll(MATCH.csRe)) hits.push({ i: m.index + m[1].length, len: m[2].length, id: MATCH.cs.get(m[2]) || MATCH.cs.get(m[2].slice(0, -1)) });
   for (const m of text.matchAll(MATCH.ciRe)) {
     const w = m[2].toLowerCase();
     const id = MATCH.ci.get(w) || MATCH.ci.get(w.replace(/es$/, "")) || MATCH.ci.get(w.replace(/s$/, ""));
@@ -43,6 +46,20 @@ function gloss(text, max = 4, seen = new Set()) {
 }
 // Lab, mission and Agency modules underline their text through this hook (they fall back to plain text without it).
 globalThis.PN_gloss = gloss;
+
+// A short "is this safe / what happens here" note (content/safety.json, DATA.safety): a title, one line, then an
+// optional fold of steps ("Show me how", picked by `how`, e.g. a lab's kind) or of further points. Unknown keys draw
+// nothing. Text is escaped and glossed; summaries never are (a term button inside a summary would toggle the fold).
+function safeNote(key, { how } = {}) {
+  const n = (DATA.safety || {})[key]; if (!n) return "";
+  const steps = how && n.how?.[how], more = n.more, seen = new Set();
+  return `<div class="safe-note ${n.tone === "warn" ? "warn" : "good"}" role="note" data-safe="${esc(key)}">
+    <p>${n.title ? `<b>${esc(n.title)}</b> ` : ""}${gloss(n.text, 2, seen)}</p>
+    ${steps ? `<details class="flag-how"><summary>Show me how</summary><ol>${steps.map(s => `<li>${gloss(s, 1, seen)}</li>`).join("")}</ol>${n.phone ? `<p class="muted flag-phone"><b>On a phone:</b> ${esc(n.phone)}</p>` : ""}</details>` : ""}
+    ${more ? `<details><summary>${esc(more.summary)}</summary><ul>${more.items.map(s => `<li>${gloss(s, 1, seen)}</li>`).join("")}</ul>${more.link ? `<p><a href="${esc(more.link.href)}">${esc(more.link.label)}</a></p>` : ""}</details>` : ""}
+  </div>`;
+}
+globalThis.PN_safeNote = safeNote;
 
 const pop = $("pop");
 let popAnchor = null, popPinned = false, popTimer = null;

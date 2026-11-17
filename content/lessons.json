@@ -61,27 +61,81 @@
    }
   ],
   "concept": {
-   "why": "Everything in security protects one of these three goals. Keep them in mind as the lesson goes on.",
-   "type": "triad",
-   "title": "The three goals every control serves",
+   "why": "Choose each number. Every goal of security is something real at this counter.",
+   "type": "scene",
+   "title": "The pharmacy counter: all three goals in one place",
+   "image": {
+    "src": "img/scenes/cia-pharmacy.webp",
+    "width": 1536,
+    "height": 1024,
+    "alt": "A pharmacy counter at night. A customer shows an ID card while the pharmacist hands over a paper bag. Frosted glass hides the queue, a sealed box and a barcode scanner sit on the counter, and an OPEN sign glows above."
+   },
    "items": [
     {
-     "label": "Confidentiality",
-     "icon": "lock",
-     "text": "Only the right people can see the data. Built with encryption, authentication and least-privilege access.",
-     "example": "A leaked customer database breaks confidentiality: outsiders can now read private data."
+     "label": "Frosted glass",
+     "tag": "Confidentiality",
+     "tone": "c",
+     "at": [
+      13,
+      40
+     ],
+     "text": "People in the queue can't see who is collecting what, or read anything on the counter.",
+     "breaks": "Clear glass, or reading names and medicines out loud to the queue."
     },
     {
-     "label": "Integrity",
-     "icon": "shield",
-     "text": "Data is correct and hasn't been tampered with. Built with hashing, digital signatures and change control.",
-     "example": "A matching file hash proves the download wasn't altered in transit."
+     "label": "The ID check",
+     "tag": "Confidentiality",
+     "tone": "c",
+     "at": [
+      50,
+      37
+     ],
+     "text": "Only the right person gets the prescription: the pharmacist checks who you are before handing anything over.",
+     "breaks": "Giving medicine to anyone who says the right name."
     },
     {
-     "label": "Availability",
-     "icon": "gauge",
-     "text": "Systems are up when people need them. Built with backups, redundancy and DDoS protection.",
-     "example": "A DDoS attack that knocks a site offline is an attack on availability."
+     "label": "The sealed box",
+     "tag": "Integrity",
+     "tone": "i",
+     "at": [
+      64,
+      74
+     ],
+     "text": "The tamper-evident seal shows nothing has been opened or swapped since the medicine left the supplier.",
+     "breaks": "A broken seal, accepted anyway."
+    },
+    {
+     "label": "The barcode scan",
+     "tag": "Integrity",
+     "tone": "i",
+     "at": [
+      89,
+      80
+     ],
+     "text": "Scanning checks this is exactly the medicine and dose on the prescription, not a lookalike.",
+     "breaks": "Typing the code in by hand and getting one digit wrong."
+    },
+    {
+     "label": "Open, and handed over",
+     "tag": "Availability",
+     "tone": "a",
+     "at": [
+      59,
+      58
+     ],
+     "text": "The counter is open when people need it, and the right person leaves with their medicine.",
+     "breaks": "The system crashes at five o'clock with a queue out of the door."
+    },
+    {
+     "label": "Backup power and a spare terminal",
+     "tag": "Availability",
+     "tone": "a",
+     "at": [
+      89,
+      19
+     ],
+     "text": "If the power or one computer fails, the backup unit and the second terminal keep the counter serving.",
+     "breaks": "One power cut that takes the prescription system down."
     }
    ]
   },
@@ -310,39 +364,75 @@
    }
   ],
   "concept": {
-   "why": "Controls work in different ways. Here are the types, with an example of each.",
-   "type": "cards",
-   "title": "What each type of control does",
+   "why": "Choose each number. One office entrance holds all six types of control.",
+   "type": "scene",
+   "title": "An office entrance at night: six controls, six jobs",
+   "image": {
+    "src": "img/scenes/security-controls-entrance.webp",
+    "width": 1536,
+    "height": 1024,
+    "alt": "An office entrance at night. A keycard reader beside a glass door with a camera sticker, a CCTV camera on the wall, a framed policy, and a guard at a desk with a sign-in book, a pen and a backup drive."
+   },
    "items": [
     {
-     "label": "Preventive",
-     "icon": "lock",
-     "text": "Stops it happening: a firewall rule, MFA, a locked door."
+     "label": "Keycard reader",
+     "tag": "Preventive",
+     "at": [
+      13,
+      38
+     ],
+     "text": "Stops it happening: no valid card, no way in.",
+     "breaks": "The door wedged open for a delivery."
     },
     {
-     "label": "Deterrent",
-     "icon": "alert",
-     "text": "Discourages the attempt: a warning banner, a CCTV sign."
+     "label": "Camera sticker",
+     "tag": "Deterrent",
+     "at": [
+      32,
+      30
+     ],
+     "text": "Puts people off trying: they know they're being watched.",
+     "breaks": "A sticker with no camera behind it, once people work that out."
     },
     {
-     "label": "Detective",
-     "icon": "eye",
-     "text": "Notices it: an IDS alert, a log review, a camera recording."
+     "label": "CCTV camera",
+     "tag": "Detective",
+     "at": [
+      63,
+      16
+     ],
+     "text": "Doesn't stop anyone, but records who came and went, so you can spot and investigate it.",
+     "breaks": "Nobody reviews the footage, or it records over itself after a day."
     },
     {
-     "label": "Corrective",
-     "icon": "cycle",
-     "text": "Fixes things afterwards: restoring from backup, patching, reimaging a laptop."
+     "label": "Backup drive",
+     "tag": "Corrective",
+     "at": [
+      80,
+      70
+     ],
+     "text": "Fixes things afterwards: restore the files an attacker deleted or encrypted.",
+     "breaks": "A backup that's always plugged in, so ransomware encrypts it too."
     },
     {
-     "label": "Directive",
-     "icon": "doc",
-     "text": "Tells people what to do: a policy, a procedure, a sign saying staff only."
+     "label": "The framed policy",
+     "tag": "Directive",
+     "at": [
+      79,
+      27
+     ],
+     "text": "Tells people what to do: wear your badge, don't hold the door for strangers.",
+     "breaks": "A policy nobody has read or is held to."
     },
     {
-     "label": "Compensating",
-     "icon": "shield",
-     "text": "Stands in when the usual control can't be used, such as isolating an unpatchable machine."
+     "label": "Sign-in book and guard",
+     "tag": "Compensating",
+     "at": [
+      44,
+      70
+     ],
+     "text": "Stands in when the usual control can't be used: if the reader breaks, the guard checks ID and signs visitors in by hand.",
+     "breaks": "Signing in anyone without checking who they are."
     }
    ]
   },
@@ -620,161 +710,9 @@
     "see": "defend"
    }
   ],
-  "diagram": {
-   "why": "Follow a ransomware attack from the first foothold to encryption, and the chances to catch it on the way.",
-   "title": "How a ransomware attack reaches the point of encryption",
-   "nodes": [
-    {
-     "id": "a",
-     "kind": "attacker",
-     "label": "Affiliate"
-    },
-    {
-     "id": "v",
-     "kind": "firewall",
-     "label": "VPN / remote access"
-    },
-    {
-     "id": "s",
-     "kind": "server",
-     "label": "File servers"
-    },
-    {
-     "id": "b",
-     "kind": "db",
-     "label": "Backups"
-    }
-   ],
-   "steps": [
-    {
-     "from": "a",
-     "to": "v",
-     "msg": "Logs in with a stolen password",
-     "text": "Many attacks start at remote access: a reused password or an unpatched VPN.",
-     "tone": "bad",
-     "stop": "MFA on every remote access point; patch internet-facing systems first.",
-     "stage": {
-      "kind": "field",
-      "tone": "bad",
-      "kicker": "VPN",
-      "line": "accepted",
-      "rows": [
-       {
-        "k": "Host",
-        "v": "remote.company.example"
-       },
-       {
-        "k": "Password",
-        "v": "accepted"
-       },
-       {
-        "k": "Second factor",
-        "v": "none",
-        "bad": true
-       }
-      ]
-     }
-    },
-    {
-     "from": "v",
-     "to": "s",
-     "msg": "Spreads quietly for days",
-     "text": "The attacker gains admin rights and maps the network before doing anything noisy.",
-     "tone": "bad",
-     "stop": "Segment networks and give accounts only the access they need.",
-     "stage": {
-      "kind": "log",
-      "tone": "bad",
-      "kicker": "Days 1 to 6",
-      "line": "quiet",
-      "lines": [
-       "Day 1  VPN login accepted",
-       "Day 2  local admin",
-       "Day 4  file servers listed",
-       "Day 6  nothing encrypted"
-      ]
-     }
-    },
-    {
-     "from": "s",
-     "to": "a",
-     "msg": "Copies data out",
-     "text": "Data is stolen first so the gang can threaten to leak it (double extortion).",
-     "tone": "bad",
-     "stop": "Watch for unusual large outbound transfers.",
-     "stage": {
-      "kind": "log",
-      "tone": "bad",
-      "kicker": "Outbound",
-      "line": "41 GB",
-      "lines": [
-       "03:20  rclone.exe copy D:\\Shares",
-       "03:48  41.7 GB sent",
-       "03:48  connection closed"
-      ]
-     }
-    },
-    {
-     "from": "a",
-     "to": "b",
-     "msg": "Deletes reachable backups",
-     "text": "Gangs destroy backups they can reach so the victim can't simply restore.",
-     "tone": "bad",
-     "stop": "Keep offline or immutable backups and test restoring them.",
-     "stage": {
-      "kind": "file",
-      "tone": "bad",
-      "kicker": "Backups",
-      "line": "deleted",
-      "rows": [
-       {
-        "k": "Name",
-        "v": "nightly.bak"
-       },
-       {
-        "k": "State",
-        "v": "deleted",
-        "bad": true
-       },
-       {
-        "k": "Location",
-        "v": "\\\\files\\backups"
-       }
-      ]
-     }
-    },
-    {
-     "from": "a",
-     "to": "s",
-     "msg": "Encrypts files, leaves a ransom note",
-     "text": "Files become unusable and the ransom demand appears.",
-     "tone": "bad",
-     "stop": "EDR that spots mass file changes can stop encryption early.",
-     "stage": {
-      "kind": "file",
-      "tone": "bad",
-      "kicker": "File server",
-      "line": "locked",
-      "rows": [
-       {
-        "k": "Was",
-        "v": "report.xlsx"
-       },
-       {
-        "k": "Now",
-        "v": "report.xlsx.lockd",
-        "bad": true
-       },
-       {
-        "k": "Added",
-        "v": "README_RESTORE.txt",
-        "bad": true
-       }
-      ]
-     }
-    }
-   ],
-   "scene": "stage"
+  "explainer": {
+   "why": "Step through an attack from the first login to encryption, then pick two defences and see where it stops.",
+   "kind": "ransomware"
   },
   "keys": [
    {
@@ -859,6 +797,49 @@
     "see": "what"
    }
   ],
+  "scene": {
+   "why": "Choose each number. These are the ways malware usually gets in, and what makes it worse.",
+   "type": "scene",
+   "title": "One desk, three ways in",
+   "image": {
+    "src": "img/scenes/malware-desk.webp",
+    "width": 1536,
+    "height": 1024,
+    "alt": "Someone at a desk at night reaches for a plain USB stick. Their laptop shows an email with an attachment, and a backup drive is plugged in beside it."
+   },
+   "items": [
+    {
+     "label": "A USB stick of unknown origin",
+     "tag": "Removable media",
+     "at": [
+      57,
+      85
+     ],
+     "text": "Found or handed over, it can carry malware that runs when it's plugged in, or even pretend to be a keyboard.",
+     "fix": "Don't plug in unknown drives: hand them to IT. Block or scan USB storage on work machines."
+    },
+    {
+     "label": "An unexpected attachment",
+     "tag": "Email",
+     "at": [
+      70,
+      35
+     ],
+     "text": "Most malware still arrives by email: an 'invoice' or 'document' that runs code when it's opened.",
+     "fix": "Check the sender and the file type, open nothing you weren't expecting, and report it."
+    },
+    {
+     "label": "A backup drive left plugged in",
+     "tag": "Makes it worse",
+     "at": [
+      86,
+      65
+     ],
+     "text": "Ransomware encrypts every drive it can reach, including a backup that's always connected.",
+     "fix": "Keep at least one backup offline or unchangeable, and test that you can restore from it."
+    }
+   ]
+  },
   "concept": {
    "why": "Malware is grouped by what it does. Here are the main families and how each behaves.",
    "type": "cards",
@@ -1210,6 +1191,69 @@
     "see": "what"
    }
   ],
+  "scene": {
+   "why": "Choose each number. Each of these is trusted because of who it came from.",
+   "type": "scene",
+   "title": "The contractor's visit: trusted, and unchecked",
+   "image": {
+    "src": "img/scenes/supply-chain-contractor.webp",
+    "width": 1536,
+    "height": 1024,
+    "alt": "A server room at night. A contractor plugs their own laptop into a network socket on the wall. An unopened parcel and a USB stick sit on the desk, a monitor shows an update installing, and a staff member by the door looks at their phone."
+   },
+   "items": [
+    {
+     "label": "The contractor's own laptop",
+     "tag": "Third-party access",
+     "at": [
+      93,
+      44
+     ],
+     "text": "A supplier's laptop plugged straight into the network brings whatever is on it inside your defences.",
+     "fix": "Give visitors a separate, isolated network, or a managed laptop you supply."
+    },
+    {
+     "label": "An unexpected delivery",
+     "tag": "Hardware",
+     "at": [
+      34,
+      68
+     ],
+     "text": "Equipment can be tampered with before it arrives. An unrequested parcel in the server room is a question, not a gift.",
+     "fix": "Check deliveries against orders, and inspect seals before anything is installed."
+    },
+    {
+     "label": "A USB stick from the supplier",
+     "tag": "Removable media",
+     "at": [
+      45,
+      88
+     ],
+     "text": "Drivers or firmware 'on a stick' are a classic way in.",
+     "fix": "Download updates from the vendor's official site and check they're signed."
+    },
+    {
+     "label": "An update installing",
+     "tag": "Software",
+     "at": [
+      45,
+      27
+     ],
+     "text": "Updates are trusted by design, so an attacker who poisons a vendor's update reaches every customer at once, as in the SolarWinds attack of 2020.",
+     "fix": "Roll updates out to a small group first, and watch what updated software does on the network."
+    },
+    {
+     "label": "Nobody watching",
+     "tag": "Supervision",
+     "at": [
+      26,
+      20
+     ],
+     "text": "The staff member is on their phone, so nobody sees what the contractor plugs in or copies.",
+     "fix": "Escort third parties in sensitive rooms, and log what they connect."
+    }
+   ]
+  },
   "concept": {
    "why": "You rely on a lot of code you did not write. Here is where that trust gets abused.",
    "type": "cards",
@@ -1320,6 +1364,69 @@
     "see": "defend"
    }
   ],
+  "scene": {
+   "why": "Choose each number. Most breaches start with something small left open, like these.",
+   "type": "scene",
+   "title": "An office after hours: four ways data walks out",
+   "image": {
+    "src": "img/scenes/data-breach-office.webp",
+    "width": 1536,
+    "height": 1024,
+    "alt": "An office at night. A monitor left unlocked showing a spreadsheet, a sticky note on its edge, printouts left in a printer, a window propped open, and a cleaner walking away in the background."
+   },
+   "items": [
+    {
+     "label": "An unlocked screen",
+     "tag": "Left open",
+     "at": [
+      46,
+      42
+     ],
+     "text": "Anyone walking past can read the customer spreadsheet, copy it, or use the account that's still signed in.",
+     "fix": "Lock the screen (Windows key + L) whenever you step away, and set it to lock itself after a few minutes."
+    },
+    {
+     "label": "A password on a sticky note",
+     "tag": "Credentials",
+     "at": [
+      73,
+      47
+     ],
+     "text": "A password in plain sight: a visitor, a cleaner or a photo taken in the office can capture it.",
+     "fix": "Use a password manager, and multi-factor authentication so a password alone isn't enough."
+    },
+    {
+     "label": "Printouts in the tray",
+     "tag": "Paper",
+     "at": [
+      9,
+      36
+     ],
+     "text": "Printed customer details left overnight can leave the building without anyone noticing.",
+     "fix": "Use secure print release (it prints only when you're at the printer), and shred what you don't need."
+    },
+    {
+     "label": "A window left open",
+     "tag": "Physical",
+     "at": [
+      84,
+      22
+     ],
+     "text": "An open window is a way in that skips every door lock and badge reader.",
+     "fix": "Close and lock windows at the end of the day, and check them on the last walk-round."
+    },
+    {
+     "label": "Out-of-hours access",
+     "tag": "People",
+     "at": [
+      31,
+      26
+     ],
+     "text": "Cleaners and contractors work here at night. Most are honest, but everything left out is on show.",
+     "fix": "A clear-desk policy: lock papers away and lock screens before you leave."
+    }
+   ]
+  },
   "concept": {
    "why": "Most breaches begin in a few familiar ways. Here they are before we go deeper.",
    "type": "cards",
@@ -2145,6 +2252,59 @@
     "see": "defend"
    }
   ],
+  "scene": {
+   "why": "Choose each number. On a factory floor, a computer problem becomes a physical one.",
+   "type": "scene",
+   "title": "A factory floor at night: four ways in",
+   "image": {
+    "src": "img/scenes/iot-factory.webp",
+    "width": 1536,
+    "height": 1024,
+    "alt": "A factory floor at night. An old beige computer on a trolley beside a grey control cabinet with a touchscreen and indicator lights, a small box with an aerial on top of the cabinet, and a contractor holding a tablet."
+   },
+   "items": [
+    {
+     "label": "An old PC running the line",
+     "tag": "Legacy",
+     "at": [
+      14,
+      38
+     ],
+     "text": "It runs the control software and can't be patched or replaced without stopping production, so it's years behind on security fixes.",
+     "fix": "Put it on its own network segment, allow only the traffic it needs, and plan its replacement."
+    },
+    {
+     "label": "The control panel (HMI)",
+     "tag": "Operational technology",
+     "at": [
+      62,
+      30
+     ],
+     "text": "The screen operators use to run the machines. Change a setting here and something changes in the physical world.",
+     "fix": "Separate, strong logins for operators, and no direct route from the office network or the internet."
+    },
+    {
+     "label": "A remote-access box on top",
+     "tag": "IoT",
+     "at": [
+      47,
+      9
+     ],
+     "text": "A small mobile or Wi-Fi gateway so the supplier can connect in: a way into the plant that bypasses the firewall.",
+     "fix": "Know every remote-access route, switch it on only when needed, and require MFA and logging."
+    },
+    {
+     "label": "The contractor's tablet",
+     "tag": "Third party",
+     "at": [
+      64,
+      44
+     ],
+     "text": "Visitors' devices are often connected straight into machinery for maintenance.",
+     "fix": "Escort contractors, use a checked maintenance laptop you control, and remove their access afterwards."
+    }
+   ]
+  },
   "concept": {
    "why": "These devices break the usual rules. Here is why they are hard to secure.",
    "type": "cards",
@@ -2690,6 +2850,59 @@
     "see": "example"
    }
   ],
+  "scene": {
+   "why": "Choose each number. Public Wi-Fi is convenient, and that's exactly what an evil twin relies on.",
+   "type": "scene",
+   "title": "A café at night: which network is real?",
+   "image": {
+    "src": "img/scenes/wifi-cafe.webp",
+    "width": 1536,
+    "height": 1024,
+    "alt": "A café at night. A customer works on a laptop with a phone beside it showing a list of networks. The café's router sits on a shelf behind the counter, and a small unfamiliar hotspot sits on another table behind a menu stand."
+   },
+   "items": [
+    {
+     "label": "Open café Wi-Fi",
+     "tag": "Public network",
+     "at": [
+      61,
+      48
+     ],
+     "text": "Open Wi-Fi usually has no password, so nearby devices can see unencrypted traffic, and anyone can name a network the same.",
+     "fix": "Stick to HTTPS, and use your phone's hotspot or a VPN for anything sensitive."
+    },
+    {
+     "label": "The café's real router",
+     "tag": "The genuine one",
+     "at": [
+      68,
+      12
+     ],
+     "text": "The real network. Its name is easy to copy, so the name alone proves nothing.",
+     "fix": "Cafés should use WPA3 (or at least WPA2) and keep guests apart from their own tills and cameras."
+    },
+    {
+     "label": "A hotspot that doesn't belong",
+     "tag": "Evil twin",
+     "at": [
+      77,
+      54
+     ],
+     "text": "A small device broadcasting the café's network name. Laptops join whichever looks stronger, and then the attacker sees the traffic.",
+     "fix": "Ask staff for the exact network, forget open networks after use, and never accept a certificate warning."
+    },
+    {
+     "label": "The network list",
+     "tag": "Two the same",
+     "at": [
+      17,
+      86
+     ],
+     "text": "Two entries with the same name, one slightly stronger: the phone can't tell which is real.",
+     "fix": "Turn off auto-join for open networks."
+    }
+   ]
+  },
   "concept": {
    "why": "Wi-Fi protection has improved over the years. Here it is, weakest to strongest.",
    "type": "cards",
@@ -2806,6 +3019,73 @@
     "see": "example"
    }
   ],
+  "scene": {
+   "why": "Choose each number. A well-run cupboard and a badly run one, side by side in one rack.",
+   "type": "scene",
+   "title": "A comms cupboard: what good running looks like",
+   "image": {
+    "src": "img/scenes/network-cupboard.webp",
+    "width": 1536,
+    "height": 1024,
+    "alt": "A comms cupboard at night. A network rack with its glass door open: neat labelled cables on the left half, a tangle of unlabelled cables on the right, a battery unit at the bottom with a green light, a temperature sensor on the wall, and a technician crouching by the tangle."
+   },
+   "items": [
+    {
+     "label": "Labelled cables",
+     "tag": "Documented",
+     "tone": "good",
+     "at": [
+      21,
+      30
+     ],
+     "text": "Each cable is labelled and bundled, so a link can be traced in seconds during an outage and checked against the records."
+    },
+    {
+     "label": "A tangle with no labels",
+     "tag": "Undocumented",
+     "tone": "bad",
+     "at": [
+      56,
+      14
+     ],
+     "text": "Nobody knows what connects to what, so a simple fix takes hours and the wrong cable gets pulled.",
+     "fix": "Label both ends, keep a cable record, and tidy it in a planned change window."
+    },
+    {
+     "label": "The UPS",
+     "tag": "Power",
+     "tone": "good",
+     "at": [
+      24,
+      84
+     ],
+     "text": "A battery unit that keeps the switches running through a power cut, long enough to shut down safely or for a generator to start.",
+     "breaks": "A UPS whose battery nobody has tested in years."
+    },
+    {
+     "label": "Temperature sensor",
+     "tag": "Monitoring",
+     "tone": "good",
+     "at": [
+      81,
+      16
+     ],
+     "text": "Kit fails early when it runs hot, so the sensor raises an alert before the switches give up.",
+     "breaks": "Alerts that go to an inbox nobody reads."
+    },
+    {
+     "label": "Rack door left open",
+     "tag": "Physical",
+     "tone": "bad",
+     "at": [
+      10,
+      50
+     ],
+     "text": "Anyone in the cupboard can unplug, plug in or take equipment.",
+     "fix": "Lock the rack and the cupboard, and keep a record of who holds keys."
+    }
+   ]
+  },
   "concept": {
    "why": "Recovery planning has its own vocabulary. Here are the terms you will meet, in short.",
    "type": "cards",
@@ -3725,6 +4005,7 @@
  },
  {
   "id": "osint",
+  "safety": "osint",
   "title": "OSINT",
   "track": "Foundations",
   "level": "Beginner",
@@ -3784,6 +4065,69 @@
     "see": "defend"
    }
   ],
+  "scene": {
+   "why": "Choose each number. One cheerful work photo, posted online, gives all of this away.",
+   "type": "scene",
+   "title": "One photo, five clues",
+   "image": {
+    "src": "img/scenes/osint-office.webp",
+    "width": 1536,
+    "height": 1024,
+    "alt": "Someone at a desk in the evening raising a mug and a thumbs up for a photo. A staff badge lies on the desk, a network diagram is drawn on the whiteboard behind them, a sticky note is on the monitor, and a distinctive building is visible through the window."
+   },
+   "items": [
+    {
+     "label": "A staff badge on the desk",
+     "tag": "Badge",
+     "at": [
+      56,
+      86
+     ],
+     "text": "A clear photo of a badge shows its design, logo and colours: enough to make a convincing fake.",
+     "fix": "Keep badges out of photos, and turn them face down at your desk."
+    },
+    {
+     "label": "The whiteboard",
+     "tag": "Network map",
+     "at": [
+      29,
+      8
+     ],
+     "text": "A sketch of the network (the firewall, the servers, how they connect) tells an attacker what to aim for.",
+     "fix": "Wipe whiteboards before photos or visitors, and check the background before posting."
+    },
+    {
+     "label": "The sticky note",
+     "tag": "Credentials",
+     "at": [
+      87,
+      24
+     ],
+     "text": "Notes in the background get zoomed in on. If it's a password, assume it's now public.",
+     "fix": "Keep passwords in a password manager, never on notes."
+    },
+    {
+     "label": "The building outside",
+     "tag": "Location",
+     "at": [
+      72,
+      14
+     ],
+     "text": "A distinctive building pins down exactly where the office is, and the angle hints at which floor.",
+     "fix": "Check what the window shows before you post."
+    },
+    {
+     "label": "The post itself",
+     "tag": "Oversharing",
+     "at": [
+      60,
+      55
+     ],
+     "text": "A friendly 'late night at work' post is exactly what open-source intelligence is made of: free, public and easy to search.",
+     "fix": "A simple rule for work photos: nothing from secure areas, and always check the background."
+    }
+   ]
+  },
   "concept": {
    "why": "Open-source intelligence has many sources. Here is where it comes from.",
    "type": "cards",
@@ -3992,7 +4336,7 @@
   "level": "Beginner",
   "minutes": 6,
   "hook": "The rules that decide what you're allowed to touch, and what must happen after a breach.",
-  "what": "Laws set the floor, and some apply to you as soon as you start practising. In the UK, the Computer Misuse Act 1990 makes it an offence to access a computer without authorisation (section 1), to do so in order to commit another offence (section 2), or to impair a system, for example with malware or a denial-of-service attack (section 3). Making, supplying or obtaining tools for these offences is covered too (section 3A). Good intentions are no defence: what matters is authorisation from someone entitled to give it, which is why testers work from a signed scope. UK GDPR and the Data Protection Act 2018 cover personal data. They set seven principles, including keeping data secure (integrity and confidentiality); a notifiable breach must be reported to the ICO within 72 hours of becoming aware of it; and fines can reach £17.5 million or 4% of global turnover. The NIS Regulations 2018 cover essential services such as energy and transport, and the EU's NIS2 widens this across Europe. Some rules are contracts, not laws: PCI DSS is required by the card brands of anyone who stores, processes or transmits card data. In the EU, DORA covers financial firms' digital resilience. Breaking these rules can bring fines, lost contracts or licences, and lasting damage to reputation. This is a plain-English summary for learning, not legal advice.",
+  "what": "Laws set the floor, and some apply to you as soon as you start practising. In the UK, the Computer Misuse Act 1990 makes it an offence to access a computer without authorisation (section 1), to do so in order to commit another offence (section 2), or to impair a system, for example with malware or a denial-of-service attack (section 3). Making, supplying or obtaining tools for these offences is covered too (section 3A). Good intentions are no defence: what matters is authorisation from someone entitled to give it, which is why testers work from a signed scope. UK GDPR and the Data Protection Act 2018 cover personal data. They set seven principles, including keeping data secure (integrity and confidentiality); a notifiable breach must be reported to the ICO within 72 hours of becoming aware of it; and fines can reach £17.5 million or 4% of global turnover. The NIS Regulations 2018 cover essential services such as energy and transport, and the EU's NIS2 widens this across Europe. Some rules are contracts, not laws: PCI DSS is required by the card brands of anyone who stores, processes or transmits card data. In the EU, the Digital Operational Resilience Act (DORA) covers financial firms' digital resilience. Breaking these rules can bring fines, lost contracts or licences, and lasting damage to reputation. This is a plain-English summary for learning, not legal advice.",
   "example": {
    "title": "TalkTalk",
    "year": "2015",

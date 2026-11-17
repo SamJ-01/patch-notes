@@ -132,6 +132,7 @@ VIEWS.cves = () => {
   main.innerHTML = `<div class="view">
     <div class="view-head with-art">${headArt("cves")}<h1>Which vulnerabilities actually matter</h1>
       <p>This week's vulnerabilities, ranked by real-world risk.</p></div>
+    ${safeNote("cve")}
     ${(st => st.length ? `<p class="notice" role="note">${esc(st.join(" and "))} couldn't be reached on the last update, so ${st.length === 1 ? "its" : "their"} details come from an earlier one${DATA.meta.cveFetched ? ` (CVE list fetched ${esc(DATA.meta.cveFetched)})` : ""}. Check the source for anything urgent.</p>` : "")(DATA.meta.cveStale || [])}
     <section class="glance" id="glance" aria-label="At a glance"></section>
     <details class="more-what fold-sec"><summary><h2>How the priority works</h2><span class="muted">exploited, likely, critical, high, other</span></summary>

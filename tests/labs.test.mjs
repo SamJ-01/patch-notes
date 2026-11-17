@@ -380,3 +380,47 @@ test("Port Corridor: every host is winnable from its own content, and its open s
   }
   assert.deepEqual(corridor.hostOrder(L), L.hosts.map(h => h.id));
 });
+
+test("Linux terminal: the shorthand people really type", () => {
+  const sh = term.createShell(lab("linux-terminal")), run = c => sh.run(c);
+  // Ubuntu's ll (ls -alF): . and .. first, folders marked with /.
+  const ll = run("ll").out.split("\n");
+  assert.match(ll[1], / \.\/$/); assert.match(ll[2], / \.\.\/$/);
+  assert.ok(ll.some(l => / projects\/$/.test(l)));
+  assert.ok(!run("la").out.split(/\s+/).includes("."), "la (ls -A) leaves out . and ..");
+  assert.equal(run("grep -c Failed /var/log/auth.log").out, "4");
+  assert.match(run("grep -rn Failed /var/log").out.split("\n")[0], /^\/var\/log\/auth\.log:1:.*Failed password/);
+  assert.equal(run("grep -r Failed /var/log").error, undefined);
+  assert.match(run("grep Failed /var/log").out, /Is a directory/, "without -r a folder is an error, as in GNU grep");
+  assert.ok(!run("grep -v Failed /var/log/auth.log").out.includes("Failed"));
+  // The pipeline the SOC lesson teaches, end to end.
+  assert.equal(run(`grep "Failed password" /var/log/auth.log | awk '{print $(NF-3)}' | sort | uniq -c | sort -nr`).out, "      4 203.0.113.45");
+  assert.match(run("awk '{print $1}' /var/log/auth.log").out, /^Oct\n/);
+  assert.match(run(`awk '{x++} END {print x}' /var/log/auth.log`).out, /^\[Simulator: this terminal's awk only prints fields/);
+  assert.equal(run("less /etc/passwd").out, run("cat /etc/passwd").out);
+  assert.match(run("ls --help").out, /^Usage: ls/);
+  assert.match(run("ps aux").out, /^\[Simulator: ps is a real Linux command/);
+  assert.match(run("frobnicate").out, /^frobnicate: command not found/);
+});
+
+test("nettools: option values, dig, host, ip and honest notes", () => {
+  const sh = nettools.createNetShell(lab("recon-basics")), run = c => sh.run(c);
+  for (const c of ["ping -c 2 10.10.10.20", "ping -c2 10.10.10.20", "ping -n 2 10.10.10.20"]) {
+    const out = run(c).out;
+    assert.equal((out.match(/^Reply from/gm) || []).length, 2, c);
+    assert.match(out, /Sent = 2, Received = 2/, c);
+  }
+  assert.equal(run("dig +short web.lab").out, "10.10.10.20");
+  assert.match(run("dig web.lab").out, /;; ANSWER SECTION:\nweb\.lab\.\t\t300\tIN\tA\t10\.10\.10\.20/);
+  assert.equal(run("host web.lab").out, "web.lab has address 10.10.10.20");
+  assert.match(run("host nope.lab").out, /^Host nope\.lab not found: 3\(NXDOMAIN\)/);
+  assert.match(run("ip a").out, /inet 10\.10\.10\.5\/24 brd 10\.10\.10\.255 scope global eth0/);
+  assert.equal(run("ip r").out.split("\n")[0], "default via 10.10.10.1 dev eth0");
+  assert.match(run("ip n").out, /^10\.10\.10\.1 dev eth0 lladdr 00:50:56:01:00:01 REACHABLE/);
+  assert.match(run('curl -H "Accept: text/html" http://web.lab').out, /^HTTP/, "quoted words stay together");
+  assert.match(run("nmap -sV 10.10.10.0/24").out, /scanner is called discover/);
+  assert.match(run("whois example.com").out, /^\[Simulator: whois is a real tool/);
+  const d = nettools.createNetShell(lab("net-detective"));
+  d.run("ip a");
+  assert.ok(d.isDone({ ran: ["ipconfig"] }), "ip a counts as checking your address");
+});

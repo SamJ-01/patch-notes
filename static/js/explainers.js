@@ -7,7 +7,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 const reduced = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // The explainers this module can draw. Keep in step with mount()'s switch and the shift JSON `seeItAtWork.kind`.
-export const KINDS = ["vpn", "idor", "cloud", "inbox-rule", "spray", "mfa-fatigue", "ddos", "cert", "chain", "zero-trust", "sqli", "xss", "hashing"];
+export const KINDS = ["vpn", "idor", "cloud", "inbox-rule", "spray", "mfa-fatigue", "ddos", "cert", "chain", "zero-trust", "sqli", "xss", "hashing", "ransomware"];
 
 // VPN full tunnel: the same employee, physically in the London office the whole time. With the VPN off the
 // website sees her real public address; with it on, all her traffic leaves through the company's VPN exit, so
@@ -37,6 +37,7 @@ export function mount(el, kind, opts = {}) {
   if (kind === "sqli") return mountSqli(el, opts);
   if (kind === "xss") return mountXss(el, opts);
   if (kind === "hashing") return mountHash(el, opts);
+  if (kind === "ransomware") return import("./ransomware.js").then(m => m.mount(el, opts));  // its own module: it draws devices
   el.innerHTML = `<p class="muted">No explainer for "${esc(kind)}".</p>`;
   return null;
 }

@@ -1625,6 +1625,252 @@
      "why": "route shows or edits the routing table."
     }
    ]
+  },
+  {
+   "id": "np-5.5-4",
+   "objective": "5.5",
+   "stem": "On a Cisco switch, which command lists every VLAN with its name and the access ports in it?",
+   "options": [
+    {
+     "text": "show vlan brief",
+     "correct": true,
+     "why": "One line per VLAN: number, name, status and access ports. Shorthand that works on a real switch: sh vl br."
+    },
+    {
+     "text": "show interfaces trunk",
+     "correct": false,
+     "why": "That lists trunk ports and the VLANs they carry, not the access ports in each VLAN."
+    },
+    {
+     "text": "show ip interface brief",
+     "correct": false,
+     "why": "That shows each interface's IP address and whether it's up."
+    },
+    {
+     "text": "show mac address-table",
+     "correct": false,
+     "why": "That shows which MAC addresses were learned on which port."
+    }
+   ]
+  },
+  {
+   "id": "np-5.5-5",
+   "objective": "5.5",
+   "stem": "Which command gives one line per interface with its IP address and whether it's up?",
+   "options": [
+    {
+     "text": "show ip interface brief",
+     "correct": true,
+     "why": "Status is the physical link, Protocol the data link; 'administratively down' means someone typed shutdown. Shorthand: sh ip int br."
+    },
+    {
+     "text": "show running-config",
+     "correct": false,
+     "why": "That shows the configuration, not whether each link is up."
+    },
+    {
+     "text": "show vlan brief",
+     "correct": false,
+     "why": "That lists VLANs and their access ports."
+    },
+    {
+     "text": "show ip route",
+     "correct": false,
+     "why": "That shows the routing table."
+    }
+   ]
+  },
+  {
+   "id": "np-5.5-6",
+   "objective": "5.5",
+   "stem": "A user's PC is plugged into an unknown port. Which switch command shows the port its MAC address was learned on?",
+   "options": [
+    {
+     "text": "show mac address-table",
+     "correct": true,
+     "why": "It lists each learned MAC address with its VLAN and port. Narrow it down with show mac address-table address followed by the MAC."
+    },
+    {
+     "text": "show arp",
+     "correct": false,
+     "why": "ARP maps IP addresses to MAC addresses, but doesn't say which switch port a device is on."
+    },
+    {
+     "text": "show interfaces trunk",
+     "correct": false,
+     "why": "That covers trunk links between switches, not where an end device is plugged in."
+    },
+    {
+     "text": "show cdp neighbors",
+     "correct": false,
+     "why": "CDP lists neighbouring Cisco devices such as switches and phones, not ordinary PCs."
+    }
+   ]
+  },
+  {
+   "id": "np-5.5-7",
+   "objective": "5.5",
+   "scenario": "S1# sh run",
+   "stem": "An engineer types this on a Cisco switch. What happens?",
+   "options": [
+    {
+     "text": "IOS runs show running-config",
+     "correct": true,
+     "why": "IOS accepts the shortest unambiguous start of every keyword, so sh run, conf t and int g0/1 all work."
+    },
+    {
+     "text": "% Invalid input: IOS needs full command words",
+     "correct": false,
+     "why": "IOS accepts abbreviations, as long as each one is unique."
+    },
+    {
+     "text": "It shows the startup configuration",
+     "correct": false,
+     "why": "That's show startup-config (sh start). run is short for running-config."
+    },
+    {
+     "text": "It runs a saved script called run",
+     "correct": false,
+     "why": "There's no such script: sh is show and run is running-config."
+    }
+   ]
+  },
+  {
+   "id": "np-5.5-8",
+   "objective": "5.5",
+   "scenario": "S1# sh v\n% Ambiguous command:  \"sh v\"",
+   "stem": "Why does the switch answer like this?",
+   "options": [
+    {
+     "text": "More than one show command starts with v, so IOS needs more letters",
+     "correct": true,
+     "why": "vlan, version and vtp all start with v. Type sh vl or sh ver, or sh v? to list what fits."
+    },
+    {
+     "text": "The engineer isn't in privileged mode",
+     "correct": false,
+     "why": "A command needing privilege gives % Invalid input, not an ambiguous command."
+    },
+    {
+     "text": "The switch has no VLANs yet",
+     "correct": false,
+     "why": "VLAN 1 always exists. The message is about the command, not the VLANs."
+    },
+    {
+     "text": "IOS doesn't accept abbreviations",
+     "correct": false,
+     "why": "It does, as long as they're unique."
+    }
+   ]
+  },
+  {
+   "id": "np-5.5-9",
+   "objective": "5.5",
+   "stem": "After configuring a switch, which command makes the changes survive a reload?",
+   "options": [
+    {
+     "text": "copy running-config startup-config",
+     "correct": true,
+     "why": "It saves the running configuration to NVRAM. The older shorthand write memory (wr) does the same."
+    },
+    {
+     "text": "show startup-config",
+     "correct": false,
+     "why": "That displays the saved configuration; it doesn't save anything."
+    },
+    {
+     "text": "reload",
+     "correct": false,
+     "why": "That restarts the device, and unsaved changes are lost."
+    },
+    {
+     "text": "end",
+     "correct": false,
+     "why": "That leaves configuration mode; the changes are still only in the running configuration."
+    }
+   ]
+  },
+  {
+   "id": "np-5.5-10",
+   "objective": "5.5",
+   "stem": "An admin wants exactly four pings. Which is right?",
+   "options": [
+    {
+     "text": "ping -c 4 on Linux; ping -n 4 on Windows",
+     "correct": true,
+     "why": "Linux pings until Ctrl+C unless -c sets a count. Windows sends four by default; -n changes the count and -t pings until Ctrl+C."
+    },
+    {
+     "text": "ping -n 4 on Linux; ping -c 4 on Windows",
+     "correct": false,
+     "why": "That's the wrong way round."
+    },
+    {
+     "text": "ping -t 4 on both",
+     "correct": false,
+     "why": "On Windows -t pings until you stop it; on Linux -t sets the TTL."
+    },
+    {
+     "text": "ping 4 on both",
+     "correct": false,
+     "why": "The count is an option, not a bare number."
+    }
+   ]
+  },
+  {
+   "id": "np-5.5-11",
+   "objective": "5.5",
+   "stem": "Which command shows the IP addresses on a Linux server?",
+   "options": [
+    {
+     "text": "ip a (short for ip address)",
+     "correct": true,
+     "why": "It's part of iproute2 on modern Linux. ifconfig is the older tool, and ipconfig is Windows."
+    },
+    {
+     "text": "ipconfig /all",
+     "correct": false,
+     "why": "That's the Windows command."
+    },
+    {
+     "text": "netstat -an",
+     "correct": false,
+     "why": "That shows connections and listening ports."
+    },
+    {
+     "text": "arp -a",
+     "correct": false,
+     "why": "That shows the cache of IP-to-MAC mappings."
+    }
+   ]
+  },
+  {
+   "id": "np-5.5-12",
+   "objective": "5.5",
+   "scenario": "$ dig +short www.example.com\n203.0.113.25",
+   "stem": "What does +short do here?",
+   "options": [
+    {
+     "text": "Prints just the answer (the address), not the full DNS response",
+     "correct": true,
+     "why": "Without +short, dig shows the question, answer, server and timing. With it, only the answer."
+    },
+    {
+     "text": "Asks a quicker DNS server",
+     "correct": false,
+     "why": "dig @server chooses the server; +short only changes what's printed."
+    },
+    {
+     "text": "Returns only IPv4, never IPv6",
+     "correct": false,
+     "why": "The record type decides that: dig www.example.com AAAA asks for IPv6."
+    },
+    {
+     "text": "Skips the DNS cache",
+     "correct": false,
+     "why": "+short changes the output, not where the answer comes from."
+    }
+   ]
   }
  ]
 }
