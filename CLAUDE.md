@@ -29,6 +29,9 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   an evidence lab, a shadowed shift, a shift worked by hand to the debrief (close form + handover form), the route bar). Add a journey there when a new kind of activity ships.
 - Browser check (errors, overflow, axe, screenshots): `node tests/browser_check.mjs "#route" "#route|selector-to-click"`.
   For axe: `npm pack axe-core@4.10.2` in a scratch dir, untar, `AXE=.../package/axe.min.js`.
+- Interaction check (by hand, ~15 min): `node tests/interaction_check.mjs` presses every button on every route at desktop and
+  phone and reports page/console errors, failed requests and sideways scroll (skips reset/print/download/copy and the feedback send).
+  Run it before a release with new UI: it caught the 18 Nov glossary clash (popup "Related" buttons now use `data-gsee`, not `data-see`).
 - Deploy = push to `main` (GitHub Actions builds daily and on push; the full build takes ~8 min). Watch: `gh run watch <id> -R SamJ-01/patch-notes`.
 
 ## Conventions
@@ -52,7 +55,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   phishing triage ("Which email was it?", `phish-triage.json`: the email inspector, `scenario.emails` with raw headers parsed by
   `engine.parseHeaders`; findings come from `engine.inspectEmail`). Keep its headers, log lines and findings in step: tests check they agree.
 - Exam prep has its own tab (`#exams`, `VIEWS.exams` in 06-learn; cert pages `#cert-<id>` sit under it), so lessons stay free of
-  exam clutter (a lesson only shows its "Prove it" stage). Network+ N10-009 (25 objectives, 69 questions, "Am I ready?" panel), Security+ SY0-701 (28 objectives, 149 questions, mock exams; every objective now has a lesson, lab or shift). Mock options on each cert page (`mockOptions` in 06-learn, saved as `P.mockPrefs`; pure `mockLengths`/`mockSettings` in exam.js, tested): 10/20/45/90 questions (only lengths the bank fills at the domain weights; 90 = full length, Security+ only), timed at exam pace or untimed, feedback at the end or after each question. Only timed, end-feedback mocks of 20+ count towards "Am I ready?" (others are saved with `practice: 1`). PenTest+ PT0-003 (26 objectives, 48 questions;
+  exam clutter (a lesson only shows its "Prove it" stage). Network+ N10-009 (25 objectives, 83 questions, "Am I ready?" panel), Security+ SY0-701 (28 objectives, 149 questions, mock exams; every objective now has a lesson, lab or shift). Mock options on each cert page (`mockOptions` in 06-learn, saved as `P.mockPrefs`; pure `mockLengths`/`mockSettings` in exam.js, tested): 10/20/45/90 questions (only lengths the bank fills at the domain weights; 90 = full length, Security+ only), timed at exam pace or untimed, feedback at the end or after each question. Only timed, end-feedback mocks of 20+ count towards "Am I ready?" (others are saved with `practice: 1`). PenTest+ PT0-003 (26 objectives, 62 questions;
   mostly defender-side coverage, said in its note), with three evidence labs for it:
   `scope-roe` (rules of engagement, kind "doc"), `nmap-read` (Nmap 7.94 -sV output) and `validate-findings` (false positives, backports). `build.load_certs()` orders them Network+, Security+, PenTest+ (tested). All three map
   and tag questions per objective (not per domain), every objective has a question, and each domain holds at least twice
@@ -87,6 +90,12 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   fill-in. Progress saves `own` (done on your own at least once). Per shift: `handover.links` (missed-link line), `next` link.
   At 900 px and below the desk shows one part at a time (Queue, Alert, Chat tabs in the sticky bar; opens on the Queue;
   Chat counts unread replies). The bar's "what next" line comes from `A.progress()` (open, replies due, handover ready).
+  Saving part-way (18 Nov): every desk action goes through pure `A.act(shift, state, [kind, ...args])` and the UI keeps the
+  list (`pn-shift:<id>` in localStorage, `shiftSave` in 07-labs; a device convenience, not exported progress). Reopening
+  offers "Carry on" / "Start again"; `A.replay(shift, { level, acts })` runs the list through the rules again (rebuilding
+  the clock, queue and chat) and drops anything that doesn't fit, so an edited save can't do more than a learner could;
+  engine lookups use `Object.hasOwn`. A finished shift clears its save. `A.shadow` returns its own `acts` (tested: resumable
+  after every action, every shift). The leave-the-page prompt now only appears if storage is blocked. Smoke: leave and carry on.
   Shadow (third option on the client file): `A.shadow(shift)` plays the shift's own content through the rules (guided searches
   narrated with `guide.hints`, emails with findings, `answer.contain` requests with a finding attached when needed, model
   closes, model handover) into steps the page shows with Back/Next, then "Your turn". Tested to be a perfect shift; not saved.
@@ -138,7 +147,10 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   `prompt-injection` (hidden text, image-URL exfiltration) and `factory-scan` (Nmap 7.94 -sT, Modbus/mbap 502). Every
   lesson now has an Experiment step. Defender's view only. All have card photos (made as three 3 x 2 grids). Diagnose
   (missions and shifts) now covers phishing, networking, SOC, incident response, identity, malware, ransomware and
-  data-breach, and (shift-04) the web attacks and cloud; the rest still have no Diagnose step.
+  data-breach, and (shift-04) the web attacks and cloud. Every other lesson has a `stage: "diagnose"` doc or log lab; the last
+  three (18 Nov) were `risk-gone-wrong` (a known risk accepted over appetite by the wrong person, no owner, no review),
+  `which-law-applies` (CMA, the UK GDPR 72 hours over a weekend, PCI DSS and CVV2, NIS for an essential service) and
+  `which-model-fits` (Kill Chain, ATT&CK, Diamond or STRIDE for each review question). Tested: every lesson has one.
 - Governance track (16 Nov): lessons `frameworks` (rewritten: NIST CSF 2.0, ISO/IEC 27001:2022, CIS Controls v8.1, Cyber Essentials,
   NIST SP 800-53), `risk`, `law` (Computer Misuse Act, UK GDPR, NIS/NIS2, PCI DSS, DORA) and `attack-models` (Kill Chain, ATT&CK,
   Diamond, STRIDE). Doc labs (Practise group "Governance"): `cyber-essentials-check`, `risk-register`, `allowed-or-not`, `threat-model`.
@@ -198,21 +210,33 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   `minutes`. Best score per PBQ in `P.pbq` (cleaned, tested); 70%+ counts the objective activity as done (`PBQ_PASS`, +30 XP
   once). PBQs are added to their objectives' activities at runtime (`certObjectives`), so maps don't list them. Tested: well
   formed, real objectives, every model answer scores 100%, no PBQ solved at the start. Smoke: one answered by hand, one firewall
-  built rule by rule. Ten so far: Network+ ports, subnet table, fix the S3 trunk (cli), troubleshooting order; Security+ DMZ
-  firewall, attacks in log lines, IR phases; PenTest+ nmap options, scope, remediation. Next: PBQs inside mock exams.
+  built rule by rule. Thirteen so far: Network+ ports, subnet table, fix the S3 trunk (cli), troubleshooting order, symptom to
+  fault; Security+ DMZ firewall, attacks in log lines, IR phases, control types; PenTest+ nmap options, scope, remediation,
+  engagement phases (ending in clean-up). Every Network+ objective has 3+ questions and every PenTest+ one 2+ (18 Nov).
+  In mocks (18 Nov): a mock opens with PBQs as the real exam does (`mockPbqCount`: 1 at 10/20, 2 at 45, 3 at 90; `pickMockPbqs`
+  spreads domains; `mockMinutes` adds their minutes; `mockScore` counts each as `PBQ_WEIGHT` (2) questions with partial credit;
+  all tested). `mountMock` keeps each PBQ mounted (hidden when elsewhere) so answers survive navigation; P1, P2 in the jump grid;
+  pbq.js `mount(..., { exam: true, instant })` hides the clock, best, Show the answer and Start again, returns `grade()`. Results
+  list every PBQ part with a link to practise it; a mock's PBQ score can raise `P.pbq` best.
 - Vishing lab "The Call" (`#lab-vishing-call`, `static/js/labs/vishing.js`, tests `tests/vishing.test.mjs`): a portrait handset
   (340 px, status bar with time/signal/battery, camera notch, side buttons, home bar); the incoming call lays out as on a real phone
   (large caller photo, round Decline/Answer with labels), then a running call timer and n/5, each beat's `ask` above the replies.
 - Practise page: length filters and "Not done yet" (`PS.time`/`PS.todo`, pure `practiseMatch`, tested) and "Pick up where you
   left off" (`pn-last` in localStorage, a convenience not progress; `lastActivity` only offers a known unfinished lab, mission
-  or shift; tested). Labs and shifts don't save mid-way yet, so it reopens them from the start.
+  or shift; tested). Evidence labs keep each solved question (`P.labSteps`) and shifts save part-way (below); simulator
+  labs and missions still reopen from the start.
 - Finished paths show a printable record (`pathRecordHtml`, name typed for printing only, never saved; printed alone via
   `#print-root`); it says it is not a qualification.
 - Asset and automation labs (16 Nov, doc labs): `asset-register` ("Who owns this laptop?", Halstead & Rowe's register: an
   ownerless laptop, a leaver's laptop, a reformatted server going to a reseller, a printer disk, two unknown devices; NIST SP
   800-88 sanitisation) for Security+ 4.2, and `soar-playbook` ("Automate it, safely": a phishing playbook, guard rails, a feed
   as a single point of failure) for 4.7. PenTest+ 5.1 and 5.3 now map to defender-side labs and shifts (gap notes say so);
-  2.3, 3.3, 4.10 and 5.4 still have no activity. The done card's topic bar is labelled "Where this leaves the topic" so it
+  every PenTest+ objective now has an activity (18 Nov, doc labs on the PenTest+ route): `recon-script` (a Bash sweep to
+  fit to this year's scope: seq range, ping-gated nmap, >>; 2.3 and 4.10), `automation-script` (Python default-login check:
+  an out-of-scope target, 302 to /dashboard, sleep for no lockouts, PowerShell on Windows; 4.10), `physical-test` (field
+  notes: tailgating, 125 kHz badge copy, bins, a live wall port, the authorisation letter checked by calling back; 3.3 and
+  Security+ 1.2) and `cleanup-log` (artefact log: accounts, a logon task, a firewall rule via change control, evidence
+  retention; 5.4). No card photos yet (drawn scenes). The done card's topic bar is labelled "Where this leaves the topic" so it
   isn't a duplicate landmark.
 - Exam date planner (cert page, inside "Am I ready?"): `P.examDates` (cert id -> YYYY-MM-DD, cleaned and tested); pure
   `weekPlan` in exam.js spreads objectives under 70% (unscored first, heaviest first) across the weeks left and keeps the last
@@ -220,6 +244,15 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - Installable and offline: `static/manifest.webmanifest`, icons in `static/icons/` (the amber // mark), `static/sw.js`
   (network first, same-site GETs only, copies used only offline; bump `CACHE` to drop old copies). Registered in 09-shell on
   https and localhost. Smoke test: "works offline after a visit".
+- Lighter first load (18 Nov): the page carries only what lists, cards and counts need (`build.LIGHT`, `split_bodies`);
+  each lab, mission and shift body is `data/full/<kind>/<id>.json` and each cert's questions `data/full/questions/<cert>.json`,
+  fetched on open by `loadFull(kind, obj)` / `loadQuestions(cert)` in 01-core (merged into the existing objects, so `LAB[id]`
+  etc. stay the same objects; light copies carry `_lazy: 1`, certs `_qlazy: 1` with questions as `{ id, objective, single }`).
+  A failed fetch shows `lazyFailHtml` (the service worker's copies make a visited lab work offline). A new field a list or
+  card reads before opening must go in `LIGHT` (tested: `LazyBodies`). Page 1.1 MB raw / 301 KB gzipped (was ~2.4 MB).
+- Static practice pages (18 Nov): `site/practise/<id>.html` for every lab, mission, shift and PBQ, plus `practise/index.html`,
+  built from the full content (`practice_items`, `practice_page`) and listed in sitemap.xml: title, scenario, the questions
+  (never the explanations or answers), the exam objectives, and a link into the app. Tested: `PracticePages`.
 - Publishing: `python3 scripts/publish.py <production clone>` diffs dev since the last published "dev <sha>", leaves out the
   files kept apart (CLAUDE.md, AI notes, wrangler, the preview workflow), applies, runs the gate there and commits. It never
   pushes: production's push needs the owner's approval. `--dry-run` lists the files.
@@ -245,7 +278,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   over 4 items it collapses to "‹ Previous · n of N · Next ›" plus an "All N" fold (tested in page.test). A lab or mission can serve other topics too (`also: [lessonIds]`) and a
   shift lists the topics it diagnoses (`lessons`); only add pairings a learner would agree are the same topic. `crumbs` (sessionStorage `pn-crumbs`) turn "← Section" links into
   "← the page you came from" (`relabelBack`, watches `main`). Tested: `trailStop`, `noteCrumb`.
-- Exam routes: `paths.json` entries with `exam` (network-plus 16 stops, security-plus 12, pentest-plus 10), linked from each cert
+- Exam routes: `paths.json` entries with `exam` (network-plus 16 stops, security-plus 12, pentest-plus 12), linked from each cert
   page ("Follow the … route"); tested: one per exam, and every stop is mapped to that exam's objectives.
 - Every lesson, lab, mission and shift must be mapped to at least one exam objective (tested); maps can link shifts
   (`agency`) and tools (`subnet-calc`, `headers-check`, `log-search`, `cvss-decode`). Keep gap notes honest when coverage changes.
