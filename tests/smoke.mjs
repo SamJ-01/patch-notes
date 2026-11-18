@@ -128,7 +128,8 @@ await journey("shadow shift-01", async () => {
   await page.close();
 });
 
-// 3b. Work a shift by hand, guided: clock in, close every alert through the real close form, then the handover
+// 3b. Work a shift by hand, guided: clock in, close every alert through the real close form (leaving part-way and
+// carrying on once), then the handover
 // form and the debrief. The engine is unit-tested; this checks the desk's form wiring actually drives it.
 await journey("work shift-01", async () => {
   const page = await open("#agency-shift-01", 390, "light");
@@ -148,12 +149,24 @@ await journey("work shift-01", async () => {
     }
     await page.evaluate(() => document.querySelector("#ag-wait")?.click());  // let late alerts arrive
     await page.waitForTimeout(80);
+    if (guard === 1) {  // leave part-way, come back and carry on: the shift is saved on the device
+      const closed = await page.$$eval("#ag-queue button.ag-qitem.closed", l => l.length), clock = await page.textContent("#ag-clock");
+      await page.evaluate(() => { location.hash = "#agency"; });
+      await page.waitForTimeout(300);
+      await page.evaluate(() => { location.hash = "#agency-shift-01"; });
+      await page.waitForSelector("#ag-carry", { timeout: 10000 }).catch(() => problems.push("work shift-01: no Carry on after leaving part-way"));
+      await page.evaluate(() => document.querySelector("#ag-carry")?.click());
+      await page.waitForSelector("#ag-desk:not([hidden])", { timeout: 10000 });
+      const again = [await page.$$eval("#ag-queue button.ag-qitem.closed", l => l.length), await page.textContent("#ag-clock")];
+      if (again[0] !== closed || again[1] !== clock) problems.push(`work shift-01: resumed at ${again} not ${closed},${clock}`);
+    }
     if (await page.evaluate(() => { const q = [...document.querySelectorAll("#ag-queue button.ag-qitem")]; return q.length > 0 && q.every(b => b.classList.contains("closed")); })) break;
   }
   if (!(await page.$("#ag-handform"))) { problems.push("work shift-01: handover form never appeared"); await page.close(); return; }
   await page.evaluate(() => { document.querySelector("#ag-hfill")?.click(); document.querySelector("#ag-handform")?.requestSubmit(); });
   await page.waitForSelector("#ag-debrief:not([hidden])", { timeout: 5000 }).catch(() => problems.push("work shift-01: no debrief after handover"));
   if (!/Clocked out/.test(await page.evaluate(() => document.querySelector("#ag-d-h")?.innerText || ""))) problems.push("work shift-01: debrief didn't render");
+  if (await page.evaluate(() => localStorage.getItem("pn-shift:shift-01"))) problems.push("work shift-01: the part-way save outlived the finished shift");
   await overflow(page, "work shift-01");
   await page.close();
 });
@@ -242,6 +255,9 @@ await journey("works offline after a visit", async () => {
   await page.evaluate(() => navigator.serviceWorker.ready); await page.reload();
   await page.goto(base + "#lesson-malware"); await page.waitForSelector(".sc-spot");  // the photo scene, and its image
   await page.waitForFunction(() => document.querySelector(".sc-photo img")?.complete);
+  // The worker stores its copy after the image has loaded: wait until it's really in the cache (CI is slower).
+  await page.waitForFunction(async () => !!(await caches.match(document.querySelector(".sc-photo img").currentSrc, { ignoreSearch: true })), null, { timeout: 10000 })
+    .catch(() => problems.push("offline: the lesson's photo was never stored in the cache"));
   await ctx.setOffline(true); await page.reload();
   await page.waitForSelector(".sc-spot", { timeout: 8000 });
   if (!(await page.evaluate(() => document.querySelector(".sc-photo img")?.naturalWidth))) problems.push("offline: the lesson's photo didn't load from the cache");

@@ -36,7 +36,7 @@ function judgeClosed(a, c) {
 
 export function request(shift, ref) {
   const [dept, id] = String(ref).split(":");
-  const d = shift.departments[dept], r = d?.requests.find(x => x.id === id);
+  const d = Object.hasOwn(shift.departments, dept) ? shift.departments[dept] : null, r = d?.requests.find(x => x.id === id);
   return r ? { ...r, ref, dept, deptName: d.name } : null;
 }
 // Every finding the shift can produce, from logs and from department replies, by id.
@@ -55,7 +55,7 @@ export function findings(shift) {
 export const LEVELS = { guided: "Guided", standard: "On your own" };
 export function start(shift, { level = "standard" } = {}) {
   const state = { clock: 0, arrived: [], closed: {}, found: [], requests: [], facts: {}, spent: {}, handover: null, complete: false, opened: [],
-    level: level in LEVELS ? level : "standard", hints: {} };
+    level: Object.hasOwn(LEVELS, level) ? level : "standard", hints: {} };
   const events = [];
   settle(shift, state, events);
   return { state, events };
@@ -93,7 +93,7 @@ const open = (state) => !state.complete;
 
 // Search one log source. Showing the whole log is free; each search costs time.
 export function search(shift, state, sourceId, query) {
-  const src = shift.sources[sourceId];
+  const src = Object.hasOwn(shift.sources, sourceId) ? shift.sources[sourceId] : null;
   if (!open(state) || !src || src.kind === "email" || !sourcesOpen(shift, state).includes(sourceId)) return { state, events: [] };
   const s = clone(state);
   const r = searchLines(src, query);
@@ -108,7 +108,7 @@ export function search(shift, state, sourceId, query) {
 // Open one email in a mailbox source ({ kind: "email", emails: [...] }). Reading an email takes as long as a
 // search the first time; its findings (what a careful reader notices) are recorded then.
 export function openEmail(shift, state, sourceId, emailId) {
-  const src = shift.sources[sourceId], email = src?.emails?.find(e => e.id === emailId);
+  const src = Object.hasOwn(shift.sources, sourceId) ? shift.sources[sourceId] : null, email = src?.emails?.find(e => e.id === emailId);
   if (!open(state) || src?.kind !== "email" || !email || !sourcesOpen(shift, state).includes(sourceId)) return { state, events: [] };
   const s = clone(state);
   s.opened = s.opened || [];
@@ -165,7 +165,7 @@ export function wait(shift, state) {
 // alerts it is linked to. Nothing is marked until the handover: a real shift doesn't tell you either.
 export function close(shift, state, alertId, { verdict, severity, evidence = [], related = [] } = {}) {
   const a = alertById(shift, alertId);
-  if (!open(state) || !a || !state.arrived.includes(alertId) || alertId in state.closed || !(verdict in VERDICTS) || !SEVERITIES.includes(severity)) return { state, events: [] };
+  if (!open(state) || !a || !state.arrived.includes(alertId) || Object.hasOwn(state.closed, alertId) || !Object.hasOwn(VERDICTS, verdict) || !SEVERITIES.includes(severity)) return { state, events: [] };
   const s = clone(state);
   const ev = [...new Set(evidence)].filter(i => Number.isInteger(i) && i >= 0 && i < a.evidence.length).sort((x, y) => x - y);
   const rel = [...new Set(related)].filter(id => id !== alertId && alertById(shift, id));
@@ -180,7 +180,7 @@ export function close(shift, state, alertId, { verdict, severity, evidence = [],
 }
 
 export function reopen(shift, state, alertId) {
-  if (!open(state) || !(alertId in state.closed)) return { state, events: [] };
+  if (!open(state) || !Object.hasOwn(state.closed, alertId)) return { state, events: [] };
   const s = clone(state);
   delete s.closed[alertId];
   return { state: s, events: [{ type: "reopened", id: alertId }] };
@@ -244,7 +244,7 @@ export function handover(shift, state, { status = {}, summary = {}, note = "" } 
   if (!canHandOver(shift, state)) return { state, events: [] };
   const s = clone(state);
   s.handover = {
-    status: Object.fromEntries(shift.alerts.map(a => [a.id, status[a.id] in STATUSES ? status[a.id] : ""])),
+    status: Object.fromEntries(shift.alerts.map(a => [a.id, Object.hasOwn(STATUSES, status[a.id]) ? status[a.id] : ""])),
     summary: Object.fromEntries(shift.alerts.map(a => [a.id, Number.isInteger(summary[a.id]) ? summary[a.id] : -1])),
     note: String(note).slice(0, 2000),
   };
@@ -305,7 +305,9 @@ export function debrief(shift, state) {
 // ask | reply | arrive | wait | close | handover.
 export function shadow(shift) {
   let s = start(shift, { level: "guided" }).state;
-  const steps = [], all = findings(shift);
+  const steps = [], all = findings(shift), acts = [];
+  // Every action goes through act(), as a learner's do, and is kept: a whole shift as a save (tested by replaying it).
+  const doAct = a => { acts.push(a); return act(shift, s, a); };
   const push = (kind, extra = {}) => steps.push({ kind, clock: s.clock, ...extra });
   // Department replies and new alerts that come in after any action become steps of their own.
   const take = r => {
@@ -329,24 +331,24 @@ export function shadow(shift) {
     const hints = a.guide?.hints || [], searches = a.guide?.searches || [];
     push("open", { id: a.id, say: a.detection });
     searches.forEach(([src, q], i) => {
-      const r = take(search(shift, s, src, q)), ev = r.events.find(e => e.type === "search");
+      const r = take(doAct(["search", src, q])), ev = r.events.find(e => e.type === "search");
       if (ev) steps.splice(steps.length - r.events.filter(e => e.type === "reply" || e.type === "arrive").length, 0,
         { kind: "search", clock: s.clock, id: a.id, source: src, query: ev.query, lines: ev.lines, total: ev.total, found: ev.found, say: hints[i] || "" });
     });
     for (const src of a.sources.filter(id => shift.sources[id]?.kind === "email")) {
       for (const e of shift.sources[src].emails.filter(e => (e.findings || []).length)) {
-        const r = take(openEmail(shift, s, src, e.id)), ev = r.events.find(x => x.type === "email");
+        const r = take(doAct(["email", src, e.id])), ev = r.events.find(x => x.type === "email");
         steps.push({ kind: "email", clock: s.clock, id: a.id, source: src, email: e.id, found: ev?.found || [], say: "" });
       }
     }
     for (const h of hints.slice(searches.length)) push("think", { id: a.id, say: h });
     for (const ref of a.answer.contain || []) {
       const att = attachFor(ref), def = request(shift, ref);
-      take(ask(shift, s, ref, att));
+      take(doAct(["ask", ref, att]));
       push("ask", { id: a.id, ref, dept: def.deptName, label: def.label, attached: att ? all[att] : "" });
     }
     const m = modelClose(shift, a.id, s);
-    take(close(shift, s, a.id, m));
+    take(doAct(["close", a.id, m]));
     push("close", { id: a.id, verdict: VERDICTS[m.verdict], severity: m.severity, evidence: m.evidence.map(i => a.evidence[i].text), related: m.related,
       summary: a.answer.summaries[a.answer.summary], say: a.answer.why });
   };
@@ -354,11 +356,53 @@ export function shadow(shift) {
     const todo = s.arrived.map(id => alertById(shift, id)).filter(a => !(a.id in s.closed));
     if (todo.length) { work(todo[0]); continue; }
     if (canHandOver(shift, s) && !s.requests.some(r => r.status === "pending")) break;
-    take(wait(shift, s));
+    take(doAct(["wait"]));
     push("wait", { minutes: shift.costs.wait });
   }
   const r = handover(shift, s, { ...modelHandover(shift), note: shift.handover?.model || "" });
   s = r.state;
   push("handover", { text: shift.handover?.model || "", links: shift.handover?.links || "" });
-  return { steps, report: r.events[0]?.report || null };
+  return { steps, report: r.events[0]?.report || null, acts };
+}
+
+// ---------- saving mid-shift. A shift is saved as the learner's actions, not its state: { level, acts }. Replaying
+// them through these same rules rebuilds the state and every event (the chat), and anything that doesn't fit the
+// shift (an edited save, or a shift whose content changed) is dropped rather than trusted. Hints, email and log
+// text never go in a save; only ids, queries and the close form's choices.
+export const MAX_ACTS = 400;
+const str = (x, n = 120) => (typeof x === "string" ? x.slice(0, n) : "");
+export function act(shift, state, a) {
+  if (!Array.isArray(a)) return { state, events: [] };
+  const [kind, x, y] = a;
+  switch (kind) {
+    case "search": return search(shift, state, str(x, 40), str(y));
+    case "email": return openEmail(shift, state, str(x, 40), str(y, 40));
+    case "ask": return ask(shift, state, str(x, 80), str(y, 40));
+    case "wait": return wait(shift, state);
+    case "hint": return hint(shift, state, str(x, 40));
+    case "reopen": return reopen(shift, state, str(x, 40));
+    case "close": {
+      const o = y && typeof y === "object" ? y : {};
+      return close(shift, state, str(x, 40), { verdict: str(o.verdict, 20), severity: str(o.severity, 20),
+        evidence: Array.isArray(o.evidence) ? o.evidence.slice(0, 50) : [], related: Array.isArray(o.related) ? o.related.slice(0, 50).map(r => str(r, 40)) : [] });
+    }
+    case "handover": {
+      const o = x && typeof x === "object" ? x : {};
+      return handover(shift, state, { status: o.status && typeof o.status === "object" ? o.status : {}, summary: o.summary && typeof o.summary === "object" ? o.summary : {}, note: str(o.note, 2000) });
+    }
+  }
+  return { state, events: [] };
+}
+// Replay a save: { state, events, acts } where acts are only the ones that did something. A finished shift is
+// never resumed (its report is already saved), so a save that completes it gives null.
+export function replay(shift, saved) {
+  if (!saved || typeof saved !== "object" || !Array.isArray(saved.acts)) return null;
+  let { state, events } = start(shift, { level: saved.level });
+  const kept = [];
+  for (const a of saved.acts.slice(0, MAX_ACTS)) {
+    const r = act(shift, state, a);
+    if (r.state === state) continue;
+    state = r.state; events = events.concat(r.events); kept.push(a);
+  }
+  return state.complete || !kept.length ? null : { state, events, acts: kept };
 }

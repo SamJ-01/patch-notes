@@ -282,6 +282,69 @@
      "why": "Improve so it doesn't happen again."
     }
    ]
+  },
+  {
+   "id": "sp-pbq-controls",
+   "kind": "match",
+   "objectives": [
+    "1.1"
+   ],
+   "minutes": 5,
+   "title": "Name the control type",
+   "scenario": "An auditor lists controls at a fictional clinic. Classify each by what it does.",
+   "prompt": "Choose the control type for each one.",
+   "choices": [
+    "Preventive",
+    "Detective",
+    "Corrective",
+    "Deterrent",
+    "Compensating",
+    "Directive"
+   ],
+   "items": [
+    {
+     "id": "mfa",
+     "text": "MFA required for every remote login",
+     "answer": "Preventive",
+     "why": "It stops an attacker with only a password from getting in."
+    },
+    {
+     "id": "siem",
+     "text": "A SIEM alert when one account fails to log in 50 times in a minute",
+     "answer": "Detective",
+     "why": "It spots something happening; it doesn't stop it by itself."
+    },
+    {
+     "id": "restore",
+     "text": "Restoring a deleted patient folder from last night's backup",
+     "answer": "Corrective",
+     "why": "It puts things right after an incident."
+    },
+    {
+     "id": "sign",
+     "text": "A sign on the server room door: \"CCTV in operation, intruders will be prosecuted\"",
+     "answer": "Deterrent",
+     "why": "It discourages an attempt; it doesn't physically stop one."
+    },
+    {
+     "id": "vlan",
+     "text": "An old X-ray PC that can't be patched is put on its own VLAN with strict firewall rules",
+     "answer": "Compensating",
+     "why": "Patching isn't possible, so another control reduces the same risk instead."
+    },
+    {
+     "id": "aup",
+     "text": "An acceptable use policy every member of staff signs",
+     "answer": "Directive",
+     "why": "It tells people what they must and mustn't do."
+    },
+    {
+     "id": "cctv",
+     "text": "CCTV recordings reviewed after a break-in",
+     "answer": "Detective",
+     "why": "Reviewing footage finds and records what happened."
+    }
+   ]
   }
  ]
 }

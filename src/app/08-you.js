@@ -152,7 +152,7 @@ VIEWS.progress = () => {
 const revDay = () => { const d = new Date(); return Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000); };
 // Every single-answer exam question, by id, so a missed one can become a review card. (Multi-answer questions
 // need a different input and stay in the exam page for now.)
-const Q_BY_ID = (() => { const m = {}; (DATA.certs || []).forEach(c => (c.questions || []).forEach(q => { if ((q.options || []).filter(o => o.correct).length === 1) m[q.id] = { q, cert: c.name }; })); return m; })();
+const Q_BY_ID = (() => { const m = {}; (DATA.certs || []).forEach(c => (c.questions || []).forEach(q => { if (q.single ?? (q.options || []).filter(o => o.correct).length === 1) m[q.id] = { q, cert: c.name }; })); return m; })();
 const parseCard = id => id.startsWith("q:") ? { kind: "q", key: id.slice(2) } : { kind: "t", key: id.startsWith("t:") ? id.slice(2) : id };
 function reviewDeckIds() {
   const ids = new Set(Object.keys(P.review || {}));                       // anything already scheduled stays in the deck
@@ -180,7 +180,7 @@ VIEWS.review = () => {
   main.innerHTML = `<div class="view"><div class="view-head"><a class="link-btn" href="#progress">← You</a><div class="eyebrow">Spaced repetition</div><h1>Review</h1>
     <p>A short daily recall of the terms you've met and the exam questions you got wrong, so they actually stick. The ones you find hard come back sooner, the easy ones later.</p></div>
     <div id="rev-root"><div class="empty">Loading your deck…</div></div></div>`;
-  import("./js/review.js").then(R => { if (parseRoute().path === "review" && $("rev-root")) mountReview(R); })
+  Promise.all([import("./js/review.js"), ...DATA.certs.map(loadQuestions)]).then(([R]) => { if (parseRoute().path === "review" && $("rev-root")) mountReview(R); })
     .catch(() => { const e = $("rev-root"); if (e) e.innerHTML = `<div class="empty">Couldn't load the review deck.</div>`; });
 };
 function revStats(R) { const ids = reviewDeckIds(), s = R.deckStats(ids, P.review, R.dayNum());

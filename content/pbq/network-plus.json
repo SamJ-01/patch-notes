@@ -318,6 +318,78 @@
      "why": "Document findings, actions and outcomes."
     }
    ]
+  },
+  {
+   "id": "np-pbq-symptoms",
+   "kind": "match",
+   "objectives": [
+    "5.2",
+    "5.3"
+   ],
+   "minutes": 5,
+   "title": "Match the symptom to the fault",
+   "scenario": "Tickets from a busy morning on a small office network. Each symptom points to one likely cause.",
+   "prompt": "Choose the most likely cause for each symptom.",
+   "choices": [
+    "DHCP server unreachable",
+    "Duplex mismatch",
+    "Damaged or badly terminated cable",
+    "Mismatched fibre optics (SR at one end, LR at the other)",
+    "Wrong default gateway",
+    "Duplicate IP address",
+    "DNS server down",
+    "Port in the wrong VLAN"
+   ],
+   "items": [
+    {
+     "id": "apipa",
+     "text": "A laptop shows 169.254.40.12 and can't reach anything",
+     "answer": "DHCP server unreachable",
+     "why": "169.254.x.x is APIPA: the laptop asked for an address and got no answer."
+    },
+    {
+     "id": "late",
+     "text": "A server link is slow and the switch counts late collisions on that port",
+     "answer": "Duplex mismatch",
+     "why": "One end at full duplex and the other at half gives late collisions and poor throughput. Set both ends the same (or both to auto)."
+    },
+    {
+     "id": "crc",
+     "text": "CRC errors keep climbing on one access port; the cable runs past a lift motor",
+     "answer": "Damaged or badly terminated cable",
+     "why": "Corrupted frames fail their checksum. A bad termination or interference from heavy electrical equipment are classic causes."
+    },
+    {
+     "id": "fibre",
+     "text": "A new fibre uplink never comes up, though both ends are 10 Gbit/s optics",
+     "answer": "Mismatched fibre optics (SR at one end, LR at the other)",
+     "why": "Short-reach and long-reach optics use different wavelengths and fibre types, so the link stays down."
+    },
+    {
+     "id": "gw",
+     "text": "A PC can ping everything on its own subnet but nothing beyond it",
+     "answer": "Wrong default gateway",
+     "why": "Local traffic doesn't need the gateway; anything off-subnet does."
+    },
+    {
+     "id": "dup",
+     "text": "Two PCs keep warning about an address conflict and drop off in turn",
+     "answer": "Duplicate IP address",
+     "why": "Two devices claiming one address take turns being reachable. Usually a static address inside the DHCP scope."
+    },
+    {
+     "id": "dns",
+     "text": "Users can reach 192.0.2.10 by address but not intranet.example by name",
+     "answer": "DNS server down",
+     "why": "Working by IP but not by name points at name resolution."
+    },
+    {
+     "id": "vlan",
+     "text": "After a desk move, one PC gets an address from the guest range",
+     "answer": "Port in the wrong VLAN",
+     "why": "The address range comes from the VLAN's DHCP scope, so the new port is in the guest VLAN."
+    }
+   ]
   }
  ]
 }

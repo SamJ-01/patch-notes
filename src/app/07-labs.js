@@ -50,6 +50,13 @@ const SCENE = {
   "threat-model": { d: [["server", 150, 48, 0.58]], g: [["doc", 52, 44, 1.7], ["alert", 184, 20, 1, "bad"]], l: [[74, 44, 132, 48]], t: [["STRIDE", 100, 88]] },
   "asset-register": { d: [["laptop", 52, 52, 0.55], ["server", 150, 50, 0.56]], g: [["search", 100, 26, 1.2], ["alert", 184, 20, 1, "bad"]], t: [["owner: (none)", 52, 88, "bad"], ["HR-S00", 150, 88]] },
   "soar-playbook": { g: [["doc", 52, 42, 1.7], ["clock", 100, 42, 1.3, "good"], ["mail", 150, 42, 1.4, "bad"]], l: [[74, 42, 88, 42], [112, 42, 132, 42]], t: [["3 min", 100, 86, "good"], ["1,900 deleted", 150, 86, "bad"]] },
+  "recon-script": { d: [["laptop", 44, 52, 0.55]], g: [["doc", 104, 44, 1.5], ["search", 160, 44, 1.3]], l: [[64, 52, 88, 44], [120, 44, 144, 44]], t: [["seq 1 62", 104, 86]] },
+  "automation-script": { d: [["laptop", 44, 52, 0.55]], g: [["doc", 104, 44, 1.5], ["clock", 160, 44, 1.3, "good"]], l: [[64, 52, 88, 44], [120, 44, 146, 44]], t: [["sleep 30", 160, 84, "good"]] },
+  "physical-test": { g: [["users", 52, 44, 1.6], ["key", 104, 44, 1.4, "bad"], ["eye", 156, 44, 1.4]], t: [["125 kHz", 104, 84, "bad"]] },
+  "cleanup-log": { d: [["server", 150, 46, 0.6]], g: [["doc", 56, 44, 1.6], ["cycle", 104, 44, 1.3, "good"]], l: [[72, 44, 90, 44], [118, 44, 132, 46]], t: [["4 to undo", 104, 86, "bad"]] },
+  "risk-gone-wrong": { g: [["doc", 56, 44, 1.7], ["gauge", 146, 42, 1.6, "bad"]], l: [[78, 44, 124, 42]], t: [["R07 · 10 > 8", 100, 86, "bad"]] },
+  "which-law-applies": { g: [["doc", 50, 44, 1.5], ["lock", 100, 44, 1.4], ["clock", 150, 44, 1.4, "bad"]], t: [["72 h", 150, 84, "bad"]] },
+  "which-model-fits": { g: [["link", 40, 44, 1.3], ["search", 85, 44, 1.3], ["users", 130, 44, 1.3], ["shield", 174, 44, 1.3, "good"]], t: [["Kill Chain · ATT&CK · Diamond · STRIDE", 104, 84]] },
   "scope-roe": { g: [["doc", 62, 46, 2], ["lock", 140, 46, 1.6, "good"]], l: [[84, 46, 120, 46]], t: [["IN SCOPE", 140, 82, "good"]] },
   "nmap-read": { d: [["laptop", 40, 54, 0.55], ["server", 156, 50, 0.6]], g: [["search", 98, 30, 1.2]], l: [[60, 52, 138, 50]], t: [["22 · 80 · 443", 156, 88]], p: ["M40 54L156 50"] },
   "validate-findings": { g: [["alert", 48, 46, 1.6, "bad"], ["search", 100, 46, 1.6], ["shield", 152, 46, 1.6, "good"]], l: [[66, 46, 82, 46], [118, 46, 134, 46]], t: [["false positive?", 100, 84]] },
@@ -408,15 +415,22 @@ VIEWS.agency = () => {
       <p class="muted">${(fb => fb ? `The Agency is a pilot. <a href="${esc(fb)}"${fb.startsWith("#") ? "" : ' target="_blank" rel="noopener"'}>Tell us what you think${fb.startsWith("#") ? "" : " ↗"}</a>` : "")(feedbackHref("PATCH//AGENCY"))}</p></section>
   </div>`;
 };
-// A PATCH//AGENCY shift. Leaving mid-shift restarts it, so route() asks first (agencyShift.inProgress).
+// A PATCH//AGENCY shift. Part-way, it's saved on this device (pn-shift:<id> in localStorage: the actions taken, which the
+// shift's rules replay and check, so an edited save can't do more than a learner could). A convenience like pn-last, not
+// progress: it isn't exported. If storage is blocked, route() asks before leaving (agencyShift.inProgress).
 let agencyShift = null;
+const shiftSave = {
+  read: id => { try { return JSON.parse(localStorage.getItem("pn-shift:" + id) || "null"); } catch { return null; } },
+  write: (id, v) => { try { v ? localStorage.setItem("pn-shift:" + id, JSON.stringify({ ...v, at: todayStr() })) : localStorage.removeItem("pn-shift:" + id); return true; } catch { return false; } },
+};
 function agencyView(id, { shadow = false } = {}) {
   const sh = SHIFT(id); if (!sh) return notFound(VIEWS.agency);
   main.innerHTML = `<div class="view view-wide" id="agency-root"><div class="empty">Loading the shift…</div></div>`;
-  import("./js/agency/ui.js").then(ui => {
+  Promise.all([import("./js/agency/ui.js"), loadFull("agency", sh)]).then(([ui]) => {
     if (parseRoute().path !== "agency/" + id) return;
     agencyShift = ui.mount($("agency-root"), sh, {
       done: !!(P.agency || {})[id], shadow,
+      resume: shiftSave.read(id), onSave: v => shiftSave.write(id, v),
       onAgain: opts => agencyView(id, opts),
       feedback: feedbackHref("Agency " + sh.title),
       onComplete: rep => {
@@ -431,12 +445,12 @@ function agencyView(id, { shadow = false } = {}) {
     $("agency-root").innerHTML = `<div class="empty">Couldn't load the shift code (js/agency/ui.js). If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`;
   });
 }
-const LEAVE_SHIFT = "Leave this shift? It isn't saved part-way, so you'll start again next time.";
+const LEAVE_SHIFT = "Leave this shift? This browser isn't letting the site save it, so you'll start again next time.";
 addEventListener("beforeunload", e => { if (agencyShift?.inProgress && main.contains($("agency-root"))) e.preventDefault(); });
 function missionView(id) {
   const m = MISSION(id); if (!m) return notFound(VIEWS.missions);
   main.innerHTML = `<div class="view" id="mission-root"><div class="empty">Loading mission…</div></div>`;
-  import("./js/missions/ui.js").then(ui => {
+  Promise.all([import("./js/missions/ui.js"), loadFull("missions", m)]).then(([ui]) => {
     if (parseRoute().path !== "missions/" + id) return;  // the learner navigated away while it loaded
     const next = m.next && MISSION(m.next);
     const root = $("mission-root");
@@ -503,6 +517,12 @@ const labSeed = (id, i) => [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) |
 const mixLabSteps = l => ({ ...l, steps: l.steps.map((st, i) => st.type === "choice" ? mixOptions(st, seededRand(labSeed(l.id, i))) : st) });
 function labView(id) {
   if (!LAB[id]) return notFound(VIEWS.missions);
+  if (LAB[id]._lazy) {  // its evidence or simulator loads on first open
+    main.innerHTML = `<div class="view" id="lab-root"><div class="empty">Loading lab…</div></div>`;
+    loadFull("labs", LAB[id]).then(() => { if (parseRoute().path === "missions/" + id) labView(id); })
+      .catch(() => { if ($("lab-root")) $("lab-root").innerHTML = lazyFailHtml("this lab"); });
+    return;
+  }
   const l = LAB[id].steps ? mixLabSteps(LAB[id]) : LAB[id];
   if (l.kind === "cvss") return cvssLab(l);
   if (MODULE_LABS.includes(l.kind)) return moduleLab(l);

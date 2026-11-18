@@ -6,7 +6,8 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 // Glossary underlining from the main page (gloss() in src/app/02-glossary.js), or plain escaped text without it.
 const gl = (t, n = 3, seen) => (globalThis.PN_gloss ? globalThis.PN_gloss(t, n, seen) : esc(t));
 // A scenario that is command-line output (a prompt, or an ls -l line, or several lines) keeps its spacing in monospace.
-export const isCli = t => /\n/.test(t) || /^(\$ |\S+[#>] ?|[-d][rwx-]{9} )/.test(t);
+// Command lines and output: several lines, a shell or device prompt ($, R1#, S1>, PS C:\Users\x>), or an ls -l line.
+export const isCli = t => /\n/.test(t) || /^(\$ |\S+[#>] ?|PS [A-Za-z]:\\[^>]*> |[-d][rwx-]{9} )/.test(t);
 const shuffle = (arr, rand = Math.random) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 export const MOCK_SIZE = 20, MOCK_MINUTES = 20;  // the real exam is up to 90 questions in 90 minutes: same pace
 
@@ -29,6 +30,26 @@ const inDomain = (q, d) => q.objective.split(".")[0] === d.id.split(".")[0];
 export function buildMock(questions, domains, n = MOCK_SIZE, rand = Math.random) {
   return shuffle(allocate(domains, n).flatMap(r => shuffle(questions.filter(q => inDomain(q, r.d)), rand).slice(0, r.k)), rand);
 }
+
+// ---------- PBQs in mock exams. The real exam opens with a few performance-based questions, marked with partial
+// credit. Here: 1 at 10 or 20 questions, 2 at 45, 3 at full length; each is worth PBQ_WEIGHT questions.
+export const PBQ_WEIGHT = 2;
+export const mockPbqCount = n => (n >= 90 ? 3 : n >= 45 ? 2 : n >= 10 ? 1 : 0);
+// k PBQs from different domains where possible (a PBQ's domain is its first objective's), in random order.
+export function pickMockPbqs(pbqs = [], k = 1, rand = Math.random) {
+  const pool = shuffle(pbqs, rand), seen = new Set(), picked = [];
+  for (const q of pool) { const d = String(q.objectives[0]).split(".")[0]; if (picked.length < k && !seen.has(d)) { seen.add(d); picked.push(q); } }
+  for (const q of pool) if (picked.length < k && !picked.includes(q)) picked.push(q);
+  return picked;
+}
+// A mock's score: questions right, plus each PBQ's share of its parts times PBQ_WEIGHT (to one decimal place).
+export function mockScore(qRight, qTotal, pbqResults = []) {
+  const pbqPoints = pbqResults.reduce((n, r) => n + (r.total ? PBQ_WEIGHT * r.right / r.total : 0), 0);
+  const score = Math.round((qRight + pbqPoints) * 10) / 10, total = qTotal + PBQ_WEIGHT * pbqResults.length;
+  return { score, total, pct: total ? Math.round(score / total * 100) : 0 };
+}
+// Minutes for a mock: the question pace plus each PBQ's own suggested time (untimed stays untimed).
+export const mockMinutes = (minutes, pbqs = []) => (minutes ? minutes + pbqs.reduce((n, q) => n + (q.minutes || 0), 0) : null);
 
 // ---------- mock exam options: length, timer and when you see feedback.
 // Lengths on offer are the ones the bank can fill at the exam's domain weights (90 is full length).
@@ -183,72 +204,108 @@ function mountDrill(el, qs, { title, objectiveName = id => id, onAnswer = () => 
 // Mock exam: like the real thing. Answer in any order, flag questions, no feedback until you end,
 // then review every question. A countdown runs; when it hits zero the exam ends automatically.
 // Options: minutes (null = untimed, no countdown) and instant (check each answer as you go, then it locks).
-function mountMock(el, qs, { title, minutes = MOCK_MINUTES, instant = false, objectiveName = id => id, onAnswer = () => {}, onFinish = () => {}, onExit = () => {} }) {
-  const answers = new Map();  // index -> Set of chosen option indexes
-  const flagged = new Set(), checked = new Set();  // checked: answers already marked (instant feedback)
+function mountMock(el, qs, { title, minutes = MOCK_MINUTES, instant = false, pbqs = [], mountPbq = null, objectiveName = id => id, onAnswer = () => {}, onPbq = () => {}, onFinish = () => {}, onExit = () => {} }) {
+  // Items in exam order: the PBQs first (as on the real exam), then the questions. i indexes items.
+  const P = mountPbq ? pbqs : [], items = [...P.map(q => ({ pbq: q })), ...qs.map(q => ({ q }))], nP = P.length;
+  const qi = k => k - nP;  // item index -> question index
+  const answers = new Map();  // question index -> Set of chosen option indexes
+  const flagged = new Set(), checked = new Set();  // item indexes; checked: questions already marked (instant feedback)
+  const touched = new Set();  // PBQs the learner has worked on (counted as answered)
   let i = 0, confirming = false, done = false, timer = null;
   const deadline = minutes ? Date.now() + minutes * 60 * 1000 : null;
   const left = () => Math.max(0, Math.round((deadline - Date.now()) / 1000));
   const clock = () => deadline ? `${Math.floor(left() / 60)}:${String(left() % 60).padStart(2, "0")}` : "";
   const clockText = () => deadline ? `<span id="ex-clock">${clock()}</span> left` : "Untimed";
-  const answered = () => answers.size;
-  const score = () => [...checked].filter(k => isCorrect(qs[k], answers.get(k) || new Set())).length;
+  const isDone = k => (k < nP ? touched.has(k) : answers.has(qi(k)));
+  const answered = () => items.filter((_, k) => isDone(k)).length;
+  const score = () => [...checked].filter(k => isCorrect(qs[qi(k)], answers.get(qi(k)) || new Set())).length;
+  const label = k => (k < nP ? `P${k + 1}` : String(qi(k) + 1));
 
+  // A fixed frame: the PBQs stay mounted (hidden while you're elsewhere) so their answers survive moving around.
+  el.innerHTML = `<div id="ex-head"></div><div id="ex-body"></div><div id="ex-pbqs">${P.map((_, k) => `<section class="ex-pbq" data-p="${k}" hidden></section>`).join("")}</div><div id="ex-foot"></div>`;
+  const box = id => el.querySelector("#" + id);
+  const handles = P.map((q, k) => {
+    const host = el.querySelector(`.ex-pbq[data-p="${k}"]`);
+    const h = mountPbq(host, q, { exam: true, instant });
+    const mark = () => { if (!touched.has(k)) { touched.add(k); drawHead(); drawFoot(); } };
+    host.addEventListener("change", mark); host.addEventListener("click", e => { if (e.target.closest("button, select, input")) mark(); });
+    host.addEventListener("submit", mark); host.addEventListener("input", mark);
+    return h;
+  });
+
+  function drawHead() {
+    box("ex-head").innerHTML = `<div class="panel-title"><h2>${esc(title)}</h2><span class="eyebrow mono">${clockText()} · ${answered()}/${items.length} answered${instant ? ` · ${score()} right` : ""}</span></div>`;
+  }
+  function drawFoot() {
+    box("ex-foot").innerHTML = `<div class="row ex-nav">
+        <button class="btn ghost" type="button" data-act="prev" ${i === 0 ? "disabled" : ""}>‹ Previous</button>
+        <button class="btn ghost" type="button" data-act="next" ${i === items.length - 1 ? "disabled" : ""}>Next ›</button>
+        <button class="btn brand" type="button" data-act="end">End exam</button>
+      </div>
+      <details class="ex-items" open><summary>All ${nP ? "tasks and questions" : "questions"}${flagged.size ? ` · ${flagged.size} flagged` : ""}</summary>
+        <div class="ex-grid" role="group" aria-label="Jump to a ${nP ? "task or question" : "question"}">${items.map((_, k) => `<button type="button" class="ex-item${k < nP ? " pbq" : ""}${k === i ? " cur" : ""}${isDone(k) ? " done" : ""}${flagged.has(k) ? " flag" : ""}" data-go="${k}"
+          aria-label="${k < nP ? `Performance-based question ${k + 1}` : `Question ${qi(k) + 1}`}${isDone(k) ? ", answered" : ", not answered"}${flagged.has(k) ? ", flagged" : ""}${k === i ? ", current" : ""}">${label(k)}</button>`).join("")}</div>
+        <p class="ex-legend muted">${nP ? "P = performance-based question · " : ""}Filled = answered · ring = flagged · outline = current</p></details>`;
+  }
   function draw() {
     if (done) return;
     if (confirming) return drawConfirm();
-    const q = qs[i], chosen = answers.get(i) || new Set(), multi = correctCount(q) > 1;
-    el.innerHTML = `<div class="panel-title"><h2>${esc(title)}</h2><span class="eyebrow mono">${clockText()} · ${answered()}/${qs.length} answered${instant ? ` · ${score()} right` : ""}</span></div>
-      <div class="ex-qhead"><span class="eyebrow">Question ${i + 1} of ${qs.length} · Objective ${esc(q.objective)} · ${esc(objectiveName(q.objective))}</span>
-        <button class="ex-flag${flagged.has(i) ? " on" : ""}" type="button" data-act="flag" aria-pressed="${flagged.has(i)}">⚑ ${flagged.has(i) ? "Flagged" : "Flag for review"}</button></div>
-      ${q.scenario ? `<p class="ex-scenario${isCli(q.scenario) ? " ex-cli" : ""}">${esc(q.scenario)}</p>` : ""}
-      <p class="q">${gl(q.stem)}</p>${multi && !/choose/i.test(q.stem) ? `<p class="muted ex-hint">Choose ${correctCount(q)}.</p>` : ""}
-      <div class="ex-opts" role="${multi ? "group" : "radiogroup"}" aria-label="Answers">${q.options.map((o, k) => { const on = chosen.has(k), shown = checked.has(i);
-        return `<button type="button" class="opt ex-opt${shown ? (o.correct ? " right" : on ? " wrong" : "") : on ? " picked" : ""}" data-k="${k}" role="${multi ? "checkbox" : "radio"}" aria-checked="${on}" ${shown ? "disabled" : ""}>
-        <span class="ex-letter" aria-hidden="true">${letter(k)}</span><span>${esc(o.text)}</span></button>
-        ${shown && (o.correct || on) ? `<p class="ex-why ${o.correct ? "ok" : "no"}"><b>${o.correct ? "Correct" : "Not this one"}:</b> ${gl(o.why)}</p>` : ""}`; }).join("")}</div>
-      ${instant && !checked.has(i) ? `<div class="row ex-ctl"><button class="btn brand" type="button" data-act="check" ${chosen.size === correctCount(q) ? "" : "disabled"}>Check answer</button></div>` : ""}
-      <div class="row ex-nav">
-        <button class="btn ghost" type="button" data-act="prev" ${i === 0 ? "disabled" : ""}>‹ Previous</button>
-        <button class="btn ghost" type="button" data-act="next" ${i === qs.length - 1 ? "disabled" : ""}>Next ›</button>
-        <button class="btn brand" type="button" data-act="end">End exam</button>
-      </div>
-      <details class="ex-items" open><summary>All questions${flagged.size ? ` · ${flagged.size} flagged` : ""}</summary>
-        <div class="ex-grid" role="group" aria-label="Jump to a question">${qs.map((_, k) => `<button type="button" class="ex-item${k === i ? " cur" : ""}${answers.has(k) ? " done" : ""}${flagged.has(k) ? " flag" : ""}" data-go="${k}"
-          aria-label="Question ${k + 1}${answers.has(k) ? ", answered" : ", not answered"}${flagged.has(k) ? ", flagged" : ""}${k === i ? ", current" : ""}">${k + 1}</button>`).join("")}</div>
-        <p class="ex-legend muted">Filled = answered · ring = flagged · outline = current</p></details>`;
+    box("ex-pbqs").hidden = i >= nP;
+    el.querySelectorAll(".ex-pbq").forEach(s => { s.hidden = Number(s.dataset.p) !== i; });
+    const flag = `<button class="ex-flag${flagged.has(i) ? " on" : ""}" type="button" data-act="flag" aria-pressed="${flagged.has(i)}">⚑ ${flagged.has(i) ? "Flagged" : "Flag for review"}</button>`;
+    if (i < nP) {
+      const q = P[i];
+      box("ex-body").innerHTML = `<div class="ex-qhead"><span class="eyebrow">Performance-based question ${i + 1} of ${nP} · ${esc(q.objectives.join(", "))} · about ${q.minutes} min</span>${flag}</div>
+        <h3 class="ex-pbq-title">${esc(q.title)}</h3><p class="muted ex-hint">Marked at the end, part by part. You can come back to it from the list below.</p>`;
+    } else {
+      const q = qs[qi(i)], chosen = answers.get(qi(i)) || new Set(), multi = correctCount(q) > 1, shown = checked.has(i);
+      box("ex-body").innerHTML = `<div class="ex-qhead"><span class="eyebrow">Question ${qi(i) + 1} of ${qs.length} · Objective ${esc(q.objective)} · ${esc(objectiveName(q.objective))}</span>${flag}</div>
+        ${q.scenario ? `<p class="ex-scenario${isCli(q.scenario) ? " ex-cli" : ""}">${esc(q.scenario)}</p>` : ""}
+        <p class="q">${gl(q.stem)}</p>${multi && !/choose/i.test(q.stem) ? `<p class="muted ex-hint">Choose ${correctCount(q)}.</p>` : ""}
+        <div class="ex-opts" role="${multi ? "group" : "radiogroup"}" aria-label="Answers">${q.options.map((o, k) => { const on = chosen.has(k);
+          return `<button type="button" class="opt ex-opt${shown ? (o.correct ? " right" : on ? " wrong" : "") : on ? " picked" : ""}" data-k="${k}" role="${multi ? "checkbox" : "radio"}" aria-checked="${on}" ${shown ? "disabled" : ""}>
+          <span class="ex-letter" aria-hidden="true">${letter(k)}</span><span>${esc(o.text)}</span></button>
+          ${shown && (o.correct || on) ? `<p class="ex-why ${o.correct ? "ok" : "no"}"><b>${o.correct ? "Correct" : "Not this one"}:</b> ${gl(o.why)}</p>` : ""}`; }).join("")}</div>
+        ${instant && !shown ? `<div class="row ex-ctl"><button class="btn brand" type="button" data-act="check" ${chosen.size === correctCount(q) ? "" : "disabled"}>Check answer</button></div>` : ""}`;
+    }
+    drawHead(); drawFoot();
   }
   function drawConfirm() {
-    const un = qs.length - answered();
-    el.innerHTML = `<div class="panel-title"><h2>End the exam?</h2><span class="eyebrow mono">${clockText()}</span></div>
-      <p>${un ? `You have <b>${un}</b> unanswered question${un === 1 ? "" : "s"}${flagged.size ? ` and <b>${flagged.size}</b> flagged` : ""}. ` : flagged.size ? `You still have <b>${flagged.size}</b> flagged for review. ` : "Every question is answered. "}You can't change answers after ending.</p>
+    const un = items.length - answered();
+    box("ex-pbqs").hidden = true; box("ex-foot").innerHTML = ""; drawHead();
+    box("ex-body").innerHTML = `<div class="panel-title"><h2>End the exam?</h2></div>
+      <p>${un ? `You have <b>${un}</b> unanswered ${nP ? "item" : "question"}${un === 1 ? "" : "s"}${flagged.size ? ` and <b>${flagged.size}</b> flagged` : ""}. ` : flagged.size ? `You still have <b>${flagged.size}</b> flagged for review. ` : "Everything is answered. "}You can't change answers after ending.</p>
       <div class="row"><button class="btn brand" type="button" data-act="end-yes">End and see results</button><button class="btn ghost" type="button" data-act="end-no">Keep going</button></div>`;
   }
   function finish() {
     done = true; clearInterval(timer);
     const results = qs.map((q, k) => ({ q, chosen: answers.get(k) || new Set(), right: isCorrect(q, answers.get(k) || new Set()) }));
-    results.forEach((r, k) => checked.has(k) || onAnswer(r.q, r.right));  // checked ones were recorded as they were marked
-    const score = results.filter(r => r.right).length;
-    onFinish({ mode: "mock", score, total: qs.length, minutes, instant });
-    el.innerHTML = `<div class="panel-title"><h2>${esc(title)}: results</h2><span class="eyebrow">${score} of ${qs.length} correct</span></div>
+    results.forEach((r, k) => checked.has(k + nP) || onAnswer(r.q, r.right));  // checked ones were recorded as they were marked
+    const pbqResults = P.map((q, k) => { const g = handles[k].grade(); onPbq(q, g.pct); return { q, ...g }; });
+    const qRight = results.filter(r => r.right).length, s = mockScore(qRight, qs.length, pbqResults);
+    onFinish({ mode: "mock", score: s.score, total: s.total, minutes, instant, pbqs: nP });
+    el.innerHTML = `<div class="panel-title"><h2>${esc(title)}: results</h2><span class="eyebrow">${s.score} of ${s.total} (${s.pct}%)</span></div>
       <p>Patch Notes mock exams are practice only. The real exam is scored differently, so treat this as a guide to what to revise. Your answers update each objective's mastery.</p>
+      ${nP ? `<section class="ex-pbq-results"><h3>Performance-based questions <span class="muted">(each worth ${PBQ_WEIGHT} questions)</span></h3><ul>${pbqResults.map(r => `<li class="${r.pct === 100 ? "ok" : r.pct ? "part" : "no"}"><b>${esc(r.q.title)}</b>: ${r.right} of ${r.total} parts (${r.pct}%)
+        <a href="#pbq-${esc(r.q.id)}">Practise it with feedback ›</a><ul class="ex-parts">${r.parts.map(p => `<li>${p.ok ? "✓" : "✗"} ${esc(p.label)}${!p.ok && p.want ? ` <span class="muted">(answer: ${esc(p.want)})</span>` : ""}</li>`).join("")}</ul></li>`).join("")}</ul>
+        <p class="muted">Questions: ${qRight} of ${qs.length} right.</p></section>` : ""}
       <details class="ex-review" open><summary>Review every question</summary><ol>${results.map(r => `<li class="${r.right ? "ok" : r.chosen.size ? "no" : "skip"}"><b>${r.right ? "✓" : r.chosen.size ? "✗" : "—"} ${esc(r.q.objective)}</b> ${esc(r.q.stem)}
         <ul>${r.q.options.filter((o, k) => o.correct || r.chosen.has(k)).map(o => `<li>${o.correct ? "Correct answer" : "Your answer"}: ${esc(o.text)}. <span class="muted">${esc(o.why)}</span></li>`).join("")}${r.chosen.size ? "" : "<li class='muted'>You left this one blank.</li>"}</ul></li>`).join("")}</ol></details>
       <div class="row"><button class="btn brand" type="button" data-act="exit">Back to the objectives</button></div>`;
   }
-  function go(k) { i = Math.max(0, Math.min(qs.length - 1, k)); draw(); el.querySelector(".ex-opt")?.focus(); }
+  function go(k) { i = Math.max(0, Math.min(items.length - 1, k)); draw(); (el.querySelector(".ex-opt") || el.querySelector(`.ex-pbq[data-p="${i}"] select, .ex-pbq[data-p="${i}"] input, .ex-pbq[data-p="${i}"] button`))?.focus(); }
   el.addEventListener("click", e => {
-    const b = e.target.closest("button"); if (!b || b.disabled) return;
+    const b = e.target.closest("button"); if (!b || b.disabled || b.closest(".ex-pbq")) return;
     if (b.dataset.k !== undefined) {
       if (checked.has(i)) return;
-      const k = Number(b.dataset.k), q = qs[i], set = answers.get(i) || new Set();
+      const k = Number(b.dataset.k), q = qs[qi(i)], set = answers.get(qi(i)) || new Set();
       if (correctCount(q) > 1) { set.has(k) ? set.delete(k) : set.add(k); } else { set.clear(); set.add(k); }
-      set.size ? answers.set(i, set) : answers.delete(i);
+      set.size ? answers.set(qi(i), set) : answers.delete(qi(i));
       draw(); el.querySelector(`[data-k="${k}"]`)?.focus(); return;
     }
     const act = b.dataset.act;
     if (b.dataset.go !== undefined) go(Number(b.dataset.go));
-    else if (act === "check") { checked.add(i); onAnswer(qs[i], isCorrect(qs[i], answers.get(i) || new Set())); draw(); (el.querySelector('[data-act="next"]:not([disabled])') || el.querySelector('[data-act="end"]')).focus(); }
+    else if (act === "check") { checked.add(i); onAnswer(qs[qi(i)], isCorrect(qs[qi(i)], answers.get(qi(i)) || new Set())); draw(); (el.querySelector('[data-act="next"]:not([disabled])') || el.querySelector('[data-act="end"]')).focus(); }
     else if (act === "flag") { flagged.has(i) ? flagged.delete(i) : flagged.add(i); draw(); el.querySelector('[data-act="flag"]').focus(); }
     else if (act === "prev") go(i - 1);
     else if (act === "next") go(i + 1);

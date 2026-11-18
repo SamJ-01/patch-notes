@@ -133,6 +133,36 @@ def load_certs():
     return sorted(certs, key=lambda c: (order.get(c["id"], len(order)), c["id"]))
 
 
+# Only what lists, cards and counts need goes in the page; each heavy body (a lab's evidence or simulator, a mission's
+# script, a shift's alerts and logs, an exam's question text) is written to data/full/ and fetched when it's opened
+# (loadFull / loadQuestions in 01-core). The light copies carry "_lazy": 1 until their body is merged in.
+LIGHT = {
+    "labs": {"id", "title", "kind", "category", "track", "minutes", "lesson", "also", "stage", "card", "skill", "safety"},
+    "missions": {"id", "title", "card", "category", "lesson", "also", "minutes", "summary", "topic"},
+    "agency": {"id", "agency", "title", "client", "date", "startsAt", "lead", "leadPhoto", "briefing", "card", "summary",
+               "minutes", "lessons", "xp", "clientImage", "next"},
+}
+
+
+def split_bodies(data):
+    """Return (data with light copies, {path: body}) for the lazily loaded parts. Pure: the caller writes the files."""
+    files, light = {}, dict(data)
+    for kind, keep in LIGHT.items():
+        light[kind] = []
+        for item in data[kind]:
+            files[f"{kind}/{item['id']}.json"] = item
+            slim = {k: v for k, v in item.items() if k in keep}
+            if kind == "missions":  # mission cards list the modes by name, and finishing one awards its XP
+                slim["modes"] = {k: {"label": m["label"], "xp": m["xp"]} for k, m in item["modes"].items()}
+            light[kind].append({**slim, "_lazy": 1})
+    light["certs"] = []
+    for c in data["certs"]:
+        files[f"questions/{c['id']}.json"] = c["questions"]
+        qs = [{"id": q["id"], "objective": q["objective"], "single": sum(1 for o in q["options"] if o["correct"]) == 1} for q in c["questions"]]
+        light["certs"].append({**c, "questions": qs, "_qlazy": 1})
+    return light, files
+
+
 def embed_json(data):
     """Serialise data for an inline <script>. Escaping every '<' means no feed text ('</script>',
     '<!--<script>') can change how the HTML parser reads the script."""
@@ -254,7 +284,7 @@ def lesson_page(lesson, nxt, fonts, css, site):
 </style>
 <header class="masthead" style="position:static"><div class="mast-inner">
   <a class="brand" href="../index.html"><b>PATCH<i>//</i>NOTES</b></a>
-  <a class="cmd-btn" href="../index.html#lesson-{e(lesson['id'])}" style="text-decoration:none"><span>Open the interactive version</span></a>
+  <a class="cmd-btn" href="../index.html#lesson-{e(lesson['id'])}" style="text-decoration:none" aria-label="Open the interactive version"><span>Open the interactive version</span></a>
 </div></header>
 <main><article class="article static">
   <a class="link-btn" href="index.html">← All lessons</a>
@@ -272,10 +302,94 @@ def lesson_page(lesson, nxt, fonts, css, site):
 """
 
 
+def practice_items(full, certs):
+    """Every lab, mission, Agency shift and PBQ as a static page's facts: kind, id, title, eyebrow, lead, a list of
+    what you'll do (questions without their answers), and the exam objectives it serves."""
+    names = {(c["id"], o["id"]): (c["name"], o["title"]) for c in certs for d in c["domains"] for o in d["objectives"]}
+    mapped = collections.defaultdict(list)
+    for c in certs:
+        for d in c["domains"]:
+            for o in d["objectives"]:
+                for a in o["activities"]:
+                    mapped[(a["type"], a["id"])].append(f"{c['name']} {o['id']} {o['title']}")
+    out = []
+    for l in full["labs"]:
+        todo = [st.get("q") for st in l.get("steps", []) if st.get("q")] or [t.get("text") for t in l.get("tasks", []) if t.get("text")]
+        out.append({"kind": "Lab", "id": l["id"], "route": "lab-" + l["id"], "title": l["title"], "eyebrow": f"{l.get('track', 'Lab')} · {l.get('minutes', '')} min",
+                    "lead": l.get("intro") or l.get("skill") or l.get("card", ""), "todo": todo, "objectives": mapped[("lab", l["id"])], "note": l.get("simplification")})
+    for m in full["missions"]:
+        out.append({"kind": "Mission", "id": m["id"], "route": "mission-" + m["id"], "title": m["title"], "eyebrow": f"Mission · {m.get('minutes', '')} min",
+                    "lead": m.get("summary") or m.get("card", ""), "todo": [f"{v['label']} mode" for v in m.get("modes", {}).values()], "objectives": mapped[("mission", m["id"])], "note": m.get("simplification")})
+    for sh in full["agency"]:
+        out.append({"kind": "Agency shift", "id": sh["id"], "route": "agency-" + sh["id"], "title": sh["title"], "eyebrow": f"PATCH//AGENCY · {sh.get('client', '')} · {sh.get('minutes', '')} min",
+                    "lead": sh.get("summary") or sh.get("card", ""), "todo": [a.get("title") for a in sh.get("alerts", []) if a.get("title")], "objectives": mapped[("agency", sh["id"])], "note": sh.get("simplification")})
+    for c in certs:
+        for q in c.get("pbqs", []):
+            out.append({"kind": "PBQ", "id": q["id"], "route": "pbq-" + q["id"], "title": q["title"], "eyebrow": f"{c['name']} performance-based question · about {q['minutes']} min",
+                        "lead": q["scenario"], "todo": q.get("requirements") or [t["text"] for t in q.get("tasks", [])],
+                        "objectives": [f"{names[(c['id'], o)][0]} {o} {names[(c['id'], o)][1]}" for o in q["objectives"] if (c["id"], o) in names], "note": q.get("simplification")})
+    return out
+
+
+def practice_page(item, fonts, css, site):
+    e = html.escape
+    todo = "".join(f"<li>{e(t)}</li>" for t in item["todo"])
+    objs = "".join(f"<li>{e(o)}</li>" for o in item["objectives"])
+    desc = f"{item['kind']}: {item['title']}. {item['lead']}"[:300]
+    return f"""<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{e(item['title'])} · {e(item['kind'])} · Patch Notes</title>
+<meta name="description" content="{e(desc)}">
+{social_meta(site, f"{item['title']} · Patch Notes", desc, f"practise/{item['id']}.html")}
+{fonts}
+<style>{css}
+.static {{ max-width: 760px; margin: 0 auto; padding-block: 28px 56px; }}
+</style>
+<header class="masthead" style="position:static"><div class="mast-inner">
+  <a class="brand" href="../index.html"><b>PATCH<i>//</i>NOTES</b></a>
+  <a class="cmd-btn" href="../index.html#{e(item['route'])}" style="text-decoration:none" aria-label="Open it in the app"><span>Open it in the app</span></a>
+</div></header>
+<main><article class="article static">
+  <a class="link-btn" href="index.html">← All hands-on practice</a>
+  <div class="stack" style="gap:8px"><div class="eyebrow">{e(item['eyebrow'])}</div><h1>{e(item['title'])}</h1><p class="hook">{e(item['lead'])}</p></div>
+  <p><a class="btn brand" href="../index.html#{e(item['route'])}">Start it: free, in your browser, no account</a></p>
+  {f'<section><h2>What you will do</h2><ol>{todo}</ol></section>' if todo else ''}
+  {f'<section><h2>Exam objectives it practises</h2><ul class="checklist">{objs}</ul></section>' if objs else ''}
+  {f'<p class="muted" style="font-size:0.88rem">{e(item["note"])}</p>' if item.get("note") else ''}
+</article></main>
+</html>
+"""
+
+
+def practice_index(items, fonts, css, site):
+    e = html.escape
+    groups = ""
+    for kind in ("Lab", "Mission", "Agency shift", "PBQ"):
+        cards = "".join(f'<a class="lcard" href="{e(i["id"])}.html"><span class="eyebrow">{e(i["eyebrow"])}</span><h3>{e(i["title"])}</h3></a>' for i in items if i["kind"] == kind)
+        if cards:
+            groups += f'<h2>{e(kind)}s</h2><div class="lessons">{cards}</div>'
+    return f"""<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hands-on cyber security practice · Patch Notes</title>
+<meta name="description" content="{len(items)} free, hands-on cyber security labs, missions, SOC shifts and exam-style PBQs that run in your browser.">
+{social_meta(site, "Hands-on cyber security practice · Patch Notes", f"{len(items)} free labs, missions, SOC shifts and PBQs.", "practise/")}
+{fonts}
+<style>{css}</style>
+<header class="masthead" style="position:static"><div class="mast-inner"><a class="brand" href="../index.html"><b>PATCH<i>//</i>NOTES</b></a></div></header>
+<main><div class="view"><div class="view-head"><div class="eyebrow">Practise</div><h1>Hands-on practice</h1><p><a href="../lessons/">Lessons</a> explain the ideas; these let you use them.</p></div>
+{groups}</div></main>
+</html>
+"""
+
+
 def lessons_index(lessons, fonts, css, site):
     e = html.escape
     cards = "".join(
-        f'<a class="lcard" href="{e(l["id"])}.html"><span class="eyebrow">{e(l["track"])}</span><h3>{e(l["title"])}</h3><p>{e(l["hook"])}</p>'
+        f'<a class="lcard" href="{e(l["id"])}.html"><span class="eyebrow">{e(l["track"])}</span><h2>{e(l["title"])}</h2><p>{e(l["hook"])}</p>'
         f'<span class="lmeta"><span>{l["minutes"]} min</span><span>{e(l["level"])}</span></span></a>' for l in lessons)
     return f"""<!doctype html>
 <html lang="en">
@@ -287,7 +401,7 @@ def lessons_index(lessons, fonts, css, site):
 {fonts}
 <style>{css}</style>
 <header class="masthead" style="position:static"><div class="mast-inner"><a class="brand" href="../index.html"><b>PATCH<i>//</i>NOTES</b></a></div></header>
-<main><div class="view"><div class="view-head"><div class="eyebrow">Lessons</div><h1>Cyber security, explained</h1></div>
+<main><div class="view"><div class="view-head"><div class="eyebrow">Lessons</div><h1>Cyber security, explained</h1><p>Then try it: <a href="../practise/">hands-on labs, missions, SOC shifts and PBQs</a>.</p></div>
 <div class="lessons">{cards}</div></div></main>
 </html>
 """
@@ -321,9 +435,10 @@ def rss(stories, explainers, site, limit=40):
 """
 
 
-def sitemap(lessons, site):
+def sitemap(lessons, site, practice=()):
     base = site["url"].rstrip("/")
     urls = [f"{base}/", f"{base}/lessons/"] + [f"{base}/lessons/{l['id']}.html" for l in lessons]
+    urls += ([f"{base}/practise/"] if practice else []) + [f"{base}/practise/{i['id']}.html" for i in practice]
     today = dt.date.today().isoformat()
     body = "".join(f"  <url><loc>{html.escape(u)}</loc><lastmod>{today}</lastmod></url>\n" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{body}</urlset>\n'
@@ -432,6 +547,14 @@ def main():
     (SITE_DIR / "data").mkdir(exist_ok=True)
     (SITE_DIR / "lessons").mkdir(exist_ok=True)
     (SITE_DIR / "data" / "cves.json").write_text(json.dumps(rows, ensure_ascii=False))
+    full_data = data  # static pages below are built from the full content
+    data, bodies = split_bodies(data)
+    full_dir = SITE_DIR / "data" / "full"
+    if full_dir.exists():
+        shutil.rmtree(full_dir)
+    for rel, body in bodies.items():
+        (full_dir / rel).parent.mkdir(parents=True, exist_ok=True)
+        (full_dir / rel).write_text(json.dumps(body, ensure_ascii=False))
     out = SITE_DIR / "index.html"
     meta = social_meta(site, "Patch Notes: practise cyber security on realistic evidence", site.get("description", ""))
     # The device drawings live in one module (static/js/hw.js) shared by the labs; the page gets the same code inline.
@@ -456,7 +579,12 @@ def main():
         (SITE_DIR / "lessons" / f"{l['id']}.html").write_text(with_csp(lesson_page(l, lessons[(i + 1) % len(lessons)], fonts, css, site)))
     (SITE_DIR / "lessons" / "index.html").write_text(with_csp(lessons_index(lessons, fonts, css, site)))
     (SITE_DIR / "feed.xml").write_text(rss(stories, explainers, site))
-    (SITE_DIR / "sitemap.xml").write_text(sitemap(lessons, site))
+    practice = practice_items(full_data, full_data["certs"])
+    (SITE_DIR / "practise").mkdir(exist_ok=True)
+    for item in practice:
+        (SITE_DIR / "practise" / f"{item['id']}.html").write_text(with_csp(practice_page(item, fonts, css, site)))
+    (SITE_DIR / "practise" / "index.html").write_text(with_csp(practice_index(practice, fonts, css, site)))
+    (SITE_DIR / "sitemap.xml").write_text(sitemap(lessons, site, practice))
     if STATIC.exists():
         # Contents only: copying file metadata fails on macOS when a target file carries the 'compressed' flag.
         shutil.copytree(STATIC, SITE_DIR, dirs_exist_ok=True, copy_function=shutil.copyfile)

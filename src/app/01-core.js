@@ -45,3 +45,24 @@ function ago(iso) {
   const h = Math.round(mins / 60);
   return h < 36 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
 }
+
+// Heavy bodies load when first opened (build.py split_bodies): a lab's evidence or simulator, a mission's script, a
+// shift's alerts and logs (data/full/<kind>/<id>.json), and an exam's question text (data/full/questions/<cert>.json).
+// They're merged into the light copies already in DATA, so every map and reference to them stays valid. Offline,
+// anything opened before comes from the service worker's copy.
+const FULL = {};
+const getJson = url => fetch(url).then(r => { if (!r.ok) throw new Error(`${r.status} ${url}`); return r.json(); });
+function loadFull(kind, obj) {
+  if (!obj || !obj._lazy) return Promise.resolve(obj);
+  return (FULL[kind + "/" + obj.id] ||= getJson(`data/full/${kind}/${obj.id}.json`).then(full => { Object.assign(obj, full); delete obj._lazy; return obj; }));
+}
+function loadQuestions(c) {
+  if (!c || !c._qlazy) return Promise.resolve(c);
+  return (FULL["questions/" + c.id] ||= getJson(`data/full/questions/${c.id}.json`).then(full => {
+    const byId = Object.fromEntries(c.questions.map(q => [q.id, q]));
+    for (const q of full) Object.assign(byId[q.id] || {}, q);
+    delete c._qlazy; return c;
+  }));
+}
+const lazyFailHtml = what => `<div class="empty">Couldn't load ${what}. If you're offline, it works offline once you've opened it with a connection.</div>`;
+

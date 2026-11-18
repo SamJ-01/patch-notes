@@ -166,7 +166,7 @@ function pbqView(id) {
     <header class="lesson-open"><p class="eyebrow">PBQ · ${esc(c.exam)} · ${q.objectives.map(o => `${esc(o)} ${esc(names[o] || "")}`).join(" · ")}</p><h1>${esc(q.title)}</h1></header>
     <div id="pbq-root"><div class="empty">Loading…</div></div>
     ${toTopButton()}</article></div>`;
-  import("./js/pbq.js").then(m => {
+  Promise.all([import("./js/pbq.js"), q.lab ? loadFull("labs", LAB[q.lab]) : null]).then(([m]) => {
     if (parseRoute().path !== "exams/pbq/" + id) return;
     m.mount($("pbq-root"), q, { lab: q.lab ? DATA.labs.find(l => l.id === q.lab) : null, best: P.pbq[id] ?? null, onScore: pct => {
       const before = P.pbq[id];
@@ -215,7 +215,9 @@ function wireMockOptions(c) {
       form.querySelector("#mock-n").innerHTML = lengths.map(n => `<label class="ex-choice"><input type="radio" name="mock-n" value="${n}"${n === s.n ? " checked" : ""}><span>${n}${n === 90 ? " (full length)" : ""}</span></label>`).join("");
       form.querySelector(`[name="mock-timed"][value="${s.timed ? 1 : 0}"]`).checked = true;
       form.querySelector(`[name="mock-fb"][value="${s.feedback}"]`).checked = true;
-      form.querySelector("#mock-go").textContent = `Start: ${s.n} questions${s.minutes ? `, ${s.minutes} minutes` : ", untimed"}`;
+      const k = Math.min(ex.mockPbqCount(s.n), (c.pbqs || []).length), avg = k ? c.pbqs.reduce((n, q) => n + q.minutes, 0) / c.pbqs.length : 0;
+      const mins = s.minutes ? Math.round(s.minutes + k * avg) : null;
+      form.querySelector("#mock-go").textContent = `Start: ${k ? `${k} PBQ${k > 1 ? "s" : ""} + ` : ""}${s.n} questions${mins ? `, about ${mins} minutes` : ", untimed"}`;
       form.querySelector("#mock-note").textContent = s.real ? "Exam conditions: this one counts towards \"Am I ready?\"."
         : "Practice mode: good for learning, but only timed mocks of 20+ questions with feedback at the end count towards \"Am I ready?\".";
     };
@@ -229,7 +231,9 @@ function wireMockOptions(c) {
   }).catch(() => {});
 }
 function startPractice(c, mode, questions, title, lesson = null, prefs = P.mockPrefs) {
-  import("./js/exam.js").then(ex => {
+  // A mock opens with PBQs (as the real exam does), so their module loads with the exam's.
+  const wantPbq = mode === "mock" && (c.pbqs || []).length;
+  Promise.all([import("./js/exam.js"), wantPbq ? import("./js/pbq.js") : null, loadQuestions(c)]).then(async ([ex, pb]) => {
     if (parseRoute().path !== "exams/" + c.id) return;
     proveTopic = lesson;
     const names = Object.fromEntries(certObjectives(c).map(o => [o.id, o.title]));
@@ -239,8 +243,13 @@ function startPractice(c, mode, questions, title, lesson = null, prefs = P.mockP
     main.querySelector(".lesson > .link-btn").addEventListener("click", e => { e.preventDefault(); certView(c.id); drawTrail(); window.scrollTo(0, 0); });
     if (lesson) { topicTop(main.querySelector(".lesson"), lesson, "prove"); drawTrail(); }
     const set = ex.mockSettings(prefs, ex.mockLengths(c.questions, c.domains));  // {} = exam conditions
+    const pbqs = pb ? ex.pickMockPbqs(c.pbqs, ex.mockPbqCount(set.n)) : [];
+    await Promise.all(pbqs.filter(q => q.lab).map(q => loadFull("labs", LAB[q.lab])));  // a command-line PBQ needs its lab's network
+    if (parseRoute().path !== "exams/" + c.id) return;
     ex.mount($("ex-root"), { title, mode, questions: mode === "mock" ? ex.buildMock(c.questions, c.domains, set.n) : questions,
-      minutes: set.minutes, instant: set.feedback === "each",
+      minutes: ex.mockMinutes(set.minutes, pbqs), instant: set.feedback === "each", pbqs,
+      mountPbq: pb && ((host, q, o) => pb.mount(host, q, { ...o, lab: q.lab ? DATA.labs.find(l => l.id === q.lab) : null })),
+      onPbq: (q, pct) => { if (pct > (P.pbq[q.id] ?? 0)) P.pbq[q.id] = pct; },
       objectiveName: id => names[id] || id, onAnswer: recordAnswer,
       onFinish: r => { if (r.mode === "mock") { (P.mocks[c.id] || (P.mocks[c.id] = [])).push({ d: todayStr(), score: r.score, total: r.total, ...(set.real ? {} : { practice: 1 }) }); P.mocks[c.id] = P.mocks[c.id].slice(-20); saveP(); award(20, "Mock exam completed"); celebrate("Mock exam done", `${r.score} of ${r.total} correct`); } },
       onExit: () => { certView(c.id); drawTrail(); window.scrollTo(0, 0); } });

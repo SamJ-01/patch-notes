@@ -69,7 +69,7 @@ function popHtml(id) {
   const see = (g.see || []).filter(x => GLOSS[x]);
   return `<button class="x" aria-label="Close">×</button>
     <div class="pk">${esc(g.kind)}</div><h4>${esc(g.term)}</h4><p>${esc(g.short)}</p>${g.more ? `<p class="more-t">${esc(g.more)}</p>` : ""}
-    ${see.length ? `<div class="see">Related: ${see.map(x => `<button data-see="${x}">${esc(GLOSS[x].term)}</button>`).join("")}</div>` : ""}
+    ${see.length ? `<div class="see">Related: ${see.map(x => `<button data-gsee="${x}">${esc(GLOSS[x].term)}</button>`).join("")}</div>` : ""}
     <div class="acts">${g.lesson && LESSON[g.lesson] ? `<a href="#lesson-${esc(g.lesson)}">Lesson: ${esc(LESSON[g.lesson].title)} →</a>` : ""}<a href="#glossary" data-gl-focus="${esc(id)}">Full glossary</a></div>`;
 }
 function placePop() {
@@ -109,8 +109,10 @@ document.addEventListener("pointerout", e => {
 document.addEventListener("click", e => {
   const t = e.target.closest(".term[data-g]");
   if (t) { e.preventDefault(); (popAnchor === t && popPinned) ? closePop() : (openPop(t, t.dataset.g, true), learnTerm(t.dataset.g)); return; }
-  const see = e.target.closest("[data-see]");
-  if (see) { pop.innerHTML = popHtml(see.dataset.see); popPinned = true; placePop(); learnTerm(see.dataset.see); return; }
+  // The popup's "Related" buttons. Their own attribute: lessons use data-see for "Re-read" links, and a shared name made
+  // every Re-read press also look up a glossary term called "what" (a page error, found by the 18 Nov audit).
+  const see = e.target.closest("[data-gsee]");
+  if (see && GLOSS[see.dataset.gsee]) { pop.innerHTML = popHtml(see.dataset.gsee); popPinned = true; placePop(); learnTerm(see.dataset.gsee); return; }
   if (e.target.closest("#pop .x")) { closePop(true); return; }
   const gf = e.target.closest("[data-gl-focus]");
   if (gf) { GLS.focus = gf.dataset.glFocus; GLS.q = ""; GLS.kind = "All"; closePop(); if (location.hash === "#glossary") route(); return; }

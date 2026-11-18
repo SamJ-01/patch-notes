@@ -162,7 +162,24 @@ test("command-line scenarios show as terminal text; prose scenarios don't", () =
     return (d.questions || d).filter(q => q.scenario);
   });
   const cli = bank.filter(q => ex.isCli(q.scenario)).map(q => q.id).sort();
-  assert.deepEqual(cli, ["np-5.5-12", "np-5.5-7", "np-5.5-8", "sp-4.6-6", "sp-4.9-6"]);
+  assert.deepEqual(cli, ["np-5.5-12", "np-5.5-7", "np-5.5-8", "pt-4.10-2", "sp-4.6-6", "sp-4.9-6"]);
   assert.ok(!ex.isCli("A user can reach 8.8.8.8 but not websites."));
+  assert.ok(ex.isCli("PS C:\\Users\\tester> Get-ChildItem") && !ex.isCli("PS: please reply by Friday."));
   assert.ok(ex.isCli("R1> en") && ex.isCli("$ ls -la") && ex.isCli("drwxr-xr-x 2 root root 4096 Oct 1 09:00 etc"));
+});
+
+test("mocks open with PBQs: how many, which, the time and the score", () => {
+  assert.deepEqual([10, 20, 45, 90].map(ex.mockPbqCount), [1, 1, 2, 3]);
+  const pbqs = [{ id: "a", objectives: ["1.4"], minutes: 4 }, { id: "b", objectives: ["1.7"], minutes: 7 }, { id: "c", objectives: ["2.2", "5.5"], minutes: 8 }, { id: "d", objectives: ["5.1"], minutes: 4 }];
+  let seed = 1; const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const three = ex.pickMockPbqs(pbqs, 3, rand);
+  assert.equal(three.length, 3);
+  assert.equal(new Set(three.map(q => q.objectives[0][0])).size, 3, "from three different domains when it can");
+  assert.equal(ex.pickMockPbqs(pbqs, 9, rand).length, 4, "never more than there are");
+  assert.equal(ex.pickMockPbqs([], 2).length, 0);
+  assert.equal(ex.mockMinutes(20, [pbqs[0], pbqs[2]]), 32);
+  assert.equal(ex.mockMinutes(null, pbqs), null, "untimed stays untimed");
+  // 15 of 20 questions, a PBQ at 6/8 parts (1.5 of 2) and one at 0/5: 16.5 of 24.
+  assert.deepEqual(ex.mockScore(15, 20, [{ right: 6, total: 8 }, { right: 0, total: 5 }]), { score: 16.5, total: 24, pct: 69 });
+  assert.deepEqual(ex.mockScore(10, 10), { score: 10, total: 10, pct: 100 });
 });

@@ -283,7 +283,7 @@ details.explain summary { cursor: pointer; font-weight: 700; color: var(--brand)
 .view-toggle .vt:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
 .lcard { text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 8px; align-content: start; position: relative; }
 .lcard:hover { border-color: var(--brand); }
-.lcard h3 { font-size: 1.02rem; }
+.lcard h3, .lcard h2 { font-size: 1.02rem; }
 .lcard p { font-size: 0.9rem; color: var(--muted); }
 .lcard .lmeta { display: flex; flex-wrap: wrap; gap: 4px 12px; font: 0.72rem var(--font-mono); color: var(--muted); }
 .lcard .lmeta span { white-space: nowrap; }
@@ -421,7 +421,7 @@ input[type="search"]:focus, select:focus { border-color: var(--brand); outline: 
 .card:hover { border-color: var(--dg-line); border-left-color: var(--c); }
 .lcard { border-radius: var(--radius); transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s; }
 .lcard:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(var(--brand-rgb), 0.12); }
-.lcard h3 { font-family: var(--font-display); font-size: 1.08rem; font-weight: 600; }
+.lcard h3, .lcard h2 { font-family: var(--font-display); font-size: 1.08rem; font-weight: 600; }
 .case { border-left: 3px solid var(--exploited); background: var(--surface); }
 .article h1 { text-transform: uppercase; }
 .score-big { font-family: var(--font-display); color: var(--sun); text-shadow: 0 0 30px rgba(var(--sun-rgb), 0.35); }
@@ -2643,6 +2643,8 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .ag-in-side { display: grid; gap: 14px; }
 @keyframes ag-dot { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 .ag-dossier { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--line); border-top: 4px solid var(--sun); background: var(--surface); }
+.ag-resume { display: grid; gap: 8px; padding: 14px 16px; margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--line); border-left: 4px solid var(--brand); background: var(--surface); }
+.ag-resume h2 { font-size: 1.05rem; }
 .ag-dossier h2 { margin: 0; }
 .ag-dossier .btn { justify-self: start; }
 .ag-lead { display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; }
@@ -5004,3 +5006,13 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .loop-all summary { cursor: pointer; color: var(--brand); font-weight: 600; font-size: 0.88rem; width: fit-content; }
 .loop-all-list { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 8px; }
 @media (max-width: 600px) { .loop-items .loop-next { margin-left: 0; } }
+
+/* PBQs inside a mock (exam.js mountMock): a title, the task kept mounted, P1/P2 in the jump grid, a results block. */
+.ex-pbq-title { margin: 4px 0 0; font-size: 1.15rem; }
+.ex-pbq { margin-top: 8px; }
+.ex-item.pbq { font-family: var(--font-mono); font-weight: 700; }
+.ex-pbq-results { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--card-line); border-radius: var(--radius-sm); background: var(--surface); margin-bottom: 12px; }
+.ex-pbq-results h3 { margin: 0; font-size: 1rem; }
+.ex-pbq-results > ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; }
+.ex-pbq-results li.ok > b { color: var(--good); } .ex-pbq-results li.no > b { color: var(--exploited); }
+.ex-parts { margin: 4px 0 0; padding-left: 18px; font-size: 0.86rem; color: var(--muted); display: grid; gap: 2px; }

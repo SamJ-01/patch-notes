@@ -63,9 +63,13 @@
       {
        "type": "lab",
        "id": "cia-which-pillar"
+      },
+      {
+       "type": "lab",
+       "id": "physical-test"
       }
      ],
-     "gap": "The CIA triad, authentication and zero trust are taught; gap analysis, physical security and deception (honeypots) aren't covered yet."
+     "gap": "The CIA triad, authentication and zero trust are taught, and physical security through a physical test's notes; gap analysis and deception (honeypots) aren't covered yet."
     },
     {
      "id": "1.3",
@@ -452,6 +456,10 @@
       {
        "type": "lab",
        "id": "breach-clock"
+      },
+      {
+       "type": "lab",
+       "id": "which-law-applies"
       }
      ],
      "gap": "Encryption and the cost of breaches are taught; data classification, masking and tokenisation are only in questions."
@@ -686,6 +694,10 @@
       {
        "type": "agency",
        "id": "shift-04"
+      },
+      {
+       "type": "lab",
+       "id": "which-model-fits"
       }
      ]
     },
@@ -807,6 +819,10 @@
       {
        "type": "lab",
        "id": "risk-register"
+      },
+      {
+       "type": "lab",
+       "id": "risk-gone-wrong"
       }
      ]
     },
@@ -854,6 +870,10 @@
       {
        "type": "lab",
        "id": "allowed-or-not"
+      },
+      {
+       "type": "lab",
+       "id": "which-law-applies"
       }
      ],
      "gap": "UK GDPR, the Computer Misuse Act, NIS and PCI DSS are taught, with breach reporting and authorisation practised in labs; compliance monitoring and reporting aren't covered."

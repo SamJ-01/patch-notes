@@ -1871,6 +1871,384 @@
      "why": "+short changes the output, not where the answer comes from."
     }
    ]
+  },
+  {
+   "id": "np-1.1-3",
+   "objective": "1.1",
+   "stem": "A user can reach websites by IP address but not by name. At which OSI layer is DNS, the service that's failing?",
+   "options": [
+    {
+     "text": "Layer 7, application",
+     "correct": true,
+     "why": "DNS is an application-layer protocol, even though it runs over UDP or TCP port 53 at layer 4."
+    },
+    {
+     "text": "Layer 3, network",
+     "correct": false,
+     "why": "Reaching sites by IP shows layer 3 is working."
+    },
+    {
+     "text": "Layer 2, data link",
+     "correct": false,
+     "why": "Layer 2 problems would stop traffic by IP too."
+    },
+    {
+     "text": "Layer 1, physical",
+     "correct": false,
+     "why": "A physical fault would stop everything, not just names."
+    }
+   ]
+  },
+  {
+   "id": "np-1.2-3",
+   "objective": "1.2",
+   "stem": "Which appliance sits in front of web servers, receives clients' requests and forwards them on, often handling TLS and caching too?",
+   "options": [
+    {
+     "text": "A reverse proxy",
+     "correct": true,
+     "why": "A reverse proxy acts on behalf of the servers. A forward proxy acts on behalf of the clients."
+    },
+    {
+     "text": "A forward proxy",
+     "correct": false,
+     "why": "A forward proxy sits in front of clients, for their outbound requests."
+    },
+    {
+     "text": "A layer 2 switch",
+     "correct": false,
+     "why": "A switch forwards frames by MAC address; it doesn't handle HTTP or TLS."
+    },
+    {
+     "text": "A wireless controller",
+     "correct": false,
+     "why": "That manages access points, not web traffic."
+    }
+   ]
+  },
+  {
+   "id": "np-1.3-3",
+   "objective": "1.3",
+   "stem": "Which cloud service model gives you a ready-to-use application, such as web-based email, with the provider running everything underneath?",
+   "options": [
+    {
+     "text": "SaaS (software as a service)",
+     "correct": true,
+     "why": "With SaaS you just use the application; the provider runs the servers, platform and app."
+    },
+    {
+     "text": "IaaS (infrastructure as a service)",
+     "correct": false,
+     "why": "With IaaS you manage the operating systems and apps on rented infrastructure."
+    },
+    {
+     "text": "PaaS (platform as a service)",
+     "correct": false,
+     "why": "With PaaS you deploy your own code onto a managed platform."
+    },
+    {
+     "text": "On-premises hosting",
+     "correct": false,
+     "why": "That's your own hardware, not a cloud service."
+    }
+   ]
+  },
+  {
+   "id": "np-1.5-3",
+   "objective": "1.5",
+   "stem": "Which transceiver form factor is common in modern switches for 10 Gbit/s fibre or copper links?",
+   "options": [
+    {
+     "text": "SFP+",
+     "correct": true,
+     "why": "SFP+ is the small, hot-swappable module used for 10 Gbit/s. Plain SFP is usually 1 Gbit/s; QSFP+ carries 40 Gbit/s."
+    },
+    {
+     "text": "RJ11",
+     "correct": false,
+     "why": "RJ11 is a telephone connector."
+    },
+    {
+     "text": "BNC",
+     "correct": false,
+     "why": "BNC is for coaxial cable, mostly older networks and video."
+    },
+    {
+     "text": "DB-9",
+     "correct": false,
+     "why": "DB-9 is an old serial connector, sometimes used for consoles."
+    }
+   ]
+  },
+  {
+   "id": "np-1.6-3",
+   "objective": "1.6",
+   "stem": "A company links its head office and branches over the internet with a central controller that picks the best path for each application. What is it?",
+   "options": [
+    {
+     "text": "SD-WAN",
+     "correct": true,
+     "why": "Software-defined WAN steers traffic over several links (broadband, 4G, MPLS) using central policy."
+    },
+    {
+     "text": "A LAN",
+     "correct": false,
+     "why": "A local area network covers one site."
+    },
+    {
+     "text": "A PAN",
+     "correct": false,
+     "why": "A personal area network covers a few metres, like Bluetooth."
+    },
+    {
+     "text": "A star topology",
+     "correct": false,
+     "why": "That describes how devices connect to one central point, not a managed WAN."
+    }
+   ]
+  },
+  {
+   "id": "np-2.1-3",
+   "objective": "2.1",
+   "stem": "Which routing protocol connects different organisations' networks across the internet?",
+   "options": [
+    {
+     "text": "BGP",
+     "correct": true,
+     "why": "Border Gateway Protocol exchanges routes between autonomous systems, such as ISPs."
+    },
+    {
+     "text": "OSPF",
+     "correct": false,
+     "why": "OSPF is a link-state protocol for routing inside one organisation."
+    },
+    {
+     "text": "RIP",
+     "correct": false,
+     "why": "RIP is an old distance-vector protocol for small internal networks."
+    },
+    {
+     "text": "STP",
+     "correct": false,
+     "why": "Spanning Tree stops switching loops; it doesn't route."
+    }
+   ]
+  },
+  {
+   "id": "np-2.4-3",
+   "objective": "2.4",
+   "stem": "What does a PDU in a server rack do?",
+   "options": [
+    {
+     "text": "Distributes power to the equipment in the rack, often with per-outlet monitoring",
+     "correct": true,
+     "why": "A power distribution unit feeds the devices; managed PDUs report load and can switch outlets remotely."
+    },
+    {
+     "text": "Keeps the power on during a cut",
+     "correct": false,
+     "why": "That's a UPS (uninterruptible power supply)."
+    },
+    {
+     "text": "Cools the rack",
+     "correct": false,
+     "why": "Cooling comes from the room's air conditioning and aisle layout."
+    },
+    {
+     "text": "Connects the rack to the internet",
+     "correct": false,
+     "why": "That's a router or the uplink switch."
+    }
+   ]
+  },
+  {
+   "id": "np-3.1-3",
+   "objective": "3.1",
+   "stem": "Which document says how long logs and backups must be kept before they're deleted?",
+   "options": [
+    {
+     "text": "A data retention policy",
+     "correct": true,
+     "why": "It sets how long each kind of data is kept, for legal and business reasons, and when it's disposed of."
+    },
+    {
+     "text": "An acceptable use policy",
+     "correct": false,
+     "why": "That says what staff may and may not do with company systems."
+    },
+    {
+     "text": "A physical network diagram",
+     "correct": false,
+     "why": "That shows where equipment and cables are."
+    },
+    {
+     "text": "A service level agreement",
+     "correct": false,
+     "why": "An SLA sets the service a provider promises, such as uptime."
+    }
+   ]
+  },
+  {
+   "id": "np-3.2-3",
+   "objective": "3.2",
+   "stem": "Which feature copies a switch port's traffic to another port, so a network analyser can watch it?",
+   "options": [
+    {
+     "text": "Port mirroring (SPAN)",
+     "correct": true,
+     "why": "Port mirroring sends a copy of traffic from chosen ports or VLANs to the monitoring port."
+    },
+    {
+     "text": "Port security",
+     "correct": false,
+     "why": "Port security limits which MAC addresses can use a port."
+    },
+    {
+     "text": "Link aggregation",
+     "correct": false,
+     "why": "That bundles ports together for more bandwidth and resilience."
+    },
+    {
+     "text": "PoE",
+     "correct": false,
+     "why": "Power over Ethernet powers devices; it doesn't copy traffic."
+    }
+   ]
+  },
+  {
+   "id": "np-3.3-3",
+   "objective": "3.3",
+   "stem": "A core switch fails on average every 50,000 hours and takes 4 hours to replace. What does the 4 hours describe?",
+   "options": [
+    {
+     "text": "MTTR (mean time to repair)",
+     "correct": true,
+     "why": "MTTR is the average time to get a failed device working again. 50,000 hours is the MTBF."
+    },
+    {
+     "text": "MTBF (mean time between failures)",
+     "correct": false,
+     "why": "MTBF is the 50,000 hours: how long it usually runs between failures."
+    },
+    {
+     "text": "RPO (recovery point objective)",
+     "correct": false,
+     "why": "RPO is how much data you can afford to lose, measured back in time."
+    },
+    {
+     "text": "RTO (recovery time objective)",
+     "correct": false,
+     "why": "RTO is a target for restoring a service, set by the business, not a measured average for one device."
+    }
+   ]
+  },
+  {
+   "id": "np-4.1-3",
+   "objective": "4.1",
+   "stem": "Which security idea gives each user and service only the access they need to do their job?",
+   "options": [
+    {
+     "text": "Least privilege",
+     "correct": true,
+     "why": "Least privilege limits how far a mistake or a stolen account can reach."
+    },
+    {
+     "text": "Defence in depth",
+     "correct": false,
+     "why": "That's layering several controls, not limiting access."
+    },
+    {
+     "text": "Separation of duties",
+     "correct": false,
+     "why": "That splits sensitive tasks between people so no one person can do them alone."
+    },
+    {
+     "text": "Non-repudiation",
+     "correct": false,
+     "why": "That's proof someone did something, so they can't deny it."
+    }
+   ]
+  },
+  {
+   "id": "np-5.1-3",
+   "objective": "5.1",
+   "stem": "You've found the probable cause and fixed it. Following the CompTIA method, what comes next?",
+   "options": [
+    {
+     "text": "Verify full system functionality and, if needed, put preventive measures in place",
+     "correct": true,
+     "why": "Check that everything works for the user, not just the part you fixed, then stop it happening again. Documenting comes last."
+    },
+    {
+     "text": "Document the findings",
+     "correct": false,
+     "why": "Documenting is the final step, after verifying."
+    },
+    {
+     "text": "Identify the problem",
+     "correct": false,
+     "why": "That's the first step."
+    },
+    {
+     "text": "Establish a theory of probable cause",
+     "correct": false,
+     "why": "That's already been done."
+    }
+   ]
+  },
+  {
+   "id": "np-5.2-3",
+   "objective": "5.2",
+   "stem": "A new 10 Gbit/s fibre link won't come up. The transceivers at each end are both rated for 10 Gbit/s. What's worth checking first?",
+   "options": [
+    {
+     "text": "That both transceivers use the same wavelength and fibre type (for example both SR on multimode)",
+     "correct": true,
+     "why": "An SR optic on one end and an LR on the other, or the wrong kind of fibre, means the link won't come up."
+    },
+    {
+     "text": "The DHCP scope",
+     "correct": false,
+     "why": "DHCP works at a higher layer; the link itself isn't up."
+    },
+    {
+     "text": "The DNS server",
+     "correct": false,
+     "why": "Name resolution doesn't affect whether a link comes up."
+    },
+    {
+     "text": "The cable's category rating",
+     "correct": false,
+     "why": "Category ratings (Cat 6, Cat 6a) are for copper twisted pair, not fibre."
+    }
+   ]
+  },
+  {
+   "id": "np-5.3-3",
+   "objective": "5.3",
+   "stem": "A laptop shows an address of 169.254.12.7 and can't reach anything. What does that address tell you?",
+   "options": [
+    {
+     "text": "It didn't get a reply from a DHCP server, so it gave itself an APIPA address",
+     "correct": true,
+     "why": "169.254.0.0/16 is automatic private IP addressing. Check the DHCP server, the scope and whether the VLAN reaches it."
+    },
+    {
+     "text": "The DNS server is down",
+     "correct": false,
+     "why": "DNS failures don't change the laptop's own address."
+    },
+    {
+     "text": "The laptop has a static address",
+     "correct": false,
+     "why": "A static address would be whatever was typed in, not a 169.254 one."
+    },
+    {
+     "text": "The internet connection is down",
+     "correct": false,
+     "why": "An outage beyond the router wouldn't stop DHCP on the local network."
+    }
+   ]
   }
  ]
 }

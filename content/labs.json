@@ -5667,6 +5667,372 @@
   ]
  },
  {
+  "id": "recon-script",
+  "safety": "scan",
+  "kind": "doc",
+  "category": "Ethical hacking",
+  "track": "Ethical hacking",
+  "minutes": 10,
+  "lesson": "osint",
+  "title": "Fix the recon script",
+  "skill": "Read a Bash recon script and change it to fit this test's scope",
+  "card": "Last year's script, this year's scope",
+  "intro": "A tester left a Bash script that sweeps the client's addresses. Before it runs again, read it line by line and decide what has to change.",
+  "simplification": "A short teaching script. Real teams usually feed a scope file to nmap (-iL) rather than looping over ping; the ideas are the same.",
+  "artifact": {
+   "kind": "doc",
+   "name": "sweep.sh and the tester's notes",
+   "text": "NOTES (not part of the script)\n  From last year's Brackenford external test (fictional). Reuse it, but check it against this year's scope first.\n  This year's scope: 203.0.113.0/26 (hosts 203.0.113.1 to 203.0.113.62). 203.0.113.64/26 is out of scope.\n\nsweep.sh\n#!/usr/bin/env bash\nNET=\"203.0.113\"\nOUT=\"results-$(date +%F).txt\"\n\nfor i in $(seq 1 254); do\n  ip=\"$NET.$i\"\n  if ping -c 1 -W 1 \"$ip\" > /dev/null 2>&1; then\n    echo \"[+] $ip is up\" | tee -a \"$OUT\"\n    nmap -sV -p 22,80,443,3389 \"$ip\" >> \"$OUT\"\n  fi\ndone\n\necho \"Done. Results in $OUT\""
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "Which language is sweep.sh written in, and what gives it away?",
+    "options": [
+     "Bash: the #!/usr/bin/env bash line, $(...) and the do/done and if/fi blocks",
+     "Python: the indented lines and the for loop",
+     "PowerShell: the $ signs in front of variables",
+     "Ruby: the end of each block"
+    ],
+    "answer": 0,
+    "explain": "The first line (the shebang) asks for bash, $(seq 1 254) runs a command and uses its output, and blocks close with done and fi. PowerShell also uses $ for variables, but it has no fi or done.",
+    "where": "#!/usr/bin/env bash"
+   },
+   {
+    "type": "choice",
+    "q": "As written, which addresses does the loop sweep?",
+    "options": [
+     "203.0.113.1 to 203.0.113.62, the scope",
+     "203.0.113.1 to 203.0.113.254: the whole /24, including the out-of-scope half",
+     "Only hosts that answer ping",
+     "Whatever is listed in results.txt"
+    ],
+    "answer": 1,
+    "explain": "seq 1 254 counts from 1 to 254, so the loop pings every address in 203.0.113.0/24. This year only .1 to .62 is in scope; .64 and up belong to someone else.",
+    "where": "seq 1 254"
+   },
+   {
+    "type": "text",
+    "q": "Change one number so the loop stays in scope: seq 1 ___",
+    "answers": [
+     "62"
+    ],
+    "hint": "What is the last host in this year's scope?",
+    "explain": "seq 1 62 sweeps 203.0.113.1 to .62, exactly the in-scope hosts of 203.0.113.0/26 (.0 is the network address and .63 the broadcast).",
+    "where": "203.0.113.62"
+   },
+   {
+    "type": "choice",
+    "q": "A server in scope blocks ping but runs a website. What does the script do with it?",
+    "options": [
+     "Scans it, because nmap finds port 443",
+     "Skips it: nmap only runs if ping gets a reply",
+     "Marks it as down in the results",
+     "Stops the whole script"
+    ],
+    "answer": 1,
+    "explain": "The nmap line sits inside if ping ... then. No ping reply, no scan, and nothing written. Many firewalls drop ping, so a real host can vanish from your results. nmap -Pn skips the ping check.",
+    "where": "if ping -c 1 -W 1"
+   },
+   {
+    "type": "choice",
+    "q": "What does >> \"$OUT\" do on the nmap line?",
+    "options": [
+     "Replaces the file with this host's results",
+     "Adds this host's results to the end of the file",
+     "Sends the results to the screen only",
+     "Runs nmap in the background"
+    ],
+    "answer": 1,
+    "explain": "One > overwrites a file; >> appends to it. With > each host would wipe out the one before. tee -a does the same append for the 'is up' line while also printing it.",
+    "where": ">> \"$OUT\""
+   },
+   {
+    "type": "text",
+    "q": "Which variable holds the name of the results file?",
+    "answers": [
+     "OUT",
+     "$OUT"
+    ],
+    "hint": "Look for the line that builds a name with today's date.",
+    "explain": "OUT=\"results-$(date +%F).txt\" makes a name like results-2026-11-04.txt, so each day's run gets its own file.",
+    "where": "OUT="
+   }
+  ]
+ },
+ {
+  "id": "automation-script",
+  "safety": "scan",
+  "kind": "doc",
+  "category": "Ethical hacking",
+  "track": "Ethical hacking",
+  "minutes": 10,
+  "lesson": "identity",
+  "title": "Read the automation script",
+  "skill": "Read a Python script that automates a test, and check it against the rules",
+  "card": "What it does, how fast, and is it allowed?",
+  "intro": "A teammate wrote a Python script to check the client's admin pages for vendor default logins. Read it before anyone runs it.",
+  "simplification": "Short and simplified. Real tools also handle sign-in tokens, errors and logging; the reading skills are the same.",
+  "artifact": {
+   "kind": "doc",
+   "name": "check_defaults.py and notes",
+   "text": "NOTES (not part of the script)\n  Brackenford external test (fictional). In scope: 203.0.113.0/26 (hosts .1 to .62) and portal.brackenford.example.\n  Rules of engagement: no lockouts; try only the vendor's documented default logins.\n\ncheck_defaults.py\n#!/usr/bin/env python3\nimport time\nimport requests\n\nTARGETS = [\n    \"https://portal.brackenford.example/admin/login\",\n    \"https://203.0.113.20/login\",\n    \"https://203.0.113.70/login\",\n]\nDEFAULTS = [(\"admin\", \"admin\"), (\"admin\", \"password\")]\nDELAY = 30  # seconds between tries, to stay well under the lockout policy\n\ndef try_login(url, user, password):\n    r = requests.post(url, data={\"username\": user, \"password\": password},\n                      timeout=10, allow_redirects=False)\n    return r.status_code == 302 and \"/dashboard\" in r.headers.get(\"Location\", \"\")\n\nfor url in TARGETS:\n    for user, password in DEFAULTS:\n        if try_login(url, user, password):\n            print(f\"[!] {url} accepts {user}:{password}\")\n        time.sleep(DELAY)"
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "Which language is this, and what gives it away?",
+    "options": [
+     "Python: import, def, indented blocks and the f\"...\" string",
+     "Bash: the #! line",
+     "PowerShell: the square brackets",
+     "JavaScript: the brackets around the list"
+    ],
+    "answer": 0,
+    "explain": "import time and import requests load Python libraries, def defines a function, and blocks are marked by indentation, not braces or fi/done. The #! line only says which interpreter runs it.",
+    "where": "import requests"
+   },
+   {
+    "type": "text",
+    "q": "One target is out of scope. Which address?",
+    "answers": [
+     "203.0.113.70"
+    ],
+    "hint": "Compare each target with the notes.",
+    "explain": "203.0.113.70 sits in 203.0.113.64/26, outside this test's scope (.1 to .62). Delete that line before running it; a loop does exactly what its list says.",
+    "where": "203.0.113.70"
+   },
+   {
+    "type": "choice",
+    "q": "How does the script decide that a login worked?",
+    "options": [
+     "Any reply from the server",
+     "A 302 redirect whose Location points to /dashboard",
+     "The page contains the word admin",
+     "No error message for 10 seconds"
+    ],
+    "answer": 1,
+    "explain": "allow_redirects=False keeps the redirect visible, and the script only reports a hit when the server answers 302 and sends you on to /dashboard. Check that this matches how the real app behaves before trusting the result.",
+    "where": "status_code == 302"
+   },
+   {
+    "type": "choice",
+    "q": "Why is there a time.sleep(DELAY) inside the loop?",
+    "options": [
+     "To wait for the page to load",
+     "To space the attempts 30 seconds apart, so accounts aren't locked and the service isn't hammered",
+     "Python needs a pause between requests",
+     "To hide the test from the client"
+    ],
+    "answer": 1,
+    "explain": "The rules say no lockouts. Thirty seconds between tries keeps well under a typical lockout policy and keeps the load tiny. Hiding from the client is never the aim on an authorised test.",
+    "where": "time.sleep(DELAY)"
+   },
+   {
+    "type": "choice",
+    "q": "After you remove the out-of-scope target, how many login attempts will it make, and how long will it take?",
+    "options": [
+     "4 attempts, about 2 minutes",
+     "6 attempts, about 3 minutes",
+     "2 attempts, about 1 minute",
+     "As many as it takes to get in"
+    ],
+    "answer": 0,
+    "explain": "Two targets times two default logins is 4 attempts, about 2 minutes with the 30 second delay. Working out the count before running anything is part of staying inside the rules.",
+    "where": "DEFAULTS = "
+   },
+   {
+    "type": "choice",
+    "q": "The test laptop is Windows with no Python. Which language would you rewrite it in, to use what's already there?",
+    "options": [
+     "PowerShell (Invoke-WebRequest does the HTTP part)",
+     "Bash",
+     "Ruby",
+     "It can't be done on Windows"
+    ],
+    "answer": 0,
+    "explain": "PowerShell ships with Windows and can send the same web requests with Invoke-WebRequest. Recognising Bash, Python and PowerShell, and moving an idea between them, is what PenTest+ asks for."
+   }
+  ]
+ },
+ {
+  "id": "physical-test",
+  "kind": "doc",
+  "category": "Ethical hacking",
+  "track": "Ethical hacking",
+  "minutes": 10,
+  "lesson": "security-controls",
+  "title": "Walk-in: a physical test's notes",
+  "skill": "Name physical attack techniques and the controls that stop them",
+  "card": "Doors, badges, bins and the person who asked",
+  "intro": "A tester spent a day trying to get into a client's office, with written permission. Read the field notes and decide what each finding means.",
+  "simplification": "Fictional notes. Real physical tests are tightly scoped, always authorised in writing, and carry a letter and an emergency contact.",
+  "artifact": {
+   "kind": "doc",
+   "name": "Physical test field notes",
+   "text": "PHYSICAL TEST: FIELD NOTES\nClient: Brackenford Housing Association (fictional), head office\nAuthorised by: Dr Helen Marsh, Director of IT. Authorisation letter carried at all times.\nDate: Wed 4 Nov 2026, 08:00 to 17:00\nScope: staff entrance, reception, ground floor, bin store. No forced entry, no lock picking.\nBadges may only be copied from staff who have agreed in writing.\n\n08:12  Staff entrance (rear). Walked in behind two staff while they held the door. Nobody asked who I was.\n08:40  Bin store unlocked. Recycling bags held printed rent statements with tenant names and addresses.\n       Photographed one page as evidence, left everything in place.\n09:05  Reception. Signed the visitor book as \"J. Smith, IT contractor\". Given a visitor badge; no ID checked.\n09:30  Meeting room 2. Plugged a laptop into the wall port: it got 10.20.0.57 from DHCP, on the staff network.\n10:15  Server room reader takes 125 kHz proximity cards. Ade Okafor (IT Operations, agreed in writing) stood\n       still while a handheld reader copied his badge through his lanyard from about 5 cm. The copy opened the door.\n11:00  Server room door: a wide gap at the bottom and a push bar on the inside. Under-door tool NOT used.\n11:20  CCTV: the rear camera points at the car park. The staff entrance itself is not in view.\n11:45  Challenged by the facilities manager. Showed the authorisation letter; she rang Dr Marsh on the number\n       she already had, not the one on the letter, and confirmed the test. Correct response."
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "What is the 08:12 technique called?",
+    "options": [
+     "Tailgating",
+     "Shoulder surfing",
+     "Badge cloning",
+     "Pretexting by phone"
+    ],
+    "answer": 0,
+    "explain": "Following people through a door they've opened, without them checking you, is tailgating. The fix is people (challenge strangers) plus controls such as an access control vestibule (mantrap) or turnstile.",
+    "where": "Walked in behind two staff"
+   },
+   {
+    "type": "choice",
+    "q": "Why could the 125 kHz badge be copied from 5 cm?",
+    "options": [
+     "The reader was broken",
+     "Older 125 kHz proximity cards send a fixed number with no encryption, so anything that can read it can replay it",
+     "Ade's badge was expired",
+     "The lanyard was metal"
+    ],
+    "answer": 1,
+    "explain": "Low-frequency proximity cards just broadcast an ID. Modern 13.56 MHz smart cards use cryptography, and a PIN pad on sensitive doors means a copied card isn't enough on its own.",
+    "where": "125 kHz"
+   },
+   {
+    "type": "choice",
+    "q": "Why didn't the tester use the under-door tool at 11:00?",
+    "options": [
+     "It wouldn't have worked",
+     "Forced entry is out of scope: note the weakness, don't use it",
+     "The door was alarmed",
+     "It needs two people"
+    ],
+    "answer": 1,
+    "explain": "The scope says no forced entry. A tester records what could be done (a gap and an inside push bar) without doing it. The rules of engagement apply to physical tests exactly as to networks.",
+    "where": "Under-door tool NOT used"
+   },
+   {
+    "type": "text",
+    "q": "Who did the facilities manager ring to check the tester was allowed to be there? (surname)",
+    "answers": [
+     "Marsh",
+     "Dr Marsh",
+     "Helen Marsh"
+    ],
+    "hint": "Look at 11:45.",
+    "explain": "She rang Dr Marsh, the person who authorised the test, on a number she already had. Ringing the number printed on the letter would only reach whoever wrote the letter.",
+    "where": "rang Dr Marsh"
+   },
+   {
+    "type": "choice",
+    "q": "Which control fixes the 09:30 finding?",
+    "options": [
+     "A camera in the meeting room",
+     "Network access control (802.1X) or disabling unused wall ports, so an unknown device can't join the staff network",
+     "A stronger Wi-Fi password",
+     "Locking the meeting room at night"
+    ],
+    "answer": 1,
+    "explain": "Any device plugged into a live port got a staff address. 802.1X checks a device's identity before the port lets it on; unused ports should be disabled or put on a guest VLAN.",
+    "where": "10.20.0.57"
+   },
+   {
+    "type": "choice",
+    "q": "What should the client do about the 08:40 finding?",
+    "options": [
+     "Nothing: it's recycling",
+     "Lock confidential waste in shred bins collected by a shredding firm, and keep the bin store locked",
+     "Move the bins indoors",
+     "Stop printing statements"
+    ],
+    "answer": 1,
+    "explain": "Searching bins for useful paper is dumpster diving. Printed personal data in open recycling is a data protection problem as well as a security one. Locked confidential waste bins and shredding fix it.",
+    "where": "rent statements"
+   }
+  ]
+ },
+ {
+  "id": "cleanup-log",
+  "kind": "doc",
+  "category": "Ethical hacking",
+  "track": "Ethical hacking",
+  "minutes": 8,
+  "lesson": "vuln-management",
+  "title": "Leave it as you found it: clean-up",
+  "skill": "Track what a test changed and restore every system before sign-off",
+  "card": "Accounts, tasks, files and rules to undo",
+  "intro": "Testers change things to prove a point: a file here, an account there. Read the artefact log and decide what must happen before the test is signed off.",
+  "simplification": "A short, fictional log. Real engagements track every artefact the same way, often in a shared sheet the client can see.",
+  "artifact": {
+   "kind": "doc",
+   "name": "Engagement artefact log",
+   "text": "ENGAGEMENT ARTEFACT LOG: Brackenford internal test (fictional), Mon 9 to Fri 13 Nov 2026\nEvery change the testers made, so each one can be undone before sign-off.\n\nID  When        Host           What the testers did                                      Removed?\nA1  Mon 10:14   WEB02          Uploaded test file /var/www/html/uploads/pn-test.php      Yes, Mon 16:30\nA2  Mon 14:02   FS01           Created local account pn-tester (local Administrators)     No\nA3  Tue 09:40   HR-PC07        Scheduled task \"PNCheck\", runs at every logon              No\nA4  Tue 11:15   FS01           Copied tools to C:\\Temp\\pn\\ (SharpHound, nc.exe)          Yes, Tue 17:05\nA5  Wed 13:20   Domain         Added the domain account pn-tester to \"IT Support\"         No\nA6  Wed 15:45   Tester laptop  Saved 40 tenant records as evidence (encrypted archive)    Kept\nA7  Thu 10:05   FW01           Rule 14: allow 192.0.2.44 to 10.20.0.0/16 for the test     No\n                               (added by the client's firewall team, change CHG-2291)\n\nContract: evidence holding personal data is kept for 30 days after the report, then securely deleted and\nthe deletion confirmed to the client in writing."
+  },
+  "steps": [
+   {
+    "type": "text",
+    "q": "How many artefacts still have to be removed from the client's systems?",
+    "answers": [
+     "4",
+     "four"
+    ],
+    "hint": "Count the No answers (A6 is on the tester's laptop, not the client's systems).",
+    "explain": "A2, A3, A5 and A7 are still in place. Each one is a weakness the test created, so each must be undone and checked before sign-off.",
+    "where": "Removed?"
+   },
+   {
+    "type": "choice",
+    "q": "A3 runs at every logon on HR-PC07. Left behind, what would it be?",
+    "options": [
+     "Harmless: it was only for the test",
+     "A persistence mechanism that anyone who learns of it could abuse",
+     "A backup job",
+     "A log forwarder"
+    ],
+    "answer": 1,
+    "explain": "A scheduled task that runs at logon is a classic way to keep a foothold. Testers use it to prove the risk, then remove it, and the report says it was removed.",
+    "where": "runs at every logon"
+   },
+   {
+    "type": "text",
+    "q": "Which account name has to be both deleted on FS01 and taken out of a domain group?",
+    "answers": [
+     "pn-tester"
+    ],
+    "hint": "A2 and A5.",
+    "explain": "pn-tester exists twice: a local Administrator on FS01 (A2) and a domain account added to IT Support (A5). Delete the local account, remove the group membership and disable or delete the domain account.",
+    "where": "pn-tester"
+   },
+   {
+    "type": "choice",
+    "q": "Who should remove firewall rule 14 (A7)?",
+    "options": [
+     "The tester, using the admin login they were given",
+     "The client's firewall team, through change control (closing CHG-2291), with the tester checking it's gone",
+     "Nobody: it only allows the tester's address",
+     "The client's ISP"
+    ],
+    "answer": 1,
+    "explain": "The client's team added it through a change, so they remove it the same way, and the tester confirms it's closed. An allow rule for a test address left open is still a hole.",
+    "where": "CHG-2291"
+   },
+   {
+    "type": "choice",
+    "q": "What happens to A6, the 40 tenant records on the tester's laptop?",
+    "options": [
+     "Kept forever as proof",
+     "Kept encrypted for 30 days after the report, then securely deleted, with the deletion confirmed to the client in writing",
+     "Emailed to the client and deleted at once",
+     "Published in the report"
+    ],
+    "answer": 1,
+    "explain": "The contract sets the retention. Personal data taken as evidence is protected while it's held, securely deleted on time, and the client gets written confirmation.",
+    "where": "securely deleted"
+   }
+  ]
+ },
+ {
   "id": "sqli-log",
   "kind": "log",
   "category": "Web & cloud",
@@ -7813,6 +8179,287 @@
   }
  },
  {
+  "id": "risk-gone-wrong",
+  "kind": "doc",
+  "category": "Governance",
+  "track": "Foundations",
+  "minutes": 7,
+  "lesson": "risk",
+  "stage": "diagnose",
+  "title": "Why did the register miss it?",
+  "skill": "Find where a risk process failed: scoring, sign-off, ownership and review",
+  "card": "The risk was on the list. So what went wrong?",
+  "intro": "Calder Opticians had the risk that hit them written down. Read the review and the register, and find where the process broke.",
+  "artifact": {
+   "kind": "doc",
+   "name": "Post-incident review and risk register",
+   "text": "POST-INCIDENT REVIEW: Calder Opticians (fictional), 9 Oct 2026\nWhat happened: ransomware on the booking server, which ran an operating system its supplier stopped updating in 2024.\nOnline booking was down for 4 days.\n\nRISK REGISTER (extract). Last reviewed: 3 Jan 2025. Policy: review every 6 months.\nID   Risk                                   Likelihood  Impact  Score  Treatment  Owner         Signed off by\nR07  Booking server on an unsupported OS    2           5       10     Accept     (none)        Office junior\nR08  Card data stolen from the website      2           4       8      Transfer   Finance lead  Director\nR11  Laptop lost on the train               3           2       6      Mitigate   IT support    Director\n\nScale: 1 (rare) to 5 (almost certain). Score = likelihood x impact.\nRisk appetite (board, 2024): scores of 8 or below may be accepted. Anything higher needs a director's sign-off.\nR07 note (2025): \"No more updates. An upgrade is quoted at £4,000.\"\nR08 note: \"Covered by our cyber insurance policy.\"\nMarch 2026 scan: two vulnerabilities on the booking server are in CISA's Known Exploited Vulnerabilities list."
+  },
+  "steps": [
+   {
+    "type": "text",
+    "q": "Which risk ID is the one that happened?",
+    "answers": [
+     "R07"
+    ],
+    "hint": "The booking server.",
+    "explain": "R07, the booking server on an unsupported operating system. The risk was known; the process around it failed.",
+    "where": "R07"
+   },
+   {
+    "type": "choice",
+    "q": "R07 scored 10. Who was allowed to accept it?",
+    "options": [
+     "Anyone, because it was on the register",
+     "Only a director: 10 is above the appetite of 8",
+     "The office junior, who signed it",
+     "Nobody: unsupported systems can never be accepted"
+    ],
+    "answer": 1,
+    "explain": "The board's appetite allows scores of 8 or below to be accepted; anything higher needs a director. Acceptance by someone without that authority isn't really acceptance.",
+    "where": "Risk appetite"
+   },
+   {
+    "type": "choice",
+    "q": "After the March 2026 scan, what should have happened to R07?",
+    "options": [
+     "Nothing until the next review",
+     "Re-score it: known-exploited flaws make likelihood 4 or 5, a score of 20 or more, so mitigate (upgrade or isolate the server)",
+     "Transfer it to insurance",
+     "Lower the impact, as bookings can be taken by phone"
+    ],
+    "answer": 1,
+    "explain": "Known-exploited vulnerabilities mean attackers are using them, so likelihood jumps. At 4 x 5 = 20 the risk is far over appetite, and £4,000 is small next to four days without bookings.",
+    "where": "Known Exploited Vulnerabilities"
+   },
+   {
+    "type": "choice",
+    "q": "What else let R07 drift for so long?",
+    "options": [
+     "The scale was wrong",
+     "It had no owner, and the register hadn't been reviewed since January 2025 (policy: every 6 months)",
+     "It was scored too high",
+     "The supplier didn't warn them"
+    ],
+    "answer": 1,
+    "explain": "A risk with no owner has nobody watching it, and a missed review means new facts (like the scan) never reach the register.",
+    "where": "Last reviewed"
+   },
+   {
+    "type": "choice",
+    "q": "R08 is transferred to insurance. What does that not do?",
+    "options": [
+     "Pay for incident response",
+     "Remove the harm to customers, the legal duty to protect their data, or the damage to trust",
+     "Count as a risk treatment",
+     "Need anyone's sign-off"
+    ],
+    "answer": 1,
+    "explain": "Transfer moves some of the cost to someone else. The organisation still has to protect the data, and its customers and reputation still take the hit.",
+    "where": "cyber insurance"
+   }
+  ],
+  "next": [
+   {
+    "label": "NCSC: risk management guidance",
+    "url": "https://www.ncsc.gov.uk/collection/risk-management"
+   }
+  ]
+ },
+ {
+  "id": "which-law-applies",
+  "kind": "doc",
+  "category": "Governance",
+  "track": "Foundations",
+  "minutes": 7,
+  "lesson": "law",
+  "stage": "diagnose",
+  "title": "Which rule was broken?",
+  "skill": "Match a real situation to the UK law or standard that covers it, and spot a missed deadline",
+  "card": "Four cases, four different rules",
+  "intro": "Four things went wrong at four organisations. For each, decide which law or standard applies, and whether a deadline was met.",
+  "simplification": "Simplified for learning, not legal advice. Real cases depend on detail; ask a lawyer or the regulator.",
+  "artifact": {
+   "kind": "doc",
+   "name": "Case file",
+   "text": "CASE FILE: four things that happened at fictional UK organisations in 2026\n\nCASE 1  A sales manager left Brightwell Lettings in June. In August she logged in to the company's\n        CRM with her old password, which nobody had disabled, and read tenant records.\nCASE 2  Thornby Garden Centre found that a customer database had been copied by an attacker.\n        It became aware on Friday 6 Nov at 17:00 and reported to the ICO on Tuesday 10 Nov at 10:00.\nCASE 3  An online shop's order system keeps the full card number and the 3-digit security code\n        (CVV2) for every order, \"in case customers want a refund\".\nCASE 4  Wenmoor Water, a water supplier designated as an operator of essential services, had\n        its treatment-works control network disrupted by malware for six hours."
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "CASE 1: the former manager reading tenant records. Which law makes what she did an offence?",
+    "options": [
+     "Computer Misuse Act 1990 (unauthorised access)",
+     "PCI DSS",
+     "The NIS Regulations 2018",
+     "None: her password still worked"
+    ],
+    "answer": 0,
+    "explain": "Accessing a computer you know you're not authorised to use is an offence under section 1 of the Computer Misuse Act, even if an old password still works. Brightwell also failed to disable a leaver's account.",
+    "where": "old password"
+   },
+   {
+    "type": "choice",
+    "q": "CASE 2: was Thornby's report to the ICO on time?",
+    "options": [
+     "Yes: it was the next working day",
+     "No: 72 hours from becoming aware ended on Monday at 17:00, so it was 17 hours late",
+     "Yes: weekends don't count",
+     "There's no deadline"
+    ],
+    "answer": 1,
+    "explain": "UK GDPR requires a reportable personal data breach to be reported within 72 hours of becoming aware of it, weekends included. If it's late, the report must say why.",
+    "where": "Friday 6 Nov at 17:00"
+   },
+   {
+    "type": "choice",
+    "q": "CASE 3: keeping the CVV2 after the payment is approved breaks which rule?",
+    "options": [
+     "UK GDPR only",
+     "PCI DSS: the card security code must never be stored after authorisation",
+     "The Computer Misuse Act",
+     "No rule: refunds are a good reason"
+    ],
+    "answer": 1,
+    "explain": "PCI DSS forbids storing sensitive authentication data, including the card security code, after authorisation, even encrypted. Refunds don't need it. It's a contractual standard from the card schemes, not a law.",
+    "where": "CVV2"
+   },
+   {
+    "type": "choice",
+    "q": "CASE 4: Wenmoor Water is an operator of essential services. Which rules require it to report the disruption to its competent authority?",
+    "options": [
+     "PCI DSS",
+     "The NIS Regulations 2018",
+     "The Computer Misuse Act 1990",
+     "ISO/IEC 27001"
+    ],
+    "answer": 1,
+    "explain": "The UK's NIS Regulations cover operators of essential services such as water and energy. A significant disruption must be reported to the competent authority without undue delay, and within 72 hours.",
+    "where": "operator of essential services"
+   },
+   {
+    "type": "text",
+    "q": "CASE 2: which regulator receives personal data breach reports in the UK? (initials)",
+    "answers": [
+     "ICO"
+    ],
+    "hint": "It's in the case file.",
+    "explain": "The Information Commissioner's Office (ICO). Where the breach is likely to put people at high risk, the people affected must be told too.",
+    "where": "ICO"
+   }
+  ],
+  "next": [
+   {
+    "label": "ICO: personal data breaches",
+    "url": "https://ico.org.uk/for-organisations/report-a-breach/"
+   }
+  ]
+ },
+ {
+  "id": "which-model-fits",
+  "kind": "doc",
+  "category": "Governance",
+  "track": "Foundations",
+  "minutes": 7,
+  "lesson": "attack-models",
+  "stage": "diagnose",
+  "title": "Which model answers the question?",
+  "skill": "Pick the attack model that answers a real question, and place events in the Kill Chain",
+  "card": "Kill Chain, ATT&CK, Diamond or STRIDE?",
+  "intro": "After an incident, Ferrow's review board asked four different questions. Each is best answered by a different model. Read the timeline and match them up.",
+  "artifact": {
+   "kind": "doc",
+   "name": "Incident review",
+   "text": "INCIDENT REVIEW: Ferrow Logistics (fictional), October 2026\n\nTIMELINE\nDay 1   The attacker reads staff profiles on LinkedIn and the company website.\nDay 3   A phishing email with a macro-enabled invoice reaches 40 staff. The mail filter marked it\n        \"suspicious\" but still delivered it.\nDay 3   One user enables macros. Malware installs and adds a Run registry key so it starts at every logon.\nDay 4   The malware calls out to 203.0.113.50 over HTTPS every 5 minutes.\nDay 9   The attacker uses stolen admin credentials to reach the finance server and copies 2 GB of invoices.\nDay 10  The data leaves over the same HTTPS connection.\n\nQUESTIONS FROM THE REVIEW BOARD\nQ-A  \"Which stage could we have stopped it at, earliest and most cheaply?\"\nQ-B  \"Which exact techniques did they use, so we can check we'd detect each one?\"\nQ-C  \"Who is behind it, what infrastructure did they use, and who else have they hit?\"\nQ-D  \"For the new finance app we're designing now, what could go wrong with each part?\""
+  },
+  "steps": [
+   {
+    "type": "choice",
+    "q": "Q-A: which stage could they have stopped it at, earliest and most cheaply?",
+    "options": [
+     "Cyber Kill Chain",
+     "MITRE ATT&CK",
+     "Diamond Model",
+     "STRIDE"
+    ],
+    "answer": 0,
+    "explain": "The Kill Chain sets an attack out as stages in order (reconnaissance through to actions on objectives). Its point is that breaking any link stops the attack, and the earlier the better.",
+    "where": "Q-A"
+   },
+   {
+    "type": "choice",
+    "q": "Q-B: which exact techniques, so each one can be checked against detections?",
+    "options": [
+     "Cyber Kill Chain",
+     "MITRE ATT&CK",
+     "Diamond Model",
+     "STRIDE"
+    ],
+    "answer": 1,
+    "explain": "ATT&CK is a detailed catalogue of real techniques with IDs (for example T1566 Phishing, T1547.001 Registry Run Keys). Teams map each one to a detection and find the gaps.",
+    "where": "Q-B"
+   },
+   {
+    "type": "choice",
+    "q": "Q-C: who is behind it, what infrastructure, and who else was hit?",
+    "options": [
+     "Cyber Kill Chain",
+     "MITRE ATT&CK",
+     "Diamond Model",
+     "STRIDE"
+    ],
+    "answer": 2,
+    "explain": "The Diamond Model links four points: adversary, capability, infrastructure (such as 203.0.113.50) and victim. Pivoting on one, such as the server, finds other victims and links between incidents.",
+    "where": "Q-C"
+   },
+   {
+    "type": "choice",
+    "q": "Q-D: what could go wrong with each part of an app that's still being designed?",
+    "options": [
+     "Cyber Kill Chain",
+     "MITRE ATT&CK",
+     "Diamond Model",
+     "STRIDE"
+    ],
+    "answer": 3,
+    "explain": "STRIDE is for threat modelling a design before it's built: Spoofing, Tampering, Repudiation, Information disclosure, Denial of service and Elevation of privilege, for each part.",
+    "where": "Q-D"
+   },
+   {
+    "type": "choice",
+    "q": "In Kill Chain terms, what is Day 4 (calling out to 203.0.113.50 every 5 minutes)?",
+    "options": [
+     "Reconnaissance",
+     "Delivery",
+     "Installation",
+     "Command and control"
+    ],
+    "answer": 3,
+    "explain": "Regular check-ins to an attacker's server are command and control (C2). Day 3's Run key is Installation, and the email itself was Delivery.",
+    "where": "every 5 minutes"
+   },
+   {
+    "type": "choice",
+    "q": "Where did an existing control see the attack but not stop it?",
+    "options": [
+     "Day 1: LinkedIn",
+     "Day 3: the mail filter marked the email suspicious but delivered it",
+     "Day 9: the finance server",
+     "Day 10: the firewall"
+    ],
+    "answer": 1,
+    "explain": "The filter spotted it at the Delivery stage, then let it through. Quarantining suspicious attachments (or stripping macros) breaks the chain at its cheapest point.",
+    "where": "still delivered it"
+   }
+  ],
+  "next": [
+   {
+    "label": "MITRE ATT&CK",
+    "url": "https://attack.mitre.org/"
+   }
+  ]
+ },
+ {
   "id": "controls-what-was-missing",
   "kind": "doc",
   "category": "Governance",
@@ -8733,8 +9380,8 @@
   ],
   "next": [
    {
-    "label": "NCSC: secure system administration and change",
-    "url": "https://www.ncsc.gov.uk/collection/10-steps/secure-configuration"
+    "label": "NCSC 10 Steps: architecture and configuration",
+    "url": "https://www.ncsc.gov.uk/collection/10-steps/architecture-and-configuration"
    }
   ],
   "stage": "diagnose",

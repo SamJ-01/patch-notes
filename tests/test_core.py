@@ -4,6 +4,7 @@ Run with:  python3 -m unittest discover -s tests -v
 """
 
 import datetime as dt
+import html
 import json
 import re
 import sys
@@ -511,7 +512,69 @@ class SafetyNotes(unittest.TestCase):
                 self.assertTrue(a.is_private or a.is_loopback or a.is_unspecified or any(a in n for n in doc), f"{f.name}: {ip}")
 
 
+class LazyBodies(unittest.TestCase):
+    """The page carries only what lists, cards and counts need; each heavy body is a separate file fetched on open
+    (build.split_bodies, loadFull / loadQuestions in 01-core). Nothing may be lost in the split."""
+    def test_split_keeps_every_body_and_only_light_fields_in_the_page(self):
+        labs, missions = content("labs.json"), [json.loads(f.read_text()) for f in sorted((CONTENT / "missions").glob("*.json"))]
+        agency = [json.loads(f.read_text()) for f in sorted((CONTENT / "agency").glob("*.json"))]
+        certs = build.load_certs()
+        light, files = build.split_bodies({"labs": labs, "missions": missions, "agency": agency, "certs": certs, "other": 1})
+        self.assertEqual(light["other"], 1)
+        for kind, items in (("labs", labs), ("missions", missions), ("agency", agency)):
+            for item, slim in zip(items, light[kind]):
+                self.assertEqual(files[f"{kind}/{item['id']}.json"], item, "the whole body is written")
+                self.assertEqual(slim["_lazy"], 1)
+                self.assertLessEqual(set(slim) - {"_lazy", "modes"}, build.LIGHT[kind], item["id"])
+        self.assertNotIn("steps", light["labs"][0]); self.assertNotIn("alerts", light["agency"][0])
+        for c, slim in zip(certs, light["certs"]):
+            self.assertEqual(files[f"questions/{c['id']}.json"], c["questions"])
+            self.assertEqual([q["id"] for q in slim["questions"]], [q["id"] for q in c["questions"]])
+            for q, s in zip(c["questions"], slim["questions"]):
+                self.assertEqual(s, {"id": q["id"], "objective": q["objective"], "single": sum(o["correct"] for o in q["options"]) == 1})
+        # Fields the page reads before a body loads must be in the light copies.
+        for m in light["missions"]:
+            self.assertTrue(all("label" in v and "xp" in v for v in m["modes"].values()), m["id"])
+
+
+
+class PracticePages(unittest.TestCase):
+    """Static pages for every lab, mission, shift and PBQ (build.practice_items/practice_page), so search engines and
+    shared links find the hands-on work, not just lessons. They list the questions, never the answers."""
+    def setUp(self):
+        self.full = {"labs": content("labs.json"), "missions": [json.loads(f.read_text()) for f in sorted((CONTENT / "missions").glob("*.json"))],
+                     "agency": [json.loads(f.read_text()) for f in sorted((CONTENT / "agency").glob("*.json"))], "certs": build.load_certs()}
+        self.items = build.practice_items(self.full, self.full["certs"])
+
+    def test_one_page_per_activity_with_unique_ids_and_real_routes(self):
+        n = len(self.full["labs"]) + len(self.full["missions"]) + len(self.full["agency"]) + sum(len(c.get("pbqs", [])) for c in self.full["certs"])
+        self.assertEqual(len(self.items), n)
+        self.assertEqual(len({i["id"] for i in self.items}), n, "page file names are unique")
+        for i in self.items:
+            self.assertTrue(i["title"] and i["lead"], i["id"])
+            self.assertTrue(i["objectives"], f"{i['id']} names the exam objectives it practises")
+
+    def test_pages_escape_content_and_leave_answers_out(self):
+        fonts, css = build.page_css(build.assemble_template())
+        lab = next(i for i in self.items if i["id"] == "sqli-log")
+        page = build.practice_page(dict(lab, title="<script>x</script>"), fonts, css, {"url": "https://example.com/"})
+        self.assertNotIn("<script>x</script>", page)
+        src = next(l for l in self.full["labs"] if l["id"] == "sqli-log")
+        for st in src["steps"]:
+            self.assertNotIn(html.escape(st["explain"]), page, "explanations (the answers) stay in the app")
+
+    def test_sitemap_lists_the_practice_pages(self):
+        smap = ET.fromstring(build.sitemap(content("lessons.json"), {"url": "https://example.com/"}, self.items))
+        self.assertEqual(len(smap), len(content("lessons.json")) + 3 + len(self.items))
+
 class Markup(unittest.TestCase):
+    def test_glossary_related_buttons_have_their_own_attribute(self):
+        """Lessons' "Re-read" buttons use data-see. The glossary popup's "Related" buttons once shared that name, so its
+        page-wide click handler caught every Re-read press and threw looking up a term called "what" (18 Nov audit)."""
+        js = (ROOT / "src" / "app" / "02-glossary.js").read_text()
+        self.assertNotIn("[data-see]", js)
+        self.assertIn("data-gsee", js)
+
     def test_glossary_terms_are_never_put_inside_buttons(self):
         """A glossary term is itself a button. Inside another button it can't be reached by keyboard, a tap
         on it also presses the outer button, and screen readers announce it wrongly (axe: nested-interactive)."""
@@ -826,6 +889,16 @@ class ContentIntegrity(unittest.TestCase):
         for x in [*self.labs.values(), *(json.loads(f.read_text()) for f in (ROOT / "content" / "missions").glob("*.json"))]:
             if x.get("lesson"):
                 self.assertIn(x["lesson"], self.lessons, x["id"])
+
+    def test_every_lesson_has_a_diagnose_step(self):
+        """Each topic runs Understand, Experiment, Diagnose, Prove it. Diagnose is a case to work out: a mission, a shift
+        that lists the lesson, or a lab marked stage "diagnose" (its own lesson or `also`). The governance lessons were
+        the last without one (18 Nov)."""
+        missions = [json.loads(f.read_text()) for f in (ROOT / "content" / "missions").glob("*.json")]
+        shifts = [json.loads(f.read_text()) for f in (ROOT / "content" / "agency").glob("*.json")]
+        covered = {x for m in missions for x in [m["lesson"], *m.get("also", [])]} | {x for sh in shifts for x in sh.get("lessons", [])}
+        covered |= {x for l in self.labs.values() if l.get("stage") == "diagnose" for x in [l["lesson"], *l.get("also", [])]}
+        self.assertEqual(sorted(set(self.lessons) - covered), [])
 
     def test_certification_maps_are_complete_and_honest(self):
         labs = {l["id"] for l in self.labs.values()}

@@ -88,7 +88,9 @@ function subnetWhy(r, s, f) {
 export const cliNet = (pbq, lab) => createNet({ ...lab, start: pbq.start, tasks: [] });
 
 // ---------- the page
-export function mount(el, pbq, { lab = null, best = null, onScore = () => {} } = {}) {
+// exam: inside a mock exam (no clock, best score, Show the answer or Start again; marked by the mock at the end).
+// instant (with exam): the mock gives feedback after each item, so Check stays.
+export function mount(el, pbq, { lab = null, best = null, onScore = () => {}, exam = false, instant = false } = {}) {
   let order = pbq.kind === "order" ? startOrder(pbq) : null;
   let rules = pbq.kind === "firewall" ? Array.from({ length: pbq.slots }, () => ({ action: "", proto: "", src: "", dst: "", port: "" })) : null;
   let net = pbq.kind === "cli" ? cliNet(pbq, lab) : null, dev = pbq.kind === "cli" ? pbq.devices[0] : null, outs = {};
@@ -97,15 +99,15 @@ export function mount(el, pbq, { lab = null, best = null, onScore = () => {} } =
   const opts = (list, val, blank = "Choose…") => `<option value="">${esc(blank)}</option>` + list.map(o => `<option${norm(o) === norm(val) ? " selected" : ""}>${esc(o)}</option>`).join("");
 
   el.innerHTML = `<div class="pbq" data-kind="${esc(pbq.kind)}">
-    <div class="pbq-bar"><span class="pbq-kind">${esc(KINDS[pbq.kind])}</span><span class="pbq-time" aria-hidden="true"></span>
-      <span class="sr-only">Suggested time: about ${pbq.minutes} minutes.</span>${best != null ? `<span class="pbq-best">Your best: ${best}%</span>` : ""}</div>
+    <div class="pbq-bar"><span class="pbq-kind">${esc(KINDS[pbq.kind])}</span>${exam ? "" : `<span class="pbq-time" aria-hidden="true"></span>
+      <span class="sr-only">Suggested time: about ${pbq.minutes} minutes.</span>`}${best != null && !exam ? `<span class="pbq-best">Your best: ${best}%</span>` : ""}</div>
     <section class="pbq-brief" aria-labelledby="pbq-brief-h"><h2 id="pbq-brief-h" class="sr-only">The task</h2><p>${gl(pbq.scenario, 4)}</p>
       ${pbq.requirements ? `<ul class="pbq-reqs">${pbq.requirements.map(r => `<li>${gl(r, 1)}</li>`).join("")}</ul>` : ""}
       ${pbq.kind === "cli" ? `<ul class="pbq-reqs">${pbq.tasks.map(t => `<li>${gl(t.text, 1)}</li>`).join("")}</ul>` : ""}</section>
     ${pbq.kind === "cli" && globalThis.PN_safeNote ? globalThis.PN_safeNote("sim", { how: "vlan" }) : ""}
     <section class="pbq-task" id="pbq-task" aria-label="Your answer"></section>
-    <div class="row pbq-ctl"><button class="btn brand" type="button" data-act="check">Check my answer</button>
-      <button class="btn ghost" type="button" data-act="answer">Show the answer</button><button class="btn ghost" type="button" data-act="reset">Start again</button></div>
+    ${exam && !instant ? "" : `<div class="row pbq-ctl"><button class="btn brand" type="button" data-act="check">Check my answer</button>
+      ${exam ? "" : `<button class="btn ghost" type="button" data-act="answer">Show the answer</button><button class="btn ghost" type="button" data-act="reset">Start again</button>`}</div>`}
     <div id="pbq-result" class="pbq-result" aria-live="polite"></div>
     ${pbq.simplification ? `<details class="tbl simplification"><summary>How this differs from the real thing</summary><p>${esc(pbq.simplification)}</p></details>` : ""}
   </div>`;
@@ -196,7 +198,7 @@ export function mount(el, pbq, { lab = null, best = null, onScore = () => {} } =
   }
   function check() {
     const g = grade(pbq, answer()); mark(g); result(g);
-    if (!revealed && g.pct > 0) onScore(g.pct);  // a blank or all-wrong check isn't saved as a best
+    if (!revealed && g.pct > 0 && !exam) onScore(g.pct);  // a blank or all-wrong check isn't saved as a best (a mock saves its own)
     return g;
   }
   function reset() {
@@ -242,7 +244,7 @@ export function mount(el, pbq, { lab = null, best = null, onScore = () => {} } =
     const s = Math.floor((Date.now() - started) / 1000), t = el.querySelector(".pbq-time");
     if (t) t.textContent = `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")} · about ${pbq.minutes} min`;
   };
-  timer = setInterval(tick, 1000); tick();
+  if (!exam) { timer = setInterval(tick, 1000); tick(); }
   draw();
-  return { check, fill, reset, answer, net: () => net };
+  return { check, fill, reset, answer, grade: () => grade(pbq, answer()), net: () => net };
 }

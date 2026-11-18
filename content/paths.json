@@ -337,6 +337,10 @@
    },
    {
     "type": "lab",
+    "id": "recon-script"
+   },
+   {
+    "type": "lab",
     "id": "nmap-read"
    },
    {
@@ -362,6 +366,10 @@
    {
     "type": "lab",
     "id": "permissions"
+   },
+   {
+    "type": "lab",
+    "id": "cleanup-log"
    }
   ]
  },

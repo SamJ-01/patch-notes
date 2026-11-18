@@ -484,3 +484,34 @@ for (const sh of shifts) test(`${sh.id}: shadowing shows a perfect shift, every 
   assert.equal(steps.at(-1).kind, "handover");
   assert.ok(!steps.some(x => x.kind === "reply" && x.outcome === "asks"), "no team has to ask for a reason: the evidence is attached first time");
 });
+
+test("saving mid-shift: replaying the saved actions rebuilds the same state and chat, and drops what doesn't fit", () => {
+  const half = perfect.slice(0, 9), { s, events } = play(half, A.start(shift, { level: "guided" }).state);
+  const back = A.replay(shift, { level: "guided", acts: half });
+  assert.deepEqual(back.state, s, "same state as working it live");
+  assert.equal(back.events.filter(e => e.type === "arrive").length, s.arrived.length, "every arrival is in the chat again");
+  assert.equal(back.events.length - A.start(shift).events.length, events.length);
+  // An edited or stale save: unknown actions, other shifts' ids, prototype names and junk are dropped, never trusted.
+  const junk = [["search", "constructor", "x"], ["ask", "constructor:x"], ["close", "a1", { verdict: "toString", severity: "low" }], ["reopen", "__proto__"],
+    ["email", "toString", "x"], ["run", "rm -rf"], "x", null, ["close", "nope", {}], ["hint", "a1"]];
+  const mixed = A.replay(shift, { level: "standard", acts: [...junk, ...half] });
+  assert.deepEqual(mixed.acts, half, "only the real actions are kept (hints are guided only)");
+  assert.equal(mixed.state.level, "standard");
+  assert.equal(A.replay(shift, { level: "nope", acts: half }).state.level, "standard");
+  for (const bad of [null, "x", {}, { acts: "x" }, { acts: junk }]) assert.equal(A.replay(shift, bad), null);
+  // A finished shift is never resumed: its report is saved instead.
+  assert.equal(A.replay(shift, { acts: [...perfect, ["handover", goodHandover()]] }), null);
+  assert.ok(A.replay(shift, { acts: Array(A.MAX_ACTS + 50).fill(["wait"]) }).acts.length <= A.MAX_ACTS);
+});
+
+test("saving mid-shift: every shift's shadow run can be saved and resumed at any point", () => {
+  for (const sh of shifts) {
+    const { acts } = A.shadow(sh);
+    assert.ok(acts.length > 5, sh.id);
+    for (let n = 1; n < acts.length; n++) {
+      const live = acts.slice(0, n).reduce((st, a) => A.act(sh, st, a).state, A.start(sh, { level: "guided" }).state);
+      const back = A.replay(sh, JSON.parse(JSON.stringify({ level: "guided", acts: acts.slice(0, n) })));
+      assert.deepEqual(back.state, live, `${sh.id}: resumed after ${n} actions`);
+    }
+  }
+});
