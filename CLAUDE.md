@@ -171,6 +171,11 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   a Photo / Diagram switch (`data-view`, not `data-see`, which the glossary and checks already use). Scene items may carry `fix`
   ("How to fix it") instead of `breaks`. Tested: valid, and never beside a flow diagram or explainer. Its faceless cast (matte off-white heads,
   navy staff, grey public) is the standard for every scene: `docs/image-style.md`; next scenes in `docs/scene-shot-list.md`.
+- Lesson flow diagrams (18 Nov audit, `static/js/flow.js`): every caption (route, stage, phone, devices) is one card under
+  the picture: "Step n of N · who → whom", a title (`flow-msg`, red on the attacker's steps), the text and how it's stopped.
+  Route steps must put the packet where the caption says (`validate`); a frame goes to the next device on its path while
+  the packet keeps the far address (tested for lessons and missions: `FramesAndPackets`). Patch sits on the status bar
+  between 521 and 1319 px wide, where the content reaches the screen edge, instead of covering side panels.
 - Ransomware lesson "See it" (17 Nov): explainer kind `ransomware` (`static/js/ransomware.js`, loaded by explainers.js; tests
   `tests/ransomware.test.mjs`). The attack walks attacker > VPN > admin laptop > file server > backups over six days (device
   drawings, a day clock, "How it's stopped here"), then "Stop it": pick `BUDGET` (2) defences and run it again. Pure `runAttack`
@@ -253,6 +258,8 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - Static practice pages (18 Nov): `site/practise/<id>.html` for every lab, mission, shift and PBQ, plus `practise/index.html`,
   built from the full content (`practice_items`, `practice_page`) and listed in sitemap.xml: title, scenario, the questions
   (never the explanations or answers), the exam objectives, and a link into the app. Tested: `PracticePages`.
+  All static pages (lessons/ and practise/) link one shared stylesheet, `site.<hash>.css` (`shared_css`), instead of each
+  carrying it inline: ~355 KB a page became 3 to 15 KB. Its `url("img/...")` paths now resolve from the site root.
 - Publishing: `python3 scripts/publish.py <production clone>` diffs dev since the last published "dev <sha>", leaves out the
   files kept apart (CLAUDE.md, AI notes, wrangler, the preview workflow), applies, runs the gate there and commits. It never
   pushes: production's push needs the owner's approval. `--dry-run` lists the files.
