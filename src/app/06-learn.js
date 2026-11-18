@@ -627,7 +627,7 @@ function lessonView(id) {
   const leadMail = l.diagram?.steps?.[0]?.stage?.kind === "mail";
   const leadPicture = leadMail || l.diagram?.scene === "route";
   const seeBlock = picture ? (leadPicture
-    ? `<section class="lesson-mail" id="l-see"><div id="l-diagram" tabindex="-1"><div id="lflow"><div class="empty">Loading the diagram…</div></div></div></section>`
+    ? `<section class="lesson-mail${l.diagram?.scene === "route" ? " is-wide" : ""}" id="l-see"><div id="l-diagram" tabindex="-1"><div id="lflow"><div class="empty">Loading the diagram…</div></div></div></section>`
     : `<section class="panel wide screen" id="l-see"><div class="panel-title"><h2>See it</h2></div>
       ${showExplainer ? `<div id="l-xpl" tabindex="-1">${l.explainer.why ? `<p class="muted xpl-why">${gloss(l.explainer.why, 2)}</p>` : ""}<div id="lxpl"><div class="empty">Loading…</div></div></div>` : ""}
       ${showDiagram ? `<div id="l-diagram" tabindex="-1">${l.diagram.why ? `<p class="muted xpl-why">${gloss(l.diagram.why, 2)}</p>` : ""}<div id="lflow"><div class="empty">Loading the diagram…</div></div></div>` : ""}

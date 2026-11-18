@@ -595,6 +595,11 @@ body.has-status .toast { bottom: calc(44px + env(safe-area-inset-bottom, 0px)); 
 .stage.room .m-dev.warn .hw-led { fill: var(--likely); opacity: 1; filter: drop-shadow(0 0 3px rgba(255, 140, 66, 0.9)); }
 .stage.room .m-dev.lit .hw-screen { fill: #0f3a41; stroke: var(--brand); }
 .m-screen { font: 600 3.6px var(--font-mono) !important; fill: #B6F6F9 !important; }
+/* Desktop: the room is drawn smaller than its own units, so 11.5 came out at about 10 px; these read at 11 to 12 px. */
+.stage.room svg:not(.compact) .m-name { font-size: 13.5px; }
+.stage.room svg:not(.compact) .m-ip { font-size: 14.5px; }
+.stage.room svg:not(.compact) .m-ip .m-k { font-size: 12px; }
+.stage.room svg:not(.compact) .m-status { font-size: 13px; }
 /* On a phone the room keeps the desktop arrangement, scaled down, so its words are drawn larger (layout textScale). */
 .stage.room svg.compact .m-name { font-size: 21px; letter-spacing: 0.04em; }
 .stage.room svg.compact .m-ip { font-size: 23px; }
@@ -1860,7 +1865,7 @@ body.life { background-image: none; }
 .flow.is-route .route-cards { justify-items: center; }
 .flow.is-route .route-pkt { position: static; box-sizing: border-box; width: min(340px, 100%); transform: none; padding: 10px 12px 12px; border: 1px solid rgba(63, 224, 232, 0.55); border-radius: 8px; background: #0F1621; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5); }
 .flow.is-route .route-pkt.back { border-color: rgba(61, 220, 151, 0.6); }
-.flow.is-route .route-addr { display: grid; grid-template-columns: 3em 1fr; gap: 6px; align-items: start; }
+.flow.is-route .route-addr { display: grid; grid-template-columns: 5.4em 1fr; gap: 6px; align-items: start; }
 .flow.is-route .route-addr .vals { display: grid; width: auto; }
 /* The label sits beside the current address; the reserved line for the old address is above it. */
 .flow.is-route .route-addr > span:first-child { align-self: end; width: auto; line-height: 1.6; }
@@ -1888,6 +1893,24 @@ body.life { background-image: none; }
 .flow.is-route .route-stop.on .hw-body { stroke: rgba(63, 224, 232, 0.75); }
 @media (max-width: 640px) { .flow.is-route .route { --dev: 58px; } .route-slab { width: 20px; height: 12px; margin: -6px 0 0 -10px; } .route-slab::before { left: 3px; right: 3px; top: 2.5px; } .flow.is-route .route-stop { font-size: 0.6rem; letter-spacing: 0.04em; } .flow.is-route .route-addr { font-size: .8rem; } }
 @media (prefers-reduced-motion: reduce) { .route-lit, .route-slab { transition: none; } }
+/* The route uses the lesson's full width, like the other See it pictures (it was boxed at 820 px for email cards),
+   with larger devices, step dots and its words in one caption card under the room (18 Nov). */
+.article.lesson > .lesson-mail.is-wide { max-width: none; padding-inline: 0; }
+.lesson-mail.is-wide .flow.is-route .route { --dev: 112px; padding: 22px 12px 24px; }
+.route-dots { display: flex; justify-content: center; gap: 8px; margin-top: -4px; }
+.route-dots span { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--line); background: transparent; transition: background .2s, border-color .2s, transform .2s; }
+.route-dots span.done { background: rgba(var(--brand-rgb), .45); border-color: transparent; }
+.route-dots span.now { background: var(--brand); border-color: var(--brand); transform: scale(1.25); }
+.route-dots span.back.done { background: rgba(var(--good-rgb), .45); } .route-dots span.back.now { background: var(--good); border-color: var(--good); }
+/* Every lesson flow's caption (route, stage, phone, devices): one card under the picture, who and the step in the
+   eyebrow, a title, the text and how it's stopped; its edge takes the step's tone (18 Nov). */
+.flow .flow-step { gap: 8px; padding: 16px 18px; border: 1px solid var(--line); border-left: 3px solid var(--brand); border-radius: var(--radius-sm); background: var(--surface); }
+.flow .flow-step:has(.flow-msg.bad) { border-left-color: var(--bad); } .flow .flow-step:has(.flow-msg.good), .route-caption.back .flow-step { border-left-color: var(--good); }
+.flow .flow-step .flow-msg { padding: 0; border: 0; background: none; font: 650 1.15rem/1.35 var(--font-display); }
+.flow .flow-step .flow-msg.bad { color: var(--bad); }
+.route-caption .route-text { font-size: 1rem; line-height: 1.6; color: var(--ink); }
+.flow.is-route .route-via b { color: var(--muted); font-weight: 500; }
+@media (max-width: 640px) { .lesson-mail.is-wide .flow.is-route .route { --dev: 58px; padding: 16px 8px 18px; } .flow .flow-step { padding: 14px; } .flow .flow-step .flow-msg { font-size: 1.05rem; } }
 .flow-stage[data-tone="bad"] .flow-pkt { background: var(--bad); box-shadow: 0 0 12px var(--bad); }
 .flow-stage[data-tone="good"] .flow-pkt { background: var(--good); box-shadow: 0 0 12px var(--good); }
 .flow-step { display: grid; gap: 6px; align-content: start; }
@@ -3055,6 +3078,10 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 /* On a phone Patch tucks into the corner and shrinks (the status bar is hidden there), so it covers less of the text. */
 @media (max-width: 520px) { .pn-co-figure .patch { width: 40px; } .pn-co-figure { min-width: 44px; min-height: 44px; display: grid; place-items: end; }
   .pn-companion { right: 6px; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); } }
+/* Between phone and wide desktop the content column reaches the right edge, so Patch sits on the status bar, in its
+   empty middle (left of the XP and help items, ~220 px), instead of covering side panels and captions (18 Nov audit:
+   it hid lab goals, stats and the lesson caption at 1000 to 1300 px). */
+@media (min-width: 521px) and (max-width: 1319px) { .pn-co-figure .patch { width: 40px; } .pn-companion { right: 252px; bottom: calc(1px + env(safe-area-inset-bottom, 0px)); gap: 8px; } }
 @media (prefers-reduced-motion: no-preference) { .pn-co-bubble { animation: pn-co-in 0.25s ease-out; } @keyframes pn-co-in { from { opacity: 0; transform: translateY(6px); } } }
 .pn-set { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 0.9rem; color: var(--muted); cursor: pointer; }
 .pn-set input { width: 16px; height: 16px; accent-color: var(--brand); }

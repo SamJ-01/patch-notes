@@ -75,6 +75,9 @@ export function validate(d) {
     if (d?.scene === "route") {
       const p = s.packet || {};
       if (!p.from || !p.to) errors.push(`step ${i + 1}: a route packet needs from and to`);
+      // The slab stops where the caption says the step goes, so the glow and the words always agree.
+      const want = nodes.findIndex(n => n.id === s.to);
+      if (i < (d.steps || []).length && Number(p.at) !== want) errors.push(`step ${i + 1}: the packet should be at "${s.to}" (at: ${want}), not at ${p.at}`);
     }
     if (d?.scene === "stage") {
       const g = s.stage || {};
@@ -222,19 +225,23 @@ export function mount(el, d) {
 // Every step's card and caption are drawn stacked in the same grid cell and only the current one shows, so the
 // whole figure is the height of its tallest step on every step and nothing below it moves.
 function mountRoute(el, d) {
-  let i = 0, was = null;
+  let i = 0;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const n = d.nodes.length;
   const atOf = k => Math.max(0, Math.min(n - 1, Number(d.steps[k].packet?.at) || 0));
+  // A "next hop" row (the device the frame goes to, when that isn't the packet's destination) is reserved on every
+  // step's card if any step has one, so the card stays one height.
+  const hasVia = d.steps.some(s => s.packet?.via);
   const face = p => {
     // The old address always has its own line, empty until an address is rewritten, so NAT can't make the card taller.
     const line = (k, old, now) => `<span>${k}</span><span class="vals"><b class="was${old && now ? " on" : ""}">${old && now ? esc(old) : "&nbsp;"}</b><b>${esc(now || old || "")}</b></span>`;
     return `<p class="route-note">${p.back ? "←" : "→"} ${esc(p.note || "Packet")}</p>
       <p class="route-addr">${line("From", p.from, p.fromNow)}</p>
-      <p class="route-addr">${line("To", p.to, p.toNow)}</p>`;
+      <p class="route-addr">${line("To", p.to, p.toNow)}</p>
+      ${hasVia ? `<p class="route-addr route-via"><span>Next hop</span><span class="vals"><b>${p.via ? esc(p.via) : "&nbsp;"}</b></span></p>` : ""}`;
   };
   const caption = k => { const t = describe(d, k); return `<div class="eyebrow">Step ${k + 1} of ${d.steps.length} · ${esc(t.who)}</div>
-      <p class="flow-msg ${t.tone}">${esc(t.msg)}</p><p>${gl(t.text, 2)}</p>${t.stop ? `<p class="flow-stop"><b>How it's stopped here:</b> ${esc(t.stop)}</p>` : ""}`; };
+      <p class="flow-msg ${t.tone}">${esc(t.msg)}</p><p class="route-text">${gl(t.text, 2)}</p>${t.stop ? `<p class="flow-stop"><b>How it's stopped here:</b> ${esc(t.stop)}</p>` : ""}`; };
   const pct = at => `${((at + 0.5) / n) * 100}%`;
   el.innerHTML = `<figure class="flow is-route" style="--n:${n}">
     <figcaption class="flow-title">${esc(d.title)}</figcaption>
@@ -247,7 +254,8 @@ function mountRoute(el, d) {
         ${d.nodes.map(nd => `<div class="route-stop" data-id="${esc(nd.id)}"><svg viewBox="-36 -27 72 54" aria-hidden="true">${hw(nd.kind)}</svg><span>${esc(nd.label)}</span></div>`).join("")}
       </div>
     </div>
-    <div class="flow-steps" aria-live="polite">${d.steps.map((_, k) => `<div class="flow-step" data-k="${k}">${caption(k)}</div>`).join("")}</div>
+    <div class="route-dots" aria-hidden="true">${d.steps.map((s, k) => `<span data-k="${k}"${s.packet?.back ? ' class="back"' : ""}></span>`).join("")}</div>
+    <div class="flow-steps route-caption" aria-live="polite">${d.steps.map((_, k) => `<div class="flow-step" data-k="${k}">${caption(k)}</div>`).join("")}</div>
     <div class="row flow-ctl">
       <button class="btn ghost" type="button" data-go="-1">‹ Back</button>
       <button class="btn brand" type="button" data-go="1">Next step ›</button>
@@ -259,8 +267,11 @@ function mountRoute(el, d) {
   const stops = [...el.querySelectorAll(".route-stop")];
   if (reduced) [slab, lit].forEach(x => { x.style.transition = "none"; });
   function draw(speak) {
-    const s = d.steps[i], p = s.packet || {}, at = atOf(i), from = was ?? at;
+    // The glow is the step's own leg (from → to, as the caption says), so it's right on the first step and after Back.
+    const s = d.steps[i], p = s.packet || {}, at = atOf(i), from = Math.max(0, d.nodes.findIndex(nd => nd.id === s.from));
     el.querySelectorAll(".route-pkt").forEach(c => c.classList.toggle("now", Number(c.dataset.k) === i));
+    el.querySelectorAll(".route-dots span").forEach(c => { const k = Number(c.dataset.k); c.classList.toggle("now", k === i); c.classList.toggle("done", k < i); });
+    el.querySelector(".route-caption").classList.toggle("back", !!p.back);
     el.querySelectorAll(".flow-step").forEach(c => { const on = Number(c.dataset.k) === i; c.classList.toggle("now", on); c.toggleAttribute("aria-hidden", !on); });
     slab.style.left = pct(at);
     slab.classList.toggle("back", !!p.back);
@@ -272,7 +283,6 @@ function mountRoute(el, d) {
     const next = el.querySelector('[data-go="1"]');
     next.disabled = i === d.steps.length - 1;
     next.textContent = i === d.steps.length - 1 ? "End of the flow" : "Next step ›";
-    was = at;
     if (speak && p.patch) globalThis.PN_patch?.(p.patch, 7000);
   }
   el.querySelector(".flow-ctl").addEventListener("click", e => {
@@ -323,7 +333,7 @@ function mountPhone(el, d) {
     const steps = path(), t = describe({ ...d, steps }, i);
     box.innerHTML = i === askStep && choice
       ? `<div class="eyebrow">Step ${i + 1} of ${steps.length} · You chose ${choice === "deny" ? "Deny" : "Approve"}</div><p>${choice === "deny" ? "The owner refuses. Press Next to see what the attacker gets." : "The owner approves. Press Next to see what that lets the attacker do."}</p>`
-      : `<div class="eyebrow">Step ${i + 1} of ${steps.length}</div><p>${gl(t.text, 2)}</p>${t.stop ? `<p class="flow-stop"><b>How it's stopped here:</b> ${esc(t.stop)}</p>` : ""}`;
+      : `<div class="eyebrow">Step ${i + 1} of ${steps.length} · ${esc(t.who)}</div><p class="flow-msg ${t.tone}">${esc(t.msg)}</p><p>${gl(t.text, 2)}</p>${t.stop ? `<p class="flow-stop"><b>How it's stopped here:</b> ${esc(t.stop)}</p>` : ""}`;
     if (!reduced && dir) {
       card.classList.remove("is-in");
       card.dataset.dir = dir > 0 ? "next" : "back";
@@ -371,8 +381,8 @@ function mountStage(el, d) {
   const card = el.querySelector("[data-stage]");
   const box = el.querySelector(".flow-step");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const caption = k => { const t = describe(d, k); return `<div class="eyebrow">Step ${k + 1} of ${d.steps.length}</div>
-      <p>${gl(t.text, 2)}</p>${t.stop ? `<p class="flow-stop"><b>How it's stopped here:</b> ${esc(t.stop)}</p>` : ""}`; };
+  const caption = k => { const t = describe(d, k); return `<div class="eyebrow">Step ${k + 1} of ${d.steps.length} · ${esc(t.who)}</div>
+      <p class="flow-msg ${t.tone}">${esc(t.msg)}</p><p>${gl(t.text, 2)}</p>${t.stop ? `<p class="flow-stop"><b>How it's stopped here:</b> ${esc(t.stop)}</p>` : ""}`; };
   function draw(dir) {
     const s = d.steps[i], g = s.stage || {};
     card.className = "stage-card" + (g.tone ? " " + g.tone : "");

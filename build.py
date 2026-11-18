@@ -113,6 +113,7 @@ def csp_meta(page, scripts=True):
 def with_csp(page):
     """Add the script-free policy right after a static page's charset declaration."""
     assert "<script" not in page, "static lesson pages must stay script-free"
+    page = page.replace("<style></style>\n", "")  # pages with no rules of their own (the stylesheet is shared)
     return page.replace('<meta charset="utf-8">\n', '<meta charset="utf-8">\n' + csp_meta(page, scripts=False), 1)
 
 
@@ -254,6 +255,15 @@ def page_css(template):
     fonts = re.search(r'<link rel="stylesheet" href="fonts/fonts.css">', template).group(0).replace('href="fonts/', 'href="../fonts/')
     css = re.search(r"<style>(.*?)</style>", template, re.S).group(1)
     return fonts, css
+
+
+def shared_css(template):
+    """The static pages (lessons/, practise/) share one copy of the app's stylesheet instead of each carrying it
+    inline (~350 KB a page). Named by its hash so a browser never keeps an old copy. Returns (file name, text, the
+    <link>s for a page one folder down). At the site root, its url("img/...") paths also resolve correctly."""
+    fonts, css = page_css(template)
+    name = f"site.{hashlib.sha256(css.encode()).hexdigest()[:10]}.css"
+    return name, css, f'{fonts}\n<link rel="stylesheet" href="../{name}">'
 
 
 def lesson_page(lesson, nxt, fonts, css, site):
@@ -574,7 +584,11 @@ def main():
     DATA_DIR.mkdir(exist_ok=True)
     (DATA_DIR / "artifact.html").write_text(page)
 
-    fonts, css = page_css(template)
+    css_name, css_text, fonts = shared_css(template)
+    for old in SITE_DIR.glob("site.*.css"):
+        old.unlink()
+    (SITE_DIR / css_name).write_text(css_text)
+    css = ""  # each static page keeps only its own few extra rules inline
     for i, l in enumerate(lessons):
         (SITE_DIR / "lessons" / f"{l['id']}.html").write_text(with_csp(lesson_page(l, lessons[(i + 1) % len(lessons)], fonts, css, site)))
     (SITE_DIR / "lessons" / "index.html").write_text(with_csp(lessons_index(lessons, fonts, css, site)))

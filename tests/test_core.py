@@ -563,9 +563,45 @@ class PracticePages(unittest.TestCase):
         for st in src["steps"]:
             self.assertNotIn(html.escape(st["explain"]), page, "explanations (the answers) stay in the app")
 
+    def test_static_pages_share_one_stylesheet(self):
+        """The stylesheet is written once (site.<hash>.css) and linked, not copied into each of the ~130 static pages."""
+        template = build.assemble_template()
+        name, text, links = build.shared_css(template)
+        self.assertRegex(name, r"^site\.[0-9a-f]{10}\.css$")
+        self.assertEqual(text, build.page_css(template)[1])
+        self.assertIn(f'href="../{name}"', links)
+        lab = next(i for i in self.items if i["id"] == "sqli-log")
+        page = build.with_csp(build.practice_page(lab, links, "", {"url": "https://example.com/"}))
+        self.assertIn(f'<link rel="stylesheet" href="../{name}">', page)
+        self.assertLess(len(page), 20_000, "no inline copy of the stylesheet")
+        self.assertIn("style-src 'self'", page, "the page's policy allows the linked stylesheet")
+
     def test_sitemap_lists_the_practice_pages(self):
         smap = ET.fromstring(build.sitemap(content("lessons.json"), {"url": "https://example.com/"}, self.items))
         self.assertEqual(len(smap), len(content("lessons.json")) + 3 + len(self.items))
+
+
+class FramesAndPackets(unittest.TestCase):
+    """A frame goes to the next device on its path (a switch doesn't count, it forwards by MAC); only the IP packet
+    inside carries the far address. The DNS mission once sent a query for 10.0.0.9 in a frame addressed to the web
+    server's MAC, and the networking lesson showed a packet addressed to the router (18 Nov audit)."""
+    def test_mission_frames_go_to_the_next_device(self):
+        checked = 0
+        for f in sorted((CONTENT / "missions").glob("*.json")):
+            m = json.loads(f.read_text()); sc = m.get("scenario", m); devs = sc.get("devices") or {}
+            for mid, msg in (sc.get("messages") or {}).items():
+                eth = next((L["line"] for L in (msg.get("wireshark") or {}).get("layers", []) if L["line"].startswith("Ethernet II")), None)
+                if not eth:
+                    continue
+                src, dst = re.search(r"Src: ([0-9a-f:]{17}), Dst: (?:Broadcast \()?([0-9a-f:]{17})", eth).groups()
+                path = msg.get("path") or [msg["from"], msg["to"]]
+                nxt = next((p for p in path[1:] if devs.get(p, {}).get("kind") != "switch"), None)
+                self.assertEqual(src, devs[path[0]]["mac"], f"{f.name} {mid}: the frame comes from the sender's MAC")
+                if dst != "ff:ff:ff:ff:ff:ff":
+                    self.assertEqual(dst, devs[nxt]["mac"], f"{f.name} {mid}: the frame goes to {nxt}, the next device on the path")
+                checked += 1
+        self.assertGreaterEqual(checked, 9)
+
 
 class Markup(unittest.TestCase):
     def test_glossary_related_buttons_have_their_own_attribute(self):

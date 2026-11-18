@@ -179,7 +179,8 @@ const CARD_PHOTOS = new Set(["threat-model", "risk", "law", "attack-models", "cy
   "encrypted-but-readable", "why-untrusted", "who-touched-the-file", "what-did-we-leak"]);
 // Tools reuse the picture of the lab they belong with.
 const PHOTO_ALIAS = { "subnet-calc": "subnetting", "port-corridor": "ports-protocols" };
-const cardPhoto = (src, w = 506, h = 253) => `<span class="card-art photo"><img class="card-img" src="${esc(src)}" alt="" width="${w}" height="${h}" loading="lazy" decoding="async"></span>`;
+// `big` (optional): a larger file, offered to high-DPI screens so a wide card isn't soft ({ src, width }).
+const cardPhoto = (src, w = 506, h = 253, big = null) => `<span class="card-art photo"><img class="card-img" src="${esc(src)}"${big ? ` srcset="${esc(src)} ${w}w, ${esc(big.src)} ${Number(big.width)}w" sizes="(max-width: 700px) 100vw, 640px"` : ""} alt="" width="${w}" height="${h}" loading="lazy" decoding="async"></span>`;
 // The card's picture as a slim banner at the top of its lesson, lab or mission page (a decorative ::before, so it
 // shows while a module loads and whatever the module draws). Nothing when the card has no photo.
 const bannerAttr = id => { const p = PHOTO_ALIAS[id] || id; return CARD_PHOTOS.has(p) ? ` data-banner style="--banner: url('img/cards/${p}.webp')"` : ""; };
@@ -364,7 +365,7 @@ const MISSION = id => DATA.missions.find(x => x.id === id);
 const SHIFT = id => (DATA.agency || []).find(x => x.id === id);
 function shiftCard(sh) {
   const rec = (P.agency || {})[sh.id];
-  const pic = sh.clientImage ? cardPhoto(sh.clientImage.small || sh.clientImage.src, 800, Math.round(800 * sh.clientImage.height / sh.clientImage.width)) : cardArt("agency");
+  const pic = sh.clientImage ? cardPhoto(sh.clientImage.small || sh.clientImage.src, 800, Math.round(800 * sh.clientImage.height / sh.clientImage.width), sh.clientImage.small ? { src: sh.clientImage.src, width: sh.clientImage.width } : null) : cardArt("agency");
   return `<a class="lcard mission-card art-card" href="#agency-${esc(sh.id)}">${pic}${rec ? '<span class="done">DONE</span>' : ""}
     <span class="eyebrow">PATCH//AGENCY</span><h3>${esc(sh.title)}</h3><p>${esc(sh.card || sh.summary)}</p>
     <span class="lmeta"><span>${sh.minutes} min</span><span>${rec ? `Best: ${rec.best} of ${rec.total} checks` : `+${sh.xp} XP`}</span></span></a>`;

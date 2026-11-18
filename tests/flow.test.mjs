@@ -58,3 +58,17 @@ test("the MFA diagram follows the owner's choice: Approve lets the attacker in, 
 test("questions pointing at the diagram are answered by it", () => {
   for (const l of lessons) for (const c of l.checks) if (c.see === "diagram") assert.ok(l.diagram, l.id);
 });
+
+test("route: the packet stops where each step's caption says it goes, with addresses that fit", () => {
+  const route = { title: "t", scene: "route", nodes: [{ id: "a", kind: "pc", label: "A" }, { id: "b", kind: "router", label: "B" }],
+    steps: [{ from: "a", to: "b", msg: "m", text: "t", packet: { from: "x", to: "y", at: 0 } }] };
+  assert.match(flow.validate(route).join(), /should be at "b"/, "a step a→b with the packet still at a is caught (18 Nov)");
+  const net = diagrams.find(l => l.id === "networking").diagram;
+  const ix = Object.fromEntries(net.nodes.map((n, k) => [n.id, k]));
+  for (const s of net.steps) assert.equal(s.packet.at, ix[s.to]);
+  // The gateway is on the PC's own subnet, and the packet stays addressed to the website on the way out (only the
+  // frame goes to the router), so "To" is never the router.
+  const out = net.steps.filter(s => !s.packet.back);
+  assert.ok(out.every(s => s.packet.to === "203.0.113.10"), "outbound packets are addressed to the website");
+  assert.ok(net.steps.filter(s => s.packet.via).every(s => /10\.0\.0\.\d+/.test(s.packet.via)), "the next hop is on 10.0.0.0/24");
+});
