@@ -31,6 +31,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   For axe: `npm pack axe-core@4.10.2` in a scratch dir, untar, `AXE=.../package/axe.min.js`.
 - Interaction check (by hand, ~15 min): `node tests/interaction_check.mjs` presses every button on every route at desktop and
   phone and reports page/console errors, failed requests and sideways scroll (skips reset/print/download/copy and the feedback send).
+  It presses up to `MAX` (default 80) buttons a page and lists any page with more, so the report says where it wasn't exhaustive.
   Run it before a release with new UI: it caught the 18 Nov glossary clash (popup "Related" buttons now use `data-gsee`, not `data-see`).
 - Deploy = push to `main` (GitHub Actions builds daily and on push; the full build takes ~8 min). Watch: `gh run watch <id> -R SamJ-01/patch-notes`.
 
@@ -55,7 +56,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   phishing triage ("Which email was it?", `phish-triage.json`: the email inspector, `scenario.emails` with raw headers parsed by
   `engine.parseHeaders`; findings come from `engine.inspectEmail`). Keep its headers, log lines and findings in step: tests check they agree.
 - Exam prep has its own tab (`#exams`, `VIEWS.exams` in 06-learn; cert pages `#cert-<id>` sit under it), so lessons stay free of
-  exam clutter (a lesson only shows its "Prove it" stage). Network+ N10-009 (25 objectives, 83 questions, "Am I ready?" panel), Security+ SY0-701 (28 objectives, 149 questions, mock exams; every objective now has a lesson, lab or shift). Mock options on each cert page (`mockOptions` in 06-learn, saved as `P.mockPrefs`; pure `mockLengths`/`mockSettings` in exam.js, tested): 10/20/45/90 questions (only lengths the bank fills at the domain weights; 90 = full length, Security+ only), timed at exam pace or untimed, feedback at the end or after each question. Only timed, end-feedback mocks of 20+ count towards "Am I ready?" (others are saved with `practice: 1`). PenTest+ PT0-003 (26 objectives, 62 questions;
+  exam clutter (a lesson only shows its "Prove it" stage). Network+ N10-009 (25 objectives, 84 questions, "Am I ready?" panel), Security+ SY0-701 (28 objectives, 149 questions, mock exams; every objective now has a lesson, lab or shift). Mock options on each cert page (`mockOptions` in 06-learn, saved as `P.mockPrefs`; pure `mockLengths`/`mockSettings` in exam.js, tested): 10/20/45/90 questions (only lengths the bank fills at the domain weights; 90 = full length, Security+ only), timed at the exam's own pace (each map's `format` { minutes, maxQuestions }: Network+ and Security+ 90 for 90, PenTest+ 165 for 90; `examPace`, tested) or untimed, feedback at the end or after each question. Only timed, end-feedback mocks of 20+ count towards "Am I ready?" (others are saved with `practice: 1`). PenTest+ PT0-003 (26 objectives, 81 questions;
   mostly defender-side coverage, said in its note), with three evidence labs for it:
   `scope-roe` (rules of engagement, kind "doc"), `nmap-read` (Nmap 7.94 -sV output) and `validate-findings` (false positives, backports). `build.load_certs()` orders them Network+, Security+, PenTest+ (tested). All three map
   and tag questions per objective (not per domain), every objective has a question, and each domain holds at least twice
@@ -217,9 +218,9 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   formed, real objectives, every model answer scores 100%, no PBQ solved at the start. Smoke: one answered by hand, one firewall
   built rule by rule. Thirteen so far: Network+ ports, subnet table, fix the S3 trunk (cli), troubleshooting order, symptom to
   fault; Security+ DMZ firewall, attacks in log lines, IR phases, control types; PenTest+ nmap options, scope, remediation,
-  engagement phases (ending in clean-up). Every Network+ objective has 3+ questions and every PenTest+ one 2+ (18 Nov).
+  engagement phases (ending in clean-up). Every objective in every bank has at least 3 questions (tested; 18 Nov).
   In mocks (18 Nov): a mock opens with PBQs as the real exam does (`mockPbqCount`: 1 at 10/20, 2 at 45, 3 at 90; `pickMockPbqs`
-  spreads domains; `mockMinutes` adds their minutes; `mockScore` counts each as `PBQ_WEIGHT` (2) questions with partial credit;
+  spreads domains; `mockMinutes` counts each PBQ as one question of time, inside the one clock; `mockScore` counts each as `PBQ_WEIGHT` (2) questions with partial credit;
   all tested). `mountMock` keeps each PBQ mounted (hidden when elsewhere) so answers survive navigation; P1, P2 in the jump grid;
   pbq.js `mount(..., { exam: true, instant })` hides the clock, best, Show the answer and Start again, returns `grade()`. Results
   list every PBQ part with a link to practise it; a mock's PBQ score can raise `P.pbq` best.
