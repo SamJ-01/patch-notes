@@ -394,13 +394,14 @@ function topicStages(lessonId) {
   // A lab or mission belongs to its own lesson and to any it lists in `also`; a shift to the lessons it lists. Own ones first.
   const mine = list => list.filter(x => x.lesson === lessonId).concat(list.filter(x => x.lesson !== lessonId && (x.also || []).includes(lessonId)));
   const labs = mine(DATA.labs).filter(x => labStage(x) === "experiment");
-  if (labs.length) { const d = labs.filter(x => P.labs[x.id]).length, nx = labs.find(x => !P.labs[x.id]) || labs[0];
-    stages.push({ key: "experiment", status: d === labs.length ? "done" : d ? "part" : "open", href: "#lab-" + nx.id, count: labs.length > 1 ? `${d}/${labs.length}` : "" }); }
-  const faults = [...mine(DATA.missions).map(m => ({ href: "#mission-" + m.id, done: count((P.missions || {})[m.id]) > 0 })),
-    ...(DATA.agency || []).filter(sh => (sh.lessons || []).includes(lessonId)).map(sh => ({ href: "#agency-" + sh.id, done: !!(P.agency || {})[sh.id] })),
-    ...mine(DATA.labs).filter(x => labStage(x) === "diagnose").map(x => ({ href: "#lab-" + x.id, done: !!P.labs[x.id] }))];
+  // Each stage keeps its items ({ href, title, done }), so a stage with several can list them all (loopItems).
+  if (labs.length) { const items = labs.map(x => ({ href: "#lab-" + x.id, title: x.title, done: !!P.labs[x.id] })), d = items.filter(i => i.done).length, nx = items.find(i => !i.done) || items[0];
+    stages.push({ key: "experiment", status: d === items.length ? "done" : d ? "part" : "open", href: nx.href, count: items.length > 1 ? `${d}/${items.length}` : "", items }); }
+  const faults = [...mine(DATA.missions).map(m => ({ href: "#mission-" + m.id, title: m.title, done: count((P.missions || {})[m.id]) > 0 })),
+    ...(DATA.agency || []).filter(sh => (sh.lessons || []).includes(lessonId)).map(sh => ({ href: "#agency-" + sh.id, title: `PATCH//AGENCY: ${sh.client || sh.title}`, done: !!(P.agency || {})[sh.id] })),
+    ...mine(DATA.labs).filter(x => labStage(x) === "diagnose").map(x => ({ href: "#lab-" + x.id, title: x.title, done: !!P.labs[x.id] }))];
   if (faults.length) { const d = faults.filter(f => f.done).length, nx = faults.find(f => !f.done) || faults[0];
-    stages.push({ key: "diagnose", status: d === faults.length ? "done" : d ? "part" : "open", href: nx.href, count: faults.length > 1 ? `${d}/${faults.length}` : "" }); }
+    stages.push({ key: "diagnose", status: d === faults.length ? "done" : d ? "part" : "open", href: nx.href, count: faults.length > 1 ? `${d}/${faults.length}` : "", items: faults }); }
   const prove = lessonProveTargets(lessonId);
   if (prove) { const m = proveMastery(prove);
     stages.push({ key: "prove", status: m.level === "strong" ? "done" : m.answered ? "part" : "open", href: "#cert-" + prove.cert.id,
@@ -419,7 +420,28 @@ function loopStrip(lessonId, current, label = "This topic's steps") {
       : `<a class="loop-node ${s.status}" href="${s.href}"${s.prove ? ` data-prove='${esc(JSON.stringify(s.prove))}'` : ""}>${inner}</a>`; };
   const onRoute = trailStop(trailSteps(), "#lesson-" + lessonId);
   return `<div class="loopwrap"><p class="eyebrow loop-eyebrow">${onRoute ? "Go deeper on this topic (optional)" : "This topic, step by step"}</p>
-    <nav class="looptrack" aria-label="${esc(label)}">${stages.map(node).join('<span class="loop-arr" aria-hidden="true">→</span>')}</nav></div>`;
+    <nav class="looptrack" aria-label="${esc(label)}">${stages.map(node).join('<span class="loop-arr" aria-hidden="true">→</span>')}</nav>
+    ${loopItems(stages.find(s => s.key === current), location.hash, label)}</div>`;
+}
+// On a stage with several items (Experiment 1/2, say), list them all under the strip, the one you're on marked, with a
+// link to the next: otherwise the only way to the others was to leave the stage and come back.
+function loopItems(stage, here, label = "This topic's steps") {
+  const items = stage?.items || []; if (items.length < 2) return "";
+  const at = items.findIndex(i => i.href === here);
+  const what = { experiment: "experiments", diagnose: "cases" }[stage.key] || "items";
+  const name = label === "This topic's steps" ? `All ${what} in this topic` : `${esc(label)}: all ${what}`;  // the done card repeats the strip
+  const chip = i => i.href === here ? `<span class="chip on" aria-current="page">${i.done ? "✓ " : ""}${esc(i.title)}</span>`
+    : `<a class="chip" href="${esc(i.href)}">${i.done ? '<span aria-hidden="true">✓ </span><span class="sr-only">(done) </span>' : ""}${esc(i.title)}</a>`;
+  // In list order, wrapping round, so Next always leads somewhere.
+  const prev = at >= 0 ? items[(at - 1 + items.length) % items.length] : null, next = at >= 0 ? items[(at + 1) % items.length] : items.find(i => !i.done) || items[0];
+  if (items.length <= 4) return `<nav class="loop-items" aria-label="${name}"><span class="loop-items-h">All ${items.length} ${what}:</span>
+    ${items.map(chip).join("")}${next && next.href !== here ? `<a class="btn ghost loop-next" href="${esc(next.href)}">Next: ${esc(next.title)} ›</a>` : ""}</nav>`;
+  const done = items.filter(i => i.done).length;
+  return `<nav class="loop-items long" aria-label="${name}">
+    ${prev ? `<a class="btn ghost" href="${esc(prev.href)}" aria-label="Previous: ${esc(prev.title)}">‹ Previous</a>` : ""}
+    <span class="loop-pos">${at >= 0 ? `${at + 1} of ${items.length}` : `${items.length} ${what}`}<span class="muted"> · ${done} done</span></span>
+    <a class="btn ghost loop-next" href="${esc(next.href)}">Next: ${esc(next.title)} ›</a>
+    <details class="loop-all"><summary>All ${items.length} ${what}</summary><div class="loop-all-list">${items.map(chip).join("")}</div></details></nav>`;
 }
 // The same strip at the top of a lab, mission or "Prove it" page, under its title, with that page's stage lit. A lab or
 // mission that serves several topics shows the one you came from (the last lesson you opened), else its own.

@@ -378,3 +378,20 @@ test("safety notes: escaped, steps picked by lab kind, folds only when there is 
   const evil = c.f("evil");
   assert.doesNotMatch(evil, /<img|<script|<b>x|<i>s/);
 });
+
+test("topic steps: a stage with several items lists them, with Previous and Next in list order", () => {
+  const c = {}; vm.createContext(c);
+  vm.runInContext([template.match(/const esc = .*\n/)[0], extract('function loopItems(stage, here, label = "This topic\'s steps")'), "this.f = loopItems;"].join("\n"), c);
+  const items = n => Array.from({ length: n }, (_, i) => ({ href: `#lab-x${i}`, title: `Lab <${i}>`, done: i === 0 }));
+  assert.equal(c.f({ key: "experiment", items: items(1) }, "#lab-x0"), "", "one item: nothing to list");
+  const two = c.f({ key: "experiment", items: items(2) }, "#lab-x0");
+  assert.match(two, /aria-current="page">✓ Lab &lt;0&gt;/);
+  assert.match(two, /href="#lab-x1">Next: Lab &lt;1&gt; ›/);
+  assert.doesNotMatch(two, /<0>|<1>/, "titles are escaped");
+  const long = c.f({ key: "experiment", items: items(14) }, "#lab-x13");
+  assert.match(long, /14 of 14/);
+  assert.match(long, /href="#lab-x0">Next: Lab &lt;0&gt; ›/, "Next wraps round at the end");
+  assert.match(long, /href="#lab-x12" aria-label="Previous: Lab &lt;12&gt;"/);
+  assert.match(long, /<details class="loop-all"><summary>All 14 experiments<\/summary>/);
+  assert.match(c.f({ key: "diagnose", items: items(3) }, "#lab-x1", "Where this leaves the topic"), /aria-label="Where this leaves the topic: all cases"/, "the done card's copy has its own name");
+});
