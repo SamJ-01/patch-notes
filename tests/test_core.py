@@ -1004,6 +1004,11 @@ class ContentIntegrity(unittest.TestCase):
                 self.assertGreater(len(o["why"]), 10, f"{q['id']}: every option needs an explanation")
         covered = {q["objective"] for q in bank["questions"]}
         self.assertEqual(covered, objectives, "every objective has practice questions")
+        # Balanced enough that a weak-objective drill doesn't run dry: at least 3 per objective (18 Nov: a listing cut
+        # off at 14 hid two objectives with 1 and 2, and the notes claimed otherwise).
+        per = {o: sum(q["objective"] == o for q in bank["questions"]) for o in objectives}
+        thin = {o: n for o, n in per.items() if n < 3}
+        self.assertEqual(thin, {}, "objectives with fewer than 3 questions")
 
     def test_lesson_key_ideas(self):
         """Each lesson opens with three short key ideas, each with a picture, that don't just repeat its diagram."""

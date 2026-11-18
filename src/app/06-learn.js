@@ -211,12 +211,12 @@ function wireMockOptions(c) {
     const lengths = ex.mockLengths(c.questions, c.domains);
     if (!lengths.length) { form.hidden = true; return; }
     const show = () => {
-      const s = ex.mockSettings(P.mockPrefs, lengths);
+      const pace = ex.examPace(c.format), s = ex.mockSettings(P.mockPrefs, lengths, pace);
       form.querySelector("#mock-n").innerHTML = lengths.map(n => `<label class="ex-choice"><input type="radio" name="mock-n" value="${n}"${n === s.n ? " checked" : ""}><span>${n}${n === 90 ? " (full length)" : ""}</span></label>`).join("");
       form.querySelector(`[name="mock-timed"][value="${s.timed ? 1 : 0}"]`).checked = true;
       form.querySelector(`[name="mock-fb"][value="${s.feedback}"]`).checked = true;
-      const k = Math.min(ex.mockPbqCount(s.n), (c.pbqs || []).length), avg = k ? c.pbqs.reduce((n, q) => n + q.minutes, 0) / c.pbqs.length : 0;
-      const mins = s.minutes ? Math.round(s.minutes + k * avg) : null;
+      const k = Math.min(ex.mockPbqCount(s.n), (c.pbqs || []).length);
+      const mins = ex.mockMinutes(s.minutes, Array(k).fill(null), pace);
       form.querySelector("#mock-go").textContent = `Start: ${k ? `${k} PBQ${k > 1 ? "s" : ""} + ` : ""}${s.n} questions${mins ? `, about ${mins} minutes` : ", untimed"}`;
       form.querySelector("#mock-note").textContent = s.real ? "Exam conditions: this one counts towards \"Am I ready?\"."
         : "Practice mode: good for learning, but only timed mocks of 20+ questions with feedback at the end count towards \"Am I ready?\".";
@@ -242,12 +242,12 @@ function startPractice(c, mode, questions, title, lesson = null, prefs = P.mockP
     // Practice is drawn under the cert's own hash, so following the link wouldn't change it (no hashchange).
     main.querySelector(".lesson > .link-btn").addEventListener("click", e => { e.preventDefault(); certView(c.id); drawTrail(); window.scrollTo(0, 0); });
     if (lesson) { topicTop(main.querySelector(".lesson"), lesson, "prove"); drawTrail(); }
-    const set = ex.mockSettings(prefs, ex.mockLengths(c.questions, c.domains));  // {} = exam conditions
+    const pace = ex.examPace(c.format), set = ex.mockSettings(prefs, ex.mockLengths(c.questions, c.domains), pace);  // {} = exam conditions
     const pbqs = pb ? ex.pickMockPbqs(c.pbqs, ex.mockPbqCount(set.n)) : [];
     await Promise.all(pbqs.filter(q => q.lab).map(q => loadFull("labs", LAB[q.lab])));  // a command-line PBQ needs its lab's network
     if (parseRoute().path !== "exams/" + c.id) return;
     ex.mount($("ex-root"), { title, mode, questions: mode === "mock" ? ex.buildMock(c.questions, c.domains, set.n) : questions,
-      minutes: ex.mockMinutes(set.minutes, pbqs), instant: set.feedback === "each", pbqs,
+      minutes: ex.mockMinutes(set.minutes, pbqs, pace), instant: set.feedback === "each", pbqs,
       mountPbq: pb && ((host, q, o) => pb.mount(host, q, { ...o, lab: q.lab ? DATA.labs.find(l => l.id === q.lab) : null })),
       onPbq: (q, pct) => { if (pct > (P.pbq[q.id] ?? 0)) P.pbq[q.id] = pct; },
       objectiveName: id => names[id] || id, onAnswer: recordAnswer,
@@ -269,6 +269,8 @@ function readinessPanel(c, progress) {
     const el = $("cert-ready"); if (!el || parseRoute().path !== "exams/" + c.id) return;
     const progressOf = o => { const p = progress.get(o.id); return { done: p.done, total: p.total, next: p.acts.find(a => a.done === false) || null }; };
     const r = ex.readiness({ domains: c.domains, questions: c.questions, stats: P.exam, progressOf, mocks: P.mocks[c.id] || [] });
+    // The default mock (exam conditions) at this exam's own pace, with its PBQ counted as one question of time.
+    const pace = ex.examPace(c.format), hasPbq = (c.pbqs || []).length > 0, mockMins = ex.mockMinutes(ex.mockSettings({}, undefined, pace).minutes, hasPbq ? [null] : [], pace);
     const [head, tone, base] = READY_VERDICT[r.verdict];
     const weakest = r.rows.filter(x => x.score !== null && x.score < ex.READY.domain).sort((a, b) => a.score - b.score)[0];
     const missing = [weakest && `${weakest.d.id} ${weakest.d.name} is at ${pctOf(weakest.score)}% (aim for ${pctOf(ex.READY.domain)}%+ in every domain)`,
@@ -278,7 +280,7 @@ function readinessPanel(c, progress) {
     const qLine = x => { const qs = x.objs.reduce((s, o) => s + o.m.total, 0), right = x.objs.reduce((s, o) => s + o.m.right, 0), ad = x.objs.reduce((s, o) => s + o.p.done, 0), at = x.objs.reduce((s, o) => s + o.p.total, 0);
       return [qs && `${right}/${qs} questions right`, at && `${ad}/${at} activities done`].filter(Boolean).join(" · ") || "Nothing to check here yet"; };
     const planRow = it => {
-      if (it.kind === "mock") return `<button class="try-row" type="button" data-practice="mock" data-real="1"><span class="eyebrow">Mock exam</span><b>Take a mock exam</b><span class="muted">${ex.MOCK_SIZE} questions in ${ex.MOCK_MINUTES} minutes, feedback at the end. ${pctOf(ex.READY.mock)}% or more counts towards ready.</span></button>`;
+      if (it.kind === "mock") return `<button class="try-row" type="button" data-practice="mock" data-real="1"><span class="eyebrow">Mock exam</span><b>Take a mock exam</b><span class="muted">${hasPbq ? "1 PBQ + " : ""}${ex.MOCK_SIZE} questions in about ${mockMins} minutes (exam pace), feedback at the end. ${pctOf(ex.READY.mock)}% or more counts towards ready.</span></button>`;
       const tag = `${esc(it.o.id)} · ${esc(it.o.title)}`;
       if (it.kind === "activity") return `<a class="try-row" href="${it.next.href}"><span class="eyebrow">${tag}</span><b>${esc(it.next.label)}</b><span class="muted">${it.fresh ? "Start here" : "One of your weakest domains"}: ${esc(it.domain.name)}</span></a>`;
       const why = { wrong: ["Revise", "You got a question here wrong last time."], new: ["Try", "Not tried yet."], finish: ["Finish", "Some questions here are still unanswered."] }[it.why];

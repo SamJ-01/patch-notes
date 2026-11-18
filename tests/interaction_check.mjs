@@ -15,6 +15,8 @@ const routes = await p0.evaluate(() => { const r = ["today", "learn", "missions"
   DATA.lessons.forEach(x => r.push("lesson-" + x.id)); DATA.labs.forEach(x => r.push("lab-" + x.id)); DATA.missions.forEach(x => r.push("mission-" + x.id)); DATA.paths.forEach(x => r.push("path-" + x.id));
   DATA.certs.forEach(x => { r.push("cert-" + x.id); (x.pbqs || []).forEach(q => r.push("pbq-" + q.id)); }); DATA.agency.forEach(x => r.push("agency-" + x.id)); return r; });
 await p0.close();
+// Up to MAX buttons per page (default 80). Pages with more are listed at the end, so the report says where it wasn't exhaustive.
+const MAX = Number(process.env.MAX || 80), capped = new Set();
 const SKIP = /reset|clear|delete|remove|print|download|export|copy|restore|send feedback|forget/i;
 for (const [w, theme] of [[1280, "dark"], [390, "light"]]) {
   const p = await b.newPage({ viewport: { width: w, height: 900 }, reducedMotion: "reduce" }); let route = "";
@@ -26,9 +28,10 @@ for (const [w, theme] of [[1280, "dark"], [390, "light"]]) {
   let clicks = 0;
   for (const r of routes) {
     route = r; await p.evaluate(h => { location.hash = h; }, r); await p.waitForTimeout(700);
-    for (let k = 0; k < 30; k++) {
+    for (let k = 0; k < MAX; k++) {
       const btns = p.locator("main button:visible:not([disabled])");
       const n = await btns.count(); if (k >= n) break;
+      if (k === MAX - 1 && n > MAX) capped.add(r);
       const bt = btns.nth(k), label = ((await bt.getAttribute("aria-label").catch(() => null)) || (await bt.innerText().catch(() => "")) || "").trim();
       if (SKIP.test(label) || await bt.evaluate(e => e.type === "submit" && !!e.closest("#fb-form")).catch(() => true)) continue;
       await bt.click({ timeout: 1500 }).catch(() => {}); clicks++;
@@ -40,6 +43,7 @@ for (const [w, theme] of [[1280, "dark"], [390, "light"]]) {
   out.push(`-- ${w} ${theme}: ${routes.length} routes, ${clicks} button presses`);
   await p.close();
 }
+if (capped.size) out.push(`-- capped at ${MAX} buttons: ${[...capped].join(", ")}`);
 if (process.env.OUT) writeFileSync(process.env.OUT, out.join("\n"));
 const issues = out.filter(l => !l.startsWith("--"));
 console.log(issues.join("\n")); console.log(out.filter(l => l.startsWith("--")).join("\n")); console.log(`${issues.length} issue(s)`);

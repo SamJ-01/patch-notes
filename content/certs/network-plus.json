@@ -2,6 +2,11 @@
  "id": "network-plus",
  "name": "CompTIA Network+",
  "exam": "N10-009",
+ "format": {
+  "minutes": 90,
+  "maxQuestions": 90,
+  "source": "CompTIA exam objectives"
+ },
  "card": "Start here: how networks work and how to fix them. Suits IT support roles.",
  "source": {
   "label": "CompTIA: Network+ certification",

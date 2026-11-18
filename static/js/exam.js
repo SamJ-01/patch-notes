@@ -9,7 +9,10 @@ const gl = (t, n = 3, seen) => (globalThis.PN_gloss ? globalThis.PN_gloss(t, n, 
 // Command lines and output: several lines, a shell or device prompt ($, R1#, S1>, PS C:\Users\x>), or an ls -l line.
 export const isCli = t => /\n/.test(t) || /^(\$ |\S+[#>] ?|PS [A-Za-z]:\\[^>]*> |[-d][rwx-]{9} )/.test(t);
 const shuffle = (arr, rand = Math.random) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-export const MOCK_SIZE = 20, MOCK_MINUTES = 20;  // the real exam is up to 90 questions in 90 minutes: same pace
+export const MOCK_SIZE = 20, MOCK_MINUTES = 20;  // the default pace: Network+ and Security+ allow 90 minutes for up to 90 questions
+// Minutes per question at the real exam's pace, from the cert map's `format` ({ minutes, maxQuestions }): PenTest+ allows
+// 165 minutes for up to 90, so its mocks run at about 1.8 minutes a question, not one (18 Nov audit).
+export const examPace = format => (format?.minutes > 0 && format?.maxQuestions > 0 ? format.minutes / format.maxQuestions : MOCK_MINUTES / MOCK_SIZE);
 
 // Right only if exactly the correct options were chosen (so "choose two" needs both, and nothing else).
 export function isCorrect(q, chosen) {
@@ -48,8 +51,9 @@ export function mockScore(qRight, qTotal, pbqResults = []) {
   const score = Math.round((qRight + pbqPoints) * 10) / 10, total = qTotal + PBQ_WEIGHT * pbqResults.length;
   return { score, total, pct: total ? Math.round(score / total * 100) : 0 };
 }
-// Minutes for a mock: the question pace plus each PBQ's own suggested time (untimed stays untimed).
-export const mockMinutes = (minutes, pbqs = []) => (minutes ? minutes + pbqs.reduce((n, q) => n + (q.minutes || 0), 0) : null);
+// Minutes for a mock: the questions' time plus one question's worth for each PBQ, as on the real exam, where PBQs
+// are part of the question count and share its one clock (untimed stays untimed).
+export const mockMinutes = (minutes, pbqs = [], pace = 1) => (minutes ? Math.round(minutes + pbqs.length * pace) : null);
 
 // ---------- mock exam options: length, timer and when you see feedback.
 // Lengths on offer are the ones the bank can fill at the exam's domain weights (90 is full length).
@@ -58,13 +62,13 @@ export function mockLengths(questions, domains) {
   return MOCK_LENGTHS.filter(n => allocate(domains, n).every(r => questions.filter(q => inDomain(q, r.d)).length >= r.k));
 }
 // Any saved or chosen settings -> a safe set: { n, timed, feedback: "end" | "each", minutes (null when untimed), real }.
-// Timed mocks keep the real exam's pace (up to 90 questions in 90 minutes, so one a minute). "real" means exam
+// Timed mocks keep the real exam's pace (`pace` minutes a question, from examPace). "real" means exam
 // conditions (timed, feedback at the end, 20 questions or more): only those count towards "Am I ready?".
-export function mockSettings(s = {}, lengths = MOCK_LENGTHS) {
+export function mockSettings(s = {}, lengths = MOCK_LENGTHS, pace = 1) {
   const ok = lengths.length ? lengths : [MOCK_SIZE];
   const want = Number(s.n), n = ok.includes(want) ? want : ok.includes(MOCK_SIZE) ? MOCK_SIZE : ok[ok.length - 1];
   const timed = s.timed !== false, feedback = s.feedback === "each" ? "each" : "end";
-  return { n, timed, feedback, minutes: timed ? Math.round(n * MOCK_MINUTES / MOCK_SIZE) : null, real: timed && feedback === "end" && n >= MOCK_SIZE };
+  return { n, timed, feedback, minutes: timed ? Math.round(n * pace) : null, real: timed && feedback === "end" && n >= MOCK_SIZE };
 }
 
 // Mastery of one objective from the latest answer to each of its questions.

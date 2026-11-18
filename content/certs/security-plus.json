@@ -2,6 +2,11 @@
  "id": "security-plus",
  "name": "CompTIA Security+",
  "exam": "SY0-701",
+ "format": {
+  "minutes": 90,
+  "maxQuestions": 90,
+  "source": "CompTIA exam objectives"
+ },
  "card": "The core security exam, and a common bar for a first security job.",
  "source": {
   "label": "CompTIA: Security+ certification",

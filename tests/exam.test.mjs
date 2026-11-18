@@ -115,7 +115,7 @@ test("mock options: lengths the bank can fill, safe settings, and only exam cond
   const sp = read("../content/certs/security-plus.json"), spBank = read("../content/certs/security-plus-questions.json").questions;
   assert.ok(ex.mockLengths(spBank, sp.domains).includes(90), "Security+ offers a full-length 90-question mock");
   assert.deepEqual(ex.mockSettings({}), { n: 20, timed: true, feedback: "end", minutes: 20, real: true }, "the default is exam conditions");
-  assert.deepEqual(ex.mockSettings({ n: 90 }), { n: 90, timed: true, feedback: "end", minutes: 90, real: true }, "exam pace: one minute a question");
+  assert.deepEqual(ex.mockSettings({ n: 90 }), { n: 90, timed: true, feedback: "end", minutes: 90, real: true }, "default pace: one minute a question");
   assert.equal(ex.mockSettings({ n: 45, timed: false }).minutes, null, "untimed has no clock");
   assert.equal(ex.mockSettings({ n: 45, timed: false }).real, false);
   assert.equal(ex.mockSettings({ feedback: "each" }).real, false, "instant feedback is practice, not exam conditions");
@@ -162,7 +162,7 @@ test("command-line scenarios show as terminal text; prose scenarios don't", () =
     return (d.questions || d).filter(q => q.scenario);
   });
   const cli = bank.filter(q => ex.isCli(q.scenario)).map(q => q.id).sort();
-  assert.deepEqual(cli, ["np-5.5-12", "np-5.5-7", "np-5.5-8", "pt-4.10-2", "sp-4.6-6", "sp-4.9-6"]);
+  assert.deepEqual(cli, ["np-5.5-12", "np-5.5-7", "np-5.5-8", "pt-4.10-2", "pt-4.10-3", "sp-4.6-6", "sp-4.9-6"]);
   assert.ok(!ex.isCli("A user can reach 8.8.8.8 but not websites."));
   assert.ok(ex.isCli("PS C:\\Users\\tester> Get-ChildItem") && !ex.isCli("PS: please reply by Friday."));
   assert.ok(ex.isCli("R1> en") && ex.isCli("$ ls -la") && ex.isCli("drwxr-xr-x 2 root root 4096 Oct 1 09:00 etc"));
@@ -177,9 +177,22 @@ test("mocks open with PBQs: how many, which, the time and the score", () => {
   assert.equal(new Set(three.map(q => q.objectives[0][0])).size, 3, "from three different domains when it can");
   assert.equal(ex.pickMockPbqs(pbqs, 9, rand).length, 4, "never more than there are");
   assert.equal(ex.pickMockPbqs([], 2).length, 0);
-  assert.equal(ex.mockMinutes(20, [pbqs[0], pbqs[2]]), 32);
+  assert.equal(ex.mockMinutes(20, [pbqs[0], pbqs[2]]), 22, "a PBQ counts as one question of time, inside the exam's one clock");
   assert.equal(ex.mockMinutes(null, pbqs), null, "untimed stays untimed");
   // 15 of 20 questions, a PBQ at 6/8 parts (1.5 of 2) and one at 0/5: 16.5 of 24.
   assert.deepEqual(ex.mockScore(15, 20, [{ right: 6, total: 8 }, { right: 0, total: 5 }]), { score: 16.5, total: 24, pct: 69 });
   assert.deepEqual(ex.mockScore(10, 10), { score: 10, total: 10, pct: 100 });
+});
+
+test("each exam's mocks run at its own real pace (PenTest+ allows 165 minutes for 90 questions)", () => {
+  const fmt = id => JSON.parse(readFileSync(new URL(`../content/certs/${id}.json`, import.meta.url), "utf8")).format;
+  assert.deepEqual([fmt("network-plus"), fmt("security-plus"), fmt("pentest-plus")].map(f => [f.minutes, f.maxQuestions]), [[90, 90], [90, 90], [165, 90]]);
+  const pt = ex.examPace(fmt("pentest-plus")), np = ex.examPace(fmt("network-plus"));
+  assert.equal(np, 1);
+  assert.equal(ex.mockSettings({ n: 90 }, [20, 45, 90], pt).minutes, 165, "a full-length PenTest+ mock gets the full 165 minutes");
+  assert.equal(ex.mockSettings({}, [20], pt).minutes, 37);
+  assert.equal(ex.mockMinutes(ex.mockSettings({}, [20], pt).minutes, [{}], pt), 39, "1 PBQ + 20 questions at PenTest+ pace");
+  assert.equal(ex.mockMinutes(ex.mockSettings({}, [20], np).minutes, [{}], np), 21, "1 PBQ + 20 questions at Network+ pace");
+  assert.equal(ex.examPace(undefined), 1, "no format falls back to one a minute");
+  assert.equal(ex.examPace({ minutes: -5, maxQuestions: 90 }), 1);
 });

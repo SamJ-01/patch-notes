@@ -35,7 +35,12 @@ Leave these alone. They were already their own picture: `cia-triad`, `cia-which-
 
 ## Still shared — shoot these next
 
-None. As of 12 November every file in `static/img/cards/` is unique (97 cards, 97 pictures). Do not copy one file onto another card.
+None. As of 18 November there are 106 card files, all different (checked by file hash; the `CardPictures` test fails if two cards share one). `port-corridor` deliberately reuses `ports-protocols` and `subnet-calc` reuses `subnetting` (`PHOTO_ALIAS`). Do not copy one file onto another card.
+
+**Status, 18 November 2026** (replaces older counts below):
+- `cia-which-pillar` was replaced on 16 November and is now clearly a different picture from `cia-triad` (mean pixel difference 34 on a 64 x 32 greyscale comparison, where 0 is identical).
+- Still on the replace list from the 15 November audit (kept their old pictures): `osint`, `signin-spray`, `xss-review`, `osi-model`, `vlans`, `web-xss`, `who-touched-the-file`.
+- No photo yet (drawn scenes): the PenTest+ labs `recon-script`, `automation-script`, `physical-test`, `cleanup-log` and the Diagnose cases `risk-gone-wrong`, `which-law-applies`, `which-model-fits`. Shoot these as one 2 x 3 grid plus one, in the house style.
 
 If a picture is a poor match for its card, replace that one file only.
 
@@ -75,7 +80,7 @@ After replacing, add a similarity check to the `CardPictures` test (the current 
 ### Outcome (16 November 2026)
 Two Grok rounds. Kept only what matched the house look and brightness (average 21 to 25 against the site's 20), cropped but not recoloured:
 - **Replaced:** ai-security (smart speaker, its own ring light; cropped to drop a plant), ddos-who-stops-it (rope barrier in a dark corridor), slow-network (hourglass beside a router), zero-trust-decision (turnstile, reader LED; cropped to drop a white gutter).
-- **Not used:** the other eight. Round one was too bright and warm (desk lamps, brass, cork, props) and several ideas missed; round two had the right ideas but a grey-green haze over the whole frame and a soft rendered look, and `osi-model` had about ten slates instead of seven. Those cards keep their old pictures and stay on this list: cia-which-pillar (still the same picture as cia-triad), osint, signin-spray, xss-review, osi-model, vlans, web-xss, who-touched-the-file (about Linux file permissions, not forensics). Good ideas from round two to reuse: padlock + sealed letter + socket (CIA), one key in the first of a row of lockers (spray), three padlocks on one drawer (permissions), a note tucked under a review card (stored XSS), a sticky note over a form field (XSS).
+- **Not used:** the other eight. Round one was too bright and warm (desk lamps, brass, cork, props) and several ideas missed; round two had the right ideas but a grey-green haze over the whole frame and a soft rendered look, and `osi-model` had about ten slates instead of seven. Those cards keep their old pictures and stay on this list: osint, signin-spray, xss-review, osi-model, vlans, web-xss, who-touched-the-file (about Linux file permissions, not forensics). Good ideas from round two to reuse: padlock + sealed letter + socket (CIA), one key in the first of a row of lockers (spray), three padlocks on one drawer (permissions), a note tucked under a review card (stored XSS), a sticky note over a form field (XSS).
 
 ### Page headers and the network builder card (16 November 2026)
 - The Learn and Practise page headers were the withdrawn holographic style. Learn now uses the advisory-hunt lab picture (a clipboard on a dark desk) and Practise the linux lesson picture (a terminal cursor on a dark desk), each on the page where that card does not appear. Saved at 988 x 494 in `static/img/heads/`.

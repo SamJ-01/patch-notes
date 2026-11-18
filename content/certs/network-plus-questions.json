@@ -2249,6 +2249,33 @@
      "why": "An outage beyond the router wouldn't stop DHCP on the local network."
     }
    ]
+  },
+  {
+   "id": "np-5.4-3",
+   "objective": "5.4",
+   "stem": "Which measurement tells you how long a packet takes to reach its destination and come back?",
+   "options": [
+    {
+     "text": "Latency (round-trip time)",
+     "correct": true,
+     "why": "ping reports it in milliseconds. High latency makes calls and remote desktops feel sluggish."
+    },
+    {
+     "text": "Jitter",
+     "correct": false,
+     "why": "Jitter is how much the delay varies from packet to packet."
+    },
+    {
+     "text": "Throughput",
+     "correct": false,
+     "why": "Throughput is how much data gets through per second."
+    },
+    {
+     "text": "Packet loss",
+     "correct": false,
+     "why": "That's the share of packets that never arrive."
+    }
+   ]
   }
  ]
 }
