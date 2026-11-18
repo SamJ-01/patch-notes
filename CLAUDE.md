@@ -200,6 +200,9 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   formed, real objectives, every model answer scores 100%, no PBQ solved at the start. Smoke: one answered by hand, one firewall
   built rule by rule. Ten so far: Network+ ports, subnet table, fix the S3 trunk (cli), troubleshooting order; Security+ DMZ
   firewall, attacks in log lines, IR phases; PenTest+ nmap options, scope, remediation. Next: PBQs inside mock exams.
+- Vishing lab "The Call" (`#lab-vishing-call`, `static/js/labs/vishing.js`, tests `tests/vishing.test.mjs`): a portrait handset
+  (340 px, status bar with time/signal/battery, camera notch, side buttons, home bar); the incoming call lays out as on a real phone
+  (large caller photo, round Decline/Answer with labels), then a running call timer and n/5, each beat's `ask` above the replies.
 - Practise page: length filters and "Not done yet" (`PS.time`/`PS.todo`, pure `practiseMatch`, tested) and "Pick up where you
   left off" (`pn-last` in localStorage, a convenience not progress; `lastActivity` only offers a known unfinished lab, mission
   or shift; tested). Labs and shifts don't save mid-way yet, so it reopens them from the start.
@@ -237,7 +240,9 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   Prev/Next stop) or "Back to stop n" on a side trip, and `nextStep` follows that route first. Topic steps (`loopStrip`) are
   unnumbered, always show all four stages (missing ones greyed "none yet") and sit under the title of the lesson, lab,
   mission and "Prove it" drill with the current one lit (`topicTop`); going deeper on a stop's topic keeps the bar at that
-  stop (`topicOf`, "going deeper"), and pages end with "Back to the top" (`toTopButton`). A lab or mission can serve other topics too (`also: [lessonIds]`) and a
+  stop (`topicOf`, "going deeper"), and pages end with "Back to the top" (`toTopButton`). On a stage with several items (Experiment 1/2,
+  Diagnose 0/2), `loopItems` lists them under the strip, the current one marked, with Next (and Previous) in list order, wrapping;
+  over 4 items it collapses to "‹ Previous · n of N · Next ›" plus an "All N" fold (tested in page.test). A lab or mission can serve other topics too (`also: [lessonIds]`) and a
   shift lists the topics it diagnoses (`lessons`); only add pairings a learner would agree are the same topic. `crumbs` (sessionStorage `pn-crumbs`) turn "← Section" links into
   "← the page you came from" (`relabelBack`, watches `main`). Tested: `trailStop`, `noteCrumb`.
 - Exam routes: `paths.json` entries with `exam` (network-plus 16 stops, security-plus 12, pentest-plus 10), linked from each cert
