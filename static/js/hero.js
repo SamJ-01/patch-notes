@@ -152,7 +152,20 @@ export function order(list, day = 0) {
   return first.concat(rest);
 }
 
+// The hero as a screen (the default since 19 Nov, the owner's choice; ?hero=photo shows the desk photo): a monitor, and the terminal
+// is a flat window on its glass (.hm-term), so nothing is warped or measured.
+function mountScreen(hero, term, data) {
+  if (term.querySelector(".hh-screen")) return;
+  const day = Math.floor(Date.now() / 864e5), list = order(scenes({ ...data, day }), day);
+  const scr = document.createElement("div"); scr.className = "hh-screen hm-win";
+  scr.innerHTML = `<div class="hs-bar"><span class="hs-dots"><i></i><i></i><i></i></span><span class="hs-tab"></span></div><div class="hs-body"></div>`;
+  term.append(scr);
+  play(hero, scr, null, list);  // no "On screen" caption here (the owner found it awkward under the screen, 19 Nov)
+}
+
 export function mount(hero, data = {}) {
+  const term = hero.querySelector(".hm-term");
+  if (term) return mountScreen(hero, term, data);
   const bg = hero.querySelector(".hh-bg"), img = hero.querySelector(".hh-img");
   if (!bg || !img || hero.querySelector(".hh-stage")) return;
   const day = Math.floor(Date.now() / 864e5), list = order(scenes({ ...data, day }), day);
@@ -167,7 +180,6 @@ export function mount(hero, data = {}) {
   const shot = document.createElement("div"); shot.className = "hh-shot"; shot.setAttribute("aria-hidden", "true"); phone.append(shot);
   const cap = document.createElement("p"); cap.className = "hh-now";
   hero.append(phone, cap);  // desktop: the caption sits over the photo; fit() moves it under the phone frame on phones
-  const body = scr.querySelector(".hs-body"), tab = scr.querySelector(".hs-tab");
   const narrowQ = typeof matchMedia === "function" ? matchMedia("(max-width: 1050px)") : { matches: false };
   const fit = () => {
     const narrow = narrowQ.matches, box = narrow ? shot : hero, r = box.getBoundingClientRect(); if (!r.width || !r.height) return;
@@ -183,11 +195,16 @@ export function mount(hero, data = {}) {
   fit();
   if (typeof ResizeObserver === "function") { const ro = new ResizeObserver(fit); ro.observe(hero); ro.observe(shot); }
   narrowQ.addEventListener?.("change", fit);
+  play(hero, scr, cap, list);
+}
 
+// Types each scene's lines into the terminal, one by one, and keeps the "On screen" caption (a real link) in step.
+function play(hero, scr, cap, list) {
   const reduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   const row = ([kind, text, tone, ps]) => kind === "pause" ? "" : `<div class="hs-line ${kind}${tone ? " " + tone : ""}">${kind === "cmd" ? `<span class="hs-ps">${esc(ps || "$")}</span> ` : ""}<span class="hs-t">${esc(text)}</span></div>`;
+  const body = scr.querySelector(".hs-body"), tab = scr.querySelector(".hs-tab");
   let si = 0, li = 0, ch = 0, visible = true, timer = null;
-  const caption = s => { cap.innerHTML = `<span class="hh-now-k">On screen:</span> ${esc(s.title.split(" · ")[1] || s.title)} <a href="${esc(s.link[0])}">Try it: ${esc(s.link[1])} →</a>`; };
+  const caption = s => { if (!cap) return; cap.innerHTML = `<span class="hh-now-k">On screen:</span> ${esc(s.title.split(" · ")[1] || s.title)} <a href="${esc(s.link[0])}">Try it: ${esc(s.link[1])} →</a>`; };
   const startScene = () => { const s = list[si]; tab.textContent = s.title; body.innerHTML = ""; li = 0; ch = 0; caption(s); };
   if (!list.length) return;
   startScene();

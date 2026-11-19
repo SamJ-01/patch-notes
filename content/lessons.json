@@ -2003,7 +2003,7 @@
    }
   ],
   "diagram": {
-   "why": "Step through a login to see where MFA stops an attacker who already has the password.",
+   "why": "Location is only a clue: an attacker with a stolen password can use a VPN to look like a normal UK sign-in. Step through a login to see where MFA stops them anyway.",
    "title": "Why a stolen password isn't enough with MFA",
    "nodes": [
     {
@@ -3333,7 +3333,7 @@
    }
   ],
   "diagram": {
-   "why": "Step through a request on open Wi-Fi to see what HTTPS hides, and what it does not.",
+   "why": "Hashing is one-way, so it can't protect data that has to be read again. That's encryption's job: step through a request on open Wi-Fi to see what HTTPS hides, and what it doesn't.",
    "title": "How HTTPS (TLS) protects you on shared Wi-Fi",
    "nodes": [
     {
@@ -4558,7 +4558,7 @@
    }
   ],
   "concept": {
-   "why": "Four models, four questions: how does it unfold, what do they do, how is it connected, and what could go wrong?",
+   "why": "The Kill Chain is one of four models, each answering a different question: how does it unfold, what do they do, how is it connected, and what could go wrong?",
    "type": "cards",
    "title": "Four ways to model an attack",
    "items": [

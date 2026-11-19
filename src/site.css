@@ -1230,6 +1230,10 @@ body.life { background-image: none; }
 .ag-radar { flex: none; overflow: visible; --cat: var(--brand); }
 .term-tasks ol { margin: 0; padding-left: 20px; display: grid; gap: 7px; font-size: 0.9rem; }
 .term-tasks li.got { color: var(--good); }
+/* Finished objectives fold to one line (19 Nov, the owner): the hint box below the list moves up as you go, and their
+   explanation is already shown once as "What that showed". The full text stays in the page for screen readers. */
+.term-tasks li.got { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; list-style: none; }  /* the ✓ is its marker: overflow clips a list number */
+.term-tasks li.got .vl-why { display: none; }
 .term-tasks li.now { color: var(--ink); font-weight: 600; }
 .term-tasks li:not(.got):not(.now) { color: var(--muted); }
 .term-tasks code { color: var(--sun); }
@@ -2671,18 +2675,18 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .ag-hero p { margin: 0; max-width: 70ch; }
 .ag-hubgrid { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 18px; align-items: stretch; }
 .ag-idcard { display: flex; flex-direction: column; align-items: center; gap: 0; align-self: start; position: relative; }  /* the badge hangs free: no card behind it */
-/* The staff badge (19 Nov): the owner's Lanternfield badge photo, with live text on its blank panels. Positions are % of the
-   600x1092 crop, measured from the photo's pixels. The badge itself is dark, so these colours don't follow the theme. The background is cut out (transparent WebP). */
-.ag-badge { position: relative; width: 100%; max-width: 340px; aspect-ratio: 600 / 1092; container-type: inline-size; color: #eef2f7; }
+/* The staff badge (19 Nov): the owner's Lanternfield badge photo (holder and clip, no lanyard: the owner's choice), with live
+   text on its blank panels. Positions are % of the 600x847 crop, measured from the photo's pixels. The badge itself is dark, so these colours don't follow the theme. The background is cut out (transparent WebP). */
+.ag-badge { position: relative; width: 100%; max-width: 340px; aspect-ratio: 600 / 847; container-type: inline-size; color: #eef2f7; }
 .ag-badge > img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.45)); }
 @media (max-width: 600px) { .ag-badge { max-width: 280px; } }  /* keeps Clock in within reach on a phone */
-.ag-b-photo { position: absolute; left: 30%; top: 40.56%; width: 40%; height: 22.82%; padding: 9% 7% 0; box-sizing: border-box; fill: #4a525c; opacity: 0.85; }
+.ag-b-photo { position: absolute; left: 30%; top: 25.88%; width: 40%; height: 29.43%; padding: 9% 7% 0; box-sizing: border-box; fill: #4a525c; opacity: 0.85; }
 .ag-b-name, .ag-b-rank { position: absolute; left: 15.5%; width: 69.5%; display: flex; align-items: center; padding: 0 5%; box-sizing: border-box; }
-.ag-b-name { top: 65.7%; height: 5.85%; justify-content: center; font: 800 8cqw/1 var(--font-display, var(--font-body)); letter-spacing: 0.01em; }
-.ag-b-rank { top: 72.75%; height: 5.28%; justify-content: space-between; gap: 6px; font: 700 3.6cqw/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: #ffb000; }
+.ag-b-name { top: 58.31%; height: 7.54%; justify-content: center; font: 800 8.6cqw/1 var(--font-display, var(--font-body)); letter-spacing: 0.01em; }
+.ag-b-rank { top: 67.39%; height: 6.81%; justify-content: space-between; gap: 6px; white-space: nowrap; font: 700 4.1cqw/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: #ffb000; }
 .ag-b-no { color: #9aa6b4; letter-spacing: 0.04em; }
 .ag-b-stamps { list-style: none; margin: 0; padding: 0; }
-.ag-bstamp { position: absolute; top: 79.96%; width: 7.56%; aspect-ratio: 1; left: calc(27.18% + var(--i) * 13.87%); display: grid; place-items: center; border-radius: 50%; font: 700 2.9cqw/1 var(--font-mono); color: #6f7b88; }
+.ag-bstamp { position: absolute; top: 76.7%; width: 7.56%; aspect-ratio: 1; left: calc(27.18% + var(--i) * 13.87%); display: grid; place-items: center; border-radius: 50%; font: 700 3.5cqw/1 var(--font-mono); color: #6f7b88; }
 .ag-bstamp.on { color: #1a1205; background: radial-gradient(circle, #ffc23d 0 58%, #e29a00 62% 100%); box-shadow: 0 0 0 1.5px #ffb000, 0 0 12px rgba(255, 176, 0, 0.45); transform: rotate(-10deg); }
 .ag-id-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; padding: 10px 14px 0; margin: 14px 0 0; border-top: 1px dashed var(--line); }
 .ag-id-stats dt { font-size: 0.72rem; color: var(--muted); }
@@ -5335,3 +5339,32 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .nd-verdict { margin: 10px 0 0; padding: 8px 10px; border-left: 3px solid var(--sun); background: color-mix(in srgb, var(--sun) 8%, transparent); }
 @media (max-width: 980px) { .nd-links { grid-template-columns: repeat(3, minmax(0, 1fr)); } .nd-link + .nd-link::before { display: none; } }
 @media (max-width: 520px) { .nd-links { grid-template-columns: 1fr; } .nd-link { grid-template-columns: 22px auto 1fr; align-items: center; column-gap: 8px; } .nd-link .nd-dot { grid-row: span 2; } .nd-say { grid-column: 2 / -1; } }
+/* The hero is a screen (19 Nov, the owner's choice; ?hero=photo shows the old desk photo): a monitor bezel, glass with a faint
+   glare, the headline on the glass, the live terminal as a flat window beside it, a chin with a power light. No stand. */
+.home .home-hero.hh-monitor { display: block; min-height: 0; padding: 6px 0 0; border: 0; background: transparent; overflow: visible; }
+.hm-frame { position: relative; max-width: 1180px; margin: 0 auto; padding: 14px 14px 0; border-radius: 22px;
+  background: linear-gradient(180deg, #1c222b, #0d1117 70%); border: 1px solid #2b333e;
+  box-shadow: 0 34px 70px -30px rgba(0, 0, 0, 0.75), 0 2px 0 rgba(255, 255, 255, 0.06) inset; }
+.hm-glass { position: relative; overflow: hidden; border-radius: 10px; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  align-items: center; gap: clamp(20px, 3vw, 40px); padding: clamp(28px, 4vw, 52px); min-height: 420px; border: 1px solid #000;
+  background: radial-gradient(70% 90% at 80% 30%, rgba(63, 224, 232, 0.1), transparent 60%), radial-gradient(60% 70% at 0% 100%, rgba(255, 176, 0, 0.07), transparent 60%), #05080c; }
+.hm-glass::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(118deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.015) 32%, transparent 46%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 3px); }
+.hh-monitor .hh-inner { max-width: none; }
+.hm-term { position: relative; height: 340px; min-width: 0; }
+.hm-win.hh-screen { position: relative; width: 100%; height: 100%; transform: none; opacity: 1; border-radius: 10px; border: 1px solid #1d2a36;
+  box-shadow: 0 20px 40px -18px rgba(0, 0, 0, 0.8), inset 0 0 60px rgba(63, 224, 232, 0.06); font-size: 14px; padding: 14px 18px; }
+.hm-win .hs-bar { padding-bottom: 10px; margin-bottom: 10px; }
+.hm-chin { display: flex; align-items: center; justify-content: center; gap: 10px; height: 34px; position: relative; }
+.hm-brand { font: 800 0.72rem/1 var(--font-display); letter-spacing: 0.12em; color: #5d6b7c; } .hm-brand i { font-style: normal; color: #b07a10; }
+.hm-led { position: absolute; right: 22px; width: 6px; height: 6px; border-radius: 50%; background: #3fe0e8; box-shadow: 0 0 8px #3fe0e8; }
+@media (max-width: 900px) {
+  .hm-glass { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .hm-term { height: 260px; }
+}
+@media (max-width: 520px) {
+  .hm-frame { padding: 8px 8px 0; border-radius: 16px; } .hm-glass { padding: 24px 18px; } .hm-chin { height: 26px; }
+  .hm-term { height: 230px; } .hm-win.hh-screen { font-size: 12.5px; padding: 10px 12px; }
+}
+:root[data-theme="light"] 

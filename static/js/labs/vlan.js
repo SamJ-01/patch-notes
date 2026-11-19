@@ -885,12 +885,16 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   const out = $("v-out"), input = $("v-in");
   const reduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   let vnBusy = false;
-  function vnMove(target, animate) {
+  function vnMove(target, animate, dock = false) {
     const floor = $("vn-floor"), pkt = $("v-pkt");
     const fr = floor.getBoundingClientRect(), tr = target.getBoundingClientRect();
     if (!tr.width || !tr.height) return false;  // not drawn at this size: never fly the packet to the corner
     pkt.style.transition = animate && !reduced ? "transform .7s cubic-bezier(.2,.7,.2,1)" : "none";
-    pkt.style.transform = `translate(${tr.left - fr.left + tr.width / 2 - pkt.offsetWidth / 2}px, ${tr.top - fr.top + tr.height / 2 - pkt.offsetHeight / 2}px)`;
+    // dock: stop at the target's left edge (arriving at the next switch) instead of covering its label (deep check, 19 Nov)
+    // measured with the VLAN tag showing, since it appears on arrival and widens the packet
+    const tag = $("v-stamp"), hid = tag.hidden; if (dock) tag.hidden = false; const pw = pkt.offsetWidth; tag.hidden = hid;
+    const x = dock ? Math.max(0, tr.left - fr.left - pw - 8) : tr.left - fr.left + tr.width / 2 - pw / 2;
+    pkt.style.transform = `translate(${x}px, ${tr.top - fr.top + tr.height / 2 - pkt.offsetHeight / 2}px)`;
     return true;
   }
   function vnGo(kind) {
@@ -901,7 +905,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     vnMove($("vn-a"), false);
     // On a phone the trunk runs under the rooms: the packet rides the trunk instead of covering the next switch's label.
     const target = kind === "same" ? $("vn-b") : kind === "cross" ? wall : matchMedia("(max-width: 720px)").matches ? $("vn-trunk") : $("vn-far");
-    requestAnimationFrame(() => vnMove(target, true));
+    requestAnimationFrame(() => vnMove(target, true, target.id === "vn-far"));
     setTimeout(() => {
       if (kind === "same") say.textContent = "Same room. The packet arrives.";
       if (kind === "cross") { wall.classList.add("hit"); say.textContent = "Stopped. Staff and Students cannot see each other."; }

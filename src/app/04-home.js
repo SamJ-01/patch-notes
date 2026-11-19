@@ -127,7 +127,7 @@ VIEWS.today = () => {
 
   // The desk photo's monitor shows a live terminal (static/js/hero.js), warped onto the screen's corners.
   const liveHero = () => import("./js/hero.js").then(m => { const el = main.querySelector(".home-hero"); if (el) m.mount(el, { kev: DATA.kev, news: DATA.news, lessons: DATA.lessons }); }).catch(() => {});
-  const hero = `<section class="home-hero"><div class="hh-bg" aria-hidden="true"><img class="hh-img" src="img/hero-desk.webp" srcset="img/hero-desk-800.webp 800w, img/hero-desk.webp 1914w" sizes="100vw" alt="" width="1914" height="822" decoding="async" fetchpriority="high"><div class="hh-scrim"></div></div>
+  const photoHero = `<section class="home-hero"><div class="hh-bg" aria-hidden="true"><img class="hh-img" src="img/hero-desk.webp" srcset="img/hero-desk-800.webp 800w, img/hero-desk.webp 1914w" sizes="100vw" alt="" width="1914" height="822" decoding="async" fetchpriority="high"><div class="hh-scrim"></div></div>
     <div class="hh-inner">
       <p class="hh-eyebrow">Hands-on cyber security &amp; IT</p>
       <h1 class="hh-title">Learn it. Break it. <em class="accent">Understand it.</em></h1>
@@ -135,6 +135,19 @@ VIEWS.today = () => {
       <div class="hh-cta"><a class="btn brand lg" href="#learn">Start learning →</a><a class="btn ghost lg" href="#agency">Work a SOC shift</a></div>
       <p class="hh-trust">No account needed · progress stays in your browser · built for Network+, Security+ &amp; PenTest+</p>
     </div></section>`;
+  // The hero is a screen (19 Nov, the owner's choice over the desk photo): a monitor bezel, the headline on its glass and the
+  // live terminal in a window beside it; no stand. ?hero=photo still shows the desk photo version.
+  const screenHero = `<section class="home-hero hh-monitor"><div class="hm-frame"><div class="hm-glass">
+    <div class="hh-inner">
+      <p class="hh-eyebrow">Hands-on cyber security &amp; IT</p>
+      <h1 class="hh-title">Learn it. Break it. <em class="accent">Understand it.</em></h1>
+      <p class="hh-sub">See how real attacks work, learn to defend against them, and understand the news behind every headline. Free, visual, and built for real exams.</p>
+      <div class="hh-cta"><a class="btn brand lg" href="#learn">Start learning →</a><a class="btn ghost lg" href="#agency">Work a SOC shift</a></div>
+      <p class="hh-trust">No account needed · progress stays in your browser · built for Network+, Security+ &amp; PenTest+</p>
+    </div>
+      <div class="hm-term" aria-hidden="true"></div></div>
+      <div class="hm-chin" aria-hidden="true"><span class="hm-brand">PATCH<i>//</i>NOTES</span><span class="hm-led"></span></div></div></section>`;
+  const hero = new URLSearchParams(location.search).get("hero") === "photo" ? photoHero : screenHero;
   if (isNewcomer()) {
     main.innerHTML = `<div class="view home">
       ${hero}

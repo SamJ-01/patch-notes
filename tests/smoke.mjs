@@ -76,7 +76,7 @@ const SIGNATURE = {
   "#lesson-zero-day": [".zd-svg", "#zd-n"],
   "#lesson-attack-models": [".kc-chain", "[data-run]"],
   "#lesson-ransomware": ["main .xpl"],
-  "#today": [".home-hero .hh-screen"],
+  "#today": [".home-hero .hh-screen", ".home-hero .hm-frame .hm-glass"],
 };
 await journey("signature features", async () => {
   for (const [route, sels] of Object.entries(SIGNATURE)) {

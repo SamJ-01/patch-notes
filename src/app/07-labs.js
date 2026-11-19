@@ -371,7 +371,7 @@ function shiftCard(sh) {
     <span class="lmeta"><span>${sh.minutes} min</span><span>${rec ? `Best: ${rec.best} of ${rec.total} checks` : `+${sh.xp} XP`}</span></span></a>`;
 }
 // The Agency's own section: the agency, your staff badge, the time clock and the rota. Clocking in opens a shift.
-// The badge is a photo (img/kit/badge.webp, 19 Nov) with blank panels; your name, rank, ID and shift stamps are live text
+// The badge is a photo (img/kit/badge-holder.webp, 19 Nov: the holder only, no lanyard) with blank panels; your name, rank, ID and shift stamps are live text
 // laid over them by percentage (measured from the photo: a new photo means re-measuring .ag-b-* in site.css). The photo has
 // four stamp circles, so only the first four shifts get a stamp; "Shifts worked" counts them all.
 VIEWS.agency = () => {
@@ -389,7 +389,7 @@ VIEWS.agency = () => {
     <div class="ag-hubgrid">
       <section class="ag-idcard" aria-label="Your staff badge">
         <div class="ag-badge">
-          <img src="img/kit/badge.webp" width="600" height="1092" alt="" decoding="async">
+          <img src="img/kit/badge-holder.webp" width="600" height="847" alt="" decoding="async">
           <svg class="ag-b-photo" viewBox="0 0 60 70" aria-hidden="true"><circle cx="30" cy="25" r="12"/><path d="M8 70c0-14 10-24 22-24s22 10 22 24z"/></svg>
           <span class="ag-b-name">You</span>
           <span class="ag-b-rank"><span>${rank}</span><span class="ag-b-no">LF-${String(1000 + worked * 37).padStart(4, "0")}</span></span>

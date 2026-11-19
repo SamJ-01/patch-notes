@@ -78,10 +78,16 @@ def main():
     if run(["git", "rev-parse", "--abbrev-ref", "HEAD"], prod) != "main":
         sys.exit("Production clone is not on main.")
     patch = run(["git", "diff", "--binary", since, to, "--", ".", *[f":!{x}" for x in KEEP_APART]], DEV) + "\n"
+    # A fix already carried to production by hand (e.g. a CI fix during a release) is fine: --3way treats an identical change on
+    # both sides as applied.
     r = subprocess.run(["git", "apply", "--check", "-"], cwd=prod, input=patch, text=True, capture_output=True)
+    mode = []
     if r.returncode:
-        sys.exit(f"The changes don't apply cleanly to production:\n{r.stderr}")
-    subprocess.run(["git", "apply", "-"], cwd=prod, input=patch, text=True, check=True)
+        r3 = subprocess.run(["git", "apply", "--3way", "--check", "-"], cwd=prod, input=patch, text=True, capture_output=True)
+        if r3.returncode:
+            sys.exit(f"The changes don't apply cleanly to production:\n{r.stderr}")
+        mode = ["--3way"]
+    subprocess.run(["git", "apply", *mode, "-"], cwd=prod, input=patch, text=True, check=True)
 
     data = prod / "data"
     if not (data / "cves.json").exists():  # a fresh clone has no data snapshot; the offline build needs stubs
