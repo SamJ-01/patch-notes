@@ -311,5 +311,11 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   only (`img/kit/badge-holder.webp`, its own file name so an old cached page never pairs with it; `badge.webp` stays as the
   lanyard version), linking lines between the two visuals on the identity, encryption and attack-models lessons, finished
   objectives fold to one line in the command-line labs, and the VLAN "Try it first" packet stops at the next switch's edge.
+- Published 19 Nov, third release (dev 10a03cf): wrong-answer notes on every lab question (56 labs; `WrongAnswerNotes`
+  now requires them everywhere), the interactive labs reviewed (firewall Hint and "Why the rules above didn't match",
+  wrong-pick notes in topologies/OSI/ports, network builder goal hints, CVSS clue questions), Agency shift-05 "Audit
+  week" (Pellow & Finch: a leaver's HR export, a forgotten MFA exclusion, card data on a share; the Diagnose step for
+  risk, law and frameworks), 25 more Security+ questions (174, at least 6 per objective) and card photos for
+  physical-test and sqli-shop.
 - Next: learner feedback on the shift and the new labs, more Security+
   questions, more Agency shifts (one client and incident each; the people for a shift made in one image). No accounts/backend until real users need cross-device saves.
