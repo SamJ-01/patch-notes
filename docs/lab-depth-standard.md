@@ -38,6 +38,15 @@ Every lab is brought up to this, one at a time, and `tests/test_core.py` `LabDep
   out-of-scope target; `explain()` reads what a timeout or refusal tells you; nslookup, dig and host all count as a lookup).
   The strip is now shared: `static/js/labs/guide.js` (Linux and network tools labs).
 - Done: `permissions` (19 Nov). Every console lab now meets the standard, with three-step hints.
-- Question labs (56 labs, 294 steps): wrong-answer notes on every multiple-choice question in the 10 exam-route labs (41
-  questions, 19 Nov; `WrongAnswerNotes` requires them there). The other 46 labs next, a batch at a time.
-- Interactive labs (18): each to be reviewed.
+- Question labs (56 labs, 294 steps): wrong-answer notes on every multiple-choice question in every lab (19 Nov; the 10 exam-route labs first, 41
+  questions, then the other 46, 209 questions; `WrongAnswerNotes` requires them everywhere).
+- Interactive labs (reviewed 19 Nov, one by one):
+  - Already met it: vishing (per-reply feedback, risk and debrief), hashing (why/wrong per question), sqli-shop (hint and
+    why per objective), wiring (red pins plus the reference table), corridor (every wrong door explained), subnetting
+    (worked method on every answer), the two journey labs, the TCP handshake and Telnet vs SSH demos (narrated, nothing to
+    get wrong).
+  - Brought up: firewall-packet (a Hint that walks the rules above the deciding one, pure `hintFor`/`missReason`, and "Why
+    the rules above didn't match" in every verdict), topologies (a wrong pick says what that layout looks like, `missNote`,
+    each topology's `looks`), osi-model (`layerNote`: what the layer you picked does), ports-protocols (`pickNote`: what
+    the port or protocol you picked really is), network-builder (a Hint per goal, in the builder's own words) and
+    cvss-builder (a clue question per wrong metric, `CVSS_CLUES`, never the value). Tested in firewall.test and labs.test.

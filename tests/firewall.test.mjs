@@ -63,3 +63,22 @@ test("gradeFirewall scores packets against expected outcomes", () => {
   assert.equal(g2.pass, false);
   assert.ok(g2.results.find(r => r.label === "ssh-out" && !r.ok));
 });
+
+test("missReason names the first field that doesn't fit, and null on a match", () => {
+  const r = { proto: "tcp", src: "10.0.0.0/24", dst: "10.0.0.5", port: 22, action: "allow" };
+  assert.equal(fw.missReason(r, { proto: "tcp", src: "10.0.0.40", dst: "10.0.0.5", port: 22 }), null);
+  assert.match(fw.missReason(r, { proto: "udp", src: "10.0.0.40", dst: "10.0.0.5", port: 22 }), /UDP/);
+  assert.match(fw.missReason(r, { proto: "tcp", src: "203.0.113.9", dst: "10.0.0.5", port: 22 }), /from 10\.0\.0\.0\/24/);
+  assert.match(fw.missReason(r, { proto: "tcp", src: "10.0.0.40", dst: "10.0.0.5", port: 443 }), /port 22.*443/);
+});
+
+test("hintFor walks every lab packet down to the deciding rule without naming it", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const lab = JSON.parse(await readFile(new URL("../content/labs.json", import.meta.url), "utf8")).find(l => l.id === "firewall-packet");
+  for (const p of lab.packets) {
+    const res = fw.evaluate(p, lab.rules), h = fw.hintFor(p, lab.rules);
+    assert.equal(h.misses.length, res.index < 0 ? lab.rules.length : res.index);
+    assert.ok(h.misses.every(m => m.why), "every rule above the match has a reason");
+    assert.doesNotMatch(h.next, /allow|deny|blocked/i, "the hint never says the outcome");
+  }
+});

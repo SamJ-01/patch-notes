@@ -648,6 +648,10 @@
       {
        "type": "lab",
        "id": "signin-spray"
+      },
+      {
+       "type": "agency",
+       "id": "shift-05"
       }
      ]
     },
@@ -711,6 +715,10 @@
       {
        "type": "lab",
        "id": "which-model-fits"
+      },
+      {
+       "type": "agency",
+       "id": "shift-05"
       }
      ]
     },
@@ -840,6 +848,10 @@
       {
        "type": "lab",
        "id": "risk-gone-wrong"
+      },
+      {
+       "type": "agency",
+       "id": "shift-05"
       }
      ]
     },
@@ -891,6 +903,10 @@
       {
        "type": "lab",
        "id": "which-law-applies"
+      },
+      {
+       "type": "agency",
+       "id": "shift-05"
       }
      ],
      "gap": "UK GDPR, the Computer Misuse Act, NIS and PCI DSS are taught, with breach reporting and authorisation practised in labs; compliance monitoring and reporting aren't covered."
@@ -911,6 +927,10 @@
       {
        "type": "lab",
        "id": "cyber-essentials-check"
+      },
+      {
+       "type": "agency",
+       "id": "shift-05"
       }
      ],
      "gap": "Penetration test scoping, validating findings and a Cyber Essentials readiness check are hands-on; internal and external audits are only in practice questions."

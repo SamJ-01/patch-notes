@@ -1209,22 +1209,16 @@ class PhotoScenes(unittest.TestCase):
 
 class WrongAnswerNotes(unittest.TestCase):
     """docs/lab-depth-standard.md: a wrong pick says why it's tempting and why it's wrong (a step's `notes`, one per option,
-    None at the answer). Every multiple-choice question in a lab on an exam route has them (19 Nov); others are added as written."""
+    None at the answer). Every multiple-choice question in every lab has them (all 56 labs, 19 Nov)."""
 
-    def test_notes_line_up_and_exam_route_labs_have_them(self):
+    def test_every_lab_question_has_notes_that_line_up(self):
         labs = {l["id"]: l for l in json.loads((ROOT / "content" / "labs.json").read_text())}
-        paths = json.loads((ROOT / "content" / "paths.json").read_text())
-        paths = paths["paths"] if isinstance(paths, dict) else paths
-        route = {(s.get("id") if isinstance(s, dict) else s) for p in paths if p.get("exam") for s in p.get("stops", p.get("steps", []))}
         for lid, lab in labs.items():
             for k, st in enumerate(lab.get("steps", [])):
                 if st.get("type", "choice") != "choice":
                     continue
                 notes = st.get("notes")
-                if lid in route:
-                    self.assertTrue(notes, f"{lid} step {k}: exam-route labs need wrong-answer notes")
-                if not notes:
-                    continue
+                self.assertTrue(notes, f"{lid} step {k}: every lab question needs wrong-answer notes")
                 self.assertEqual(len(notes), len(st["options"]), f"{lid} step {k}: one note per option")
                 self.assertIsNone(notes[st["answer"]], f"{lid} step {k}: no note on the right answer")
                 for j, n in enumerate(notes):

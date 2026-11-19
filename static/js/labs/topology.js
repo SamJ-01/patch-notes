@@ -6,6 +6,11 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 export const linkKey = (a, b) => [a, b].sort().join("|");
 
 // End devices whose connectivity we report: PCs and servers, or (for router-only WANs) every site.
+// Why a wrong pick doesn't fit: what the picked layout looks like, then the right one's shape. Pure, tested.
+export function missNote(topos, picked, answer) {
+  const p = topos.find(t => t.id === picked), a = topos.find(t => t.id === answer);
+  return p && a && p.looks && a.looks ? `${p.name} is ${p.looks}. This one is ${a.looks}.` : "";
+}
 export function endpoints(topo) {
   if (topo.endpoints) return topo.endpoints;  // a scenario can name its end devices (e.g. branch offices)
   const ends = topo.nodes.filter(n => (n.kind === "pc" || n.kind === "server") && n.id !== topo.target).map(n => n.id);
@@ -144,7 +149,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     box.innerHTML = `<div class="panel-title"><h2>Name that topology</h2><span class="mono">${z.i + 1}/${z.qs.length}</span></div>
       <p class="q">${esc(q.q)}</p>
       <div class="osi-choices">${lab.topologies.map(t => `<button class="opt${answered ? (t.id === q.answer ? " right" : t.id === z.picked ? " wrong" : "") : ""}" data-ans="${t.id}" ${answered ? "disabled" : ""}>${esc(t.name)}</button>`).join("")}</div>
-      ${answered ? `<div class="feedback">${z.picked === q.answer ? '<b class="ok">Correct.</b>' : `<b class="no">It's ${esc(name(q.answer))}.</b>`}</div><button class="btn brand" id="tq-next" style="justify-self:start">${z.i + 1 < z.qs.length ? "Next ›" : "See score"}</button>` : ""}`;
+      ${answered ? `<div class="feedback">${z.picked === q.answer ? '<b class="ok">Correct.</b>' : `<b class="no">It's ${esc(name(q.answer))}.</b> ${esc(missNote(lab.topologies, z.picked, q.answer))}`}</div><button class="btn brand" id="tq-next" style="justify-self:start">${z.i + 1 < z.qs.length ? "Next ›" : "See score"}</button>` : ""}`;
     box.querySelectorAll("[data-ans]").forEach(b => b.addEventListener("click", () => { z.picked = b.dataset.ans; if (z.picked === q.answer) z.score++; else z.wrong.push(q); drawQuiz(); $("tq-next")?.focus(); }));
     $("tq-next")?.addEventListener("click", () => { z.i++; z.picked = null; drawQuiz(); });
   }

@@ -16,6 +16,11 @@ const RECEIVE = {
 };
 
 // The 15 steps: down the sender's stack, across the wire, up the receiver's.
+// A wrong pick: what the layer you picked does, so the miss teaches. Pure, tested.
+export function layerNote(layers, n) {
+  const l = layers.find(x => x.n === n);
+  return l ? `Layer ${l.n} (${l.name}) is about: ${l.job.charAt(0).toLowerCase() + l.job.slice(1)}.` : "";
+}
 export function walkthrough(lab) {
   const byN = Object.fromEntries(lab.layers.map(l => [l.n, l]));
   const steps = [];
@@ -171,7 +176,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
         const cls = answered ? (l.n === it.layer ? " right" : l.n === r.picked ? " wrong" : "") : "";
         return `<button class="opt osi-choice${cls}" data-pick="${l.n}" style="--c:${l.color}" ${answered ? "disabled" : ""}><b>${l.n}</b> ${esc(l.name)}</button>`;
       }).join("")}</div>
-      ${answered ? `<div class="feedback">${checkSort(it, r.picked) ? '<b class="ok">Correct.</b>' : `<b class="no">It's Layer ${it.layer}.</b>`} ${esc(it.why)}</div><button class="btn brand" id="osi-nx" style="justify-self:start">${r.i + 1 < r.items.length ? "Next ›" : "See score"}</button>` : ""}`;
+      ${answered ? `<div class="feedback">${checkSort(it, r.picked) ? '<b class="ok">Correct.</b>' : `<b class="no">It's Layer ${it.layer}.</b> ${esc(layerNote(lab.layers, r.picked))}`} ${esc(it.why)}</div><button class="btn brand" id="osi-nx" style="justify-self:start">${r.i + 1 < r.items.length ? "Next ›" : "See score"}</button>` : ""}`;
     box.querySelectorAll("[data-pick]").forEach(b => b.addEventListener("click", () => {
       r.picked = Number(b.dataset.pick);
       if (checkSort(it, r.picked)) r.score++; else r.wrong.push(it);

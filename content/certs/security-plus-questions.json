@@ -1,7 +1,7 @@
 {
  "cert": "security-plus",
  "exam": "SY0-701",
- "reviewed": "2026-11-16",
+ "reviewed": "2026-11-19",
  "note": "Original practice questions written for Patch Notes. They are not real exam questions.",
  "questions": [
   {
@@ -4026,6 +4026,681 @@
      "text": "Only root",
      "correct": false,
      "why": "root can read any file, but so can alice and the finance group."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.2-3",
+   "objective": "1.2",
+   "stem": "A company signs every software release it publishes, so customers can check it hasn't been changed. Which property does the signature mainly give?",
+   "options": [
+    {
+     "text": "Integrity and proof of origin (non-repudiation)",
+     "correct": true,
+     "why": "A valid signature shows the file is unchanged and came from the holder of the signing key."
+    },
+    {
+     "text": "Confidentiality",
+     "correct": false,
+     "why": "Signing doesn't hide anything: the release is still readable by anyone."
+    },
+    {
+     "text": "Availability",
+     "correct": false,
+     "why": "A signature doesn't keep the download server up."
+    },
+    {
+     "text": "Authorisation",
+     "correct": false,
+     "why": "Authorisation decides what someone may do. A signature proves who made something and that it's unchanged."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.3-5",
+   "objective": "1.3",
+   "stem": "After an approved change, a server stops talking to the backup system. What document should have shown that the backup system depended on it?",
+   "options": [
+    {
+     "text": "The dependency list in the change request",
+     "correct": true,
+     "why": "Listing what relies on a system lets reviewers spot who to test with and warn before the change."
+    },
+    {
+     "text": "The acceptable use policy",
+     "correct": false,
+     "why": "That sets rules for staff behaviour, not technical dependencies."
+    },
+    {
+     "text": "The incident response plan",
+     "correct": false,
+     "why": "That says what to do after something goes wrong, not what a change will affect."
+    },
+    {
+     "text": "The asset's warranty",
+     "correct": false,
+     "why": "A warranty covers repairs, not how systems depend on each other."
+    }
+   ]
+  },
+  {
+   "id": "sp-1.3-6",
+   "objective": "1.3",
+   "stem": "Which change type is usually pre-approved because it is low risk, routine and follows a set procedure?",
+   "options": [
+    {
+     "text": "A standard change",
+     "correct": true,
+     "why": "Standard changes (such as adding a user) are pre-approved and don't need a full board review each time."
+    },
+    {
+     "text": "An emergency change",
+     "correct": false,
+     "why": "Emergency changes skip the normal timeline because something is broken, but still need sign-off and review after."
+    },
+    {
+     "text": "A major change",
+     "correct": false,
+     "why": "Major changes carry the most risk and get the most review."
+    },
+    {
+     "text": "An unauthorised change",
+     "correct": false,
+     "why": "That's a change made outside the process, which is exactly what change management tries to stop."
+    }
+   ]
+  },
+  {
+   "id": "sp-2.4-4",
+   "objective": "2.4",
+   "stem": "Staff report that a website's address bar shows paypa1-secure.example instead of the real domain. What is this?",
+   "options": [
+    {
+     "text": "Typosquatting: a lookalike domain registered to catch people",
+     "correct": true,
+     "why": "Swapping l for 1 or adding words like 'secure' makes a fake domain look real at a glance."
+    },
+    {
+     "text": "DNS poisoning",
+     "correct": false,
+     "why": "Poisoning would show the real domain name in the address bar while sending you elsewhere."
+    },
+    {
+     "text": "An on-path attack",
+     "correct": false,
+     "why": "An on-path attacker sits between you and the real site; here the name itself is different."
+    },
+    {
+     "text": "A certificate error",
+     "correct": false,
+     "why": "A lookalike domain can have a perfectly valid certificate for its own name."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.3-5",
+   "objective": "3.3",
+   "stem": "A laptop full of customer records is stolen from a car. Which control most protects the data?",
+   "options": [
+    {
+     "text": "Full-disk encryption",
+     "correct": true,
+     "why": "Without the key, the disk's contents are unreadable, so a lost device is a hardware cost, not a data breach."
+    },
+    {
+     "text": "A strong Windows password alone",
+     "correct": false,
+     "why": "Removing the disk and reading it in another machine bypasses the login."
+    },
+    {
+     "text": "Antivirus",
+     "correct": false,
+     "why": "Antivirus stops malware; it does nothing for a thief reading the disk."
+    },
+    {
+     "text": "A cable lock",
+     "correct": false,
+     "why": "Useful on a desk, but no help once the laptop has gone."
+    }
+   ]
+  },
+  {
+   "id": "sp-3.4-5",
+   "objective": "3.4",
+   "stem": "Which backup approach copies only the data changed since the last full backup, so a restore needs the full backup plus just the latest one of these?",
+   "options": [
+    {
+     "text": "Differential",
+     "correct": true,
+     "why": "Each differential holds everything since the last full, so you restore the full plus the newest differential."
+    },
+    {
+     "text": "Incremental",
+     "correct": false,
+     "why": "Incrementals hold changes since the last backup of any kind, so a restore needs the full plus every incremental since."
+    },
+    {
+     "text": "Snapshot only",
+     "correct": false,
+     "why": "A snapshot is a point-in-time copy, often on the same storage, not a full/differential scheme."
+    },
+    {
+     "text": "Mirror",
+     "correct": false,
+     "why": "A mirror copies changes instantly, including deletions and encryption, so it isn't a backup on its own."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.1-5",
+   "objective": "4.1",
+   "stem": "A new server is built from the company's hardened image. What is the main benefit of using a secure baseline?",
+   "options": [
+    {
+     "text": "Every server starts with the same known-good, hardened settings that can be checked for drift",
+     "correct": true,
+     "why": "A baseline makes builds consistent and lets you spot changes from it."
+    },
+    {
+     "text": "It removes the need to patch",
+     "correct": false,
+     "why": "A baseline is a starting point; it still needs patching as new flaws appear."
+    },
+    {
+     "text": "It makes the server invisible on the network",
+     "correct": false,
+     "why": "Hardening reduces exposure but doesn't hide the server."
+    },
+    {
+     "text": "It replaces the need for monitoring",
+     "correct": false,
+     "why": "You still need to watch for attacks and for settings drifting from the baseline."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.2-6",
+   "objective": "4.2",
+   "stem": "An asset register lists a server's owner, location and the data it holds. Why does knowing its data classification matter?",
+   "options": [
+    {
+     "text": "It sets how the server must be protected and how it must be disposed of",
+     "correct": true,
+     "why": "Confidential data needs stronger controls and proper sanitisation before the hardware leaves."
+    },
+    {
+     "text": "It decides the server's warranty",
+     "correct": false,
+     "why": "Warranty is about the hardware supplier, not the data."
+    },
+    {
+     "text": "It sets the server's IP address",
+     "correct": false,
+     "why": "Addressing is a network design choice, not a data classification one."
+    },
+    {
+     "text": "It only matters for auditors",
+     "correct": false,
+     "why": "Classification drives real controls: access, encryption, retention and disposal."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.3-4",
+   "objective": "4.3",
+   "stem": "A vulnerability scan finds the same missing patch on 300 laptops. What is the most useful next step?",
+   "options": [
+    {
+     "text": "Check exposure and exploitation (for example, KEV), then patch through the normal process at the right priority",
+     "correct": true,
+     "why": "Context sets urgency: a known-exploited flaw on internet-facing kit comes first."
+    },
+    {
+     "text": "Raise 300 separate tickets and work through them in order",
+     "correct": false,
+     "why": "One root cause needs one fix rolled out, not 300 separate investigations."
+    },
+    {
+     "text": "Accept the risk because it's everywhere",
+     "correct": false,
+     "why": "Being common makes it more urgent, not less."
+    },
+    {
+     "text": "Turn off the scanner until the patch is out",
+     "correct": false,
+     "why": "That hides the problem without reducing it."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.3-5",
+   "objective": "4.3",
+   "stem": "What does EPSS add to a CVSS score when deciding what to patch first?",
+   "options": [
+    {
+     "text": "An estimate of how likely the flaw is to be exploited soon",
+     "correct": true,
+     "why": "CVSS says how bad it could be; EPSS estimates the chance of exploitation in the next 30 days."
+    },
+    {
+     "text": "The cost of the patch",
+     "correct": false,
+     "why": "EPSS is about likelihood of exploitation, not cost."
+    },
+    {
+     "text": "Whether the vendor has released a fix",
+     "correct": false,
+     "why": "That's in the vendor's advisory, not EPSS."
+    },
+    {
+     "text": "The number of affected devices in your network",
+     "correct": false,
+     "why": "Only your own inventory tells you that."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.4-5",
+   "objective": "4.4",
+   "stem": "A SIEM raises 400 alerts a day and analysts have stopped reading them. What is the best first fix?",
+   "options": [
+    {
+     "text": "Tune the rules: remove or adjust the noisiest ones and raise the threshold for low-value alerts",
+     "correct": true,
+     "why": "Alert fatigue makes real alerts get missed; tuning keeps the signal visible."
+    },
+    {
+     "text": "Hire analysts to read all 400",
+     "correct": false,
+     "why": "That treats the symptom. Most of those alerts are probably noise."
+    },
+    {
+     "text": "Turn the SIEM off",
+     "correct": false,
+     "why": "You lose detection entirely."
+    },
+    {
+     "text": "Send every alert by email to the whole IT team",
+     "correct": false,
+     "why": "More people ignoring the same noise doesn't help."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.5-4",
+   "objective": "4.5",
+   "stem": "A web filter blocks a category of sites for all staff. Which control is this?",
+   "options": [
+    {
+     "text": "A technical preventive control",
+     "correct": true,
+     "why": "It's enforced by technology and stops the visit before it happens."
+    },
+    {
+     "text": "A managerial directive control",
+     "correct": false,
+     "why": "A policy telling staff not to visit would be directive; the filter actually enforces it."
+    },
+    {
+     "text": "A physical control",
+     "correct": false,
+     "why": "It works on network traffic, not on doors or locks."
+    },
+    {
+     "text": "A corrective control",
+     "correct": false,
+     "why": "It stops things in advance rather than fixing them afterwards."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.7-6",
+   "objective": "4.7",
+   "stem": "Why should an automated playbook quarantine suspicious emails rather than delete them?",
+   "options": [
+    {
+     "text": "Quarantine can be undone if the automation is wrong; deletion can't",
+     "correct": true,
+     "why": "Automation acts at machine speed, so actions that are hard to reverse need guard rails."
+    },
+    {
+     "text": "Deleting emails is illegal",
+     "correct": false,
+     "why": "It isn't, but it can destroy evidence and real mail."
+    },
+    {
+     "text": "Quarantine is faster",
+     "correct": false,
+     "why": "Speed isn't the reason; reversibility is."
+    },
+    {
+     "text": "Users prefer it",
+     "correct": false,
+     "why": "The point is safety when the automation makes a mistake."
+    }
+   ]
+  },
+  {
+   "id": "sp-4.8-4",
+   "objective": "4.8",
+   "stem": "During an incident, why should you take a disk image before rebuilding a compromised server?",
+   "options": [
+    {
+     "text": "To keep evidence of what happened, so you can find the way in and any other compromised systems",
+     "correct": true,
+     "why": "Rebuilding destroys evidence; an image preserves it for investigation and, if needed, legal action."
+    },
+    {
+     "text": "Because rebuilding needs the image",
+     "correct": false,
+     "why": "You rebuild from a clean source, not from the compromised disk."
+    },
+    {
+     "text": "To make the server run faster afterwards",
+     "correct": false,
+     "why": "Imaging has no effect on performance."
+    },
+    {
+     "text": "It's only needed if the police are involved",
+     "correct": false,
+     "why": "Even without police, you need to understand the attack to stop it happening again."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.1-4",
+   "objective": "5.1",
+   "stem": "Which is a standard rather than a policy?",
+   "options": [
+    {
+     "text": "'All laptops must use AES-256 full-disk encryption'",
+     "correct": true,
+     "why": "A standard sets specific mandatory requirements that support a policy."
+    },
+    {
+     "text": "'Company data must be protected from loss and misuse'",
+     "correct": false,
+     "why": "That's a high-level policy statement of intent."
+    },
+    {
+     "text": "'Step 1: open BitLocker settings...'",
+     "correct": false,
+     "why": "Step-by-step instructions are a procedure."
+    },
+    {
+     "text": "'Staff may find this checklist helpful'",
+     "correct": false,
+     "why": "Optional advice is a guideline."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.1-5",
+   "objective": "5.1",
+   "stem": "A company leaves its security policies unreviewed for three years. What is the main risk?",
+   "options": [
+    {
+     "text": "The policies no longer match the threats, systems or laws the company now faces",
+     "correct": true,
+     "why": "Governance needs regular review so rules keep up with change."
+    },
+    {
+     "text": "The policies become invalid by law after two years",
+     "correct": false,
+     "why": "There's no such legal expiry; the problem is them going stale."
+    },
+    {
+     "text": "Staff can ignore them",
+     "correct": false,
+     "why": "Staff should still follow them; the risk is that they're out of date."
+    },
+    {
+     "text": "Nothing, if nothing has gone wrong",
+     "correct": false,
+     "why": "No incident yet doesn't mean the rules still fit."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.2-2",
+   "objective": "5.2",
+   "stem": "A risk scores 20 on a 5 x 5 scale, and the board's appetite is 12. The owner decides to accept it without any action. What's wrong?",
+   "options": [
+    {
+     "text": "It's above appetite, so it must be treated (or accepted by someone with the authority to go over appetite)",
+     "correct": true,
+     "why": "Appetite sets what can simply be accepted. Over it, the risk needs treatment or a formal decision at the right level."
+    },
+    {
+     "text": "Nothing: owners can always accept their risks",
+     "correct": false,
+     "why": "Owners decide within the appetite the board has set."
+    },
+    {
+     "text": "Risks over 15 must be transferred to insurance",
+     "correct": false,
+     "why": "Insurance is one option, not the rule."
+    },
+    {
+     "text": "The score should be lowered to 12",
+     "correct": false,
+     "why": "Changing the score without changing the risk hides it."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.3-4",
+   "objective": "5.3",
+   "stem": "A supplier's software update is trusted automatically by thousands of customers. Why is this a third-party risk?",
+   "options": [
+    {
+     "text": "If the supplier is compromised, attackers can reach every customer through the trusted update",
+     "correct": true,
+     "why": "Supply chain attacks use trust in a supplier to reach its customers at scale."
+    },
+    {
+     "text": "Suppliers always charge for updates",
+     "correct": false,
+     "why": "Cost isn't a security risk."
+    },
+    {
+     "text": "Updates are always unsafe",
+     "correct": false,
+     "why": "Updates fix flaws; the risk is in trusting them without checks."
+    },
+    {
+     "text": "It only matters for open-source software",
+     "correct": false,
+     "why": "Commercial suppliers have been used this way too."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.3-5",
+   "objective": "5.3",
+   "stem": "What is the purpose of a right-to-audit clause in a supplier contract?",
+   "options": [
+    {
+     "text": "It lets the customer check the supplier's security controls",
+     "correct": true,
+     "why": "It turns promises into something the customer can verify."
+    },
+    {
+     "text": "It lets the supplier audit the customer's finances",
+     "correct": false,
+     "why": "It runs the other way: the customer checks the supplier."
+    },
+    {
+     "text": "It sets the supplier's uptime target",
+     "correct": false,
+     "why": "That's a service level agreement."
+    },
+    {
+     "text": "It ends the contract automatically after a breach",
+     "correct": false,
+     "why": "That would be a termination clause."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.4-4",
+   "objective": "5.4",
+   "stem": "A UK company finds out on Friday at 17:00 that a breach is likely to put customers at risk. By when must it tell the ICO?",
+   "options": [
+    {
+     "text": "Monday at 17:00: 72 hours from becoming aware, weekends included",
+     "correct": true,
+     "why": "The clock runs in hours from awareness, through weekends. Report what you know and add the rest later."
+    },
+    {
+     "text": "The following Wednesday: 72 working hours",
+     "correct": false,
+     "why": "UK GDPR counts all hours, not working hours."
+    },
+    {
+     "text": "Within 30 days",
+     "correct": false,
+     "why": "That's far longer than the law allows for a reportable breach."
+    },
+    {
+     "text": "Only once the investigation is finished",
+     "correct": false,
+     "why": "You report what you know within 72 hours, then update."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.4-5",
+   "objective": "5.4",
+   "stem": "A shop keeps customers' card security codes after payments are approved, encrypted. Is that allowed under PCI DSS?",
+   "options": [
+    {
+     "text": "No: security codes must never be stored after authorisation, encrypted or not",
+     "correct": true,
+     "why": "Sensitive authentication data, including the card security code, can't be kept after authorisation."
+    },
+    {
+     "text": "Yes, because they're encrypted",
+     "correct": false,
+     "why": "Encryption doesn't make storing them allowed."
+    },
+    {
+     "text": "Yes, for up to 90 days",
+     "correct": false,
+     "why": "There's no allowed period."
+    },
+    {
+     "text": "Only for refunds",
+     "correct": false,
+     "why": "Refunds don't need the security code."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.5-5",
+   "objective": "5.5",
+   "stem": "An auditor finds that a control exists on paper but asks for proof it actually ran last quarter. What is the auditor testing?",
+   "options": [
+    {
+     "text": "Operating effectiveness: whether the control works in practice, not just its design",
+     "correct": true,
+     "why": "Evidence such as logs and records shows the control was really carried out."
+    },
+    {
+     "text": "The control's cost",
+     "correct": false,
+     "why": "Audits look at whether controls work, not their price."
+    },
+    {
+     "text": "The staff's job titles",
+     "correct": false,
+     "why": "Titles don't show a control ran."
+    },
+    {
+     "text": "Nothing: a written control is enough",
+     "correct": false,
+     "why": "A control that's never carried out protects nothing."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.5-6",
+   "objective": "5.5",
+   "stem": "An outside assessor scans a company's public addresses this morning. What makes this lawful?",
+   "options": [
+    {
+     "text": "Written authorisation from the system's owner, with an agreed scope",
+     "correct": true,
+     "why": "Under the Computer Misuse Act, authorisation is what separates a test from an attack."
+    },
+    {
+     "text": "The assessor is a well-known company",
+     "correct": false,
+     "why": "Reputation doesn't give permission."
+    },
+    {
+     "text": "Scanning is always legal",
+     "correct": false,
+     "why": "Unauthorised scanning can be an offence."
+    },
+    {
+     "text": "The scan finishes before noon",
+     "correct": false,
+     "why": "Timing doesn't matter without authorisation."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.6-4",
+   "objective": "5.6",
+   "stem": "Why should a security awareness programme make reporting a suspicious email quick and blame-free?",
+   "options": [
+    {
+     "text": "Fast reports let the team stop an attack early, and fear of blame makes people stay quiet",
+     "correct": true,
+     "why": "Early reports are one of the best detection sources a company has."
+    },
+    {
+     "text": "Reports are needed for staff appraisals",
+     "correct": false,
+     "why": "Linking reports to appraisals tends to discourage them."
+    },
+    {
+     "text": "It reduces the number of emails people receive",
+     "correct": false,
+     "why": "Reporting doesn't reduce email volume."
+    },
+    {
+     "text": "The law requires blame-free reporting",
+     "correct": false,
+     "why": "It's good practice, not a legal requirement."
+    }
+   ]
+  },
+  {
+   "id": "sp-5.6-5",
+   "objective": "5.6",
+   "stem": "Which is the best sign that staff are applying their awareness training?",
+   "options": [
+    {
+     "text": "More suspicious emails reported, and faster, during phishing simulations",
+     "correct": true,
+     "why": "Rising, quicker reporting shows behaviour changing, not just course completion."
+    },
+    {
+     "text": "Everyone has completed the annual video",
+     "correct": false,
+     "why": "Completion shows attendance, not behaviour."
+    },
+    {
+     "text": "Fewer emails reported overall",
+     "correct": false,
+     "why": "That may mean people have stopped reporting."
+    },
+    {
+     "text": "The training took less time this year",
+     "correct": false,
+     "why": "Shorter training says nothing about whether it works."
     }
    ]
   }

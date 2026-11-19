@@ -425,3 +425,18 @@ test("nettools: option values, dig, host, ip and honest notes", () => {
   d.run("ip a");
   assert.ok(d.isDone({ ran: ["ipconfig"] }), "ip a counts as checking your address");
 });
+
+// Interactive lab review (19 Nov): a wrong pick in the quiz-style labs says what the pick really is.
+test("wrong picks teach: topology, OSI layer and port notes", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const L = Object.fromEntries(JSON.parse(await readFile(new URL("../content/labs.json", import.meta.url), "utf8")).map(l => [l.id, l]));
+  const topo = await import("../static/js/labs/topology.js"), osi = await import("../static/js/labs/osi.js"), ports = await import("../static/js/labs/ports.js");
+  const T = L.topologies.topologies;
+  assert.ok(T.every(t => t.looks), "every topology says what it looks like");
+  for (const q of L.topologies.quiz) for (const t of T) if (t.id !== q.answer) assert.match(topo.missNote(T, t.id, q.answer), new RegExp(`^${t.name.replace(/[()]/g, "\\$&")} is .+\\. This one is .+\\.$`));
+  assert.match(osi.layerNote(L["osi-model"].layers, 3), /^Layer 3 \(Network\) is about: /);
+  const P = L["ports-protocols"].protocols, ssh = P.find(p => p.id === "ssh"), ftp = P.find(p => p.id === "ftp");
+  assert.equal(ports.pickNote(P, { type: "proto" }, "SSH"), `SSH uses port ${ports.portText(ssh)}.`);
+  assert.equal(ports.pickNote(P, { type: "port" }, ports.portText(ftp)), "Ports 20, 21 are FTP.");
+  assert.equal(ports.pickNote(P, { type: "transport" }, "UDP"), "");
+});

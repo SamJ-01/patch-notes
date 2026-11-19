@@ -159,7 +159,7 @@ const headArt = k => (HEAD_PHOTOS.has(k)
   : `<span class="head-art card-art" aria-hidden="true">${sceneSvg(HEAD_SCENE[k])}</span>`);
 // Card pictures: an illustration where one exists (img/cards/<id>.webp, 2:1, one style, made in batches of six),
 // otherwise the drawn scene. Photos fade in once loaded, in space that's already reserved.
-const CARD_PHOTOS = new Set(["recon-script", "automation-script", "cleanup-log", "risk-gone-wrong", "which-law-applies", "which-model-fits", "threat-model", "risk", "law", "attack-models", "cyber-essentials-check", "risk-register", "allowed-or-not", "asset-register", "soar-playbook", "firewall-packet", "vishing-call", "dhcp", "dns", "phish-triage", "ssh-brute", "hashing", "permissions",
+const CARD_PHOTOS = new Set(["sqli-shop", "physical-test", "recon-script", "automation-script", "cleanup-log", "risk-gone-wrong", "which-law-applies", "which-model-fits", "threat-model", "risk", "law", "attack-models", "cyber-essentials-check", "risk-register", "allowed-or-not", "asset-register", "soar-playbook", "firewall-packet", "vishing-call", "dhcp", "dns", "phish-triage", "ssh-brute", "hashing", "permissions",
   "osi-model", "topologies", "ports-protocols", "subnetting", "tcp-handshake", "cable-wiring",
   "finding-the-server", "one-request", "vlans", "network-builder", "telnet-ssh", "linux-terminal",
   "net-detective", "log-detective", "header-inspector", "cvss-builder", "recon-basics", "play",
@@ -630,6 +630,17 @@ const CVSS_METRICS = [
   ["I", "Integrity impact (data changed)", [["N", "None"], ["L", "Low (some data)"], ["H", "High (anything)"]]],
   ["A", "Availability impact (service down)", [["N", "None"], ["L", "Low (slower / partial)"], ["H", "High (fully down)"]]],
 ];
+// What to look for in a scenario when a metric is off (CVSS lab feedback): a question to ask of the text, never the value.
+const CVSS_CLUES = {
+  AV: "Where does the attacker have to be? Look for words like 'anyone on the internet', 'same Wi-Fi', 'logged in' or 'hands on'.",
+  AC: "Does it work every time, or only under conditions the attacker can't control (timing, a race, a rare setting)?",
+  PR: "Does the attacker need an account first? If so, an ordinary one or an admin one?",
+  UI: "Does anyone other than the attacker have to click, open or approve something?",
+  S: "Does the damage stay in the vulnerable software, or reach something else (a visitor's browser, the host under a VM)?",
+  C: "What can the attacker read: nothing, some data, or everything?",
+  I: "What can the attacker change: nothing, some data, or anything?",
+  A: "Can the attacker slow the service, or take it down completely?",
+};
 // v30: CVSS 3.0 uses the same formula, but simply rounds up to one decimal (3.1 rounds carefully to avoid float errors).
 function cvss31(v, v30 = false) {
   const W = { AV: { N: 0.85, A: 0.62, L: 0.55, P: 0.2 }, AC: { L: 0.77, H: 0.44 }, UI: { N: 0.85, R: 0.62 }, CIA: { H: 0.56, L: 0.22, N: 0 } };
@@ -739,7 +750,8 @@ function cvssLab(l) {
         const next = l.scenarios.findIndex((_, i) => !done.has(i));
         $("cvss-fb").innerHTML = `<div class="feedback"><b class="ok">Spot on.</b> That's ${cvss31(target).toFixed(1)} (${cvssSeverity(cvss31(target))}).${next >= 0 ? " Try the next scenario." : " Lab complete!"}</div>`;
       } else {
-        $("cvss-fb").innerHTML = `<div class="feedback"><b class="no">${wrong.length} metric${wrong.length > 1 ? "s" : ""} off.</b> Re-read the scenario and check: ${esc(wrong[0][1].split(":")[0])}${wrong.length > 1 ? " and others" : ""}.</div>`;
+        $("cvss-fb").innerHTML = `<div class="feedback"><b class="no">${wrong.length} metric${wrong.length > 1 ? "s" : ""} off.</b> Re-read the scenario with these questions:
+          <ul class="cvss-clues">${wrong.map(([k, label]) => `<li><b>${esc(label.split(":")[0].replace(/ \(.*\)$/, ""))}</b>: ${esc(CVSS_CLUES[k])}</li>`).join("")}</ul></div>`;
       }
     }
   };

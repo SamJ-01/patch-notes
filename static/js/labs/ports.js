@@ -10,6 +10,14 @@ const pick = (arr, rng) => arr[Math.floor(rng() * arr.length)];
 
 // One question about one protocol. Wrong options never share a port with the right answer,
 // so "which protocol uses port 22?" can't offer both SSH and SFTP.
+// A wrong pick: what that port or protocol really is, so the miss teaches (blank when it isn't one). Pure, tested.
+export function pickNote(protos, q, picked) {
+  if (q.type === "transport") return "";
+  const o = q.type === "port" ? protos.find(x => portText(x) === picked) : protos.find(x => x.name === picked);
+  if (!o) return "";
+  const pl = n => (n.ports.length > 1 ? "ports" : "port");
+  return q.type === "port" ? `${o.ports.length > 1 ? "Ports" : "Port"} ${picked} ${o.ports.length > 1 ? "are" : "is"} ${o.name}.` : `${o.name} uses ${pl(o)} ${portText(o)}.`;
+}
 export function makeQuestion(protos, type, p, rng = Math.random) {
   const others = protos.filter(o => o.id !== p.id);
   const options = (right, pool) => shuffle([right, ...shuffle([...new Set(pool)].filter(x => x !== right), rng).slice(0, 3)], rng);
@@ -116,7 +124,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     box.innerHTML = `<div class="panel-title"><h2>Quick-fire drill</h2><span class="mono">${z.i + 1}/${z.qs.length}${z.streak > 1 ? ` · streak ${z.streak}` : ""}</span></div>
       <p class="q">${esc(q.q)}</p>
       <div class="osi-choices">${q.options.map(o => `<button class="opt${answered ? (o === q.answer ? " right" : o === z.picked ? " wrong" : "") : ""}" data-ans="${esc(o)}" ${answered ? "disabled" : ""}>${esc(o)}</button>`).join("")}</div>
-      ${answered ? `<div class="feedback">${z.picked === q.answer ? '<b class="ok">Correct.</b>' : `<b class="no">It's ${esc(q.answer)}.</b>`} ${esc(p.name)}: port ${esc(portText(p))}, ${esc(p.transport)}. ${esc(p.what)}</div>
+      ${answered ? `<div class="feedback">${z.picked === q.answer ? '<b class="ok">Correct.</b>' : `<b class="no">It's ${esc(q.answer)}.</b> ${esc(pickNote(protos, q, z.picked))}`} ${esc(p.name)}: port ${esc(portText(p))}, ${esc(p.transport)}. ${esc(p.what)}</div>
         <button class="btn brand" id="pd-next" style="justify-self:start">${z.i + 1 < z.qs.length ? "Next ›" : "See score"}</button>` : ""}`;
     box.querySelectorAll("[data-ans]").forEach(b => b.addEventListener("click", () => {
       z.picked = b.dataset.ans;

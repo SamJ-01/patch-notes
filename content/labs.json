@@ -439,7 +439,8 @@
     "target": "srv",
     "pros": "A broken cable only affects one device. Easy to add devices and troubleshoot.",
     "cons": "The central switch is a single point of failure.",
-    "tip": "Physical star is the standard LAN topology on the exam (and in real life)."
+    "tip": "Physical star is the standard LAN topology on the exam (and in real life).",
+    "looks": "every device on its own cable to one central switch"
    },
    {
     "id": "bus",
@@ -595,7 +596,8 @@
     ],
     "pros": "Cheap and simple: one shared cable.",
     "cons": "One break in the backbone takes the whole segment down, because signals reflect off the open end. Everyone shares one collision domain.",
-    "tip": "Both ends of the bus need terminators to stop signal reflection."
+    "tip": "Both ends of the bus need terminators to stop signal reflection.",
+    "looks": "one shared cable that every device taps into, with a terminator at each end"
    },
    {
     "id": "ring",
@@ -669,7 +671,8 @@
     "target": "n4",
     "pros": "Predictable performance; a dual ring (like FDDI) survives one break by sending traffic the other way.",
     "cons": "A single (one-direction) ring stops at the first break; two breaks split even a dual ring.",
-    "tip": "This diagram behaves like a dual ring: one break is survivable, two are not."
+    "tip": "This diagram behaves like a dual ring: one break is survivable, two are not.",
+    "looks": "each device linked to exactly two neighbours in a closed loop"
    },
    {
     "id": "mesh",
@@ -753,7 +756,8 @@
     "target": "r1",
     "pros": "Maximum redundancy: traffic can route around several failures.",
     "cons": "Expensive and complex: the number of links grows fast.",
-    "tip": "Links in a full mesh = n(n−1)/2. Here 5 × 4 ÷ 2 = 10."
+    "tip": "Links in a full mesh = n(n−1)/2. Here 5 × 4 ÷ 2 = 10.",
+    "looks": "every device linked directly to every other device"
    },
    {
     "id": "partial",
@@ -835,7 +839,8 @@
     "target": "r1",
     "pros": "Redundancy where it matters, without the cost of linking everything.",
     "cons": "Some paths have less protection than others.",
-    "tip": "A compromise between star (cheap) and full mesh (resilient)."
+    "tip": "A compromise between star (cheap) and full mesh (resilient).",
+    "looks": "some devices linked to several others, but not every pair"
    },
    {
     "id": "hub-spoke",
@@ -928,7 +933,8 @@
      "b3",
      "b4",
      "b5"
-    ]
+    ],
+    "looks": "branch sites each linked back to one central site, not to each other"
    },
    {
     "id": "spine-leaf",
@@ -1056,7 +1062,8 @@
     "target": "v4",
     "pros": "Every leaf connects to every spine, so any server is two switch hops from any other. Losing a spine just reduces capacity.",
     "cons": "Lots of cabling between spines and leaves.",
-    "tip": "Built for east-west traffic (server to server) inside a data centre."
+    "tip": "Built for east-west traffic (server to server) inside a data centre.",
+    "looks": "two layers of data-centre switches, every leaf linked to every spine"
    },
    {
     "id": "three-tier",
@@ -1216,7 +1223,8 @@
     "target": "dc",
     "pros": "Core (fast backbone), distribution (policy and routing) and access (where users plug in) each have one job, so it scales.",
     "cons": "More layers of equipment. Here each access switch has one uplink, so a distribution switch failure cuts off two of them.",
-    "tip": "A collapsed core merges the core and distribution layers, common in smaller sites."
+    "tip": "A collapsed core merges the core and distribution layers, common in smaller sites.",
+    "looks": "a campus split into core, distribution and access layers"
    }
   ],
   "quiz": [
@@ -4679,22 +4687,26 @@
    {
     "id": "ping",
     "text": "Get a ping reply from one PC to another.",
-    "why": "Same subnet and the same broadcast domain (the same colour), so the PC's ARP request finds the other one."
+    "why": "Same subnet and the same broadcast domain (the same colour), so the PC's ARP request finds the other one.",
+    "hint": "Add two PCs and a switch, and use Connect to cable each PC to the switch. Give both PCs addresses in the same subnet (say 192.168.1.10 and .11, mask 255.255.255.0), then select one and ping the other."
    },
    {
     "id": "split",
     "text": "Put two PCs on one switch into different VLANs, and watch the colours split.",
-    "why": "Each VLAN is its own broadcast domain, even on one switch. Different colours can't hear each other without a router."
+    "why": "Each VLAN is its own broadcast domain, even on one switch. Different colours can't hear each other without a router.",
+    "hint": "Select the switch and add two VLANs (say 10 and 20). Under Connected ports, set each PC's port to a different VLAN. The colours show two broadcast domains."
    },
    {
     "id": "trunk",
     "text": "Link two switches with a trunk that carries at least two VLANs with PCs in them.",
-    "why": "A trunk tags every frame with its VLAN, so one cable carries several networks: that's the bundle of colours."
+    "why": "A trunk tags every frame with its VLAN, so one cable carries several networks: that's the bundle of colours.",
+    "hint": "Connect two switches, then on each switch set the port between them to Mode trunk with both VLANs in Allowed VLANs. Put a PC on each VLAN."
    },
    {
     "id": "route",
     "text": "Route between VLANs: get a ping reply from a PC in one VLAN to a PC in another.",
-    "why": "The router has an address in each network, and each PC sends traffic for other networks to its default gateway. Load \"Router between two VLANs\" for a head start."
+    "why": "The router has an address in each network, and each PC sends traffic for other networks to its default gateway. Load \"Router between two VLANs\" for a head start.",
+    "hint": "Connect a router to a switch port set to trunk. On the router's port, add an address per VLAN with its VLAN tag. Set each PC's default gateway to its VLAN's router address, then ping across."
    }
   ],
   "scenarios": [
@@ -7094,7 +7106,13 @@
     ],
     "answer": 0,
     "explain": "import time and import requests load Python libraries, def defines a function, and blocks are marked by indentation, not braces or fi/done. The #! line only says which interpreter runs it.",
-    "where": "import requests"
+    "where": "import requests",
+    "notes": [
+     null,
+     "Bash scripts often start with #!, but so do Python ones. That line only names the interpreter. Look at the import lines and how the blocks are marked.",
+     "PowerShell does use square brackets, but so do Python lists. Check how functions are defined and how blocks end: no braces, no param().",
+     "JavaScript would use braces, function and semicolons. Here the blocks are marked by indentation alone."
+    ]
    },
    {
     "type": "text",
@@ -7117,7 +7135,13 @@
     ],
     "answer": 1,
     "explain": "allow_redirects=False keeps the redirect visible, and the script only reports a hit when the server answers 302 and sends you on to /dashboard. Check that this matches how the real app behaves before trusting the result.",
-    "where": "status_code == 302"
+    "where": "status_code == 302",
+    "notes": [
+     "Every attempt gets a reply, right or wrong, so that would report every login as a hit. Find the line that tests the status code.",
+     null,
+     "The login page itself may say admin. The script never reads the page text; look at what it checks on the response.",
+     "Nothing in the script waits for an error. The 30 seconds is the delay between tries, not a success test."
+    ]
    },
    {
     "type": "choice",
@@ -7130,7 +7154,13 @@
     ],
     "answer": 1,
     "explain": "The rules say no lockouts. Thirty seconds between tries keeps well under a typical lockout policy and keeps the load tiny. Hiding from the client is never the aim on an authorised test.",
-    "where": "time.sleep(DELAY)"
+    "where": "time.sleep(DELAY)",
+    "notes": [
+     "requests.post waits for the reply by itself; no pause is needed for that. Read the rules of engagement the script has to keep to.",
+     null,
+     "Python can send requests back to back. The pause is a choice made for the client's sake. Which rule would fast tries break?",
+     "An authorised test is never hidden from the client who asked for it. Think about what rapid attempts do to accounts and the service."
+    ]
    },
    {
     "type": "choice",
@@ -7143,7 +7173,13 @@
     ],
     "answer": 0,
     "explain": "Two targets times two default logins is 4 attempts, about 2 minutes with the 30 second delay. Working out the count before running anything is part of staying inside the rules.",
-    "where": "DEFAULTS = "
+    "where": "DEFAULTS = ",
+    "notes": [
+     null,
+     "That counts the out-of-scope target too. Take it out of the list first, then multiply targets by logins.",
+     "That's one try per target. Each target is tried with every default login in the list.",
+     "The loop is fixed: every target times every login, once. It never retries, and guessing on until you get in would break the no-lockout rule."
+    ]
    },
    {
     "type": "choice",
@@ -7155,7 +7191,13 @@
      "It can't be done on Windows"
     ],
     "answer": 0,
-    "explain": "PowerShell ships with Windows and can send the same web requests with Invoke-WebRequest. Recognising Bash, Python and PowerShell, and moving an idea between them, is what PenTest+ asks for."
+    "explain": "PowerShell ships with Windows and can send the same web requests with Invoke-WebRequest. Recognising Bash, Python and PowerShell, and moving an idea between them, is what PenTest+ asks for.",
+    "notes": [
+     null,
+     "Bash isn't on a stock Windows laptop. The aim is to use what's already installed.",
+     "Ruby would need installing too, just like Python. Which shell ships with Windows and can send web requests?",
+     "Windows has a built-in scripting shell that can send the same requests. The idea moves; only the syntax changes."
+    ]
    }
   ]
  },
@@ -7188,7 +7230,13 @@
     ],
     "answer": 0,
     "explain": "Following people through a door they've opened, without them checking you, is tailgating. The fix is people (challenge strangers) plus controls such as an access control vestibule (mantrap) or turnstile.",
-    "where": "Walked in behind two staff"
+    "where": "Walked in behind two staff",
+    "notes": [
+     null,
+     "Shoulder surfing is watching someone type a PIN or password. At 08:12 the tester walked in behind staff.",
+     "Badge cloning comes later in the notes (the 125 kHz card). At 08:12 no badge was used at all.",
+     "Pretexting needs a cover story, often by phone. Here the tester simply followed people through the door."
+    ]
    },
    {
     "type": "choice",
@@ -7201,7 +7249,13 @@
     ],
     "answer": 1,
     "explain": "Low-frequency proximity cards just broadcast an ID. Modern 13.56 MHz smart cards use cryptography, and a PIN pad on sensitive doors means a copied card isn't enough on its own.",
-    "where": "125 kHz"
+    "where": "125 kHz",
+    "notes": [
+     "A broken reader would fail to open the door. The copied card worked, which says the card was the weak part.",
+     null,
+     "An expired badge would stop working for its owner, not become easier to copy. Think about what an old proximity card sends.",
+     "The lanyard doesn't affect how a card is read. The card type (125 kHz) is the clue."
+    ]
    },
    {
     "type": "choice",
@@ -7214,7 +7268,13 @@
     ],
     "answer": 1,
     "explain": "The scope says no forced entry. A tester records what could be done (a gap and an inside push bar) without doing it. The rules of engagement apply to physical tests exactly as to networks.",
-    "where": "Under-door tool NOT used"
+    "where": "Under-door tool NOT used",
+    "notes": [
+     "The notes say the gap and the push bar made it likely to work. The reason was the rules, not the tool.",
+     null,
+     "The notes don't mention an alarm. Check the scope section: what does it say about forcing doors?",
+     "One person can use an under-door tool. The tester held back because of the rules of engagement."
+    ]
    },
    {
     "type": "text",
@@ -7239,7 +7299,13 @@
     ],
     "answer": 1,
     "explain": "Any device plugged into a live port got a staff address. 802.1X checks a device's identity before the port lets it on; unused ports should be disabled or put on a guest VLAN.",
-    "where": "10.20.0.57"
+    "where": "10.20.0.57",
+    "notes": [
+     "A camera records someone plugging in but doesn't stop the device joining the network.",
+     null,
+     "The tester used a cable in a wall port, not Wi-Fi. The fix has to be on the wired network.",
+     "The finding was in working hours with the room open. Locking it at night leaves the port live all day."
+    ]
    },
    {
     "type": "choice",
@@ -7252,7 +7318,13 @@
     ],
     "answer": 1,
     "explain": "Searching bins for useful paper is dumpster diving. Printed personal data in open recycling is a data protection problem as well as a security one. Locked confidential waste bins and shredding fix it.",
-    "where": "rent statements"
+    "where": "rent statements",
+    "notes": [
+     "Printed statements with names and account details in open recycling are a data protection risk, not just paper.",
+     null,
+     "Indoor bins still let anyone who gets in read the paper. The waste needs locking up and destroying properly.",
+     "Staff will always print some things. The problem is how the paper is thrown away."
+    ]
    }
   ]
  },
@@ -7435,7 +7507,13 @@
     ],
     "answer": 1,
     "explain": "Names like O'Brien contain apostrophes, so a quote alone proves nothing. What matters is the pattern: probing, logic tests and SQL keywords, as 203.0.113.77 sends.",
-    "where": "o%27brien"
+    "where": "o%27brien",
+    "notes": [
+     "Real names contain apostrophes. A quote alone proves nothing; compare this request's pattern and response with 203.0.113.77's.",
+     null,
+     "Attackers can use any device, and so can customers. The browser tells you nothing here; the request and response do.",
+     "The log is enough: the search loaded normally with a 200 and a usual size. Look at what makes the other address different."
+    ]
    },
    {
     "type": "choice",
@@ -7448,7 +7526,13 @@
     ],
     "answer": 1,
     "explain": "If the input were treated as plain data, both requests would fail the same way. A true condition shows the product and a false one hides it, so the input is changing the query: it's injectable.",
-    "where": "AND%201%3D2"
+    "where": "AND%201%3D2",
+    "notes": [
+     "The two requests are identical apart from 1=1 and 1=2, and the sizes match a product page and an empty page. That isn't chance.",
+     null,
+     "An overloaded server would slow down or fail both requests. Only the false condition comes back small.",
+     "Stock doesn't change between two requests a second apart. The only change is the true or false condition in the URL."
+    ]
    },
    {
     "type": "choice",
@@ -7461,7 +7545,13 @@
     ],
     "answer": 1,
     "explain": "A UNION SELECT adds the attacker's own query to the page's query. A 200 with 48211 bytes instead of about 5000 strongly suggests the users table was printed into the page.",
-    "where": "UNION"
+    "where": "UNION",
+    "notes": [
+     "A GET can carry a whole SQL query in its URL. Look at what the query asks for and how big the reply is.",
+     null,
+     "A 200 means the server answered normally. A block would usually be a 403 or an error. Compare the size with a normal page.",
+     "A 500 is an error; data comes back in a working page. Check the byte count on this 200."
+    ]
    },
    {
     "type": "choice",
@@ -7474,7 +7564,13 @@
     ],
     "answer": 1,
     "explain": "Attackers often move to a second address. A first-ever admin login straight after the users table leaked, followed by a 3 MB customer export, is the likely payoff. Customer data leaving may need reporting (in the UK, to the ICO within 72 hours if there's a risk to people).",
-    "where": "export.csv"
+    "where": "export.csv",
+    "notes": [
+     "The password was right because it may have come from the users table that just leaked. Look at the timing.",
+     null,
+     "Attackers often switch addresses. Judge it on timing and behaviour: the first admin login after the leak, then an export.",
+     "Blocking one address leaves stolen credentials working from any other. The case isn't closed while those are valid."
+    ]
    },
    {
     "type": "choice",
@@ -7486,7 +7582,13 @@
      "Blocking sqlmap's user agent"
     ],
     "answer": 1,
-    "explain": "With a parameterised query the database receives the SQL and the value separately, so input can't change the query. A WAF and hidden errors can slow attackers down, but they're extra layers, not the fix."
+    "explain": "With a parameterised query the database receives the SQL and the value separately, so input can't change the query. A WAF and hidden errors can slow attackers down, but they're extra layers, not the fix.",
+    "notes": [
+     "A WAF rule for one word can be dodged (union, UnIoN, comments) and leaves the code unchanged. It's a layer, not the fix.",
+     null,
+     "Without errors the attacker can still ask true or false questions, as the 1=1 test showed. The query itself must change.",
+     "Attackers can change their user agent in one line. The hole is in how products.php builds its query."
+    ]
    }
   ],
   "next": [
@@ -7597,7 +7699,13 @@
     ],
     "answer": 1,
     "explain": "new Image().src makes the browser request a 'picture' from the attacker's server, with document.cookie stuck on the end. No image appears, but the cookies arrive.",
-    "where": "document.cookie"
+    "where": "document.cookie",
+    "notes": [
+     "There's no alert() in the script. Read what new Image().src is set to: a URL with document.cookie on the end.",
+     null,
+     "Nothing in the script removes anything. It builds a URL to another site from the visitor's cookies.",
+     "Without output encoding, the browser treats the review text as code. The log shows the request it made."
+    ]
    },
    {
     "type": "choice",
@@ -7609,7 +7717,13 @@
      "It only works on stored card details"
     ],
     "answer": 1,
-    "explain": "Reflected XSS bounces off one crafted link; stored XSS sits in the site's own data (a review, a comment, a profile) and runs for every viewer, including staff."
+    "explain": "Reflected XSS bounces off one crafted link; stored XSS sits in the site's own data (a review, a comment, a profile) and runs for every viewer, including staff.",
+    "notes": [
+     "The attacker's browser only submits the review. Where does the script live afterwards, and who runs it?",
+     null,
+     "Stored refers to where the script is kept, not what it takes. This one takes cookies, not saved passwords.",
+     "It works on any page that shows the review. Stored describes the script saved in the site's data."
+    ]
    },
    {
     "type": "text",
@@ -7631,7 +7745,13 @@
     ],
     "answer": 1,
     "explain": "A session cookie proves you've already logged in. Steal it and you are that user, no password or MFA needed, until the session ends.",
-    "where": "status=new"
+    "where": "status=new",
+    "notes": [
+     "No failed logins appear before the admin requests. The attacker never typed a password.",
+     null,
+     "The admin area did ask for a login; the attacker skipped it with a valid session. Check what was sent at 11:03.",
+     "The iPhone visitor only viewed the product page. Follow the admin's visit to the review queue and the request after it."
+    ]
    },
    {
     "type": "choice",
@@ -7643,7 +7763,13 @@
      "Turn off reviews forever"
     ],
     "answer": 1,
-    "explain": "Remove the script so it stops running, kill the stolen session (a password change alone may not), then assess the export: personal data left the business."
+    "explain": "Remove the script so it stops running, kill the stolen session (a password change alone may not), then assess the export: personal data left the business.",
+    "notes": [
+     "Tom_B is likely a made-up name, and emailing first leaves the script running and the session live.",
+     null,
+     "A stolen session can carry on after a password change. The script also stays in the review until it's removed.",
+     "That's drastic and slow. First stop the script, end the stolen sessions and assess the export."
+    ]
    },
    {
     "type": "choice",
@@ -7656,7 +7782,13 @@
     ],
     "answer": 1,
     "explain": "Output encoding means a review can't become code. HttpOnly (missing from the Set-Cookie line) stops scripts reading the cookie at all. A Content Security Policy adds another layer.",
-    "where": "Set-Cookie"
+    "where": "Set-Cookie",
+    "notes": [
+     "The attacker never needed the password; they used a session. A CAPTCHA doesn't stop a script in a review.",
+     null,
+     "The script runs wherever the admin views reviews. A new URL changes nothing about that.",
+     "Logged-in customers can post scripts too. The fix is how the site shows content and protects the cookie."
+    ]
    }
   ],
   "next": [
@@ -7704,7 +7836,13 @@
     ],
     "answer": 1,
     "explain": "A person reads a few of their own invoices. A script walking through hundreds of numbers, each owned by someone else, is enumeration.",
-    "where": "owner=3318"
+    "where": "owner=3318",
+    "notes": [
+     "The requests succeed: they're 200s. The giveaway is whose records are being read and the pattern of numbers.",
+     null,
+     "Nothing in the log points to slow logins. Compare each row's user with the record's owner.",
+     "Everyone reads invoices with GET. The method is normal; the pattern is not."
+    ]
    },
    {
     "type": "choice",
@@ -7717,7 +7855,13 @@
     ],
     "answer": 1,
     "explain": "That's an insecure direct object reference (IDOR): the check is 'are you logged in?' rather than 'is this yours?'. Function-level checks don't cover object-level access.",
-    "where": "status=403"
+    "where": "status=403",
+    "notes": [
+     "Blocking the admin page shows role checks work. It says nothing about checking who owns each invoice.",
+     null,
+     "403 means forbidden; it has nothing to do with encryption. The invoices were sent in full with 200s.",
+     "The log carries on after the 403. Read on: the invoice requests keep coming."
+    ]
    },
    {
     "type": "choice",
@@ -7730,7 +7874,13 @@
     ],
     "answer": 1,
     "explain": "The same missing check covers documents too. Identity documents can be used for fraud, so the people affected need telling, and the ICO probably does as well.",
-    "where": "passport.pdf"
+    "where": "passport.pdf",
+    "notes": [
+     "Not all files are equal. Look at what the file is and whose it is: harm depends on the data.",
+     null,
+     "Nothing suggests the file was harmful. The concern is what it reveals about another person.",
+     "The address matches the rest of the session. It's the content that matters here."
+    ]
    },
    {
     "type": "choice",
@@ -7742,7 +7892,13 @@
      "Rate-limit the API to 10 requests a minute"
     ],
     "answer": 1,
-    "explain": "Random numbers and rate limits make guessing slower but don't stop it. Only a server-side ownership check closes the hole."
+    "explain": "Random numbers and rate limits make guessing slower but don't stop it. Only a server-side ownership check closes the hole.",
+    "notes": [
+     "Random numbers slow guessing but a leaked or shared number still opens someone else's record.",
+     null,
+     "The number can be sent in the body or a header just as easily. Hiding it doesn't add a check.",
+     "A rate limit only slows it to 10 other people's invoices a minute. The missing check is still missing."
+    ]
    },
    {
     "type": "choice",
@@ -7755,7 +7911,13 @@
     ],
     "answer": 1,
     "explain": "Check the owner before you raise the alarm. The user and owner match, so this one is the system working as it should.",
-    "where": "user=2266"
+    "where": "user=2266",
+    "notes": [
+     "The attacker was user 3387, and this row's owner matches its user. Check those two fields.",
+     null,
+     "Different IPs are normal for the same person (home, phone, work). The owner and user match.",
+     "Staff would show a staff role. This is a tenant reading their own record."
+    ]
    }
   ],
   "next": [
@@ -7803,7 +7965,13 @@
      "01:20: the network connection"
     ],
     "answer": 1,
-    "explain": "There were hours between the first sign and the encryption. An alert on interactive logons by service accounts would have given the team time to act."
+    "explain": "There were hours between the first sign and the encryption. An alert on interactive logons by service accounts would have given the team time to act.",
+    "notes": [
+     "The README files appear after encryption has started. By then it's too late; look for the earliest unusual event.",
+     null,
+     "The first renamed file is encryption already under way. What happened hours before that could have been caught?",
+     "The connection at 01:20 follows something earlier. Which event started the chain?"
+    ]
    },
    {
     "type": "choice",
@@ -7816,7 +7984,13 @@
     ],
     "answer": 1,
     "explain": "rclone is a legitimate sync tool that attackers often use to steal data before encrypting it, so they can threaten to publish it too (double extortion).",
-    "where": "41.7 GB"
+    "where": "41.7 GB",
+    "notes": [
+     "The backup software runs to the NAS, not to cloud storage with rclone. Check the destination and the tool.",
+     null,
+     "Updates don't send 41.7 GB to cloud storage. Look at the process name and where the data went.",
+     "Encryption starts at 03:53, after this. Between 01:20 and 03:48 data was moving out, not being locked."
+    ]
    },
    {
     "type": "choice",
@@ -7829,7 +8003,13 @@
     ],
     "answer": 1,
     "explain": "Removing ways to recover is a standard step before encryption, and a strong signal on its own: alert on vssadmin delete shadows.",
-    "where": "vssadmin"
+    "where": "vssadmin",
+    "notes": [
+     "These commands remove things rather than speed anything up. What do shadow copies and backup catalogues have in common?",
+     null,
+     "None of these installs anything. Read each one: vssadmin delete, bcdedit recovery off, wbadmin delete catalog.",
+     "Clearing logs would use wevtutil. These three remove ways to roll the files back."
+    ]
    },
    {
     "type": "choice",
@@ -7841,7 +8021,13 @@
      "Email all staff from FS01"
     ],
     "answer": 2,
-    "explain": "Isolating stops the spread; keeping them powered on keeps evidence in memory; disabling the account cuts off the way in. Wiping destroys evidence, and paying is a business decision for later, with advice."
+    "explain": "Isolating stops the spread; keeping them powered on keeps evidence in memory; disabling the account cuts off the way in. Wiping destroys evidence, and paying is a business decision for later, with advice.",
+    "notes": [
+     "Paying is a business decision made later with advice, and it doesn't stop the attack still running. Contain first.",
+     "Wiping destroys the evidence in memory and on disk that tells you what happened. Contain first, rebuild later.",
+     null,
+     "FS01 is compromised; anything sent from it is untrustworthy, and it stays connected. Isolate it first."
+    ]
    },
    {
     "type": "choice",
@@ -7854,7 +8040,13 @@
     ],
     "answer": 1,
     "explain": "Keep at least one copy offline or immutable (it can't be changed or deleted for a set time), with separate credentials, and test restoring from it.",
-    "where": "NAS"
+    "where": "NAS",
+    "notes": [
+     "Backups are only safe if the attacker can't reach them. Read where the NAS sits and how it's logged in to.",
+     null,
+     "Speed isn't the risk in the note. Ask who can reach the NAS and with which account.",
+     "The note says they back up the file shares, patient files included. The question is whether the attacker can reach them."
+    ]
    }
   ],
   "next": [
@@ -7904,7 +8096,13 @@
     ],
     "answer": 1,
     "explain": "Encoded commands aren't proof of evil on their own (some admin tools use them), but a script from Downloads starting hidden, encoded PowerShell is a classic warning sign.",
-    "where": "EncodedCommand"
+    "where": "EncodedCommand",
+    "notes": [
+     "Hiding a window doesn't make code run faster. Ask why someone would want the command unreadable.",
+     null,
+     "PowerShell can reach the internet with no special flags. These two are about not being seen.",
+     "Windows Update doesn't run from a .js file in Downloads. Follow the tree back to where this started."
+    ]
    },
    {
     "type": "choice",
@@ -7917,7 +8115,13 @@
     ],
     "answer": 1,
     "explain": "Login Data holds saved passwords and Cookies holds signed-in sessions. Reading both, then uploading, is what infostealers do.",
-    "where": "Login Data"
+    "where": "Login Data",
+    "notes": [
+     "Ransomware encrypts files and leaves a note. Nothing here was encrypted; look at which files it read.",
+     null,
+     "A worm spreads to other machines by itself. This one read browser files on one laptop and uploaded them.",
+     "Adware shows adverts. This read Login Data and Cookies, then sent 2.3 MB out."
+    ]
    },
    {
     "type": "choice",
@@ -7930,7 +8134,13 @@
     ],
     "answer": 1,
     "explain": "Malware wants to survive a restart. A scheduled task, a Run key or a new service are common ways; all three are worth checking when cleaning up.",
-    "where": "schtasks"
+    "where": "schtasks",
+    "notes": [
+     "A real Windows update task wouldn't run winsvc.exe from AppData. Check the path and the trigger.",
+     null,
+     "It runs the malware at logon; it doesn't remove it. Malware wants to survive a restart.",
+     "Nothing is copied anywhere. Look at the trigger (logon) and what it starts."
+    ]
    },
    {
     "type": "choice",
@@ -7943,7 +8153,13 @@
     ],
     "answer": 1,
     "explain": "Regular, small check-ins to the same new address are a beacon. Blocking 203.0.113.91 and cdn-update.example.com across the company stops it and shows if other machines call it too.",
-    "where": "every 60 seconds"
+    "where": "every 60 seconds",
+    "notes": [
+     "Windows telemetry goes to Microsoft's own domains, not a new address the laptop never used before 10:03.",
+     null,
+     "Chrome syncs with Google. These go to an unknown host every 60 seconds, starting when the malware ran.",
+     "A backup sends large amounts now and then. These are small and regular, like clockwork."
+    ]
    },
    {
     "type": "choice",
@@ -7955,7 +8171,13 @@
      "Run a full antivirus scan and wait"
     ],
     "answer": 1,
-    "explain": "The data has already left. Stolen cookies let attackers into accounts without the password or MFA, so sessions must be ended, not just passwords changed. Rebuild the laptop rather than trust a clean-up."
+    "explain": "The data has already left. Stolen cookies let attackers into accounts without the password or MFA, so sessions must be ended, not just passwords changed. Rebuild the laptop rather than trust a clean-up.",
+    "notes": [
+     "The passwords and cookies have already left. Deleting the file doesn't take them back.",
+     null,
+     "The stolen data is browser passwords and session cookies. A Windows password change covers neither.",
+     "A scan can't undo what has already been stolen, and waiting gives the attacker time to use it."
+    ]
    },
    {
     "type": "choice",
@@ -7967,7 +8189,13 @@
      "Block all .zip files"
     ],
     "answer": 1,
-    "explain": "If a script opens as text, nothing runs. Showing extensions also makes .pdf.js look odd. Many organisations set this by Group Policy."
+    "explain": "If a script opens as text, nothing runs. Showing extensions also makes .pdf.js look odd. Many organisations set this by Group Policy.",
+    "notes": [
+     "Wi-Fi had nothing to do with it. The file ran because Windows opened a script on a double-click.",
+     null,
+     "The password manager is what was raided, but it didn't make the file run. What happens when you open a .js?",
+     "The invoice may not have been zipped, and blocking all zips breaks normal work. Target what made the script run."
+    ]
    }
   ],
   "next": [
@@ -8006,7 +8234,13 @@
     ],
     "answer": 1,
     "explain": "The spike starts exactly when tickets go on sale, the traffic is normal HTTPS to /tickets, and it fades as tickets sell. That's demand, not an attack, even though some people got errors.",
-    "where": "tickets released"
+    "where": "tickets released",
+    "notes": [
+     "High volume alone isn't an attack. Check when it started, what was requested and who it came from.",
+     null,
+     "Nothing in the monitoring shows tickets being taken unfairly. Look at the timing against the ticket release.",
+     "The firewall stayed up and passed normal HTTPS. The servers were simply busy."
+    ]
    },
    {
     "type": "choice",
@@ -8018,7 +8252,13 @@
      "Turn off HTTPS to save processing"
     ],
     "answer": 1,
-    "explain": "503 means the server was too busy. Blocking customers would make it worse. A virtual queue, caching and extra capacity are how big ticket sales cope."
+    "explain": "503 means the server was too busy. Blocking customers would make it worse. A virtual queue, caching and extra capacity are how big ticket sales cope.",
+    "notes": [
+     "Those busy addresses are customers, including shared networks like phone carriers. Blocking them turns people away.",
+     null,
+     "Nobody committed a crime at 10:00. Real customers wanted tickets.",
+     "Turning off HTTPS exposes customers' card and login details. The server needed more room, not less security."
+    ]
    },
    {
     "type": "text",
@@ -8039,7 +8279,13 @@
      "A port scan"
     ],
     "answer": 1,
-    "explain": "Reflection hides the attacker behind innocent servers, and amplification turns a small request into a big reply. The flood is real traffic from real NTP servers, which is why there are so many sources."
+    "explain": "Reflection hides the attacker behind innocent servers, and amplification turns a small request into a big reply. The flood is real traffic from real NTP servers, which is why there are so many sources.",
+    "notes": [
+     "A flash crowd is real customers on the website. This is NTP traffic from thousands of servers.",
+     null,
+     "SQL injection targets a web form or URL. This traffic is NTP replies, not web requests.",
+     "A scan sends small probes from one source. This is a flood of large replies from thousands of sources."
+    ]
    },
    {
     "type": "choice",
@@ -8052,7 +8298,13 @@
     ],
     "answer": 1,
     "explain": "Dropping packets at your own edge is too late for a volumetric attack: the pipe is full. It has to be filtered upstream.",
-    "where": "998 Mbit/s"
+    "where": "998 Mbit/s",
+    "notes": [
+     "The rule is dropping the NTP packets as it should. The problem is before the firewall.",
+     null,
+     "The monitoring shows the server healthy. Compare the attack size with the theatre's link.",
+     "Customers use HTTPS to buy tickets. The NTP traffic is the attack."
+    ]
    },
    {
     "type": "choice",
@@ -8064,7 +8316,13 @@
      "Nobody: wait for it to end"
     ],
     "answer": 1,
-    "explain": "Upstream filtering, scrubbing services and content delivery networks have far bigger pipes. Agree how to call them in before an attack, not during one."
+    "explain": "Upstream filtering, scrubbing services and content delivery networks have far bigger pipes. Agree how to call them in before an attack, not during one.",
+    "notes": [
+     "Restarting the router doesn't shrink the flood. The theatre's link is full before its own kit sees it.",
+     null,
+     "The ticketing company can't filter traffic heading for the theatre's internet link.",
+     "Waiting leaves customers locked out. Someone with bigger pipes can filter it."
+    ]
    }
   ],
   "next": [
@@ -8134,7 +8392,13 @@
     ],
     "answer": 1,
     "explain": "The * principal means everyone, including anonymous users. The statement doesn't mention the agency at all.",
-    "where": "\"Principal\": \"*\""
+    "where": "\"Principal\": \"*\"",
+    "notes": [
+     "* doesn't mean the account's own users. Read the principal: it names no one in particular.",
+     null,
+     "The effect is Allow, not Deny. Read the effect and the principal together.",
+     "The statement doesn't name the agency at all. Who does * cover?"
+    ]
    },
    {
     "type": "text",
@@ -8156,7 +8420,13 @@
     ],
     "answer": 1,
     "explain": "Predictable names like payroll/2026-10.csv are easy to guess, or may have leaked. Not being able to list a bucket is not protection.",
-    "where": "AccessDenied"
+    "where": "AccessDenied",
+    "notes": [
+     "Nothing was hacked: the denied ListBucket shows AWS enforcing the policy as written. Compare the two actions.",
+     null,
+     "ListBucket isn't always denied; this policy just doesn't allow it. GetObject is a separate permission.",
+     "Encryption at rest is decrypted for anyone allowed to read. The policy allowed the download."
+    ]
    },
    {
     "type": "choice",
@@ -8168,7 +8438,13 @@
      "Nobody's"
     ],
     "answer": 1,
-    "explain": "The cloud provider keeps the service secure and gave safe defaults. Who can read your data is your configuration, so it's yours."
+    "explain": "The cloud provider keeps the service secure and gave safe defaults. Who can read your data is your configuration, so it's yours.",
+    "notes": [
+     "AWS keeps the platform secure, but who can read a bucket is set by the customer.",
+     null,
+     "The agency only received a file. Fernlea wrote the bucket policy.",
+     "Someone always owns configuration. Read the shared responsibility split."
+    ]
    },
    {
     "type": "choice",
@@ -8181,7 +8457,13 @@
     ],
     "answer": 1,
     "explain": "Close the hole first, then assess: payroll and criminal record check data about staff is sensitive, so the people affected and probably the ICO need telling.",
-    "where": "dbs-checks"
+    "where": "dbs-checks",
+    "notes": [
+     "Deleting the logs destroys the evidence of what was taken. You'll need it for the breach report.",
+     null,
+     "Renaming hides nothing while the policy still lets anyone download. Close the hole itself.",
+     "You can't trust or reach an unknown downloader. Treat the data as gone and act on that."
+    ]
    },
    {
     "type": "choice",
@@ -8193,7 +8475,13 @@
      "Put it on a USB stick in the post"
     ],
     "answer": 1,
-    "explain": "A pre-signed URL gives one file to whoever has the link, for a limited time, without making anything public. 'Temporary' settings that rely on someone remembering tend to stay."
+    "explain": "A pre-signed URL gives one file to whoever has the link, for a limited time, without making anything public. 'Temporary' settings that rely on someone remembering tend to stay.",
+    "notes": [
+     "Relying on memory is how this happened. Use a method that ends by itself.",
+     null,
+     "Unencrypted email can be forwarded or intercepted, and payroll data is sensitive.",
+     "A USB stick can be lost in the post and is slow. There are safer ways to share one file."
+    ]
    }
   ],
   "next": [
@@ -8232,7 +8520,13 @@
     ],
     "answer": 1,
     "explain": "Browsers match the address you typed against the SAN list (they ignore the CN). Reissue it with both names, or redirect the bare domain using a certificate that covers it.",
-    "where": "Subject Alternative Name"
+    "where": "Subject Alternative Name",
+    "notes": [
+     "The same certificate works on www, so the CA is trusted. Compare the address with the names it lists.",
+     null,
+     "Check the Not After date: it's in date. The problem is the name, not the time.",
+     "Paid and free certificates are checked the same way. Look at which names it covers."
+    ]
    },
    {
     "type": "text",
@@ -8257,7 +8551,13 @@
      "Switch the portal to plain HTTP"
     ],
     "answer": 1,
-    "explain": "Maximum lifetimes for public certificates are being cut (200 days from March 2026, 47 days by 2029), so renewing by hand will keep failing. Automate and monitor."
+    "explain": "Maximum lifetimes for public certificates are being cut (200 days from March 2026, 47 days by 2029), so renewing by hand will keep failing. Automate and monitor.",
+    "notes": [
+     "Long certificates aren't allowed any more, and a long one still expires one day. Fix the process, not the length.",
+     null,
+     "Teaching people to ignore warnings makes real attacks easier to miss.",
+     "Plain HTTP sends logins in the clear. Keep HTTPS and stop it lapsing."
+    ]
    },
    {
     "type": "choice",
@@ -8270,7 +8570,13 @@
     ],
     "answer": 1,
     "explain": "A self-signed certificate still encrypts, but nothing proves it belongs to that device, so the browser can't rule out an impostor.",
-    "where": "Issuer: CN=PRN-OFFICE-2"
+    "where": "Issuer: CN=PRN-OFFICE-2",
+    "notes": [
+     "Long lifetimes are common on internal devices but don't prove who signed it. Compare two fields.",
+     null,
+     "Certificates can name IP addresses whoever issues them. Look at who signed it.",
+     "Any device can have a CA-signed certificate. Read the Issuer and Subject."
+    ]
    },
    {
     "type": "choice",
@@ -8282,7 +8588,13 @@
      "Make the printer's page public"
     ],
     "answer": 1,
-    "explain": "Clicking through warnings becomes a habit attackers can exploit. An internal CA gives internal devices trusted certificates without paying for public ones."
+    "explain": "Clicking through warnings becomes a habit attackers can exploit. An internal CA gives internal devices trusted certificates without paying for public ones.",
+    "notes": [
+     "Clicking through warnings becomes a habit attackers can use on real sites.",
+     null,
+     "Plain HTTP sends the printer's admin password in the clear.",
+     "A printer's admin page should be harder to reach, not public."
+    ]
    },
    {
     "type": "choice",
@@ -8295,7 +8607,13 @@
     ],
     "answer": 1,
     "explain": "Short lifetimes are a feature: a stolen key is useful for less time. The padlock means the connection is encrypted to that name, not that the business is honest.",
-    "where": "Let's Encrypt"
+    "where": "Let's Encrypt",
+    "notes": [
+     "The encryption is the same whoever issues a domain-validated certificate. Price buys other things.",
+     null,
+     "A short lifetime limits how long a stolen key is useful. It's a strength.",
+     "Phones and computers check certificates the same way."
+    ]
    }
   ],
   "next": [
@@ -8334,7 +8652,13 @@
     ],
     "answer": 1,
     "explain": "One attempt per account, a different user each time, stays under lockout limits. Brute force hammers one account and gets it locked.",
-    "where": "a.lewis"
+    "where": "a.lewis",
+    "notes": [
+     "Brute force hammers one account with many passwords. Here each account gets one try, a different user every time.",
+     null,
+     "A branch office would sign in successfully with MFA. These are failures across many accounts from one unknown address.",
+     "Phishing tricks someone into handing over a password. This log shows guesses at the sign-in page."
+    ]
    },
    {
     "type": "text",
@@ -8357,7 +8681,13 @@
     ],
     "answer": 1,
     "explain": "'Conditional Access: not applied' means no policy asked for MFA. Exclusions made for one trip, a broken phone or a service account tend to outlive their reason.",
-    "where": "CA-Exclude-Travel"
+    "where": "CA-Exclude-Travel",
+    "notes": [
+     "No MFA prompt appears in r.james's row at all. Read the Conditional Access column.",
+     null,
+     "MFA works from anywhere. Something told the policy to skip this account.",
+     "Everyone else's sign-ins asked for MFA as normal this morning. Look at what's different about r.james."
+    ]
    },
    {
     "type": "choice",
@@ -8370,7 +8700,13 @@
     ],
     "answer": 1,
     "explain": "Context matters: the office IP, one mistake, then a normal MFA sign-in. The earlier failure from 203.0.113.140 was the spray, not this.",
-    "where": "09:44:31"
+    "where": "09:44:31",
+    "notes": [
+     "The attacker's address is 203.0.113.140. Check where e.kowalski's attempts came from.",
+     null,
+     "One typo is normal. Context matters: where it came from and what happened next.",
+     "Locking a user who simply mistyped stops them working for no reason. The evidence points elsewhere."
+    ]
    },
    {
     "type": "choice",
@@ -8382,7 +8718,13 @@
      "Turn off MFA, since it didn't help"
     ],
     "answer": 1,
-    "explain": "The attacker had the mailbox. Check what they read and sent, and whether forwarding or hiding rules were added: the usual next step towards invoice fraud."
+    "explain": "The attacker had the mailbox. Check what they read and sent, and whether forwarding or hiding rules were added: the usual next step towards invoice fraud.",
+    "notes": [
+     "A longer password next time leaves the attacker signed in now, with the mailbox open.",
+     null,
+     "Blocking one country is easy to dodge with another address, and the attacker is already in.",
+     "MFA protected everyone it covered. The gap was the one account it skipped."
+    ]
    },
    {
     "type": "choice",
@@ -8394,7 +8736,13 @@
      "Add more people to the exclusion group"
     ],
     "answer": 1,
-    "explain": "MFA only protects the accounts it covers. Time-limited exclusions, alerts and a banned-password list (Entra has one) shut the gap a spray looks for."
+    "explain": "MFA only protects the accounts it covers. Time-limited exclusions, alerts and a banned-password list (Entra has one) shut the gap a spray looks for.",
+    "notes": [
+     "Forced monthly changes lead to weaker, predictable passwords and don't fix an account that skips MFA.",
+     null,
+     "The sign-in page is public by design. Spraying works wherever it is.",
+     "More exclusions widen the gap the spray found."
+    ]
    }
   ],
   "next": [
@@ -8447,7 +8795,13 @@
     ],
     "answer": 1,
     "explain": "Copying the real version number is a common trick. New, unpopular, single-version packages that look like famous ones deserve a hard look.",
-    "where": "published 2 days ago"
+    "where": "published 2 days ago",
+    "notes": [
+     "MIT is a common, normal licence. The warning signs are about who published it and when.",
+     null,
+     "Having no dependencies is common for small libraries. Compare the age and downloads with the real package.",
+     "Copying the real version number is a known trick. Look at publish date, account and download count."
+    ]
    },
    {
     "type": "choice",
@@ -8460,7 +8814,13 @@
     ],
     "answer": 1,
     "explain": "Install scripts run with the same rights as whoever ran npm install, before anyone has used the package.",
-    "where": "postinstall"
+    "where": "postinstall",
+    "notes": [
+     "After installing is exactly when it runs, automatically, before anyone uses the package.",
+     null,
+     "postinstall doesn't update anything. It runs the package's own script on install.",
+     "Tests are run by the project's own test command. This runs the dependency's code."
+    ]
    },
    {
     "type": "choice",
@@ -8473,7 +8833,13 @@
     ],
     "answer": 1,
     "explain": "The malicious code doesn't need to break anything; it just steals. The tests never saw it.",
-    "where": "AWS_SECRET_ACCESS_KEY"
+    "where": "AWS_SECRET_ACCESS_KEY",
+    "notes": [
+     "Tests check the app works. The stolen secrets don't stop it working.",
+     null,
+     "A few KB is plenty for tokens and keys. Size doesn't make it safe.",
+     "The app working says nothing about what setup.js sent out."
+    ]
    },
    {
     "type": "choice",
@@ -8485,7 +8851,13 @@
      "Delete the CI log"
     ],
     "answer": 1,
-    "explain": "Rotating stolen credentials is urgent: an npm token could publish a poisoned version of Pennant's own packages, and AWS keys could reach customer data."
+    "explain": "Rotating stolen credentials is urgent: an npm token could publish a poisoned version of Pennant's own packages, and AWS keys could reach customer data.",
+    "notes": [
+     "The tests passed while the secrets were stolen. Merging adds the malicious package for good.",
+     null,
+     "Fixing the name stops the next install but leaves the stolen secrets live.",
+     "The CI log is evidence of what was taken. Keep it."
+    ]
    },
    {
     "type": "choice",
@@ -8497,7 +8869,13 @@
      "Never use open source"
     ],
     "answer": 1,
-    "explain": "Most supply chain defence is noticing what's new. A software bill of materials (SBOM) and dependency alerts help too."
+    "explain": "Most supply chain defence is noticing what's new. A software bill of materials (SBOM) and dependency alerts help too.",
+    "notes": [
+     "Speed would have run it sooner. The defence is noticing what's new.",
+     null,
+     "The licence says nothing about whether code is malicious.",
+     "Open source isn't the problem, and avoiding it isn't practical. Check what you add."
+    ]
    }
   ],
   "next": [
@@ -8534,7 +8912,12 @@
     ],
     "answer": 0,
     "explain": "Private information reached someone who shouldn't have it. Nothing was changed or lost, so it's confidentiality. It's also a personal data breach to assess.",
-    "where": "INC-01"
+    "where": "INC-01",
+    "notes": [
+     null,
+     "Nothing was altered: the scores and notes are the same, they just went to the wrong person.",
+     "The system stayed up and nobody lost access. Think about who saw the data."
+    ]
    },
    {
     "type": "choice",
@@ -8546,7 +8929,12 @@
     ],
     "answer": 2,
     "explain": "Nothing was seen or changed; the service just wasn't there when it was needed.",
-    "where": "INC-02"
+    "where": "INC-02",
+    "notes": [
+     "Nothing was seen by the wrong people. What stopped working?",
+     "No data was changed; the pupils just couldn't reach the service.",
+     null
+    ]
    },
    {
     "type": "choice",
@@ -8558,7 +8946,12 @@
     ],
     "answer": 1,
     "explain": "The marks can no longer be trusted. Locking screens and keeping an audit trail of changes protect integrity.",
-    "where": "INC-03"
+    "where": "INC-03",
+    "notes": [
+     "Seeing marks isn't the problem here. Something was altered without permission.",
+     null,
+     "The markbook stayed available. Can the marks still be trusted?"
+    ]
    },
    {
     "type": "choice",
@@ -8570,7 +8963,12 @@
     ],
     "answer": 1,
     "explain": "Defacement changes content without permission: integrity. It may hurt the trust's reputation too, but the security property lost is integrity.",
-    "where": "INC-04"
+    "where": "INC-04",
+    "notes": [
+     "The home page is public, so nothing secret was exposed. What happened to the content?",
+     null,
+     "The site was still up; it showed the wrong thing. That's about trust in the content."
+    ]
    },
    {
     "type": "choice",
@@ -8583,7 +8981,13 @@
     ],
     "answer": 0,
     "explain": "Copying the files out is a confidentiality breach; encryption stopped the office working, which is availability. Modern ransomware usually hits both.",
-    "where": "INC-05"
+    "where": "INC-05",
+    "notes": [
+     null,
+     "Encryption makes files unusable, but they weren't edited. And copying them out has its own name.",
+     "Encryption hit availability, but the files were also copied out first.",
+     "They exist but can't be used, and copies are in someone else's hands."
+    ]
    },
    {
     "type": "choice",
@@ -8595,7 +8999,13 @@
      "A faster laptop"
     ],
     "answer": 1,
-    "explain": "The pupil didn't break anything; they used an open session. Auto-lock prevents it, and a change log detects it if it happens anyway."
+    "explain": "The pupil didn't break anything; they used an open session. Auto-lock prevents it, and a change log detects it if it happens anyway.",
+    "notes": [
+     "The pupil didn't use the network to get in. They used a teacher's open screen.",
+     null,
+     "Encryption protects data at rest. The markbook was open and signed in.",
+     "Speed didn't matter. What gave the pupil access?"
+    ]
    }
   ],
   "next": [
@@ -8633,7 +9043,13 @@
     ],
     "answer": 3,
     "explain": "It controls the physical way in. Category is about what the control is (technical, managerial, operational, physical); type is about what it does.",
-    "where": "M1"
+    "where": "M1",
+    "notes": [
+     "Badge readers use technology, but the category is about what the control guards: the way in to the building.",
+     "Managerial controls are policies and plans. This one is on the door.",
+     "Operational controls are routines people carry out. This is a fitted barrier.",
+     null
+    ]
    },
    {
     "type": "choice",
@@ -8646,7 +9062,13 @@
     ],
     "answer": 0,
     "explain": "Locked doors stop people getting in.",
-    "where": "M1"
+    "where": "M1",
+    "notes": [
+     null,
+     "A badge reader can log entries, but its main job is to keep the door shut to people without a badge.",
+     "It doesn't repair anything after an incident. What does a locked door do?",
+     "It's more than off-putting; it physically stops entry."
+    ]
    },
    {
     "type": "choice",
@@ -8659,7 +9081,13 @@
     ],
     "answer": 3,
     "explain": "The cameras themselves are detective (they record what happens); the signs exist to put people off. One measure can do more than one job.",
-    "where": "CCTV in operation"
+    "where": "CCTV in operation",
+    "notes": [
+     "Signs don't stop anyone physically. What are they for?",
+     "The cameras detect. The signs do a different job.",
+     "Signs don't put anything right afterwards.",
+     null
+    ]
    },
    {
     "type": "choice",
@@ -8672,7 +9100,13 @@
     ],
     "answer": 1,
     "explain": "It's carried out by people as a routine (operational), and it finds things that have happened (detective).",
-    "where": "M4"
+    "where": "M4",
+    "notes": [
+     "A person reading alerts isn't a technical control, and reading alerts doesn't stop anything happening.",
+     null,
+     "It isn't a barrier, and it doesn't fix things. It's a routine that finds problems.",
+     "Managerial controls are policies. This is daily work done by a person."
+    ]
    },
    {
     "type": "choice",
@@ -8685,7 +9119,13 @@
     ],
     "answer": 1,
     "explain": "Policies are managerial controls. A directive control sets the rules; it relies on people following them.",
-    "where": "M5"
+    "where": "M5",
+    "notes": [
+     "A policy is written rules, not software, and it can't stop anything by itself.",
+     null,
+     "A policy isn't a physical thing, and deterring isn't quite its job: it sets the rules.",
+     "It isn't a routine that fixes problems. It tells people what to do."
+    ]
    },
    {
     "type": "choice",
@@ -8698,7 +9138,13 @@
     ],
     "answer": 2,
     "explain": "It put things right after something went wrong.",
-    "where": "M6"
+    "where": "M6",
+    "notes": [
+     "The restore came after something went wrong. Prevention would come before.",
+     "Restoring doesn't spot anything. It puts things right.",
+     null,
+     "A backup restore doesn't put anyone off. It fixes the damage."
+    ]
    },
    {
     "type": "choice",
@@ -8711,7 +9157,13 @@
     ],
     "answer": 1,
     "explain": "Compensating controls cover a gap for a time. The register is right to give an end date: they're not a permanent answer.",
-    "where": "M7"
+    "where": "M7",
+    "notes": [
+     "Isolation reduces the risk but doesn't replace patching; the register gives it an end date.",
+     null,
+     "It isn't there to put people off. It covers for a missing fix.",
+     "Isolating the tills is an action taken because of the risk, so it isn't just accepting it."
+    ]
    }
   ],
   "next": [
@@ -8749,7 +9201,13 @@
     ],
     "answer": 0,
     "explain": "Tactics are the attacker's goal at each step; techniques are how. Getting in through a phishing link is Initial Access.",
-    "where": "A1"
+    "where": "A1",
+    "notes": [
+     null,
+     "Persistence is about staying after a restart. A1 is how the attacker first got in.",
+     "Exfiltration is data leaving, near the end. A1 is the very start.",
+     "Impact is damage like encryption. A1 is the first foothold."
+    ]
    },
    {
     "type": "choice",
@@ -8762,7 +9220,13 @@
     ],
     "answer": 1,
     "explain": "Making sure the malware comes back after a restart is persistence.",
-    "where": "A3"
+    "where": "A3",
+    "notes": [
+     "Execution runs code once. A scheduled task is about running it again and again.",
+     null,
+     "Credential Access is stealing logins. The task keeps the malware coming back.",
+     "Discovery is looking around the network. The task makes the malware survive restarts."
+    ]
    },
    {
     "type": "choice",
@@ -8775,7 +9239,13 @@
     ],
     "answer": 0,
     "explain": "Stealing logins so they can be used later is Credential Access.",
-    "where": "A4"
+    "where": "A4",
+    "notes": [
+     null,
+     "Initial Access is getting in. A4 happens later, once the malware is running.",
+     "Impact is damage like encryption or wiping. A4 takes logins without breaking anything.",
+     "Lateral Movement is moving to other machines. A4 stays on the laptop."
+    ]
    },
    {
     "type": "choice",
@@ -8788,7 +9258,13 @@
     ],
     "answer": 1,
     "explain": "The data left over the same channel the malware used for instructions (command and control).",
-    "where": "A5"
+    "where": "A5",
+    "notes": [
+     "Nothing was encrypted. A5 is about data leaving.",
+     null,
+     "Phishing was how it started (A1). A5 is near the end.",
+     "PowerShell ran the downloader. A5 is about how data left."
+    ]
    },
    {
     "type": "choice",
@@ -8803,7 +9279,15 @@
     ],
     "answer": 3,
     "explain": "An alert spots an attack as it happens: Detect.",
-    "where": "B3"
+    "where": "B3",
+    "notes": [
+     "Govern is leadership and policy. An alert is a technical measure.",
+     "Identify is knowing your assets and risks. An alert works when something happens.",
+     "Protect stops an attack. An alert doesn't stop it; it spots it.",
+     null,
+     "Respond is what you do once you know. The alert is how you find out.",
+     "Recover is getting back to normal. An alert comes much earlier."
+    ]
    },
    {
     "type": "choice",
@@ -8818,7 +9302,15 @@
     ],
     "answer": 0,
     "explain": "Govern was added in CSF 2.0: leadership setting direction, roles and risk appetite. It sits around the other five.",
-    "where": "B6"
+    "where": "B6",
+    "notes": [
+     null,
+     "Identify is listing assets and risks. B6 is the directors setting direction.",
+     "Protect is safeguards like MFA and patching. B6 is leadership's role.",
+     "Detect is spotting attacks. B6 is about policy and risk ownership.",
+     "Respond is acting on an incident. B6 is ongoing direction from the top.",
+     "Recover is restoring after an incident. B6 sets the rules for everything."
+    ]
    },
    {
     "type": "choice",
@@ -8831,7 +9323,13 @@
     ],
     "answer": 3,
     "explain": "Getting back to normal and proving you can: Recover. (B1 is Identify, B2 Protect, B4 Respond.)",
-    "where": "B5"
+    "where": "B5",
+    "notes": [
+     "Identify is knowing what you have. B5 is after the incident.",
+     "Protect stops attacks happening. Rebuilding comes after.",
+     "Respond is containing and investigating. B5 is getting back to normal.",
+     null
+    ]
    }
   ],
   "next": [
@@ -8872,7 +9370,13 @@
      "It affects day-zero installs only"
     ],
     "answer": 1,
-    "explain": "Once a patch ships it's a known vulnerability, but systems stay exposed until each one is patched."
+    "explain": "Once a patch ships it's a known vulnerability, but systems stay exposed until each one is patched.",
+    "notes": [
+     "The time it was found has nothing to do with the name. Think about how long defenders have had a fix.",
+     null,
+     "CVSS scores severity, and this one is critical. The name is about patches, not scores.",
+     "It affects running systems of any age. Read what the advisory says about a fix."
+    ]
    },
    {
     "type": "text",
@@ -8894,7 +9398,13 @@
     ],
     "answer": 1,
     "explain": "Mitigations reduce the risk while you wait. Upgrading vpn-gw-02 to 9.2.6 would make it vulnerable.",
-    "where": "mitigation file"
+    "where": "mitigation file",
+    "notes": [
+     "Waiting weeks leaves vpn-gw-01 open while attackers are already exploiting it.",
+     null,
+     "Turning it off stops everyone working when the vendor offers a mitigation that keeps it running.",
+     "Check the affected versions: 9.2.6 is one of them. That would add a vulnerable gateway."
+    ]
    },
    {
     "type": "choice",
@@ -8907,7 +9417,13 @@
     ],
     "answer": 1,
     "explain": "A mitigation or patch stops new attacks; it doesn't remove someone already inside. Exploitation began before the advisory.",
-    "where": "2 unexpected files"
+    "where": "2 unexpected files",
+    "notes": [
+     "The mitigation stops new attempts but doesn't remove anyone already in. The files may be theirs.",
+     null,
+     "Deleting two files leaves whatever else the attacker did. Assume more than you can see.",
+     "A patch won't remove an attacker who's already inside."
+    ]
    },
    {
     "type": "choice",
@@ -8920,7 +9436,13 @@
     ],
     "answer": 1,
     "explain": "KEV is a list of vulnerabilities known to be exploited. Many organisations use it to decide what to patch first, alongside CVSS and EPSS.",
-    "where": "KEV"
+    "where": "KEV",
+    "notes": [
+     "KEV only lists flaws with evidence of real attacks. That's the opposite of theoretical.",
+     null,
+     "The list is run by a US agency, but the flaw affects the product wherever it's used.",
+     "KEV says nothing about a fix existing. This one has none yet."
+    ]
    },
    {
     "type": "choice",
@@ -8932,7 +9454,13 @@
      "Downgrade to 9.1.8"
     ],
     "answer": 1,
-    "explain": "Mitigations are a stopgap. Patch, check again for compromise, then tidy up."
+    "explain": "Mitigations are a stopgap. Patch, check again for compromise, then tidy up.",
+    "notes": [
+     "A mitigation is a stopgap; the vendor's fix is the real answer.",
+     null,
+     "Waiting for another attack means you'll patch after you're hit.",
+     "Older versions aren't safer by default. The fixed version is 9.2.7."
+    ]
    }
   ],
   "next": [
@@ -8990,7 +9518,13 @@
      "There's no deadline"
     ],
     "answer": 1,
-    "explain": "72 hours from Tuesday 09:10 is Friday 09:10. If all the facts aren't known yet, report what you know and add the rest later."
+    "explain": "72 hours from Tuesday 09:10 is Friday 09:10. If all the facts aren't known yet, report what you know and add the rest later.",
+    "notes": [
+     "The weekend doesn't pause the clock. It runs in hours from when they became aware.",
+     null,
+     "That's earlier than the deadline. Count 72 hours from Tuesday 09:10.",
+     "UK GDPR sets a 72-hour limit for reportable breaches."
+    ]
    },
    {
     "type": "choice",
@@ -9003,7 +9537,13 @@
     ],
     "answer": 1,
     "explain": "Report when a breach is likely to result in a risk to people's rights and freedoms. Passports and right-to-work documents can be used for identity fraud.",
-    "where": "passports"
+    "where": "passports",
+    "notes": [
+     "Theft and hacking are both breaches. What matters is the risk to the people in the data.",
+     null,
+     "You report on the risk, not on proof of misuse. You may never know if they're used.",
+     "There's no minimum number. A risk to even one person can be reportable."
+    ]
    },
    {
     "type": "choice",
@@ -9015,7 +9555,13 @@
      "Every client"
     ],
     "answer": 1,
-    "explain": "When the risk is high, the people affected must be told too, so they can act (for example, watching for fraud in their name). Reporting the theft to the police is sensible as well."
+    "explain": "When the risk is high, the people affected must be told too, so they can act (for example, watching for fraud in their name). Reporting the theft to the police is sensible as well.",
+    "notes": [
+     "When the risk to people is high, they must be told so they can protect themselves.",
+     null,
+     "Police may help with the theft, but the people whose passports went need telling.",
+     "Clients weren't affected. The people in the documents were."
+    ]
    },
    {
     "type": "choice",
@@ -9028,7 +9574,13 @@
     ],
     "answer": 1,
     "explain": "Strong encryption is why lost devices often aren't reportable. UK GDPR still requires every personal data breach to be documented, reported or not.",
-    "where": "BitLocker"
+    "where": "BitLocker",
+    "notes": [
+     "Not every lost laptop is reportable. Strong encryption changes the risk.",
+     null,
+     "Even unreportable breaches must be written down with the reasoning.",
+     "E1 had encryption; what was on it matters less if nobody can read it."
+    ]
    },
    {
     "type": "choice",
@@ -9041,7 +9593,13 @@
     ],
     "answer": 1,
     "explain": "It's still a breach (data went to the wrong place), so it's logged, but the risk to the 12 people is low.",
-    "where": "deleted it unread"
+    "where": "deleted it unread",
+    "notes": [
+     "Report when there's a likely risk. Here the email was deleted unread and confirmed in writing.",
+     null,
+     "Telling people is for high risk. This one is low.",
+     "Every personal data breach is logged, reported or not."
+    ]
    }
   ],
   "next": [
@@ -9080,7 +9638,13 @@
     ],
     "answer": 1,
     "explain": "State-backed groups play a long game. Staying hidden matters more to them than a fast payout.",
-    "where": "18 months"
+    "where": "18 months",
+    "notes": [
+     "Nothing was stolen for money or encrypted for ransom over months. Profit seekers move faster.",
+     null,
+     "Testing tools wouldn't need months of quiet access to a water company.",
+     "Hacktivists want publicity. This group stayed silent."
+    ]
    },
    {
     "type": "choice",
@@ -9093,7 +9657,13 @@
     ],
     "answer": 1,
     "explain": "The answer is behaviour: who ran the tool, on which machine, when, and whether that's normal for them.",
-    "where": "living off the land"
+    "where": "living off the land",
+    "notes": [
+     "The point is that no new malware was used. What did the attacker run instead?",
+     null,
+     "ntdsutil and netsh are Windows tools.",
+     "No law turns antivirus off. The tools used are ones antivirus trusts."
+    ]
    },
    {
     "type": "text",
@@ -9117,7 +9687,13 @@
     ],
     "answer": 1,
     "explain": "With the AD database, the attacker can impersonate almost anyone. Every domain password needs resetting, including the special krbtgt account (twice).",
-    "where": "create full"
+    "where": "create full",
+    "notes": [
+     "Speed isn't the issue. Think about what's stored in that file.",
+     null,
+     "Copying it doesn't delete anything. It's what the copy contains.",
+     "It holds far more than email addresses."
+    ]
    },
    {
     "type": "choice",
@@ -9130,7 +9706,13 @@
     ],
     "answer": 1,
     "explain": "Port proxies quietly turn one machine into a stepping stone. Here it points at the system that runs the water treatment process.",
-    "where": "portproxy"
+    "where": "portproxy",
+    "notes": [
+     "A port proxy relays traffic, it doesn't speed anything up. Check where it points.",
+     null,
+     "It doesn't block anything; it forwards connections. Look at the destination address.",
+     "Nothing here is about printers. What system is on 10.60.0.12?"
+    ]
    },
    {
     "type": "choice",
@@ -9142,7 +9724,13 @@
      "Wait to see what they do next"
     ],
     "answer": 1,
-    "explain": "Contain the obvious, but assume there's more you haven't found. In the UK, the NCSC helps operators of essential services respond to incidents like this."
+    "explain": "Contain the obvious, but assume there's more you haven't found. In the UK, the NCSC helps operators of essential services respond to incidents like this.",
+    "notes": [
+     "Removing one rule leaves the stolen account and whatever else the group set up.",
+     null,
+     "If it wasn't m.hale, the email warns the attacker in m.hale's mailbox.",
+     "Waiting gives a group already in critical systems more time."
+    ]
    }
   ],
   "next": [
@@ -9181,7 +9769,13 @@
     ],
     "answer": 1,
     "explain": "The AI can't reliably tell instructions from data. Anything it reads (emails, web pages, documents) can carry commands.",
-    "where": "color:#ffffff"
+    "where": "color:#ffffff",
+    "notes": [
+     "A tracking pixel is a tiny image. This is hidden text meant for the AI to read.",
+     null,
+     "Spam tags are added by mail servers in headers, not hidden in the message body.",
+     "Formatting doesn't give instructions. Read what the hidden text says."
+    ]
    },
    {
     "type": "text",
@@ -9203,7 +9797,13 @@
     ],
     "answer": 1,
     "explain": "No one clicked anything. Rendering an external image sends its URL, so whatever is in the URL goes to that server.",
-    "where": "a.png?d=Hughes"
+    "where": "a.png?d=Hughes",
+    "notes": [
+     "The assistant only wrote a summary. Look at what was inside it.",
+     null,
+     "Nobody phoned anyone. The log shows a request to an outside server.",
+     "The log shows a request to stats.cottage-help.example with data in it."
+    ]
    },
    {
     "type": "choice",
@@ -9215,7 +9815,13 @@
      "None"
     ],
     "answer": 1,
-    "explain": "Phone numbers and names of 23 bookings' guests went to an unknown server: a personal data breach to assess."
+    "explain": "Phone numbers and names of 23 bookings' guests went to an unknown server: a personal data breach to assess.",
+    "notes": [
+     "The dog policy is public information about a property.",
+     null,
+     "A software version isn't about people.",
+     "Something about people left. Look at what was in the URL."
+    ]
    },
    {
     "type": "choice",
@@ -9228,7 +9834,13 @@
     ],
     "answer": 1,
     "explain": "Telling the model to behave helps but can be talked round. Blocking the way out works whatever the model does.",
-    "where": "browser:"
+    "where": "browser:",
+    "notes": [
+     "Instructions to the model help but can be argued round. You need something that works even if it obeys.",
+     null,
+     "Bigger models can still be fooled by hidden text.",
+     "Plain-text email can carry hidden instructions too, and you can't control what guests send."
+    ]
    },
    {
     "type": "choice",
@@ -9240,7 +9852,13 @@
      "Let guests chat with it directly"
     ],
     "answer": 1,
-    "explain": "OWASP lists prompt injection as the top risk for AI apps. Narrow tools and human approval keep a fooled AI from doing much harm."
+    "explain": "OWASP lists prompt injection as the top risk for AI apps. Narrow tools and human approval keep a fooled AI from doing much harm.",
+    "notes": [
+     "More access means more damage when the AI is fooled.",
+     null,
+     "Logs are how this was found. Turning them off hides the next one.",
+     "Direct chat opens another way for instructions to reach it."
+    ]
    }
   ],
   "next": [
@@ -9289,7 +9907,13 @@
     ],
     "answer": 1,
     "explain": "A phishing email on any office PC could reach the machines. Production systems belong in their own zone, with a firewall allowing only what's needed.",
-    "where": "10.40.0.15"
+    "where": "10.40.0.15",
+    "notes": [
+     "An open web port on an HMI is common. The bigger finding is about where you scanned from.",
+     null,
+     "Scan time tells you nothing about risk.",
+     "Hosts being up is expected. Ask why an office PC could see them at all."
+    ]
    },
    {
     "type": "choice",
@@ -9302,7 +9926,13 @@
     ],
     "answer": 1,
     "explain": "Anyone who can reach an open HMI can operate the process. Convenience is why these doors exist; the fix keeps the convenience but adds a lock.",
-    "where": "5900/tcp open"
+    "where": "5900/tcp open",
+    "notes": [
+     "Convenience is how open doors stay open. Keep the access, add a lock.",
+     null,
+     "Moving the port hides nothing from a scan. It still has no password.",
+     "The night shift needs to see it, and switching it off may affect the process."
+    ]
    },
    {
     "type": "choice",
@@ -9315,7 +9945,13 @@
     ],
     "answer": 1,
     "explain": "Default logins on IoT devices are how botnets like Mirai spread. A camera on the line is also a foothold next to the PLC.",
-    "where": "23/tcp   open"
+    "where": "23/tcp   open",
+    "notes": [
+     "A camera next to the PLC is a foothold. Default logins are how botnets spread.",
+     null,
+     "Moving the lens doesn't fix the open login.",
+     "The default login is on Telnet as well. One port isn't the problem."
+    ]
    },
    {
     "type": "choice",
@@ -9328,7 +9964,13 @@
     ],
     "answer": 1,
     "explain": "In OT, safety and uptime come first, so patching waits for planned shutdowns. Segmentation and monitoring reduce the risk in the meantime.",
-    "where": "August shutdown"
+    "where": "August shutdown",
+    "notes": [
+     "Unplanned patching can stop production or affect safety. OT waits for a planned window.",
+     null,
+     "Doing nothing leaves the PLC reachable from the office until August.",
+     "Unplugging stops the dairy line."
+    ]
    },
    {
     "type": "choice",
@@ -9341,7 +9983,13 @@
     ],
     "answer": 1,
     "explain": "Many OT teams prefer passive monitoring (listening to traffic) to active scanning for exactly this reason.",
-    "where": "engineer's agreement"
+    "where": "engineer's agreement",
+    "notes": [
+     "Time wasn't the reason. Think about what a hard scan can do to industrial kit.",
+     null,
+     "Nmap can scan every port. The limit was a choice.",
+     "Scanning with permission is legal. The limit protects the machines."
+    ]
    }
   ],
   "next": [
@@ -9380,7 +10028,13 @@
     ],
     "answer": 2,
     "explain": "Nothing was stolen or changed. The harm was that people could not reach the data when they needed it, which is availability.",
-    "where": "could not open any shared documents"
+    "where": "could not open any shared documents",
+    "notes": [
+     "Nothing was seen by anyone who shouldn't have. Ask what staff couldn't do.",
+     "Nothing was changed; the documents were the same when they came back.",
+     null,
+     "The four hours were real lost work. Something was harmed."
+    ]
    },
    {
     "type": "choice",
@@ -9393,7 +10047,13 @@
     ],
     "answer": 1,
     "explain": "The data was all present and the system stayed up, but it was altered so it can no longer be trusted. That is an integrity problem, and it is why signed paperwork matters.",
-    "where": "figures can no longer be trusted"
+    "where": "figures can no longer be trusted",
+    "notes": [
+     "Nobody outside saw the details. Ask whether the data can still be trusted.",
+     null,
+     "The system stayed up the whole time. The details were there, just wrong.",
+     "Nothing was exposed and nothing went offline. The details themselves were altered."
+    ]
    },
    {
     "type": "choice",
@@ -9402,11 +10062,17 @@
      "Confidentiality",
      "Integrity",
      "Availability",
-     "Integrity"
+     "None: nobody has opened the folder yet"
     ],
     "answer": 0,
     "explain": "Nothing was changed or made unavailable, but private client data may now be seen by others. That is a loss of confidentiality, and full-disk encryption would have prevented it.",
-    "where": "unencrypted copy"
+    "where": "unencrypted copy",
+    "notes": [
+     null,
+     "Nothing in the folder was edited. Ask who might now see it.",
+     "The firm still has its own copies, so nobody lost access.",
+     "The harm is that someone could open it. Whether they have yet doesn't change which pillar is at risk."
+    ]
    },
    {
     "type": "choice",
@@ -9418,7 +10084,13 @@
      "It tells you who the attacker was"
     ],
     "answer": 1,
-    "explain": "The three pillars need different defences. Spotting which one broke tells you where to put effort so it does not happen again."
+    "explain": "The three pillars need different defences. Spotting which one broke tells you where to put effort so it does not happen again.",
+    "notes": [
+     "Blame doesn't fix anything. Naming the pillar is about choosing the defence.",
+     null,
+     "It shapes the response, not just the paperwork. Each pillar needs a different fix.",
+     "The pillar describes the harm, not who caused it."
+    ]
    }
   ],
   "next": [
@@ -9483,7 +10155,13 @@
     ],
     "answer": 1,
     "explain": "PCI DSS is the card industry's mandatory standard for anyone storing, processing or transmitting cardholder data. It is contractual, not law.",
-    "where": "card payments"
+    "where": "card payments",
+    "notes": [
+     "That's a certifiable management system, chosen by choice. Card payments bring a mandatory standard of their own.",
+     null,
+     "NIST CSF is a voluntary framework. The card schemes require something specific.",
+     "UK GDPR covers personal data in general. The card industry has its own standard."
+    ]
    },
    {
     "type": "choice",
@@ -9496,7 +10174,13 @@
     ],
     "answer": 0,
     "explain": "ISO/IEC 27001 defines an information security management system you can be independently certified against.",
-    "where": "certifiable information security management system"
+    "where": "certifiable information security management system",
+    "notes": [
+     null,
+     "That's for card payments only, and it's a contractual standard rather than a management system.",
+     "NIST CSF is a framework to organise security, but you can't be certified against it.",
+     "Cyber Essentials certifies a few technical controls, not a whole management system."
+    ]
    },
    {
     "type": "choice",
@@ -9509,7 +10193,13 @@
     ],
     "answer": 3,
     "explain": "UK GDPR (with the Data Protection Act 2018) is the law covering personal data, and it sets the 72-hour reporting duty to the ICO.",
-    "where": "72 hours"
+    "where": "72 hours",
+    "notes": [
+     "That's a voluntary standard. A legal duty with a 72-hour clock comes from the law.",
+     "PCI DSS is contractual and about card data. This need is a legal duty about personal data.",
+     "NIST CSF is a voluntary US framework. A UK legal duty comes from UK law.",
+     null
+    ]
    },
    {
     "type": "choice",
@@ -9522,7 +10212,13 @@
     ],
     "answer": 2,
     "explain": "Acting to contain an incident that is under way is Respond. Restoring the shop from backups afterwards is Recover.",
-    "where": "blocked the attacker's IP"
+    "where": "blocked the attacker's IP",
+    "notes": [
+     "Identify is knowing your assets and risks before an incident. This is during one.",
+     "Protect is safeguards set up in advance. Blocking a live attacker is acting on an incident.",
+     null,
+     "Recover is restoring afterwards. The attacker is still active."
+    ]
    }
   ],
   "next": [
@@ -9602,7 +10298,13 @@
     ],
     "answer": 1,
     "explain": "The board's appetite allows scores of 8 or below to be accepted; anything higher needs a director. Acceptance by someone without that authority isn't really acceptance.",
-    "where": "Risk appetite"
+    "where": "Risk appetite",
+    "notes": [
+     "Being on the register isn't permission. Compare the score with the board's appetite.",
+     null,
+     "Signing doesn't give authority. Check who the policy says may accept scores over 8.",
+     "Unsupported systems can be accepted for a time, by the right person. Check the appetite."
+    ]
    },
    {
     "type": "choice",
@@ -9615,7 +10317,13 @@
     ],
     "answer": 1,
     "explain": "Known-exploited vulnerabilities mean attackers are using them, so likelihood jumps. At 4 x 5 = 20 the risk is far over appetite, and £4,000 is small next to four days without bookings.",
-    "where": "Known Exploited Vulnerabilities"
+    "where": "Known Exploited Vulnerabilities",
+    "notes": [
+     "New facts mean re-scoring now, not at the next review.",
+     null,
+     "Insurance moves some cost, but it doesn't stop four days without bookings.",
+     "Phone bookings don't cover four days of lost records. And the scan raised likelihood, not lowered impact."
+    ]
    },
    {
     "type": "choice",
@@ -9628,7 +10336,13 @@
     ],
     "answer": 1,
     "explain": "A risk with no owner has nobody watching it, and a missed review means new facts (like the scan) never reach the register.",
-    "where": "Last reviewed"
+    "where": "Last reviewed",
+    "notes": [
+     "The scale was the board's own and worked for the other risks.",
+     null,
+     "A higher score would have got more attention, not less.",
+     "The scan already showed the flaw. The register never picked it up."
+    ]
    },
    {
     "type": "choice",
@@ -9641,7 +10355,13 @@
     ],
     "answer": 1,
     "explain": "Transfer moves some of the cost to someone else. The organisation still has to protect the data, and its customers and reputation still take the hit.",
-    "where": "cyber insurance"
+    "where": "cyber insurance",
+    "notes": [
+     "Insurance often does pay for responders. The question is what it can't do.",
+     null,
+     "Transfer is one of the four standard treatments.",
+     "Transfer still needs the right person to sign it off."
+    ]
    }
   ],
   "next": [
@@ -9681,7 +10401,13 @@
     ],
     "answer": 0,
     "explain": "Accessing a computer you know you're not authorised to use is an offence under section 1 of the Computer Misuse Act, even if an old password still works. Brightwell also failed to disable a leaver's account.",
-    "where": "old password"
+    "where": "old password",
+    "notes": [
+     null,
+     "PCI DSS is about card data, and it isn't a law. No cards were involved.",
+     "NIS covers essential services like water and energy. A lettings firm isn't one.",
+     "A password that still works doesn't mean you're allowed. She knew she'd left."
+    ]
    },
    {
     "type": "choice",
@@ -9694,7 +10420,13 @@
     ],
     "answer": 1,
     "explain": "UK GDPR requires a reportable personal data breach to be reported within 72 hours of becoming aware of it, weekends included. If it's late, the report must say why.",
-    "where": "Friday 6 Nov at 17:00"
+    "where": "Friday 6 Nov at 17:00",
+    "notes": [
+     "Weekends count. Work out the hours from when they became aware.",
+     null,
+     "The 72 hours run through weekends.",
+     "UK GDPR sets 72 hours for reportable breaches."
+    ]
    },
    {
     "type": "choice",
@@ -9707,7 +10439,13 @@
     ],
     "answer": 1,
     "explain": "PCI DSS forbids storing sensitive authentication data, including the card security code, after authorisation, even encrypted. Refunds don't need it. It's a contractual standard from the card schemes, not a law.",
-    "where": "CVV2"
+    "where": "CVV2",
+    "notes": [
+     "UK GDPR applies to personal data generally, but the card schemes have a specific rule here.",
+     null,
+     "Nobody accessed a computer without permission. Storing the code is the problem.",
+     "Refunds don't need the security code. A rule forbids keeping it."
+    ]
    },
    {
     "type": "choice",
@@ -9720,7 +10458,13 @@
     ],
     "answer": 1,
     "explain": "The UK's NIS Regulations cover operators of essential services such as water and energy. A significant disruption must be reported to the competent authority without undue delay, and within 72 hours.",
-    "where": "operator of essential services"
+    "where": "operator of essential services",
+    "notes": [
+     "PCI DSS is about card payments. This is a water supply.",
+     null,
+     "That covers unauthorised access as an offence. It doesn't set reporting duties.",
+     "That's a voluntary certification, not a legal reporting duty."
+    ]
    },
    {
     "type": "text",
@@ -9769,7 +10513,13 @@
     ],
     "answer": 0,
     "explain": "The Kill Chain sets an attack out as stages in order (reconnaissance through to actions on objectives). Its point is that breaking any link stops the attack, and the earlier the better.",
-    "where": "Q-A"
+    "where": "Q-A",
+    "notes": [
+     null,
+     "ATT&CK names every technique but isn't built around the order of stages.",
+     "The Diamond Model links adversary, infrastructure and victims. It doesn't rank stages.",
+     "STRIDE is for designing new systems, not reviewing an attack that happened."
+    ]
    },
    {
     "type": "choice",
@@ -9782,7 +10532,13 @@
     ],
     "answer": 1,
     "explain": "ATT&CK is a detailed catalogue of real techniques with IDs (for example T1566 Phishing, T1547.001 Registry Run Keys). Teams map each one to a detection and find the gaps.",
-    "where": "Q-B"
+    "where": "Q-B",
+    "notes": [
+     "The Kill Chain gives broad stages, not the exact techniques with IDs.",
+     null,
+     "The Diamond Model links the people and infrastructure. It doesn't list techniques.",
+     "STRIDE is for designs, not for past attacks."
+    ]
    },
    {
     "type": "choice",
@@ -9795,7 +10551,13 @@
     ],
     "answer": 2,
     "explain": "The Diamond Model links four points: adversary, capability, infrastructure (such as 203.0.113.50) and victim. Pivoting on one, such as the server, finds other victims and links between incidents.",
-    "where": "Q-C"
+    "where": "Q-C",
+    "notes": [
+     "The Kill Chain orders the stages; it doesn't link adversaries and victims.",
+     "ATT&CK lists techniques. Who and where is a different question.",
+     null,
+     "STRIDE looks at a design for threats, not at who attacked."
+    ]
    },
    {
     "type": "choice",
@@ -9808,7 +10570,13 @@
     ],
     "answer": 3,
     "explain": "STRIDE is for threat modelling a design before it's built: Spoofing, Tampering, Repudiation, Information disclosure, Denial of service and Elevation of privilege, for each part.",
-    "where": "Q-D"
+    "where": "Q-D",
+    "notes": [
+     "The Kill Chain describes attacks that happen. The app isn't built yet.",
+     "ATT&CK catalogues real attacker techniques. The question is about a design.",
+     "The Diamond Model analyses an intrusion. Nothing has happened to this app yet.",
+     null
+    ]
    },
    {
     "type": "choice",
@@ -9821,7 +10589,13 @@
     ],
     "answer": 3,
     "explain": "Regular check-ins to an attacker's server are command and control (C2). Day 3's Run key is Installation, and the email itself was Delivery.",
-    "where": "every 5 minutes"
+    "where": "every 5 minutes",
+    "notes": [
+     "Reconnaissance was the LinkedIn research on Day 1.",
+     "Delivery was the email arriving.",
+     "Installation was the Run key on Day 3. This is the malware talking home.",
+     null
+    ]
    },
    {
     "type": "choice",
@@ -9834,7 +10608,13 @@
     ],
     "answer": 1,
     "explain": "The filter spotted it at the Delivery stage, then let it through. Quarantining suspicious attachments (or stripping macros) breaks the chain at its cheapest point.",
-    "where": "still delivered it"
+    "where": "still delivered it",
+    "notes": [
+     "LinkedIn research is outside Ferrow's control. No control could see it.",
+     null,
+     "By Day 9 the attacker was deep inside. Look earlier for a control that noticed.",
+     "The firewall let the traffic through without a flag. Look for a control that raised one."
+    ]
    }
   ],
   "next": [
@@ -9873,7 +10653,13 @@
     ],
     "answer": 1,
     "explain": "A joiners/movers/leavers process is an operational, preventive control. Disabling the account on the leaving day would have stopped the download outright.",
-    "where": "joiners/movers/leavers"
+    "where": "joiners/movers/leavers",
+    "notes": [
+     "Spotting the download after it happened is too late. The account shouldn't have worked at all.",
+     null,
+     "Locks don't stop an account. The gap was a process.",
+     "A compensating control stands in for an ideal one. Here the ideal one was simple to have."
+    ]
    },
    {
     "type": "choice",
@@ -9886,7 +10672,13 @@
     ],
     "answer": 1,
     "explain": "The preventive tool existed. What was missing was a working detective control: alerts no one reads cannot catch anything. Monitoring turns the signal into a response.",
-    "where": "no one was reading the endpoint alerts"
+    "where": "no one was reading the endpoint alerts",
+    "notes": [
+     "The antivirus did alert. Better antivirus wouldn't help if nobody reads it.",
+     null,
+     "The malware wasn't stopped by a door. The gap was people watching alerts.",
+     "Putting people off doesn't help with malware already running."
+    ]
    },
    {
     "type": "choice",
@@ -9899,7 +10691,13 @@
     ],
     "answer": 0,
     "explain": "A sign only deters. A lock is a preventive physical control that stops an unauthorised person getting in at all.",
-    "where": "no lock"
+    "where": "no lock",
+    "notes": [
+     null,
+     "A longer sign is still only a sign.",
+     "Fixing it afterwards is what happened. Something should have stopped the visitor.",
+     "Noticing later doesn't keep the visitor out."
+    ]
    },
    {
     "type": "choice",
@@ -9912,7 +10710,13 @@
     ],
     "answer": 2,
     "explain": "A compensating control is a stand-in used when the ideal control cannot be applied. The app still cannot do MFA, so the VPN provides the protection in its place.",
-    "where": "behind a VPN"
+    "where": "behind a VPN",
+    "notes": [
+     "The app still can't do MFA. The VPN stands in for it.",
+     "The VPN blocks access without MFA; it doesn't just spot problems.",
+     null,
+     "It does more than put people off: it requires MFA."
+    ]
    }
   ],
   "next": [
@@ -9987,7 +10791,13 @@
     ],
     "answer": 1,
     "explain": "A zero-day is defined by there being no patch when the flaw is used or disclosed. Advisory 1 fits. Having a CVE number does not make something a zero-day; many CVEs are patched.",
-    "where": "no patch available yet"
+    "where": "no patch available yet",
+    "notes": [
+     "A CVE number is just an ID. Plenty of CVEs are patched long before anyone exploits them.",
+     null,
+     "Both being critical doesn't make both zero-days. The difference is whether a fix exists.",
+     "Zero-day means defenders have no fix, not that the vendor is unaware. This vendor knows and has no patch."
+    ]
    },
    {
     "type": "choice",
@@ -10000,7 +10810,13 @@
     ],
     "answer": 1,
     "explain": "With no patch, you reduce exposure: apply the mitigation, restrict access, and watch for signs of compromise. This is sometimes called virtual patching or mitigation.",
-    "where": "disable the web portal"
+    "where": "disable the web portal",
+    "notes": [
+     "Waiting leaves an exploited device open. There's a workaround you can apply today.",
+     null,
+     "Going offline stops the business when a targeted workaround exists.",
+     "A CVE number changes nothing about the risk. Act on the workaround now."
+    ]
    },
    {
     "type": "choice",
@@ -10013,7 +10829,13 @@
     ],
     "answer": 1,
     "explain": "Once a fix is public, attackers can study it to build an exploit. A known, patchable critical flaw should be patched quickly before the proof of concept lands.",
-    "where": "patched version already available"
+    "where": "patched version already available",
+    "notes": [
+     "A public fix tells attackers exactly where to look. Exploitation is likely soon.",
+     null,
+     "There's a patch, so it isn't a zero-day. The response is different.",
+     "Waiting until it's exploited means patching after you might be hit."
+    ]
    }
   ],
   "next": [
@@ -10073,7 +10895,13 @@
     ],
     "answer": 1,
     "explain": "A is internet-facing, critical, and being exploited in the wild right now. Known exploitation plus exposure beats a slightly higher score on something unreachable.",
-    "where": "exploited in the wild"
+    "where": "exploited in the wild",
+    "notes": [
+     "The highest score isn't the whole picture. Check whether the flaw is even there, and who can reach it.",
+     null,
+     "C matters, but compare it with A: one is under active attack right now.",
+     "D needs a user to open a file and is internal. Another finding is being exploited from the internet now."
+    ]
    },
    {
     "type": "choice",
@@ -10086,7 +10914,13 @@
     ],
     "answer": 1,
     "explain": "A version-banner match on a service that is not installed is a classic false positive. Confirm it, record why, and move on. The score is meaningless if the flaw is not present.",
-    "where": "false positive"
+    "where": "false positive",
+    "notes": [
+     "A score means nothing if the vulnerable software isn't installed. Check the detail.",
+     null,
+     "One wrong match doesn't make the whole scanner broken. Verify this finding.",
+     "If the binary is absent, the flaw isn't there at all."
+    ]
    },
    {
     "type": "choice",
@@ -10099,7 +10933,13 @@
     ],
     "answer": 1,
     "explain": "Exposure and ease of attack matter. C is reachable from the internet with no user needed. D is internal and needs a user to open a malicious file. Context reorders the raw scores.",
-    "where": "internet-facing"
+    "where": "internet-facing",
+    "notes": [
+     "Users matter, but D needs one to open a file on the inside. C needs nothing at all.",
+     null,
+     "D can be patched. The question is which is more exposed.",
+     "Their scores differ, and so does their exposure."
+    ]
    }
   ],
   "next": [
@@ -10188,7 +11028,13 @@
     ],
     "answer": 1,
     "explain": "The firm's own internal-utils is a private 1.x package. A public package of the same name at 2.4.1 was higher, so the resolver preferred it. That is dependency confusion.",
-    "where": "outranked it"
+    "where": "outranked it",
+    "notes": [
+     "The name was spelt correctly. The public version simply had a higher number.",
+     null,
+     "The log shows npm resolving it automatically during the nightly build.",
+     "The registry worked as designed. It picked the higher version."
+    ]
    },
    {
     "type": "choice",
@@ -10201,7 +11047,13 @@
     ],
     "answer": 1,
     "explain": "A postinstall script runs automatically during install. This one read CI secrets and sent them to 203.0.113.200. Exit code 0 just means it did not crash.",
-    "where": "postinstall"
+    "where": "postinstall",
+    "notes": [
+     "Exit code 0 only means it didn't crash. Read what the script did before it finished.",
+     null,
+     "The log shows more than a warning: an outbound request with data.",
+     "left-pad isn't involved. Follow what setup.js did."
+    ]
    },
    {
     "type": "choice",
@@ -10214,7 +11066,13 @@
     ],
     "answer": 1,
     "explain": "Scoping internal packages and pinning the source stops a public name outranking yours. Any secret the script read (NPM_TOKEN, AWS key) must be treated as compromised and rotated.",
-    "where": "AWS_SECRET_ACCESS_KEY"
+    "where": "AWS_SECRET_ACCESS_KEY",
+    "notes": [
+     "Trusting the public registry is how the wrong package won.",
+     null,
+     "Turning off the build stops work and fixes nothing, and the secrets are already gone.",
+     "Renaming without scoping or pinning leaves the same gap, and the stolen secrets live."
+    ]
    }
   ],
   "next": [
@@ -10279,7 +11137,13 @@
     ],
     "answer": 1,
     "explain": "Patience, stealth (living off the land, clearing logs), a specific target and a long dwell time are the hallmarks. Intrusion 2 fits, whoever is behind it.",
-    "where": "living off the land"
+    "where": "living off the land",
+    "notes": [
+     "Ransomware is mostly run by criminals. Look at the speed and noise of each intrusion.",
+     null,
+     "They differ sharply in speed, stealth and targeting.",
+     "Behaviour tells you the style without naming anyone."
+    ]
    },
    {
     "type": "choice",
@@ -10292,7 +11156,13 @@
     ],
     "answer": 1,
     "explain": "Built-in admin tools are trusted and leave less to detect than dropped malware. That blending-in is exactly why a patient actor prefers it.",
-    "where": "PowerShell"
+    "where": "PowerShell",
+    "notes": [
+     "Here it's a security term. Think about which tools the attacker used.",
+     null,
+     "No USB stick is mentioned. They used what was already on the machines.",
+     "Working hours aren't the point. It's about whose tools they used."
+    ]
    },
    {
     "type": "choice",
@@ -10305,7 +11175,13 @@
     ],
     "answer": 1,
     "explain": "Commodity ransomware can cripple an organisation in hours. It is not less serious, it is a different shape of threat: speed and breadth rather than stealth and focus.",
-    "where": "indiscriminate"
+    "where": "indiscriminate",
+    "notes": [
+     "Loud doesn't mean harmless. Commodity ransomware can stop a business in hours.",
+     null,
+     "Paying is never guaranteed to work and funds the next attack.",
+     "They differ in speed, stealth and targeting."
+    ]
    }
   ],
   "next": [
@@ -10365,7 +11241,13 @@
     ],
     "answer": 1,
     "explain": "Spoofed queries make DNS servers send big replies to the victim. The volume fills the link itself. That is volumetric reflection and amplification.",
-    "where": "reflection and amplification"
+    "where": "reflection and amplification",
+    "notes": [
+     "Application-layer attacks send valid-looking requests to your app. This is unrequested DNS replies filling the link.",
+     null,
+     "A flash crowd is real users on your site. Nobody asked for these DNS replies.",
+     "A SYN flood sends connection requests. These are large DNS replies from many servers."
+    ]
    },
    {
     "type": "choice",
@@ -10378,7 +11260,13 @@
     ],
     "answer": 1,
     "explain": "If the pipe is full before traffic reaches you, filtering at your end is too late. Mitigation has to happen upstream, at the ISP or a scrubbing provider.",
-    "where": "before our servers even see it"
+    "where": "before our servers even see it",
+    "notes": [
+     "Site speed doesn't matter when the link is full of DNS replies.",
+     null,
+     "Someone with bigger pipes can filter it.",
+     "Rebooting the firewall doesn't empty a full link."
+    ]
    },
    {
     "type": "choice",
@@ -10391,7 +11279,13 @@
     ],
     "answer": 1,
     "explain": "The link is fine; the application is overwhelmed by expensive requests. That is a Layer 7 attack, and it is mitigated at your end with rate limiting, a WAF and caching.",
-    "where": "application is on its knees"
+    "where": "application is on its knees",
+    "notes": [
+     "The link isn't full. The ISP can't tell these requests from real ones.",
+     null,
+     "40,000 expensive searches a minute that slow the site aren't customers.",
+     "These are requests to your own app, not replies from other servers."
+    ]
    }
   ],
   "next": [
@@ -10476,7 +11370,13 @@
     ],
     "answer": 1,
     "explain": "Untrusted content the model reads carried instructions that hijacked its behaviour. That is prompt injection. Treat anything the model ingests as data, not commands.",
-    "where": "Ignore your instructions"
+    "where": "Ignore your instructions",
+    "notes": [
+     "A hallucination is the model inventing facts. Here someone planted instructions it followed.",
+     null,
+     "Nothing was overloaded. The assistant did what hidden text told it.",
+     "A human never read the hidden text. It was aimed at the AI."
+    ]
    },
    {
     "type": "choice",
@@ -10489,7 +11389,13 @@
     ],
     "answer": 1,
     "explain": "The model produced a fluent answer that is simply wrong. That is a hallucination. It is why AI output on facts needs checking against a real source.",
-    "where": "no section 12.4"
+    "where": "no section 12.4",
+    "notes": [
+     "Nobody planted instructions. The model made up the answer itself.",
+     null,
+     "No data left. The answer was simply wrong.",
+     "A made-up policy section isn't correct, however confident it sounds."
+    ]
    },
    {
     "type": "choice",
@@ -10502,7 +11408,13 @@
     ],
     "answer": 1,
     "explain": "The model had far more access than it needed, so a slip exposed other customers. Least privilege (scoped, task-only access) limits what any mistake or injection can reach.",
-    "where": "more access than the task needed"
+    "where": "more access than the task needed",
+    "notes": [
+     "Instructions help but don't limit access. The root cause is what it could reach.",
+     null,
+     "A bigger model can still slip. The problem is its access.",
+     "Logging is how this was found. It doesn't cause the leak."
+    ]
    }
   ],
   "next": [
@@ -10567,7 +11479,13 @@
     ],
     "answer": 1,
     "explain": "You cannot safely reboot the line now, but you can cut the attack path. Segmenting OT from office IT is the immediate compensating control while you wait for the window.",
-    "where": "no firewall between office IT and the OT network"
+    "where": "no firewall between office IT and the OT network",
+    "notes": [
+     "An unplanned reboot can stop the line or affect safety. There's a safer step now.",
+     null,
+     "Waiting with the PLC reachable from the office leaves it exposed.",
+     "Unplugging stops production. You can cut the attack path instead."
+    ]
    },
    {
     "type": "choice",
@@ -10580,7 +11498,13 @@
     ],
     "answer": 1,
     "explain": "In OT, safety and uptime outrank speed of patching. You test on the bench, then apply in a planned window, rather than risk the line mid-shift.",
-    "where": "safety, then availability"
+    "where": "safety, then availability",
+    "notes": [
+     "The warranty isn't the reason. Think about what a reboot mid-shift means.",
+     null,
+     "OT does need firmware updates, in planned windows.",
+     "Vendors expect patches to be tested and planned, not banned."
+    ]
    },
    {
     "type": "choice",
@@ -10593,7 +11517,13 @@
     ],
     "answer": 1,
     "explain": "A flat IT/OT network means any office compromise can reach the plant. Segmentation (the Purdue model, a DMZ and firewalls) is the architectural fix.",
-    "where": "flat network"
+    "where": "flat network",
+    "notes": [
+     "Most PLCs can't run antivirus, and it wouldn't stop office traffic reaching it.",
+     null,
+     "This is a wired path from the office. Wi-Fi isn't the gap.",
+     "OT isn't safe by default; this one is reachable from the office."
+    ]
    }
   ],
   "next": [
@@ -10663,7 +11593,13 @@
     ],
     "answer": 1,
     "explain": "AP X impersonates our staff SSID with an open network on foreign hardware. Devices that auto-join could be captured. That is an evil twin and needs containing.",
-    "where": "same name as ours"
+    "where": "same name as ours",
+    "notes": [
+     "The cafe uses its own name and hardware. Is it pretending to be you?",
+     null,
+     "That's on the college's own controller. Look for one copying the staff SSID.",
+     "Only one impersonates the staff network."
+    ]
    },
    {
     "type": "choice",
@@ -10676,7 +11612,13 @@
     ],
     "answer": 1,
     "explain": "A nearby business running its own differently named Wi-Fi is just the airwaves being shared. It is not impersonating you and is not yours to touch.",
-    "where": "nothing to do with us"
+    "where": "nothing to do with us",
+    "notes": [
+     "It isn't on your network and doesn't use your name. It isn't yours to shut down.",
+     null,
+     "A neighbour's Wi-Fi tells you nothing about the college.",
+     "Jamming is illegal and would hit the cafe's customers."
+    ]
    },
    {
     "type": "choice",
@@ -10689,7 +11631,13 @@
     ],
     "answer": 1,
     "explain": "802.1X makes the client verify the network (via a server certificate), so an open look-alike cannot pass as the real staff SSID. That is why the staff network uses it.",
-    "where": "WPA2-Enterprise (802.1X)"
+    "where": "WPA2-Enterprise (802.1X)",
+    "notes": [
+     "Hidden SSIDs are still easy to find, and devices still connect to a copy.",
+     null,
+     "An evil twin can be open. Devices need to check the network itself.",
+     "The guest network isn't how staff are lured."
+    ]
    }
   ],
   "next": [
@@ -10734,7 +11682,13 @@
     ],
     "answer": 1,
     "explain": "Every safeguard was skipped: no staging test, no change-board approval, wrong window, and crucially no way to undo it. Any one would have caught or contained this.",
-    "where": "backout plan"
+    "where": "backout plan",
+    "notes": [
+     "The firewall wasn't the problem; how the change to it was made was.",
+     null,
+     "The provider's service worked before the change. Look at the change record.",
+     "Customer numbers were normal for the time. The change was made at peak."
+    ]
    },
    {
     "type": "choice",
@@ -10747,7 +11701,13 @@
     ],
     "answer": 1,
     "explain": "Restore service first by reverting to the last known-good state. Firefighting live config under pressure (as at 17:55) tends to make things worse. Redo the change properly later.",
-    "where": "put the old ruleset back"
+    "where": "put the old ruleset back",
+    "notes": [
+     "Editing live rules under pressure is what made 17:55 worse. Restore service first.",
+     null,
+     "Every minute waiting is lost orders. There's a known-good state to go back to.",
+     "Blame doesn't restore service, and the process failed, not one person."
+    ]
    },
    {
     "type": "choice",
@@ -10760,7 +11720,13 @@
     ],
     "answer": 1,
     "explain": "Change management exists exactly for this: review, testing, scheduling and a rollback plan turn a risky edit into a controlled one.",
-    "where": "window approved for"
+    "where": "window approved for",
+    "notes": [
+     "Speed under pressure made it worse. The fix is a process.",
+     null,
+     "A bigger firewall would run the same broken rules.",
+     "Friday evening was peak trading and outside the agreed window."
+    ]
    }
   ],
   "next": [
@@ -10830,7 +11796,13 @@
     ],
     "answer": 1,
     "explain": "Location is not the test. Alice passes on identity (MFA) and a healthy, managed device, so access is granted wherever she is.",
-    "where": "home broadband"
+    "where": "home broadband",
+    "notes": [
+     "The engine's log shows each check passing. It worked as designed.",
+     null,
+     "Zero trust doesn't trust any network, home or office.",
+     "Bob was blocked, so payroll isn't open to everyone."
+    ]
    },
    {
     "type": "choice",
@@ -10843,7 +11815,13 @@
     ],
     "answer": 1,
     "explain": "Zero trust does not trust the network. Bob's device is unmanaged, unencrypted and 94 days unpatched, so the request is denied despite his office socket.",
-    "where": "device not compliant"
+    "where": "device not compliant",
+    "notes": [
+     "The log shows Bob passed MFA. Look at the device checks.",
+     null,
+     "Alice got in at the same time, so payroll was up.",
+     "The log doesn't mention his team. Look at what failed."
+    ]
    },
    {
     "type": "choice",
@@ -10856,7 +11834,13 @@
     ],
     "answer": 1,
     "explain": "The old model trusted anything inside the perimeter. Zero trust drops that assumption and checks each request on its merits, which is why Bob's office socket buys him nothing.",
-    "where": "inside was trusted"
+    "where": "inside was trusted",
+    "notes": [
+     "Zero trust isn't a VPN at all. It changes what earns trust.",
+     null,
+     "Alice works from home and was allowed.",
+     "Bob in the office was denied. The old model would have let him in."
+    ]
    }
   ],
   "next": [
@@ -10901,7 +11885,13 @@
     ],
     "answer": 1,
     "explain": "Encoding like Base64 just changes the representation; there is no key and it reverses trivially. Calling it encryption is the mistake. It protects nothing.",
-    "where": "Base64 encoding, not encryption"
+    "where": "Base64 encoding, not encryption",
+    "notes": [
+     "The label says encrypted, but check how it's actually stored: is there a key?",
+     null,
+     "Base64 has no key at all. Anyone can decode it.",
+     "Scrambled-looking text can be simple encoding anyone can reverse."
+    ]
    },
    {
     "type": "choice",
@@ -10914,7 +11904,13 @@
     ],
     "answer": 1,
     "explain": "Password hashing needs to be slow and salted. A salted, purpose-built algorithm (bcrypt, scrypt, Argon2) resists cracking; fast unsalted MD5 does not.",
-    "where": "no salt"
+    "where": "no salt",
+    "notes": [
+     "Hashing isn't enough on its own: fast, unsalted hashes crack quickly.",
+     null,
+     "A longer password helps a little, but fast unsalted MD5 is the weakness.",
+     "Base64 is reversible and would make it worse."
+    ]
    },
    {
     "type": "choice",
@@ -10927,7 +11923,13 @@
     ],
     "answer": 1,
     "explain": "This is done properly: strong, authenticated encryption and a key kept in a hardware security module. The protection rests on real encryption and a protected key.",
-    "where": "AES-256-GCM"
+    "where": "AES-256-GCM",
+    "notes": [
+     "This one uses real encryption with a protected key. Compare it with the other two.",
+     null,
+     "Base64 would make the cards readable by anyone.",
+     "MD5 is a hash; it can't be reversed to use the card. And this is already protected."
+    ]
    }
   ],
   "next": [
@@ -10989,7 +11991,13 @@
     ],
     "answer": 1,
     "explain": "Browsers match the hostname against the Subject Alternative Name list. portal is not listed, so it fails. The fix is a certificate that includes the portal name.",
-    "where": "Subject Alternative Name"
+    "where": "Subject Alternative Name",
+    "notes": [
+     "The error code says the name, not the date. Read it carefully.",
+     null,
+     "An untrusted CA gives a different error. This is about the name.",
+     "A wrong clock gives a date error. This one is about the name."
+    ]
    },
    {
     "type": "choice",
@@ -11002,7 +12010,13 @@
     ],
     "answer": 1,
     "explain": "An expired certificate (past its notAfter date) triggers this. Renew it and repair the automation that was meant to renew it before expiry.",
-    "where": "has expired"
+    "where": "has expired",
+    "notes": [
+     "A missing intermediate gives an authority error. This one is about dates.",
+     null,
+     "A name mismatch gives a name error. Check notAfter.",
+     "A self-signed certificate gives an authority error, not a date one."
+    ]
    },
    {
     "type": "choice",
@@ -11015,7 +12029,13 @@
     ],
     "answer": 1,
     "explain": "A missing intermediate breaks the chain of trust even though the leaf is valid. Configure the server to send the full chain (leaf plus intermediate).",
-    "where": "intermediate CA certificate is missing"
+    "where": "intermediate CA certificate is missing",
+    "notes": [
+     "A forged certificate wouldn't chain either, but the leaf here is valid. Check what the server sends.",
+     null,
+     "Trusting it by hand trains bad habits and only fixes one machine.",
+     "An expired domain wouldn't load at all. This is about the chain."
+    ]
    }
   ],
   "next": [
@@ -11060,7 +12080,13 @@
     ],
     "answer": 2,
     "explain": "The final rwx is the 'other' permissions. With w set there, any user on the box can modify deploy.sh. That is a serious weakness for a script run as root.",
-    "where": "world-writable"
+    "where": "world-writable",
+    "notes": [
+     "The owner isn't the only one. Read the last three letters of the mode.",
+     "The group has rwx, but so does the last set. Who does that cover?",
+     null,
+     "Every set has w. Plenty of people can."
+    ]
    },
    {
     "type": "choice",
@@ -11073,7 +12099,13 @@
     ],
     "answer": 1,
     "explain": "Carol is authorised for exactly that command, and the log shows an ordinary sudo session. Running it was legitimate. The real problem is separate.",
-    "where": "carol may run"
+    "where": "carol may run",
+    "notes": [
+     "sudo -l shows carol is allowed exactly that command.",
+     null,
+     "The log and sudo -l together tell you.",
+     "sudo exists so allowed users can run set commands as root."
+    ]
    },
    {
     "type": "choice",
@@ -11086,7 +12118,13 @@
     ],
     "answer": 1,
     "explain": "A root-run script that anyone can edit is a privilege-escalation path. Tighten the permissions so only root can write it; carol's authorised sudo use is fine.",
-    "where": "-rwxrwxrwx"
+    "where": "-rwxrwxrwx",
+    "notes": [
+     "Carol's rights are scoped to one command and were used normally.",
+     null,
+     "The log is evidence. Deleting it hides what happened.",
+     "Carol's run was fine, but anyone could have changed the script before it ran."
+    ]
    }
   ],
   "next": [
@@ -11136,7 +12174,13 @@
     ],
     "answer": 1,
     "explain": "A live secret in public is immediate: anyone can use it right now. Revoke and rotate the key at once. The others help an attacker but are not a working credential.",
-    "where": "live API key"
+    "where": "live API key",
+    "notes": [
+     "The advert helps an attacker plan, but it isn't something they can use right now.",
+     null,
+     "A logo is meant to be public.",
+     "Metadata leaks a username format, useful later. One finding is a working credential."
+    ]
    },
    {
     "type": "choice",
@@ -11149,7 +12193,13 @@
     ],
     "answer": 1,
     "explain": "Precise versions let an attacker line up known flaws in advance. Adverts can describe skills without publishing your exact build.",
-    "where": "version numbers"
+    "where": "version numbers",
+    "notes": [
+     "Adverts are public, but exact versions point attackers at known flaws.",
+     null,
+     "The advert doesn't say salaries matter here. Look at the products named.",
+     "No personal data is exposed. The risk is the technical detail."
+    ]
    },
    {
     "type": "choice",
@@ -11162,7 +12212,13 @@
     ],
     "answer": 1,
     "explain": "Author and path metadata reveal how usernames are formed, which feeds password spraying. Scrubbing metadata before publishing closes that leak.",
-    "where": "username 'jokafor'"
+    "where": "username 'jokafor'",
+    "notes": [
+     "Metadata is hidden on screen but easy to read with free tools.",
+     null,
+     "The contents were published on purpose. The leak is in the hidden fields.",
+     "The fields show an author and a path, not a server address."
+    ]
    }
   ],
   "next": [
@@ -11565,7 +12621,13 @@
     ],
     "answer": 0,
     "explain": "Every boundary firewall or router in scope needs its default password replaced with a strong one. The printed label is the first thing an attacker tries.",
-    "where": "default printed on the label"
+    "where": "default printed on the label",
+    "notes": [
+     null,
+     "Malware protection covers antivirus and app control. A router's admin password belongs to a different control.",
+     "User access control covers people's accounts. A router at the boundary sits under another control.",
+     "Every boundary device in scope counts, warehouse included."
+    ]
    },
    {
     "type": "choice",
@@ -11578,7 +12640,13 @@
     ],
     "answer": 0,
     "explain": "High and critical updates (CVSS 7 and above) must be applied within 14 days. VPN appliances face the internet, so they are often attacked within days of a fix.",
-    "where": "installed 3 Nov 2026"
+    "where": "installed 3 Nov 2026",
+    "notes": [
+     null,
+     "Within the month isn't the rule. Count the days against the scheme's limit for critical fixes.",
+     "VPNs face the internet and are firmly in scope.",
+     "The rule is about time, not whether anyone attacked it."
+    ]
    },
    {
     "type": "choice",
@@ -11591,7 +12659,13 @@
     ],
     "answer": 0,
     "explain": "Software in scope must be supported and receiving security updates. An out-of-support PC either gets upgraded, replaced, or moved to a separate network outside the scope.",
-    "where": "out of support since 14 October 2025"
+    "where": "out of support since 14 October 2025",
+    "notes": [
+     null,
+     "Working isn't enough: software in scope must still get security updates.",
+     "Two antivirus products don't make unsupported software supported.",
+     "Turning off updates makes it worse. The problem is it no longer gets any."
+    ]
    },
    {
     "type": "text",
@@ -11614,7 +12688,13 @@
     ],
     "answer": 0,
     "explain": "Inbound connections are blocked by default. Any opening needs an approved, documented reason, and should be as narrow as possible and removed when no longer needed.",
-    "where": "3389"
+    "where": "3389",
+    "notes": [
+     null,
+     "A firewall with a hole open to everyone isn't doing its job for that port.",
+     "Scanners find RDP on any port. The opening still has no recorded reason.",
+     "Attackers work at night too. It needs a reason and a narrow rule."
+    ]
    },
    {
     "type": "choice",
@@ -11627,7 +12707,13 @@
     ],
     "answer": 0,
     "explain": "Separate admin accounts, MFA on cloud services and prompt removal of leavers are exactly what the user access control requirement asks for.",
-    "where": "separate admin accounts"
+    "where": "separate admin accounts",
+    "notes": [
+     null,
+     "The VPN fix took 33 days, past the limit. Look at another area.",
+     "The router kept its default password. Look elsewhere.",
+     "One area does meet the requirements. Read the accounts section."
+    ]
    },
    {
     "type": "choice",
@@ -11639,7 +12725,13 @@
      "Nothing: it's another name for the same thing"
     ],
     "answer": 0,
-    "explain": "Basic is a self-assessment checked by a certification body. Plus adds an assessor testing a sample of devices, for example that malware is blocked and updates are installed."
+    "explain": "Basic is a self-assessment checked by a certification body. Plus adds an assessor testing a sample of devices, for example that malware is blocked and updates are installed.",
+    "notes": [
+     null,
+     "Plus isn't more paperwork; an assessor checks devices.",
+     "Plus samples devices, but it isn't a full penetration test of everything.",
+     "They're different levels with different checks."
+    ]
    }
   ]
  },
@@ -11681,7 +12773,13 @@
     ],
     "answer": 0,
     "explain": "R1 scores 20, R5 12, R2 9, R4 8 and R3 5. Only R1 reaches 15. The others still need owners and review dates.",
-    "where": "15 or more"
+    "where": "15 or more",
+    "notes": [
+     null,
+     "Check R5's score against the appetite of 15.",
+     "R2 scores 9 and R5 12. Compare each with 15.",
+     "Most of the scores are under 15. Work each one out."
+    ]
    },
    {
     "type": "choice",
@@ -11694,7 +12792,13 @@
     ],
     "answer": 0,
     "explain": "Ransomware usually encrypts any backup it can reach, and the NAS sits on the same network. An offline or immutable copy, restored in a test, is what lowers the impact.",
-    "where": "no offline copy"
+    "where": "no offline copy",
+    "notes": [
+     null,
+     "Backups that ransomware can reach don't lower the impact.",
+     "Moving the NAS doesn't give the risk to someone else. It's still on your network.",
+     "Avoiding the risk would mean no file server at all, which the firm needs."
+    ]
    },
    {
     "type": "choice",
@@ -11707,7 +12811,13 @@
     ],
     "answer": 0,
     "explain": "Insurance transfers the cost. The servers would still be under water, so a plan to recover elsewhere may still be worth having.",
-    "where": "covers flood damage"
+    "where": "covers flood damage",
+    "notes": [
+     null,
+     "Insurance doesn't lower the chance of a flood or the damage. It moves the cost.",
+     "Avoiding would mean not having the servers there at all.",
+     "The firm took out a policy, so it did more than accept."
+    ]
    },
    {
     "type": "choice",
@@ -11720,7 +12830,13 @@
     ],
     "answer": 0,
     "explain": "Encryption means a lost laptop is a hardware cost, not a data breach. Recording the acceptance keeps the decision visible.",
-    "where": "BitLocker"
+    "where": "BitLocker",
+    "notes": [
+     null,
+     "Banning travel stops work for a low risk already reduced by encryption.",
+     "With encryption, a lost laptop is mostly a hardware cost.",
+     "Accepted risks stay on the register so the decision is visible."
+    ]
    },
    {
     "type": "choice",
@@ -11733,7 +12849,13 @@
     ],
     "answer": 0,
     "explain": "Certification shows a supplier runs a management system; it doesn't oblige them to tell you anything. Third-party risk is managed through contracts.",
-    "where": "no breach-notification clause"
+    "where": "no breach-notification clause",
+    "notes": [
+     null,
+     "Price doesn't change what they must tell you.",
+     "Certification doesn't oblige them to tell you about a breach.",
+     "Banning email isn't workable and doesn't address the risk."
+    ]
    },
    {
     "type": "choice",
@@ -11746,7 +12868,13 @@
     ],
     "answer": 0,
     "explain": "Each risk has its own owner. The register owner keeps the list; the risk owner decides on the treatment.",
-    "where": "Sana Iqbal"
+    "where": "Sana Iqbal",
+    "notes": [
+     null,
+     "Spotting a risk doesn't make you its owner.",
+     "Auditors check the process; they don't decide treatments.",
+     "Marcus keeps the list. Each risk has its own owner."
+    ]
    }
   ]
  },
@@ -11778,7 +12906,13 @@
     ],
     "answer": 0,
     "explain": "Authorisation comes from the owner. Scanning your own kit is how most people learn; scanning anyone else's is not.",
-    "where": "entitled to give it"
+    "where": "entitled to give it",
+    "notes": [
+     null,
+     "Scanning isn't illegal in itself. What matters is who authorised it.",
+     "The owner gives permission, not the police.",
+     "The result doesn't change whether you were allowed."
+    ]
    },
    {
     "type": "choice",
@@ -11791,7 +12925,13 @@
     ],
     "answer": 0,
     "explain": "Access alone is the offence. Your permission ended when you left.",
-    "where": "Section 1"
+    "where": "Section 1",
+    "notes": [
+     null,
+     "Changing nothing doesn't help. Getting in without permission is enough.",
+     "3A is about making or supplying tools.",
+     "UK GDPR may apply too, but the access itself is a criminal offence."
+    ]
    },
    {
     "type": "choice",
@@ -11804,7 +12944,13 @@
     ],
     "answer": 0,
     "explain": "Making or supplying tools for these offences is itself an offence, and a flood that knocks a site over impairs it.",
-    "where": "Section 3A"
+    "where": "Section 3A",
+    "notes": [
+     null,
+     "Making or supplying the tool is an offence by itself.",
+     "Section 1 is unauthorised access. Floods and the tools for them are other sections.",
+     "PCI DSS is about card data and isn't a law."
+    ]
    },
    {
     "type": "choice",
@@ -11817,7 +12963,13 @@
     ],
     "answer": 0,
     "explain": "Authorisation has to come from someone entitled to give it for that system. Shared hosting doesn't make another customer's site yours to test.",
-    "where": "entitled to give it"
+    "where": "entitled to give it",
+    "notes": [
+     null,
+     "Sharing a server doesn't share permission. Each owner authorises their own site.",
+     "Looking is still access, and you have no permission for that site.",
+     "Your manager can't authorise another company's system."
+    ]
    },
    {
     "type": "text",
@@ -11840,7 +12992,13 @@
     ],
     "answer": 0,
     "explain": "Low-risk breaches may not need reporting, but every breach is logged with the decision and the reason.",
-    "where": "breach log"
+    "where": "breach log",
+    "notes": [
+     null,
+     "Every breach is logged, even low-risk ones.",
+     "Low risk doesn't need telling everyone.",
+     "No fine follows from a low-risk breach that's handled properly."
+    ]
    },
    {
     "type": "choice",
@@ -11853,7 +13011,13 @@
     ],
     "answer": 0,
     "explain": "PCI DSS comes from the card brands' contracts, so it follows the cards, not the country.",
-    "where": "card brands"
+    "where": "card brands",
+    "notes": [
+     null,
+     "PCI DSS isn't EU law.",
+     "It isn't UK law either. Who makes the rule?",
+     "There's no customer threshold for having to protect card data."
+    ]
    }
   ]
  },
@@ -11885,7 +13049,13 @@
     ],
     "answer": 0,
     "explain": "With only 10,000 possible codes and no limit on guesses, anyone can pass as a customer.",
-    "where": "wrong guesses aren't limited"
+    "where": "wrong guesses aren't limited",
+    "notes": [
+     null,
+     "Repudiation is denying you did something. Here someone passes as another customer.",
+     "Nothing is overloaded or knocked offline.",
+     "Tampering changes data. Here someone uses a code that isn't theirs."
+    ]
    },
    {
     "type": "choice",
@@ -11898,7 +13068,13 @@
     ],
     "answer": 0,
     "explain": "Staff need the order, not the address. Return only what the task needs (data minimisation).",
-    "where": "home address"
+    "where": "home address",
+    "notes": [
+     null,
+     "Nobody gains extra powers. Something is revealed that staff don't need.",
+     "Nobody pretends to be someone else here.",
+     "The data isn't changed; it's shown to people who shouldn't need it."
+    ]
    },
    {
     "type": "choice",
@@ -11911,7 +13087,13 @@
     ],
     "answer": 0,
     "explain": "If the record can be forged, nobody can prove who did what. The server should take the identity from the signed-in session, not from the request.",
-    "where": "trusts the staffId"
+    "where": "trusts the staffId",
+    "notes": [
+     null,
+     "Nothing is knocked offline. The issue is proving who did what.",
+     "No data leaks to outsiders here. The problem is a forged record of who acted.",
+     "Nobody gains a manager's powers. They can deny their own action."
+    ]
    },
    {
     "type": "choice",
@@ -11924,7 +13106,13 @@
     ],
     "answer": 0,
     "explain": "A till user can take on a manager's powers. Settings like refund limits need a separate role.",
-    "where": "change the refund limits"
+    "where": "change the refund limits",
+    "notes": [
+     null,
+     "Denying an action is a different threat. Here a till user takes on manager powers.",
+     "Nothing is revealed. A user can do more than their role allows.",
+     "The service keeps working. The problem is who can change settings."
+    ]
    },
    {
     "type": "choice",
@@ -11937,7 +13125,13 @@
     ],
     "answer": 0,
     "explain": "Length, expiry and a guess limit together make guessing impractical. Any one alone leaves a gap.",
-    "where": "never expire"
+    "where": "never expire",
+    "notes": [
+     null,
+     "Five digits is still only 100,000 codes, and still no expiry or guess limit.",
+     "The code has to reach the customer somehow. Guessing is the problem.",
+     "Faces don't scale and staff can't know every customer."
+    ]
    },
    {
     "type": "choice",
@@ -11949,7 +13143,13 @@
      "Actions on objectives"
     ],
     "answer": 0,
-    "explain": "Delivery is getting the weapon to the target. Email filtering and staff reporting break the chain here."
+    "explain": "Delivery is getting the weapon to the target. Email filtering and staff reporting break the chain here.",
+    "notes": [
+     null,
+     "Reconnaissance is research beforehand, like finding staff names.",
+     "Installation is the malware setting itself up after it's opened.",
+     "Actions on objectives is the end goal, like stealing data. This is earlier."
+    ]
    },
    {
     "type": "choice",
@@ -11961,7 +13161,13 @@
      "Exploitation"
     ],
     "answer": 0,
-    "explain": "A regular check-in to an outside server is command and control (C2), and the beat makes it easy to spot in network logs."
+    "explain": "A regular check-in to an outside server is command and control (C2), and the beat makes it easy to spot in network logs.",
+    "notes": [
+     null,
+     "Weaponisation is building the fake update, before it's sent.",
+     "Getting the email to staff came before this.",
+     "Exploitation is the code running when it's opened. This is it checking in afterwards."
+    ]
    }
   ]
  },
@@ -11993,7 +13199,13 @@
     ],
     "answer": 0,
     "explain": "Every asset needs a named owner who is accountable for it. A confidential laptop unseen for five months could be lost or stolen, and a device that never checks in misses its updates too.",
-    "where": "02 Jun 2026"
+    "where": "02 Jun 2026",
+    "notes": [
+     null,
+     "The status says In use, but nobody has seen it since June. The record may be wrong.",
+     "It's more than tidiness: a confidential device nobody owns or patches.",
+     "There's no yearly replacement rule. The problem is no owner and no sightings."
+    ]
    },
    {
     "type": "choice",
@@ -12006,7 +13218,13 @@
     ],
     "answer": 0,
     "explain": "A quick format removes the index, not the data. NIST SP 800-88 calls for clearing, purging or destroying media to suit the data on it; for confidential client files, purge or destroy, and keep a certificate of sanitisation or destruction as proof.",
-    "where": "disks reformatted"
+    "where": "disks reformatted",
+    "notes": [
+     null,
+     "A quick format removes the index, not the data. It can be recovered.",
+     "A good reseller doesn't make the old data unreadable.",
+     "Time switched off doesn't erase disks."
+    ]
    },
    {
     "type": "choice",
@@ -12019,7 +13237,13 @@
     ],
     "answer": 0,
     "explain": "Offboarding includes getting company devices back. A confidential laptop held by a former employee is an unmanaged risk: confirm access is revoked, recover it, and if that fails, wipe and report it as a lost asset.",
-    "where": "left Sep 2026"
+    "where": "left Sep 2026",
+    "notes": [
+     null,
+     "Company laptops with confidential data must come back.",
+     "Changing the register to match a wish hides the risk.",
+     "The old laptop still holds data. Forgetting it leaves the risk."
+    ]
    },
    {
     "type": "choice",
@@ -12032,7 +13256,13 @@
     ],
     "answer": 0,
     "explain": "You can't protect what you don't know you have. Unknown devices (shadow IT) are found by discovery and enumeration, then either brought under management with an owner or taken off the network. A backup NAS may even hold client data.",
-    "where": "HR-BACKUP2"
+    "where": "HR-BACKUP2",
+    "notes": [
+     null,
+     "Shadow IT is exactly the risk. A NAS may hold client data.",
+     "Blocking everything forever is drastic. Find out what they are first.",
+     "Every asset needs an owner. No owner means nobody looks after it."
+    ]
    },
    {
     "type": "choice",
@@ -12045,7 +13275,13 @@
     ],
     "answer": 0,
     "explain": "Many multifunction printers keep copies of scanned and printed jobs. Disposal and decommissioning covers every device that stores data, including leased ones: sanitise or remove the disk, and agree this in the lease.",
-    "where": "stores scanned jobs on its internal disk"
+    "where": "stores scanned jobs on its internal disk",
+    "notes": [
+     null,
+     "Many multifunction printers keep copies of scans on a disk.",
+     "Unplugging doesn't erase a disk.",
+     "Reclassifying doesn't change what's on the disk: client letters."
+    ]
    }
   ]
  },
@@ -12077,7 +13313,13 @@
     ],
     "answer": 0,
     "explain": "Speed and consistency are the big wins: automation does the same steps every time, straight away, and frees analysts (a workforce multiplier) for the cases that need judgement.",
-    "where": "3 minutes"
+    "where": "3 minutes",
+    "notes": [
+     null,
+     "Automation often adds complexity. The 47 to 3 minutes is about something else.",
+     "Analysts still handle what automation can't judge, like step 5.",
+     "The feed still drives the decisions. The win is how fast they're made."
+    ]
    },
    {
     "type": "choice",
@@ -12090,7 +13332,13 @@
     ],
     "answer": 0,
     "explain": "Automation should have guard rails on actions that are hard to undo. Quarantine can be released; a human approval step above a threshold stops one bad feed entry hitting every mailbox.",
-    "where": "1,900 copies"
+    "where": "1,900 copies",
+    "notes": [
+     null,
+     "Doing it by hand loses the 3-minute response. Keep the speed and add a check.",
+     "Running a bad action twice makes it worse.",
+     "Reports are how the SOC learns about phishing."
+    ]
    },
    {
     "type": "choice",
@@ -12103,7 +13351,13 @@
     ],
     "answer": 0,
     "explain": "Automatic closure hides work that hasn't been done. A good playbook escalates a stale ticket instead, so 'closed' always means someone decided.",
-    "where": "automatically after 24 hours"
+    "where": "automatically after 24 hours",
+    "notes": [
+     null,
+     "Time isn't the issue. Closing work nobody looked at hides it.",
+     "A shorter timer closes even more unlooked-at reports.",
+     "Reporters don't know if it's resolved. Analysts decide."
+    ]
    },
    {
     "type": "choice",
@@ -12116,7 +13370,13 @@
     ],
     "answer": 0,
     "explain": "Automation only knows the indicators it has been told about. New campaigns, targeted emails and lookalike domains often have no reputation yet, so a person still triages them.",
-    "where": "assign_to_analyst"
+    "where": "assign_to_analyst",
+    "notes": [
+     null,
+     "The playbook already reads email in step 2.",
+     "The aim is catching new phishing, not looking busy.",
+     "No law requires that. It's about what feeds can't know yet."
+    ]
    },
    {
     "type": "choice",
@@ -12129,7 +13389,13 @@
     ],
     "answer": 0,
     "explain": "Automation inherits the mistakes of its inputs, at machine speed. Checking more than one source, setting a confidence threshold and keeping a human in the loop for big actions all reduce that risk.",
-    "where": "threat intel feed"
+    "where": "threat intel feed",
+    "notes": [
+     null,
+     "Technical debt is old code. This is everything depending on one input.",
+     "Analysts reduce the risk. The problem is one feed.",
+     "Cost isn't the risk shown on 4 Nov."
+    ]
    }
   ]
  }

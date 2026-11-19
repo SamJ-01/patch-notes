@@ -1,0 +1,812 @@
+{
+ "id": "shift-05",
+ "title": "Audit week: Pellow & Finch",
+ "agency": "Lanternfield Security Operations",
+ "client": "Pellow & Finch Logistics",
+ "date": "Tuesday 24 November",
+ "startsAt": "09:00",
+ "minutes": 25,
+ "xp": 120,
+ "summary": "Pellow & Finch's Cyber Essentials Plus assessment is this week. Overnight a leaver's account opened the HR system, and the morning brings a scan, a firewall change and card numbers in a shared folder. Sort the incidents from the paperwork, start the right clocks, and hand over.",
+ "card": "A leaver who kept their access, an assessor's scan and card numbers where they shouldn't be",
+ "lessons": [
+  "risk",
+  "law",
+  "frameworks",
+  "identity",
+  "data-breach"
+ ],
+ "briefing": "Morning. It's audit week at Pellow & Finch: their Cyber Essentials Plus assessor is in and they need the certificate for the council bid. Overnight an account HR says has left signed in to the HR system. Some of today's alerts will be the audit itself, so check before you act. Work out what's an incident, what's a broken control and which rules apply. The clock only moves when you do something.",
+ "lead": "Morgan, shift lead",
+ "leadPhoto": "img/agency/morgan.webp",
+ "handedOverBy": "the night shift",
+ "next": {
+  "href": "#lab-breach-clock",
+  "label": "The 72-hour clock: what to report, by when"
+ },
+ "simplification": "Simplified simulation: a real shift has far more traffic. The sign-in, HR, directory, intrusion detection, data loss and firewall logs are generic SIEM exports written for this shift; the group, operation and report names are made up but follow how these systems really work. The law and standards are summarised for learning, not legal advice: UK GDPR's 72 hours run from becoming aware of a reportable breach, and PCI DSS forbids keeping card security codes after authorisation. Department replies are scripted. All people and companies are fictional.",
+ "costs": {
+  "search": 1,
+  "request": 2,
+  "close": 3,
+  "wait": 5
+ },
+ "sources": {
+  "signin": {
+   "name": "Sign-in log (SIEM export)",
+   "about": "Every sign-in to Pellow & Finch's cloud apps: who, from where, and whether MFA was asked for. Generic format, simplified for this shift.",
+   "lines": [
+    "2026-11-23 08:41:12 app=peoplehr result=success user=h.osei@pellowfinch.example src=198.51.100.23 country=GB mfa=app_push ca=Staff-MFA",
+    "2026-11-23 17:05:44 app=m365 result=success user=t.ngata@pellowfinch.example src=198.51.100.23 country=GB mfa=app_push ca=Staff-MFA",
+    "2026-11-23 22:14:49 app=peoplehr result=success user=k.marsh@pellowfinch.example src=203.0.113.61 country=GB mfa=not_required ca=CA-Exclude-Travel",
+    "2026-11-24 07:52:30 app=m365 result=success user=d.whitfield@pellowfinch.example src=198.51.100.23 country=GB mfa=app_push ca=Staff-MFA",
+    "2026-11-24 08:03:16 app=peoplehr result=success user=h.osei@pellowfinch.example src=198.51.100.23 country=GB mfa=app_push ca=Staff-MFA"
+   ],
+   "findings": [
+    {
+     "id": "leaver-signin",
+     "match": "user=k.marsh@pellowfinch.example src=203.0.113.61",
+     "finding": "At 22:14 last night k.marsh signed in to the HR system (PeopleHR) from 203.0.113.61, outside the office, three days after leaving."
+    },
+    {
+     "id": "no-mfa",
+     "match": "mfa=not_required ca=CA-Exclude-Travel",
+     "finding": "That sign-in needed no MFA: the account sits in the CA-Exclude-Travel group, which the MFA policy skips."
+    }
+   ]
+  },
+  "hr": {
+   "name": "HR system audit log: PeopleHR (SIEM export)",
+   "about": "What people did inside the HR system: logins, reports run and files exported. Generic format, simplified for this shift.",
+   "lines": [
+    "2026-11-20 16:30:02 app=peoplehr event=leaver_processed user=h.osei employee=k.marsh leave_date=2026-11-20 it_ticket=REQ-3502",
+    "2026-11-23 08:42:10 app=peoplehr event=report_run user=h.osei report=\"Holiday balances: Sales\" rows=24",
+    "2026-11-23 22:14:52 app=peoplehr event=login user=k.marsh src=203.0.113.61",
+    "2026-11-23 22:16:10 app=peoplehr event=report_run user=k.marsh report=\"Payroll: all staff (bank details, NI numbers)\" rows=219",
+    "2026-11-23 22:16:31 app=peoplehr event=export user=k.marsh file=payroll-all-staff-2026-11.csv rows=219 size=48KB",
+    "2026-11-23 22:19:05 app=peoplehr event=logout user=k.marsh"
+   ],
+   "findings": [
+    {
+     "id": "leaver-processed",
+     "match": "event=leaver_processed user=h.osei employee=k.marsh",
+     "finding": "HR processed k.marsh as a leaver on Friday 20 November and raised IT ticket REQ-3502 to close their access."
+    },
+    {
+     "id": "payroll-export",
+     "match": "file=payroll-all-staff-2026-11.csv",
+     "finding": "k.marsh ran the all-staff payroll report and exported it: 219 people's bank details and National Insurance numbers left in a CSV."
+    }
+   ],
+   "icon": "app"
+  },
+  "directory": {
+   "name": "Directory audit log: Entra ID (SIEM export)",
+   "about": "Changes to accounts and groups in Pellow & Finch's directory: who changed what, and on which ticket. Generic format, simplified for this shift.",
+   "lines": [
+    "2026-03-14 11:20:05 app=entra op=\"Add member to group\" group=CA-Exclude-Travel member=s.cole@pellowfinch.example by=j.ward@pellowfinch.example ticket=REQ-2871 note=\"phone lost abroad\"",
+    "2026-06-02 10:12:40 app=entra op=\"Add member to group\" group=CA-Exclude-Travel member=k.marsh@pellowfinch.example by=j.ward@pellowfinch.example ticket=REQ-3318 note=\"Lisbon depot visit 3 to 10 June\"",
+    "2026-11-20 16:30:40 app=entra op=\"Update user\" user=k.marsh@pellowfinch.example change=\"leaveDate=2026-11-20\" by=hr-sync account=enabled",
+    "2026-11-24 06:00:00 app=entra report=group_members group=CA-Exclude-Travel members=3 list=\"s.cole, k.marsh, l.ahmed\" oldest_added=2026-03-14 reviewed=never"
+   ],
+   "findings": [
+    {
+     "id": "excluded-june",
+     "match": "member=k.marsh@pellowfinch.example by=j.ward",
+     "finding": "k.marsh was added to CA-Exclude-Travel in June for a one-week trip to Lisbon, and never taken out."
+    },
+    {
+     "id": "still-enabled",
+     "match": "change=\"leaveDate=2026-11-20\" by=hr-sync account=enabled",
+     "finding": "The HR system set k.marsh's leave date on Friday, but the account stayed enabled: nobody acted on the leavers ticket."
+    },
+    {
+     "id": "never-reviewed",
+     "match": "reviewed=never",
+     "finding": "The MFA exclusion group has three members, the oldest added in March, and has never been reviewed."
+    }
+   ],
+   "icon": "key"
+  },
+  "ids": {
+   "name": "Intrusion detection alerts (SIEM export)",
+   "about": "Alerts from the sensor in front of Pellow & Finch's public addresses. Generic format, simplified for this shift.",
+   "lines": [
+    "2026-11-24 08:02:15 app=ids sig=\"TCP SYN port scan\" src=198.51.100.140 dst=203.0.113.20 ports=1-65535 action=alert",
+    "2026-11-24 08:31:47 app=ids sig=\"TLS version probe\" src=198.51.100.140 dst=203.0.113.21 port=443 action=alert",
+    "2026-11-24 08:44:03 app=ids sig=\"TCP SYN port scan\" src=198.51.100.140 dst=203.0.113.21 ports=1-65535 action=alert"
+   ],
+   "findings": [
+    {
+     "id": "scan-source",
+     "match": "src=198.51.100.140 dst=203.0.113.20",
+     "finding": "The scan comes from 198.51.100.140 and only touches Pellow & Finch's public addresses."
+    }
+   ],
+   "icon": "globe"
+  },
+  "dlp": {
+   "name": "Data loss prevention alerts: file shares (SIEM export)",
+   "about": "Files on the shared drives that match a sensitive-data pattern, such as card numbers. Generic format, simplified for this shift.",
+   "lines": [
+    "2026-11-24 07:40:09 app=dlp policy=\"UK National Insurance numbers\" share=hr path=payroll/payroll-2026-10.xlsx matches=219 note=\"expected location, HR only\"",
+    "2026-11-24 07:58:12 app=dlp policy=\"Payment card data\" share=sales path=council-bid/phone-orders-oct.xlsx matches=\"41 card numbers (Luhn valid), 41 three-digit security codes\" access=\"all staff\" last_modified_by=t.ngata"
+   ],
+   "findings": [
+    {
+     "id": "card-file",
+     "match": "path=council-bid/phone-orders-oct.xlsx",
+     "finding": "A sales spreadsheet on a share all staff can open holds 41 full card numbers and their three-digit security codes."
+    }
+   ],
+   "icon": "server"
+  },
+  "firewall": {
+   "name": "Firewall change log: warehouse (SIEM export)",
+   "about": "Changes made to the warehouse firewall's rules, with who made them and on which change ticket. Generic format, simplified for this shift.",
+   "lines": [
+    "2026-11-24 09:12:03 app=fw device=wh-fw01 op=rule_delete rule=\"Allow RDP from any to wh-pc07 port 3389\" by=t.kowalski ticket=CHG-1187",
+    "2026-11-24 09:12:40 app=fw device=wh-fw01 op=commit by=t.kowalski ticket=CHG-1187 result=success"
+   ],
+   "findings": [
+    {
+     "id": "rdp-removed",
+     "match": "op=rule_delete rule=\"Allow RDP from any",
+     "finding": "At 09:12 the rule letting anyone on the internet reach Remote Desktop on wh-pc07 was deleted, under change CHG-1187."
+    }
+   ],
+   "icon": "shield"
+  },
+  "notes": {
+   "name": "Client notes: Pellow & Finch",
+   "about": "What Lanternfield knows about this client: contacts, policies and this week's planned work.",
+   "lines": [
+    "Client: Pellow & Finch Logistics, parcel delivery, about 220 staff. Contact: Dana Whitfield, IT manager, 07:30 to 18:00.",
+    "Leavers: HR sets the leave date and raises an IT ticket; IT disables the account on the leaving day. k.marsh (Sales) left on Friday 20 November to join a competitor.",
+    "CA-Exclude-Travel: staff going where the authenticator app won't work are added for the trip and must be removed on return. No owner, no review date.",
+    "Risk register R14 'Leavers keep access': likelihood 3, impact 4, score 12. Owner: none. Last reviewed January 2026.",
+    "Cyber Essentials Plus this week (CHG-1190): the assessor, Northgate Assurance, scans from 198.51.100.140 on 24 November, 08:00 to 12:00, under the signed scope letter (public addresses only).",
+    "CHG-1187 (approved 23 November by Dana): remove the Remote Desktop rule open to the internet on the warehouse firewall before the assessment. Window: 24 November, 09:00 to 10:00.",
+    "Card payments: phone orders go through the card provider's virtual terminal. Staff must never write down or store card numbers or security codes (PCI DSS)."
+   ],
+   "findings": [
+    {
+     "id": "leavers-rule",
+     "match": "IT disables the account on the leaving day",
+     "finding": "Pellow & Finch's own rule: IT disables a leaver's account on their leaving day."
+    },
+    {
+     "id": "exclusion-rule",
+     "match": "must be removed on return",
+     "finding": "Travel exclusions should be removed when the person comes back, but the group has no owner and no review."
+    },
+    {
+     "id": "r14",
+     "match": "Leavers keep access",
+     "finding": "This exact risk (R14, leavers keep access) is on the register at score 12, with no owner, last reviewed in January."
+    },
+    {
+     "id": "assessor-scan",
+     "match": "scans from 198.51.100.140",
+     "finding": "198.51.100.140 is the Cyber Essentials Plus assessor, booked to scan the public addresses this morning under a signed scope letter."
+    },
+    {
+     "id": "chg-1187",
+     "match": "CHG-1187 (approved",
+     "finding": "CHG-1187 was approved by Dana yesterday: remove the internet-facing Remote Desktop rule between 09:00 and 10:00 today."
+    },
+    {
+     "id": "card-policy",
+     "match": "must never write down or store card numbers",
+     "finding": "Policy (and PCI DSS): phone orders go through the card provider; card numbers and security codes are never stored."
+    }
+   ]
+  }
+ },
+ "alerts": [
+  {
+   "id": "a1",
+   "ref": "SOC-40601",
+   "title": "Leaver's account exported payroll from the HR system",
+   "time": "22:16",
+   "severity": "high",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "k.marsh, whom the HR system marks as left on 20 November, signed in from 203.0.113.61 and exported a payroll report.",
+   "guide": {
+    "hints": [
+     "Start with the HR log. What did k.marsh export after signing in, and what's in that report?",
+     "The client notes say IT disables leavers on the leaving day. Was that done? The directory log will tell you.",
+     "A former employee used access they no longer had, and took 219 people's bank details: an offence under the Computer Misuse Act and a personal data breach. Disable the account and tell Dana: the 72-hour clock started when we spotted it."
+    ],
+    "searches": [
+     [
+      "hr",
+      "payroll-all-staff"
+     ],
+     [
+      "hr",
+      "leaver_processed"
+     ],
+     [
+      "directory",
+      "leaveDate"
+     ],
+     [
+      "signin",
+      "k.marsh"
+     ]
+    ]
+   },
+   "sources": [
+    "hr",
+    "signin",
+    "directory",
+    "notes"
+   ],
+   "requests": [
+    "identity:disable-account",
+    "client:report-breach",
+    "servicedesk:check-leavers"
+   ],
+   "evidence": [
+    {
+     "findings": [
+      "payroll-export"
+     ],
+     "text": "HR log: k.marsh exported the all-staff payroll report (219 people's bank details and NI numbers) at 22:16",
+     "supports": true,
+     "required": true,
+     "why": "Personal data about every member of staff has left the HR system: that's the breach."
+    },
+    {
+     "findings": [
+      "leaver-processed",
+      "still-enabled"
+     ],
+     "text": "HR processed k.marsh as a leaver on 20 November, but the account was never disabled",
+     "supports": true,
+     "required": true,
+     "why": "Their right to use the system ended when they left. Getting in anyway is unauthorised access, even with a working password."
+    },
+    {
+     "findings": [
+      "leaver-signin"
+     ],
+     "text": "Sign-in log: k.marsh signed in from 203.0.113.61, outside the office, at 22:14",
+     "supports": true,
+     "required": false,
+     "why": "Shows when and where the access happened, for the breach report."
+    },
+    {
+     "findings": [
+      "leavers-rule",
+      "r14",
+      "leavers-overdue"
+     ],
+     "text": "The leavers rule says disable on the leaving day; risk R14 has no owner and no review since January",
+     "supports": true,
+     "required": false,
+     "why": "The risk was known and written down, but nobody owned it, so the control quietly failed."
+    },
+    {
+     "text": "The password still worked, so k.marsh was still allowed to use the system",
+     "supports": false,
+     "required": false,
+     "why": "A working password isn't permission. Authorisation ended when they left, which is what makes this access unauthorised."
+    }
+   ],
+   "answer": {
+    "verdict": "act",
+    "severity": [
+     "high"
+    ],
+    "related": [
+     "a2"
+    ],
+    "contain": [
+     "identity:disable-account",
+     "client:report-breach"
+    ],
+    "status": "escalated",
+    "summaries": [
+     "Incident: k.marsh, who left on 20 November, still had an enabled account and signed in to PeopleHR from 203.0.113.61 at 22:14 without MFA (CA-Exclude-Travel), exporting payroll for 219 staff (bank details, NI numbers). Account disabled and sessions ended; Dana told to run the breach process: the 72 hours run from 09:05 today. Linked to SOC-40602.",
+     "An old account was used to look at HR. The password worked, so it was allowed. No action.",
+     "Unusual late-night HR sign-in. Asked the user to change their password."
+    ],
+    "summary": 0,
+    "why": "A leaver's access should end on their last day. Using it afterwards is unauthorised access under the Computer Misuse Act, and payroll data leaving is a personal data breach under UK GDPR: the client decides whether to report, within 72 hours of becoming aware. Disable the account first, then hand the facts to the client."
+   }
+  },
+  {
+   "id": "a2",
+   "ref": "SOC-40602",
+   "title": "Sign-in skipped MFA through an exclusion group",
+   "time": "22:14",
+   "severity": "medium",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "A sign-in to PeopleHR was let in without MFA because the account is in CA-Exclude-Travel.",
+   "guide": {
+    "hints": [
+     "Find the sign-in in the sign-in log. Which account, and why wasn't MFA asked for?",
+     "The directory log shows when k.marsh joined CA-Exclude-Travel, and why. Is that reason still true? Who else is in the group?",
+     "A one-week travel exclusion from June outlived its reason and helped a leaver walk in with just a password. Ask Identity to clear and review the group, and link this to SOC-40601."
+    ],
+    "searches": [
+     [
+      "signin",
+      "CA-Exclude-Travel"
+     ],
+     [
+      "directory",
+      "CA-Exclude-Travel"
+     ],
+     [
+      "notes",
+      "exclude"
+     ]
+    ]
+   },
+   "sources": [
+    "signin",
+    "directory",
+    "notes"
+   ],
+   "requests": [
+    "identity:clear-exclusions",
+    "identity:disable-account"
+   ],
+   "evidence": [
+    {
+     "findings": [
+      "no-mfa"
+     ],
+     "text": "Sign-in log: k.marsh's sign-in needed no MFA because of CA-Exclude-Travel",
+     "supports": true,
+     "required": true,
+     "why": "MFA would have stopped a password-only sign-in. The exclusion is the gap."
+    },
+    {
+     "findings": [
+      "excluded-june",
+      "never-reviewed"
+     ],
+     "text": "Directory log: added in June for a one-week trip, never removed; the group has never been reviewed",
+     "supports": true,
+     "required": true,
+     "why": "A temporary exception with no end date and no owner became permanent, and two other people are still in it."
+    },
+    {
+     "findings": [
+      "exclusion-rule"
+     ],
+     "text": "Client notes: travel exclusions should be removed on return, but the group has no owner",
+     "supports": true,
+     "required": false,
+     "why": "The rule existed on paper. Without an owner or a review, nothing made it happen."
+    },
+    {
+     "text": "The exclusion was approved on a ticket, so it's fine",
+     "supports": false,
+     "required": false,
+     "why": "It was approved for one week in June. An approval for a trip doesn't cover the five months since."
+    }
+   ],
+   "answer": {
+    "verdict": "act",
+    "severity": [
+     "medium"
+    ],
+    "related": [
+     "a1"
+    ],
+    "contain": [
+     "identity:clear-exclusions"
+    ],
+    "status": "escalated",
+    "summaries": [
+     "Control failure: k.marsh's sign-in skipped MFA because they were added to CA-Exclude-Travel in June for a one-week trip (REQ-3318) and never removed. The group (3 members, oldest from March) has never been reviewed. Identity has emptied it; Dana to give it an owner and end dates. Same incident as SOC-40601.",
+     "MFA was skipped because of an approved exclusion. Working as configured; no action.",
+     "MFA isn't working for some users. Asked Identity to turn MFA off and on again."
+    ],
+    "summary": 0,
+    "why": "Exceptions are risks you choose to accept, so each needs an owner and an end date. This one had neither, outlived its reason, and let a leaver in with only a password. Clearing the group closes the gap; giving it an owner and a review stops it coming back."
+   }
+  },
+  {
+   "id": "a3",
+   "ref": "SOC-40603",
+   "title": "Firewall rule deleted on the warehouse firewall",
+   "time": "09:12",
+   "severity": "medium",
+   "arrives": {
+    "closed": 2,
+    "at": 15
+   },
+   "detection": "A rule was deleted and the configuration committed on wh-fw01 by t.kowalski.",
+   "guide": {
+    "hints": [
+     "Open the firewall change log. Which rule went, who removed it and on which ticket?",
+     "Check the ticket in the client notes. Was the change approved, and is it inside its window?",
+     "An approved change, in its window, removing an internet-facing Remote Desktop rule: that's a security fix, not an attack. Close it as legitimate; no rollback."
+    ],
+    "searches": [
+     [
+      "firewall",
+      "CHG-1187"
+     ],
+     [
+      "notes",
+      "CHG-1187"
+     ]
+    ]
+   },
+   "sources": [
+    "firewall",
+    "notes"
+   ],
+   "requests": [
+    "netops:rollback-change"
+   ],
+   "evidence": [
+    {
+     "findings": [
+      "chg-1187"
+     ],
+     "text": "Client notes: CHG-1187, approved by Dana, removes the internet-facing Remote Desktop rule between 09:00 and 10:00 today",
+     "supports": true,
+     "required": true,
+     "why": "An approved change inside its window is planned work, not an intruder."
+    },
+    {
+     "findings": [
+      "rdp-removed"
+     ],
+     "text": "Firewall log: the deleted rule allowed Remote Desktop from anywhere to wh-pc07, committed under CHG-1187",
+     "supports": true,
+     "required": false,
+     "why": "The rule removed was the risky one. Removing it makes the network safer."
+    },
+    {
+     "text": "Any firewall change during audit week is suspicious and should be rolled back",
+     "supports": false,
+     "required": false,
+     "why": "This change was approved for exactly this week. Rolling it back would reopen Remote Desktop to the internet."
+    }
+   ],
+   "answer": {
+    "verdict": "legit",
+    "severity": [
+     "low"
+    ],
+    "related": [],
+    "contain": [],
+    "status": "closed",
+    "summaries": [
+     "Planned change: t.kowalski removed the internet-facing Remote Desktop rule on wh-fw01 at 09:12 under CHG-1187, approved by Dana for 09:00 to 10:00. A security fix before the assessment; no action.",
+     "Unexpected firewall change during the audit. Rolled it back to be safe.",
+     "Firewall tampering by t.kowalski. Escalated to the client."
+    ],
+    "summary": 0,
+    "why": "Change management is a control too: the ticket, the approval and the window are what let you tell a planned fix from tampering. This one closes a hole Cyber Essentials would fail."
+   }
+  },
+  {
+   "id": "a4",
+   "ref": "SOC-40604",
+   "title": "Port scans against the public addresses",
+   "time": "08:02",
+   "severity": "medium",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "198.51.100.140 is scanning every port on two of Pellow & Finch's public addresses.",
+   "guide": {
+    "hints": [
+     "Who is 198.51.100.140? Search the client notes for it before you do anything.",
+     "It's the Cyber Essentials Plus assessor, inside the booked window and touching only the public addresses in scope. That's authorised testing, not an attack. Close it as legitimate."
+    ],
+    "searches": [
+     [
+      "ids",
+      "198.51.100.140"
+     ],
+     [
+      "notes",
+      "198.51.100.140"
+     ]
+    ]
+   },
+   "sources": [
+    "ids",
+    "notes"
+   ],
+   "requests": [
+    "client:stop-scan"
+   ],
+   "evidence": [
+    {
+     "findings": [
+      "assessor-scan"
+     ],
+     "text": "Client notes: 198.51.100.140 is the Cyber Essentials Plus assessor, booked 08:00 to 12:00 today under a signed scope letter",
+     "supports": true,
+     "required": true,
+     "why": "Written authorisation from the system's owner is what makes a scan legal and expected."
+    },
+    {
+     "findings": [
+      "scan-source"
+     ],
+     "text": "IDS: the scan only touches Pellow & Finch's public addresses",
+     "supports": true,
+     "required": false,
+     "why": "It's staying inside the scope letter: public addresses only."
+    },
+    {
+     "text": "Scanning every port is an attack and must be blocked",
+     "supports": false,
+     "required": false,
+     "why": "The same scan is an offence without permission and a service with it. Here the owner signed a scope letter."
+    }
+   ],
+   "answer": {
+    "verdict": "legit",
+    "severity": [
+     "low"
+    ],
+    "related": [],
+    "contain": [],
+    "status": "closed",
+    "summaries": [
+     "Authorised testing: 198.51.100.140 is Northgate Assurance, the Cyber Essentials Plus assessor, scanning the public addresses 08:00 to 12:00 under the signed scope letter (CHG-1190). No action.",
+     "Port scan from 198.51.100.140. Asked the client to stop it.",
+     "Attack in progress against the public addresses. Escalated."
+    ],
+    "summary": 0,
+    "why": "Under the Computer Misuse Act it's authorisation, not the technique, that makes a scan lawful. Check the change calendar and scope before you react to a scan: this one is the assessment the client is paying for."
+   }
+  },
+  {
+   "id": "a5",
+   "ref": "SOC-40605",
+   "title": "Payment card data found on a shared drive",
+   "time": "07:58",
+   "severity": "high",
+   "arrives": {
+    "at": 0
+   },
+   "detection": "A spreadsheet on the sales share matches the payment card data policy: card numbers and security codes.",
+   "guide": {
+    "hints": [
+     "Open the data loss log. What's in the file, and who can open it?",
+     "Check the card payments policy in the client notes. Should these numbers be anywhere at all, and what about the security codes?",
+     "Nobody stole anything, but storing security codes is never allowed under PCI DSS, and the file is open to all staff. Get the client to remove it and fix how phone orders are taken."
+    ],
+    "searches": [
+     [
+      "dlp",
+      "phone-orders-oct"
+     ],
+     [
+      "notes",
+      "card payments"
+     ]
+    ]
+   },
+   "sources": [
+    "dlp",
+    "notes"
+   ],
+   "requests": [
+    "client:purge-card-data",
+    "client:report-breach"
+   ],
+   "evidence": [
+    {
+     "findings": [
+      "card-file"
+     ],
+     "text": "DLP: phone-orders-oct.xlsx holds 41 card numbers with their security codes, on a share all staff can open",
+     "supports": true,
+     "required": true,
+     "why": "Card data where it shouldn't be, readable by everyone: the risk, even before anyone misuses it."
+    },
+    {
+     "findings": [
+      "card-policy"
+     ],
+     "text": "Policy: phone orders go through the card provider, and card numbers and security codes are never stored",
+     "supports": true,
+     "required": true,
+     "why": "PCI DSS never allows keeping the security code after authorisation, encrypted or not. This breaks the client's own rule too."
+    },
+    {
+     "text": "The file was made by a member of staff, so it isn't a problem",
+     "supports": false,
+     "required": false,
+     "why": "Who made it doesn't matter. Storing security codes is forbidden, and anyone in the company, or anyone who gets in, can read it."
+    }
+   ],
+   "answer": {
+    "verdict": "noharm",
+    "severity": [
+     "high"
+    ],
+    "related": [],
+    "contain": [
+     "client:purge-card-data"
+    ],
+    "status": "escalated",
+    "summaries": [
+     "Compliance breach, no attacker: phone-orders-oct.xlsx on the sales share (all staff) holds 41 card numbers and security codes, against the card policy and PCI DSS. Dana's team is deleting it securely and moving phone orders back to the virtual terminal; check with the card provider whether it must be reported.",
+     "Card numbers found in a sales file. Staff made it, so no action.",
+     "Card data on a share. Encrypt the spreadsheet and leave it there."
+    ],
+    "summary": 0,
+    "why": "Not every finding is an attack. PCI DSS is a contract with the card brands, not a law, but storing security codes is never allowed and would also fail an audit. Remove the data, fix the process that made it, and let the client decide with their card provider."
+   }
+  }
+ ],
+ "departments": {
+  "identity": {
+   "name": "Identity & Access",
+   "contact": {
+    "name": "Priya Raman",
+    "role": "Identity & Access",
+    "photo": "img/agency/priya.webp"
+   },
+   "requests": [
+    {
+     "id": "disable-account",
+     "label": "Disable k.marsh's account and end all their sessions",
+     "minutes": 6,
+     "replies": [
+      {
+       "when": {
+        "attached": ""
+       },
+       "minutes": 3,
+       "outcome": "asks",
+       "text": "HR's ticket for k.marsh is still open, so I need something on the record before I switch an account off. Attach what you found and I'll do it now."
+      },
+      {
+       "outcome": "done",
+       "text": "Done. k.marsh is disabled, every session and token revoked, and their mailbox converted to shared for their manager. I've closed REQ-3502, three days late."
+      }
+     ]
+    },
+    {
+     "id": "clear-exclusions",
+     "label": "Empty the CA-Exclude-Travel group and check each member still needs it",
+     "minutes": 8,
+     "replies": [
+      {
+       "when": {
+        "attached": ""
+       },
+       "minutes": 3,
+       "outcome": "asks",
+       "text": "Taking people out of an MFA exclusion can lock out someone abroad. What did you find that says this group's a problem?"
+      },
+      {
+       "outcome": "done",
+       "text": "Emptied it. s.cole and l.ahmed are both in the office and fine with MFA. From now on anyone added gets an end date, and the group goes on our monthly review."
+      }
+     ]
+    }
+   ]
+  },
+  "netops": {
+   "name": "Network Operations",
+   "contact": {
+    "name": "Tomasz Kowalski",
+    "role": "Network Operations",
+    "photo": "img/agency/tomasz.webp"
+   },
+   "requests": [
+    {
+     "id": "rollback-change",
+     "label": "Roll back this morning's change on wh-fw01",
+     "minutes": 5,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Rolled back. Remote Desktop to wh-pc07 is open to the internet again, which is what CHG-1187 was closing before the assessor's scan. Shall I put it back?"
+      }
+     ]
+    }
+   ]
+  },
+  "servicedesk": {
+   "name": "Service Desk",
+   "contact": {
+    "name": "Grace Adeyemi",
+    "role": "Service Desk",
+    "photo": "img/agency/grace.webp"
+   },
+   "requests": [
+    {
+     "id": "check-leavers",
+     "label": "Check the open leavers tickets for Pellow & Finch",
+     "minutes": 10,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Three leavers tickets are open past their leaving date, k.marsh's REQ-3502 among them. Nobody on their side picks them up when Dana's off, and Friday was her day off.",
+       "finding": {
+        "id": "leavers-overdue",
+        "finding": "Service Desk: three leavers tickets are overdue, including k.marsh's REQ-3502. Nobody covers them when Dana is away."
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "client": {
+   "name": "Dana Whitfield (Pellow & Finch IT)",
+   "contact": {
+    "name": "Dana Whitfield",
+    "role": "Client: Pellow & Finch IT",
+    "photo": "img/agency/dana.webp"
+   },
+   "requests": [
+    {
+     "id": "report-breach",
+     "label": "Report a personal data breach: payroll for 219 staff exported by a former employee's account",
+     "minutes": 15,
+     "replies": [
+      {
+       "outcome": "done",
+       "text": "Thank you. I've told our data protection lead; the 72 hours run from 09:05 today when you spotted it. We'll assess whether to tell the ICO and staff, and HR will talk to our solicitor about k.marsh."
+      }
+     ]
+    },
+    {
+     "id": "purge-card-data",
+     "label": "Remove the card data from the sales share and stop staff storing card details",
+     "minutes": 10,
+     "replies": [
+      {
+       "when": {
+        "attached": ""
+       },
+       "minutes": 3,
+       "outcome": "asks",
+       "text": "Sales use that sheet every day for repeat orders. What exactly is in it that means it has to go?"
+      },
+      {
+       "outcome": "done",
+       "text": "Gone, deleted for good, not just to the bin. Sales are back on the virtual terminal from today, and I'm calling our card provider to ask whether we need to report it."
+      }
+     ]
+    },
+    {
+     "id": "stop-scan",
+     "label": "Ask the client to stop the scan from 198.51.100.140",
+     "minutes": 5,
+     "replies": [
+      {
+       "outcome": "refused",
+       "text": "That's our assessor, and we're paying for that scan: stopping it would fail the assessment. If you're worried it's gone outside the scope letter, tell me what it touched instead and I'll raise it with them."
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "handover": {
+  "links": "SOC-40601 and SOC-40602 were one incident: a leaver kept an enabled account and a forgotten MFA exclusion, so they walked into the HR system with just a password. Two broken controls, one breach.",
+  "model": "Real incident: k.marsh left on 20 November, but the leavers ticket (REQ-3502) was never actioned and their June travel exclusion from MFA (CA-Exclude-Travel) was never removed. At 22:14 last night they signed in to PeopleHR from 203.0.113.61 with just a password and exported payroll for 219 staff (bank details, NI numbers). Unauthorised access under the Computer Misuse Act and a personal data breach: account disabled and sessions revoked, the exclusion group emptied and put on a monthly review, and Dana is running the breach process with 72 hours from 09:05 today. Compliance: 41 card numbers with security codes in a sales spreadsheet on an all-staff share, against PCI DSS; removed, phone orders back on the virtual terminal, card provider being asked. Noise: the assessor's authorised scan from 198.51.100.140 and the approved removal of the internet-facing Remote Desktop rule (CHG-1187). Next shift: get R14 an owner and a review, fix leavers cover when Dana is away (two more overdue), and warn Dana that the leaver and the card data would both fail Cyber Essentials Plus this week."
+ },
+ "clientImage": {
+  "src": "img/agency/pellow-finch-depot.webp",
+  "small": "img/agency/pellow-finch-depot-800.webp",
+  "width": 1536,
+  "height": 538,
+  "alt": "Pellow & Finch's parcel depot: a warehouse with four loading bays, delivery vans and parcels in the yard"
+ }
+}

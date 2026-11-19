@@ -81,6 +81,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   const ac = new AbortController(), alive = () => root.isConnected || (ac.abort(), false);  // window listeners end with the page
   const done = new Set(solved);
   let finished = lab.goals.every(g => done.has(g.id));
+  const hintsOpen = new Set();
   const topo = { devices: {}, links: [] };
   let layout = {}, cli, pings = [], selected = null, focus = null, connectFrom = null, connecting = false, tab = "settings";
   const undo = [], outs = {};
@@ -174,7 +175,10 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   }
   function drawGoals() {
     for (const g of lab.goals) if (!done.has(g.id) && GOALS[g.id](topo, pings)) { done.add(g.id); onPart(g.id); $("nb-goalmsg").textContent = `Goal reached: ${g.text}`; }
-    $("nb-goals").innerHTML = lab.goals.map(g => `<li class="${done.has(g.id) ? "got" : ""}">${done.has(g.id) ? "✓ " : ""}${esc(g.text)}${done.has(g.id) ? `<span class="vl-why">${esc(g.why)}</span>` : ""}</li>`).join("");
+    // An unfinished goal offers a hint (the steps in words); its open state survives the redraw after every change.
+    $("nb-goals").innerHTML = lab.goals.map(g => `<li class="${done.has(g.id) ? "got" : ""}">${done.has(g.id) ? "✓ " : ""}${esc(g.text)}${done.has(g.id) ? `<span class="vl-why">${esc(g.why)}</span>`
+      : g.hint ? `<details class="nb-hint" data-g="${esc(g.id)}"${hintsOpen.has(g.id) ? " open" : ""}><summary>Hint</summary><p>${esc(g.hint)}</p></details>` : ""}</li>`).join("");
+    $("nb-goals").querySelectorAll(".nb-hint").forEach(d => d.addEventListener("toggle", () => { d.open ? hintsOpen.add(d.dataset.g) : hintsOpen.delete(d.dataset.g); }));
     $("nb-count").textContent = `${lab.goals.filter(g => done.has(g.id)).length}/${lab.goals.length}`;
     if (!finished && lab.goals.every(g => done.has(g.id))) { finished = true; onComplete(); }
   }

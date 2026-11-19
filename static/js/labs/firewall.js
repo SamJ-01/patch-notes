@@ -21,6 +21,24 @@ export function matchRule(rule, p) {
     && inCidr(p.dst, rule.dst)
     && (rule.port === "any" || String(rule.port) === String(p.port));
 }
+// Why a rule doesn't fit a packet: the first field that differs, in plain words (null when it matches). Pure, tested.
+export function missReason(rule, p) {
+  const PN = { tcp: "TCP", udp: "UDP", icmp: "ICMP" };
+  if (!(rule.proto === "any" || rule.proto === p.proto)) return `it's for ${PN[rule.proto] || rule.proto} and you're ${PN[p.proto] || p.proto}`;
+  if (!inCidr(p.src, rule.src)) return `it only covers traffic from ${rule.src}, and you come from ${p.src}`;
+  if (!inCidr(p.dst, rule.dst)) return `it only covers traffic to ${rule.dst}, and you're going to ${p.dst}`;
+  if (!(rule.port === "any" || String(rule.port) === String(p.port))) return `it's for port ${rule.port} and you're going to ${p.port}`;
+  return null;
+}
+// A hint that walks the learner down the rules without saying which one decides: the rules above the first match that
+// don't fit, each with its reason, then where to look next. Pure, tested (never names the deciding rule's action).
+export function hintFor(p, rules) {
+  const res = evaluate(p, rules), upto = res.index < 0 ? rules.length : res.index;
+  const misses = rules.slice(0, upto).map((r, i) => ({ n: i + 1, why: missReason(r, p) }));
+  const next = res.index < 0 ? "No rule below fits either. What does a firewall do with a packet that no rule lets through?"
+    : `Now check rule ${res.index + 1} against you: protocol, from, to and port.`;
+  return { misses, next };
+}
 // Walk the rules top-down; first match wins. No match → the implicit default deny.
 export function evaluate(p, rules) {
   const trace = [];
@@ -45,7 +63,10 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   const rules = lab.rules, packets = lab.packets, server = lab.server;
   const sent = new Set(solved);          // packet indices already run
   let pi = packets.findIndex((_, i) => !sent.has(i)); if (pi < 0) pi = 0;
-  let phase = "idle", predicted = null, correctPredicts = 0, picks = {};
+  let phase = "idle", predicted = null, correctPredicts = 0, picks = {}, hintOpen = false;
+  // Hint: read the rules from the top with the learner, stopping short of the one that decides (pure hintFor).
+  const hintHtml = p => { const h = hintFor(p, rules);
+    return `<div class="fwg-hintbox" role="note"><p class="eyebrow">Hint</p>${h.misses.length ? `<ul>${h.misses.map(m => `<li>Rule ${m.n} doesn't fit you: ${esc(m.why)}.</li>`).join("")}</ul>` : `<p>Start at rule 1: does its protocol, from, to and port all fit you?</p>`}<p>${esc(h.next)}</p></div>`; };
   const reduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   const delay = ms => new Promise(r => setTimeout(r, reduced ? 0 : ms));
 
@@ -100,9 +121,12 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
           <button class="btn ghost fwg-guess" type="button" data-g="deny" aria-pressed="${predicted === "deny"}">Denied</button>
         </div>
         <button class="btn brand" type="button" id="fwg-send">Send me through ↓</button>
+        <button class="btn ghost" type="button" id="fwg-hint" aria-expanded="${hintOpen}">Hint</button>
         ${backBtn}<button class="btn ghost" type="button" id="fwg-reset">↺ Reset lab</button>`;
       $("fwg-actions").querySelectorAll(".fwg-guess").forEach(b => b.onclick = () => { predicted = b.dataset.g; $("fwg-actions").querySelectorAll(".fwg-guess").forEach(x => x.setAttribute("aria-pressed", x.dataset.g === predicted)); });
       $("fwg-send").onclick = send;
+      $("fwg-hint").onclick = () => { hintOpen = !hintOpen; renderActions(); };
+      if (hintOpen) $("fwg-actions").insertAdjacentHTML("beforeend", hintHtml(pkt()));
     }
     if ($("fwg-back")) $("fwg-back").onclick = back;
     if ($("fwg-reset")) $("fwg-reset").onclick = reset;
@@ -157,8 +181,10 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     const decideLine = r
       ? `<p><b>Rule ${res.index + 1}</b> (${r.action === "allow" ? "ALLOW" : "DENY"} <span class="mono">${esc(ruleText(r))}</span>) is the first rule that matches you, so it decides. ${esc(r.note || "")}</p>`
       : `<p>No rule matched you, so the firewall’s <b>default deny</b> blocks you. A packet that no rule allows does not get through.</p>`;
+    const above = (res.index < 0 ? rules : rules.slice(0, res.index)).map((rr, i) => `<li>Rule ${i + 1}: ${esc(missReason(rr, p))}.</li>`).join("");
+    const whyFold = above ? `<details class="fwg-why"><summary>Why the rules above didn't match</summary><ul>${above}</ul></details>` : "";
     return `<div class="panel-title"><h2>${res.action === "allow" ? "Allowed in ✓" : "Blocked ✕"}</h2></div>
-      ${guessLine}${decideLine}
+      ${guessLine}${decideLine}${whyFold}
       ${right ? "" : `<p class="muted">On a real network you’d expect this one to be <b>${p.expected === "allow" ? "allowed" : "denied"}</b>, worth a second look at the rules.</p>`}`;
   }
 
@@ -183,7 +209,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
 
   // Render the current packet: a run packet shows its verdict for review (no animation); an un-run one is ready to play.
   function showPacket() {
-    const p = pkt();
+    const p = pkt(); hintOpen = false;
     predicted = picks[pi] ?? null;
     clearMarks(); renderBrief(); renderChip();
     if (sent.has(pi)) {

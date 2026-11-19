@@ -1551,6 +1551,11 @@ body.life { background-image: none; }
 @media (prefers-reduced-motion: reduce) { .fwg-chip, .fwg-door, .fwg-dest, .fwg-doors { transition: none; } .fwg-gate[data-state="deny"] .fwg-doors { animation: none; } }
 .fwg-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .fwg-predict { display: inline-flex; gap: 8px; align-items: center; }
+.fwg-hintbox { flex-basis: 100%; border: 1px solid var(--line); border-left: 3px solid var(--brand); background: var(--surface-2); padding: 8px 12px; border-radius: 6px; font-size: .92em; }
+.fwg-hintbox ul, .fwg-why ul { margin: 4px 0; padding-left: 18px; } .fwg-hintbox p { margin: 4px 0; }
+.nb-hint { margin-top: 4px; font-size: .92em; color: var(--muted); } .nb-hint summary { cursor: pointer; color: var(--brand); width: max-content; } .nb-hint p { margin: 2px 0 0; }
+.cvss-clues { margin: 6px 0 0; padding-left: 18px; } .cvss-clues li { margin: 3px 0; }
+.fwg-why { margin-top: 6px; } .fwg-why summary { cursor: pointer; color: var(--muted); }
 .fwg-guess[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand); border-color: rgba(var(--brand-rgb), 0.5); }
 .fwg-result .fwg-pass { color: var(--good); margin: 0 0 6px; } .fwg-result .fwg-fail { color: var(--sun); margin: 0 0 6px; }
 .fwg-done { color: var(--good); font-weight: 600; margin: 10px 0 0; }
