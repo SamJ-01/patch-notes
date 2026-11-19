@@ -293,6 +293,9 @@ await journey("works offline after a visit", async () => {
     .catch(() => problems.push("offline: the lesson's photo was never stored in the cache"));
   await ctx.setOffline(true); await page.reload();
   await page.waitForSelector(".sc-spot", { timeout: 8000 });
+  // As online: give the image time to finish loading (from the cache) before measuring it. CI's slower runner measured too
+  // early on 19 Nov and reported a photo that was cached and loading fine.
+  await page.waitForFunction(() => document.querySelector(".sc-photo img")?.complete, null, { timeout: 8000 }).catch(() => {});
   if (!(await page.evaluate(() => document.querySelector(".sc-photo img")?.naturalWidth))) problems.push("offline: the lesson's photo didn't load from the cache");
   if (!/Malware/i.test(await page.locator("h1").first().textContent())) problems.push("offline: the lesson didn't load from the cache");
   await ctx.close();
