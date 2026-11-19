@@ -306,5 +306,10 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   on the Agency hub (`img/kit/badge.webp`, live text over its blank panels), new explainers (zero-day, kill chain, process
   tree) and `SIGNATURE` in tests/smoke.mjs (the build fails if a key feature goes missing). Lab depth standard:
   `docs/lab-depth-standard.md`.
+- Published 19 Nov, second release (dev 16aefd2): the home hero is now a terminal screen (`.hh-monitor`: bezel, glass, headline
+  on the glass, live terminal window, no stand or caption; `?hero=photo` shows the desk photo), the Agency badge is the holder
+  only (`img/kit/badge-holder.webp`, its own file name so an old cached page never pairs with it; `badge.webp` stays as the
+  lanyard version), linking lines between the two visuals on the identity, encryption and attack-models lessons, finished
+  objectives fold to one line in the command-line labs, and the VLAN "Try it first" packet stops at the next switch's edge.
 - Next: learner feedback on the shift and the new labs, more Security+
   questions, more Agency shifts (one client and incident each; the people for a shift made in one image). No accounts/backend until real users need cross-device saves.
