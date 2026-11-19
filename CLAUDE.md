@@ -296,5 +296,15 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   is `#feedback`, linked from a nav tab (key 9, in the "You" group), every done card, the Agency debrief and the footer; `feedbackHref`/consumers drop `target=_blank`
   and the GitHub note for a hash link. To switch back to the GitHub issue form (`.github/ISSUE_TEMPLATE/feedback.yml`), set
   `feedback` to its URL. Tested: `tests/test_core.py` FeedbackForm (accepts either config).
+- Published 19 Nov (dev 33ece83): home hero (`static/js/hero.js`, a live terminal warped onto the desk photo's monitor),
+  SQL injection lab `#lab-sqli-shop` (`static/js/labs/sqli.js`), the switch front panel under the VLAN diagram
+  (`static/js/net/panel.js`), three-step hints in every command-line lab (`static/js/labs/guide.js` + `walk.js`: a written
+  `nudge`, the command's `shape` with values blanked, then the command with Run it; one hint box, in the objectives panel on
+  wide screens and above the terminal at 860 px and below), plain-English tips under shell errors (`explain`/`explainError`/
+  `explainPerm`), the network detective's "Where's the fault?" chain, wrong-answer `notes` on every question in the
+  exam-route labs (never naming the right answer; `WrongAnswerNotes` test), exam question spacing, the Lanternfield badge photo
+  on the Agency hub (`img/kit/badge.webp`, live text over its blank panels), new explainers (zero-day, kill chain, process
+  tree) and `SIGNATURE` in tests/smoke.mjs (the build fails if a key feature goes missing). Lab depth standard:
+  `docs/lab-depth-standard.md`.
 - Next: learner feedback on the shift and the new labs, more Security+
   questions, more Agency shifts (one client and incident each; the people for a shift made in one image). No accounts/backend until real users need cross-device saves.
