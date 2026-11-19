@@ -395,3 +395,35 @@ test("topic steps: a stage with several items lists them, with Previous and Next
   assert.match(long, /<details class="loop-all"><summary>All 14 experiments<\/summary>/);
   assert.match(c.f({ key: "diagnose", items: items(3) }, "#lab-x1", "Where this leaves the topic"), /aria-label="Where this leaves the topic: all cases"/, "the done card's copy has its own name");
 });
+
+// Patch as a helper: which option he rules out, and what he offers where.
+const hcx = {}; vm.createContext(hcx);
+vm.runInContext(fn("function ruleOutPick(n, answer") + "\n" + fn("function helpMenu(c = {})") + "\nthis.r = ruleOutPick; this.m = helpMenu;", hcx);
+test("Patch never rules out the answer, and always leaves two options", () => {
+  for (let seed = 0; seed < 50; seed++) {
+    const j = hcx.r(4, 2, [], seed); assert.ok(j >= 0 && j !== 2);
+    const k = hcx.r(4, 2, [j], seed); assert.ok(k >= 0 && k !== 2 && k !== j);
+    assert.equal(hcx.r(4, 2, [j, k], seed), -1);
+  }
+  assert.equal(hcx.r(2, 0, [], 3), -1);
+});
+test("Patch's menu fits the page and always offers what to do next", () => {
+  const ids = c => JSON.parse(JSON.stringify(hcx.m(c).map(x => x[0])));
+  assert.deepEqual(ids({ kind: "question", canRuleOut: true, hasWhere: true, hasHint: false, due: 0 }), ["rule", "where", "next"]);
+  assert.deepEqual(ids({ kind: "lesson", checks: true, keys: true, due: 2 }), ["quiz", "recap", "review", "next"]);
+  assert.deepEqual(ids({ kind: "page", due: 0 }), ["next"]);
+  assert.ok(hcx.m({ kind: "page", due: 1 })[0][1].includes("1 due card"));
+});
+
+test("shuffled options keep their wrong-answer notes with them", () => {
+  const src = template.match(/function shuffle\(arr[^\n]*\n/)[0] + template.match(/const mixOptions = [^\n]*\n/)[0];
+  const c = {}; vm.createContext(c); vm.runInContext(src + "; this.mix = mixOptions;", c);
+  const q = { options: ["a", "b", "c", "d"], answer: 2, notes: ["note a", "note b", null, "note d"] };
+  for (let seed = 1; seed < 30; seed++) {
+    let s = seed; const rand = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+    const m = c.mix(q, rand);
+    m.options.forEach((o, i) => assert.equal(m.notes[i], o === "c" ? null : "note " + o));
+    assert.equal(m.options[m.answer], "c");
+  }
+  assert.equal(c.mix({ options: ["x", "y"], answer: 0 }, Math.random).notes, undefined, "no notes, none added");
+});

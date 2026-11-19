@@ -270,6 +270,9 @@ export function tierCheck(tiers, flow) {
 }
 
 // ---------- the page
+export { fitSvgText } from "../svgfit.js";
+import { fitSvgText } from "../svgfit.js";
+
 export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = () => {} } = {}) {
   const C = lab.chapters, done = new Set(solved);
   const reduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -306,8 +309,17 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
       <div class="row jr-nav">${at > 0 ? `<button class="btn ghost" type="button" data-go="-1">‹ ${esc(C[at - 1].label)}</button>` : ""}${at < C.length - 1 ? `<button class="btn" type="button" data-go="1">Next: ${esc(C[at + 1].label)} ›</button>` : lab.next ? `<a class="btn" href="#lab-${esc(lab.next)}">Part ${lab.part + 1}: what happens once it's found ›</a>` : ""}</div>`;
     $("jr-ch").querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => { at += Number(b.dataset.go); show(true); }));
     SCENES[c.id]($("jr-body"), c, () => mark(c.id));
+    fitAll();
     if (focus) { $("jr-title").focus({ preventScroll: true }); $("jr-ch").scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" }); }
   }
+  // Refit the scene's labels after it draws, when its text changes (a lookup, an ARP reply) and when the phone
+  // breakpoint switches their size. Only text and child changes are watched, so the fitter's own moves don't loop.
+  const fitAll = () => root.querySelectorAll("#jr-body svg.jr-svg").forEach(svg => fitSvgText(svg));
+  let fitQueued = false;
+  const refit = () => { if (fitQueued) return; fitQueued = true; requestAnimationFrame(() => { fitQueued = false; fitAll(); }); };
+  if (typeof MutationObserver === "function") new MutationObserver(ms => { if (ms.some(m => m.target.nodeType === 3 || m.target.closest?.("svg") || [...m.addedNodes].some(n => n.nodeName === "svg" || n.querySelector?.("svg")))) refit(); })
+    .observe(root, { childList: true, subtree: true, characterData: true });
+  if (typeof matchMedia === "function") matchMedia("(max-width: 520px)").addEventListener?.("change", refit);
   // A packet that glides along a line in the scene's SVG (or jumps there with reduced motion).
   const fly = (svg, [x1, y1], [x2, y2], cls = "") => new Promise(res => {
     // The packet is a plain slab riding the cable; its edge colour says how it went (docs/diagram-standard.md).

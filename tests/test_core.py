@@ -921,6 +921,15 @@ class ContentIntegrity(unittest.TestCase):
                 if c["type"] in ("triad", "cards", "matrix", "scene"):
                     self.assertTrue(it.get("text"), f"{l['id']}: {it['label']} needs text")
 
+    def test_every_case_study_cites_a_primary_source(self):
+        """Each lesson's real case links to where the facts come from: a regulator, government, court, the company
+        or the researchers, over HTTPS. Wikipedia was the source for 21 of them until 18 Nov (checked one by one)."""
+        for l in self.lessons.values():
+            src = (l.get("example") or {}).get("source") or {}
+            self.assertTrue(src.get("label") and src.get("url"), f"{l['id']}: its case study needs a source")
+            self.assertTrue(src["url"].startswith("https://"), l["id"])
+            self.assertNotIn("wikipedia.org", src["url"], f"{l['id']}: cite the primary source, not Wikipedia")
+
     def test_labs_and_missions_point_to_real_lessons(self):
         for x in [*self.labs.values(), *(json.loads(f.read_text()) for f in (ROOT / "content" / "missions").glob("*.json"))]:
             if x.get("lesson"):
@@ -1196,3 +1205,53 @@ class PhotoScenes(unittest.TestCase):
                 b = int.from_bytes(data[21:25], "little"); w = (b & 0x3FFF) + 1; h = ((b >> 14) & 0x3FFF) + 1
             self.assertEqual((w, h), (c["image"]["width"], c["image"]["height"]), lid)
 
+
+
+class WrongAnswerNotes(unittest.TestCase):
+    """docs/lab-depth-standard.md: a wrong pick says why it's tempting and why it's wrong (a step's `notes`, one per option,
+    None at the answer). Every multiple-choice question in a lab on an exam route has them (19 Nov); others are added as written."""
+
+    def test_notes_line_up_and_exam_route_labs_have_them(self):
+        labs = {l["id"]: l for l in json.loads((ROOT / "content" / "labs.json").read_text())}
+        paths = json.loads((ROOT / "content" / "paths.json").read_text())
+        paths = paths["paths"] if isinstance(paths, dict) else paths
+        route = {(s.get("id") if isinstance(s, dict) else s) for p in paths if p.get("exam") for s in p.get("stops", p.get("steps", []))}
+        for lid, lab in labs.items():
+            for k, st in enumerate(lab.get("steps", [])):
+                if st.get("type", "choice") != "choice":
+                    continue
+                notes = st.get("notes")
+                if lid in route:
+                    self.assertTrue(notes, f"{lid} step {k}: exam-route labs need wrong-answer notes")
+                if not notes:
+                    continue
+                self.assertEqual(len(notes), len(st["options"]), f"{lid} step {k}: one note per option")
+                self.assertIsNone(notes[st["answer"]], f"{lid} step {k}: no note on the right answer")
+                for j, n in enumerate(notes):
+                    if j != st["answer"]:
+                        self.assertTrue(n and len(n) <= 220 and "\u2014" not in n, f"{lid} step {k} option {j}: a short note, no em dash")
+                        right = st["options"][st["answer"]].lower()
+                        self.assertFalse(len(right) >= 8 and right in n.lower(), f"{lid} step {k} option {j}: a note says why it's wrong, never what's right")
+
+
+class LabDepth(unittest.TestCase):
+    """docs/lab-depth-standard.md: labs brought up to the standard stay there. Add a lab id here once it meets it."""
+    DEEP_LABS = ["vlans", "intervlan", "linux-terminal", "net-detective", "recon-basics", "permissions"]
+
+    def test_deep_labs_meet_the_standard(self):
+        labs = {l["id"]: l for l in build.load_content()["labs"]} if hasattr(build, "load_content") else None
+        if labs is None:
+            data = json.loads((ROOT / "content" / "labs.json").read_text())
+            labs = {l["id"]: l for l in (data["labs"] if isinstance(data, dict) else data)}
+        for lid in self.DEEP_LABS:
+            lab = labs[lid]
+            self.assertTrue(lab.get("intro") and lab.get("simplification"), lid)
+            for t in lab.get("tasks", []):
+                self.assertTrue(t.get("hint"), f"{lid}/{t['id']} needs a hint")
+                self.assertTrue(t.get("why"), f"{lid}/{t['id']} needs a why")
+                self.assertTrue(t.get("walk"), f"{lid}/{t['id']} needs a walk")
+                self.assertTrue(t.get("nudge"), f"{lid}/{t['id']} needs a nudge (hint 1 of 3)")
+                for s in t["walk"]:
+                    self.assertTrue(len(s) >= 4 and s[3].strip(), f"{lid}/{t['id']}: every walk step says why")
+            for st in lab.get("steps", []):
+                self.assertTrue(st.get("hint") and st.get("where") and st.get("explain"), f"{lid}: each step needs hint, where, explain")

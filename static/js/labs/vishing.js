@@ -100,6 +100,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
       const chosen = b.options[picks[bi]], r = beatResult(b, picks[bi]);
       body = `<p class="vp-youline">You: ${gl(chosen.text)}</p>
         <p class="vp-verdict ${r.safe ? "ok" : "bad"}">${gl(r.feedback)}</p>
+        ${r.safe && r.flag ? `<p class="vp-flag">Red flag spotted: <b>${gl(r.flag)}</b></p>` : !r.safe && r.risk ? `<p class="vp-risk">What that would give away: ${gl(r.risk)}</p>` : ""}
         <button class="btn brand" type="button" id="vp-next">${bi < beats.length - 1 ? "They continue" : "Hang up"}</button>`;
     }
     $("vp-screen").innerHTML = `<div class="vp-call-head">

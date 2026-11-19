@@ -106,10 +106,20 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
       if (reduced) return resolve();
       const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
       g.setAttribute("class", `hs-pkt ${tone}`);
-      g.innerHTML = `<rect x="-22" y="-10" width="44" height="20" rx="4"/><text x="0" y="4">${esc(label)}</text>
-        <animateMotion dur="1.05s" path="${PATHS[route]}" fill="freeze" calcMode="linear"/>`;
-      svg.appendChild(g);
-      setTimeout(() => { g.remove(); resolve(); }, 1060);
+      g.innerHTML = `<rect x="-22" y="-10" width="44" height="20" rx="4"/><text x="0" y="4">${esc(label)}</text>`;
+      // Moved frame by frame along the route: an <animateMotion> added after load starts "in the past" in Safari and
+      // jumps straight to the end, so the packet teleported there.
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path"); path.setAttribute("d", PATHS[route]);
+      const len = path.getTotalLength(), at = k => { const p = path.getPointAtLength(len * k); g.setAttribute("transform", `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`); };
+      at(0); svg.appendChild(g);
+      let t0 = null;
+      const frame = now => {
+        if (!g.isConnected) return resolve();
+        t0 ??= now; const k = Math.min(1, (now - t0) / 1050); at(k);
+        if (k >= 1) { g.remove(); return resolve(); }
+        requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
     });
   }
 

@@ -130,5 +130,6 @@ function shuffle(arr, rand = Math.random) { const a = arr.slice(); for (let i = 
 // Small seeded random generator, so a shuffle can be the same all day (the daily challenge) yet differ tomorrow.
 const seededRand = seed => () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
 // Quiz questions are written with the answer wherever the author put it; mix the options so position gives nothing away.
-const mixOptions = (q, rand = Math.random) => { const order = shuffle(q.options.map((_, i) => i), rand); return { ...q, options: order.map(i => q.options[i]), answer: order.indexOf(q.answer) }; };
+// Per-option `notes` (why a wrong answer is tempting and why it's wrong) move with their options.
+const mixOptions = (q, rand = Math.random) => { const order = shuffle(q.options.map((_, i) => i), rand); return { ...q, options: order.map(i => q.options[i]), answer: order.indexOf(q.answer), ...(q.notes ? { notes: order.map(i => q.notes[i]) } : {}) }; };
 

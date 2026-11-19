@@ -283,6 +283,7 @@ function route() {
     if (!confirm(LEAVE_SHIFT)) { history.replaceState(null, "", lastHash || "#today"); return; }
   }
   agencyShift = null; lastHash = location.hash;
+  helpCtx = null; helpClose();
   noteCrumb(location.hash || "#today");
   noteLastActivity(location.hash);
   const r = parseRoute();
@@ -424,13 +425,105 @@ function patchCanPop() {
   return PATCH_HALLWAY.has(parseRoute().path);
 }
 function patchSay(tip, hold = 8000) {
-  if (!patchEl) return;
+  if (!patchEl || patchEl.classList.contains("open")) return;
   const fig = patchEl.querySelector(".pn-co-figure"), bubble = patchEl.querySelector(".pn-co-bubble");
   fig.innerHTML = PATCH.svg(prefersReduced() ? "happy" : "wave", { size: 66, id: "co" });
   bubble.innerHTML = `${gloss(tip.text, 1)}${tip.href ? ` <a href="${esc(tip.href)}">${esc(tip.cta)} →</a>` : ""}`;
   bubble.hidden = false;
   clearTimeout(patchBubbleTimer);
   patchBubbleTimer = setTimeout(() => { if (!patchEl) return; bubble.hidden = true; fig.innerHTML = PATCH.svg("idle", { size: 66, id: "co" }); }, hold);
+}
+/* Patch as a helper (19 Nov): tap him for help with what is on screen. A page says what he can do with PN_help({...})
+   (route() clears it): an evidence lab question (rule a wrong option out, show where to look, the step's hint), a lesson
+   (quiz me from its checks, recap its key ideas), an Agency shift (the lead's hint, when Guided offers one). Everywhere:
+   due review cards and "What should I do next?". He never gives an answer away. ruleOutPick and helpMenu are pure (page.test). */
+let helpCtx = null;
+globalThis.PN_help = ctx => { helpCtx = ctx || null; };
+// Which wrong option to strike: never the answer or one already struck, and always leave the answer plus one other.
+function ruleOutPick(n, answer, struck, seed) {
+  const left = []; for (let j = 0; j < n; j++) if (j !== answer && !struck.includes(j)) left.push(j);
+  return left.length < 2 ? -1 : left[Math.abs(Math.floor(seed)) % left.length];
+}
+// What Patch offers for a context: [id, label] pairs, always ending with "What should I do next?".
+function helpMenu(c = {}) {
+  const m = [];
+  if (c.kind === "question") { if (c.canRuleOut) m.push(["rule", "Rule one out"]); if (c.hasWhere) m.push(["where", "Show me where to look"]); if (c.hasHint) m.push(["hint", "Give me a hint"]); }
+  if (c.kind === "lesson") { if (c.checks) m.push(["quiz", "Quiz me on this"]); if (c.keys) m.push(["recap", "Recap the key ideas"]); }
+  if (c.kind === "shift") m.push(["lead", "Ask the lead for a hint"]);
+  if (c.due > 0) m.push(["review", `Review ${c.due} due card${c.due === 1 ? "" : "s"}`]);
+  m.push(["next", "What should I do next?"]);
+  return m;
+}
+function helpNow() {
+  const due = typeof reviewDueCount === "function" ? reviewDueCount() : 0;
+  if (helpCtx?.kind === "lab") {
+    const q = helpCtx.current();
+    if (q) { const st = q.step; return { kind: "question", q, due, title: `Question ${q.i + 1}. How can I help?`,
+      canRuleOut: st.type === "choice" && ruleOutPick(st.options.length, st.answer, q.struck, 0) >= 0, hasWhere: !!st.where, hasHint: !!st.hint }; }
+    return { kind: "done", due, title: "Every question here is answered. Nice work." };
+  }
+  if (helpCtx?.kind === "lesson") { const l = helpCtx.lesson; return { kind: "lesson", l, due, title: "Want to check it's sunk in?", checks: (l.checks || []).length > 0, keys: (l.keys || []).length > 0 }; }
+  if ($("ag-hint")) return { kind: "shift", due, title: "Stuck on this alert?" };
+  return { kind: "page", due, title: "Need a hand?" };
+}
+// The next thing to do: from this page's own next step, else an unfinished lab or shift, else a lesson not yet done.
+function helpNext() {
+  const r = parseRoute().path, m = /^(learn|missions)\/(.+)$/.exec(r);
+  let n = null;
+  if (m) n = nextStep(m[1] === "learn" ? "lesson" : LAB[m[2]] ? "lab" : "mission", m[2]);
+  if (!n) { let raw = null; try { raw = localStorage.getItem(LAST_KEY); } catch (e) {} const a = lastActivity(raw); if (a && a.href !== location.hash) n = { label: a.label, href: a.href, why: `Pick up your ${a.kind.toLowerCase()}` }; }
+  if (!n) { const l = DATA.lessons.find(x => !P.done[x.id]); if (l) n = { label: l.title, href: "#lesson-" + l.id, why: "A lesson you haven't done yet" }; }
+  return n;
+}
+let helpQuiz = null;
+function helpOpen(c = helpNow(), lead = "") {
+  if (!patchEl) return;
+  const bubble = patchEl.querySelector(".pn-co-bubble");
+  clearTimeout(patchBubbleTimer);
+  patchEl.querySelector(".pn-co-figure").innerHTML = PATCH.svg(prefersReduced() ? "happy" : "wave", { size: 66, id: "co" });
+  bubble.innerHTML = `${lead ? `<div class="pn-co-said">${lead}</div>` : ""}<p class="pn-co-title">${esc(c.title)}</p>
+    <div class="pn-co-acts">${helpMenu(c).map(([id, label]) => `<button type="button" class="chip" data-help="${id}">${esc(label)}</button>`).join("")}</div>`;
+  bubble.hidden = false; patchEl.classList.add("open");
+  patchEl.querySelector(".pn-co-figure").setAttribute("aria-expanded", "true");
+}
+function helpClose() {
+  if (!patchEl) return;
+  patchEl.querySelector(".pn-co-bubble").hidden = true; patchEl.classList.remove("open"); helpQuiz = null;
+  patchEl.querySelector(".pn-co-figure").setAttribute("aria-expanded", "false");
+  patchEl.querySelector(".pn-co-figure").innerHTML = PATCH.svg("idle", { size: 66, id: "co" });
+}
+function helpAct(id) {
+  const c = helpNow();
+  if (id === "rule" && c.q) {
+    const st = c.q.step, j = ruleOutPick(st.options.length, st.answer, c.q.struck, Date.now() / 997);
+    if (j < 0) return helpOpen(helpNow(), "Only two left now. One of them is right: check the evidence.");
+    helpCtx.ruleOut(c.q.i, j);
+    const left = st.options.length - c.q.struck.length - 1;
+    return helpOpen(helpNow(), `Not <b>${esc(st.options[j])}</b>. ${left} left to choose from.`);
+  }
+  if (id === "where" && c.q) { helpCtx.where(c.q.i); return helpOpen(helpNow(), "I've marked where to look in the evidence."); }
+  if (id === "hint" && c.q) return helpOpen(helpNow(), gloss(c.q.step.hint, 1));
+  if (id === "lead") { $("ag-hint")?.click(); return helpOpen(helpNow(), "Asked. The hint is in the alert panel."); }
+  if (id === "recap" && c.l) return helpOpen(c, `<ul class="pn-co-keys">${c.l.keys.map(k => `<li><b>${esc(k.label)}</b> ${esc(k.text)}</li>`).join("")}</ul>`);
+  if (id === "quiz" && c.l) {
+    const qs = c.l.checks, k = (helpQuiz?.k ?? Math.floor(Math.random() * qs.length)) % qs.length, q = mixOptions(qs[k], seededRand(Date.now() % 100000));  // the written answer is often first
+    helpQuiz = { k: k + 1, q };
+    const bubble = patchEl.querySelector(".pn-co-bubble");
+    bubble.innerHTML = `<p class="pn-co-title">${gloss(q.q, 1)}</p><div class="pn-co-acts col">${q.options.map((o, j) => `<button type="button" class="chip" data-qa="${j}">${esc(o)}</button>`).join("")}</div>`;
+    bubble.querySelector("[data-qa]")?.focus({ preventScroll: true });
+    return;
+  }
+  if (id === "review") { helpClose(); location.hash = "#review"; return; }
+  if (id === "next") {
+    const n = helpNext();
+    return helpOpen(c, n ? `${esc(n.why)}: <a href="${esc(n.href)}">${esc(n.label)} →</a>` : "You've done every lesson. Try a timed mock on the exams tab.");
+  }
+}
+function helpAnswer(j) {
+  const q = helpQuiz?.q; if (!q) return;
+  const ok = j === q.answer;
+  helpOpen(helpNow(), `<b class="${ok ? "ok" : "no"}">${ok ? "Right." : `Not quite: it's ${esc(q.options[q.answer])}.`}</b> ${gloss(q.why || "", 1)}`);
+  const more = patchEl.querySelector('[data-help="quiz"]'); if (more) more.textContent = "Another question";
 }
 // Bridge so on-demand lab modules (static/js/labs/*.js) can let Patch react in character to a moment in a lab.
 // No-ops when Patch is hidden or not mounted, so a lab never depends on it. Kept brief; the lab's own result
@@ -453,12 +546,24 @@ function mountCompanion() {
   patchEl.className = "pn-companion";
   patchEl.innerHTML = `<button class="pn-co-close" aria-label="Hide Patch" title="Hide Patch">×</button>
     <div class="pn-co-bubble" role="status" aria-live="polite" hidden></div>
-    <button class="pn-co-figure" aria-label="Patch — say hello">${PATCH.svg("idle", { size: 66, id: "co" })}</button>`;
+    <button class="pn-co-figure" aria-label="Patch, your helper: ask for help" aria-expanded="false">${PATCH.svg("idle", { size: 66, id: "co" })}</button>`;
   document.body.appendChild(patchEl);
   patchEl.querySelector(".pn-co-close").addEventListener("click", () => { setPatchHidden(true); unmountCompanion(); toast("Patch hidden. Turn back on in You."); });
-  patchEl.querySelector(".pn-co-figure").addEventListener("click", () => { patchSay(patchReason() || { text: "All set. I'm here if you need me." }, 6500); patchLastActive = Date.now(); });
+  patchEl.querySelector(".pn-co-figure").addEventListener("click", e => {
+    patchLastActive = Date.now();
+    if (patchEl.classList.contains("open")) return helpClose();
+    helpOpen();
+    if (e.detail === 0) patchEl.querySelector("[data-help]")?.focus({ preventScroll: true });  // opened from the keyboard
+  });
+  patchEl.querySelector(".pn-co-bubble").addEventListener("click", e => {
+    const h = e.target.closest("[data-help]"), qa = e.target.closest("[data-qa]");
+    if (h) { helpAct(h.dataset.help); patchEl.querySelector(".pn-co-acts button")?.focus({ preventScroll: true }); }
+    else if (qa) helpAnswer(Number(qa.dataset.qa));
+    else if (e.target.closest("a")) helpClose();
+  });
+  patchEl.addEventListener("keydown", e => { if (e.key === "Escape" && patchEl.classList.contains("open")) { helpClose(); patchEl.querySelector(".pn-co-figure").focus(); } });
   // Wave hello once a session, shortly after you arrive.
-  if (!patchHeloed()) setTimeout(() => { if (patchEl && !document.hidden) { patchSay({ text: "Hey, I'm Patch. I'll keep you company while you learn." }, 7000); try { sessionStorage.setItem("pn-hello", "1"); } catch (e) {} } }, prefersReduced() ? 1500 : 6000);
+  if (!patchHeloed()) setTimeout(() => { if (patchEl && !document.hidden) { patchSay({ text: "Hey, I'm Patch. Stuck on something? Tap me for a hand." }, 7000); try { sessionStorage.setItem("pn-hello", "1"); } catch (e) {} } }, prefersReduced() ? 1500 : 6000);
   if (!patchListening) { patchListening = true; ["pointerdown", "keydown", "scroll"].forEach(ev => addEventListener(ev, patchBump, { passive: true })); document.addEventListener("visibilitychange", () => { if (!document.hidden) patchBump(); }); }
   patchIdleTimer = setInterval(patchTick, 5000);
 }

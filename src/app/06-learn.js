@@ -182,7 +182,7 @@ function certCard(c, i) {
   const route = (DATA.paths || []).find(p => p.exam === c.id), stops = route ? (route.steps || route.stops || []).length : 0;
   return `<a class="lcard exam-card" href="#cert-${esc(c.id)}"><span class="eyebrow">${typeof i === "number" ? `Step ${i + 1} · ` : ""}${esc(c.exam)}</span><h3>${esc(c.name)}</h3>
     <p>${esc(c.card || "Practice questions, timed mock exams, a step-by-step route and where to study the rest.")}</p>
-    <dl class="exam-facts"><div><dt>Questions</dt><dd>${c.questions.length}</dd></div>${(c.pbqs || []).length ? `<div><dt>PBQs</dt><dd>${c.pbqs.length}</dd></div>` : ""}<div><dt>${unit[0].toUpperCase() + unit.slice(1)}</dt><dd>${objs.length}</dd></div>${stops ? `<div><dt>Route</dt><dd>${stops} stops</dd></div>` : ""}</dl>
+    <dl class="exam-facts"><div><dt>Questions</dt><dd>${c.questions.length}</dd></div>${(c.pbqs || []).length ? `<div><dt>PBQs</dt><dd>${c.pbqs.length}</dd></div>` : ""}<div><dt>${unit[0].toUpperCase() + unit.slice(1)}</dt><dd>${objs.length}</dd></div>${stops ? `<div><dt>Stops</dt><dd>${stops}</dd></div>` : ""}</dl>
     <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(practised / objs.length * 100)}%"></i></span><span>${practised} of ${objs.length} practised</span></div></a>`;
 }
 // Practice question results: { [questionId]: { r: times right, w: times wrong, last: 1|0 } }
@@ -621,7 +621,9 @@ function lessonView(id) {
   const both = l.id === "identity" || l.id === "encryption";
   const showDiagram = !!l.diagram && (scene || !l.explainer);
   const showExplainer = !!l.explainer && (!showDiagram || both);
-  const showConcept = !!l.concept && !showExplainer && !showDiagram;
+  // A concept usually gives way to an explainer; `explainer.withConcept` keeps both (attack models: the kill chain
+  // walked through, then all four models side by side).
+  const showConcept = !!l.concept && !showDiagram && (!showExplainer || !!l.explainer?.withConcept);
   // A lesson can also have a photo scene (l.scene) beside its concept diagram: the panel then opens on the photo,
   // with a Photo / Diagram switch, so neither teaching picture is lost.
   const showScene = !!l.scene && (showConcept || !picturePre(l));
@@ -637,6 +639,7 @@ function lessonView(id) {
       ${showScene ? `<div id="l-scene" tabindex="-1">${l.scene.why ? `<p class="muted xpl-why">${gloss(l.scene.why, 2)}</p>` : ""}<div id="lscene"><div class="empty">Loading the photo…</div></div></div>` : ""}
       ${showConcept ? `<div id="l-concept" tabindex="-1"${showScene ? " hidden" : ""}>${l.concept.why ? `<p class="muted xpl-why">${gloss(l.concept.why, 2)}</p>` : ""}<div id="lconcept"><div class="empty">Loading the diagram…</div></div></div>` : ""}
     </section>`) : "";
+  if (typeof PN_help === "function") PN_help({ kind: "lesson", lesson: l });
   main.innerHTML = `<div class="view"><article class="article lesson">
     <a class="link-btn" href="#learn">← All lessons</a>
     <header class="lesson-open"><p class="eyebrow">${esc(l.track)} · ${esc(l.level)} · ${l.minutes} min</p><h1>${esc(l.title)}</h1></header>

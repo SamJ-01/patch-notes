@@ -1,6 +1,8 @@
 // Simulated Linux terminal: a small set of real commands over a file system defined in content/labs.json.
 // createShell() is pure logic (tested in tests/labs.test.mjs); mount() is the on-page terminal.
 
+import { guide, dock } from "./guide.js";
+
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const clone = v => JSON.parse(JSON.stringify(v));
 
@@ -385,7 +387,60 @@ export function createShell(lab) {
     return { line: prefix.slice(0, prefix.length - last.length) + full, options: [] };
   }
 
-  return { state, run, isDone, complete, prompt: () => `${user}@${lab.host}:${short(state.cwd)}$` };
+  // Guided mode: does a typed line do the same as a walk step? Paths are compared once resolved (cat notes.txt in your
+  // home is cat ~/notes.txt), quotes and spacing don't count, and a bare ls means ls of the folder you're in.
+  function canon(line) {
+    return splitPipes(String(line).trim()).map(seg => {
+      let [cmd, ...args] = tokenize(seg.trim()); if (!cmd) return "";
+      if (ALIASES[cmd]) { const [c, ...a] = tokenize(ALIASES[cmd]); cmd = c; args = [...a, ...args]; }
+      const flags = args.filter(a => /^-[a-zA-Z]+$/.test(a)).join("").replace(/-/g, "").split("").sort().join("");
+      let words = args.filter(a => !/^-[a-zA-Z]+$/.test(a));
+      const pathy = (w, i) => w === "~" || w === "." || w === ".." || /[\/~]/.test(w) || (i > 0 || cmd !== "grep") && !!node(resolve(w));
+      if (cmd === "ls" && !words.length) words = ["."];
+      if (cmd.includes("/") || cmd.startsWith(".")) cmd = resolve(cmd);
+      return [cmd, flags && "-" + flags, ...words.map((w, i) => (cmd === "find" && words[i - 1] === "-name") || cmd === "chmod" && i === 0 ? w : pathy(w, i) ? resolve(w) : w)].filter(Boolean).join(" ");
+    }).join(" | ");
+  }
+  const same = (a, b) => canon(a) === canon(b);
+
+  // Failsafes: bash's own error says what failed, not why. explain() adds one plain line for the usual slips, or null.
+  // Call it straight after run(line) returned res (it reads the state as it is now). Pure; tested in tests/walk.test.mjs.
+  const KNOWN = [...Object.keys(MAN), ...Object.keys(ALIASES), ...REAL];
+  const WINDOWS = { dir: "ls", cls: "clear", type: "cat", copy: "cp", del: "rm", move: "mv", ipconfig: "ip a", md: "mkdir", "cd..": "cd ..", findstr: "grep" };
+  const near = (a, b) => { if (Math.abs(a.length - b.length) > 1 || a === b) return false; let i = 0; while (i < a.length && a[i] === b[i]) i++; return a.slice(i + 1) === b.slice(i + 1) || a.slice(i + 1) === b.slice(i) || a.slice(i) === b.slice(i + 1) || (a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2)); };
+  function explain(line, res) {
+    const raw = String(line).trim(); if (!raw || !res || !res.error) return null;
+    const msg = res.out || "", toks = tokenize(splitPipes(raw)[0] || ""), cmd = toks[0] || "", here = short(state.cwd);
+    if (/syntax error near unexpected token `\|'/.test(msg)) return "A pipe needs a command on both sides, for example grep Failed auth.log | wc -l.";
+    if (/command not found/.test(msg)) {
+      if (WINDOWS[cmd.toLowerCase()]) return `${cmd} is a Windows command. On Linux it's ${WINDOWS[cmd.toLowerCase()]}.`;
+      if (cmd !== cmd.toLowerCase() && KNOWN.includes(cmd.toLowerCase())) return `Linux commands are lower case, and so are most file names: type ${cmd.toLowerCase()}.`;
+      const f = node(resolve(cmd)); if (f && f.type === "file") return `bash doesn't run programs from the folder you're in unless you say so. Type ./${cmd} (./ means "in this folder").`;
+      const guess = Object.keys(MAN).find(k => near(cmd, k)); if (guess) return `Did you mean ${guess}?`;
+      return null;
+    }
+    if (cmd === "sudo") return "You don't need sudo in this lab: everything it asks for is in folders you own or can read. On a real server, sudo is for when you must act as root.";
+    if (/^bash: .*: Permission denied$/.test(msg)) { const n = node(resolve(cmd)); return n && n.owner === user ? `The script isn't marked as runnable (no x in its permissions; ls -l ${cmd} shows them). You own it, so chmod +x ${cmd} fixes that.` : "You can't run this file: its permissions don't allow it, and you don't own it."; }
+    if (/^bash: .*: Is a directory$/.test(msg)) return "That's a folder, not a program. cd goes into it; ls lists what's inside.";
+    if (cmd === "cd" && /Not a directory/.test(msg)) return `${toks[1]} is a file, so cd can't go into it. To read it, use cat ${toks[1]}.`;
+    if (cmd === "rm" && /Is a directory/.test(msg)) return "rm deletes files. A folder needs rm -r, which deletes everything inside it too: check with ls first.";
+    if (cmd === "chmod" && /invalid mode/.test(msg)) return "To make a file runnable, use chmod +x file. + adds and - removes; r, w and x are read, write and execute.";
+    if (cmd === "chmod" && /not permitted/.test(msg)) return "Only a file's owner (or root) can change its permissions. ls -l shows who owns it.";
+    if (/Permission denied/.test(msg)) return "Your user isn't allowed to do that here. ls -l shows a file's owner and permissions; your home folder and /tmp are yours to write in.";
+    if ((cmd === "mkdir" || cmd === "touch") && /No such file or directory/.test(msg)) return "The folder it goes in doesn't exist yet. Make that folder first with mkdir (mkdir -p makes every folder in the path).";
+    if (cmd === "grep" && toks.length > 3 && /No such file or directory/.test(msg) && !/["']/.test(raw)) return `grep took ${toks[2]} as a file name. To search for a phrase with a space in it, put it in quotes: grep "${toks[1]} ${toks[2]}" ${toks.slice(3).join(" ")}.`;
+    const m = msg.match(/(?:'([^']+)'|: ([^:]+): No such file or directory)/), bad = m && (m[1] || m[2]);
+    if (bad && /No such file or directory/.test(msg)) {
+      const p = resolve(bad), lower = Object.keys(state.fs).find(q => q.toLowerCase() === p.toLowerCase());
+      if (lower) return `Names are case-sensitive on Linux: it's ${base(lower)}, not ${base(p)}.`;
+      const elsewhere = Object.keys(state.fs).filter(q => base(q) === base(p) && state.fs[q].type === "file");
+      if (elsewhere.length === 1) return `There's no ${base(p)} in ${here}. It's at ${elsewhere[0]}: use that full path, or cd to its folder first.`;
+      return `Nothing called ${bad} in ${here}. ls shows what's here, and Tab completes names so typos can't creep in.`;
+    }
+    return null;
+  }
+
+  return { state, run, isDone, complete, same, canon, explain, prompt: () => `${user}@${lab.host}:${short(state.cwd)}$` };
 }
 
 export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = () => {}, onReset = () => {} } = {}) {
@@ -398,15 +453,17 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     <div class="view-head"><a class="link-btn" href="#missions">← Missions</a>
       <div class="eyebrow">Lab · ${esc(lab.track)} · ${lab.minutes} min</div><h1>${esc(lab.title)}</h1><p>${esc(lab.intro)}</p></div>
     <div class="term-grid">
-      <section class="term-shell" aria-label="Simulated terminal">
+      <section class="term-shell t-guided" aria-label="Simulated terminal">
+        <div class="vl-now" id="t-now" aria-live="polite"></div>
         <div class="term-bar"><span>${esc(lab.user)}@${esc(lab.host)}</span><span class="tag">Simulated</span></div>
         <div class="term-out" id="t-out" aria-live="polite" tabindex="0" aria-label="Terminal output"></div>
         <form class="term-in" id="t-form"><label class="sr" for="t-in">Command</label><span class="term-ps" id="t-ps"></span><input id="t-in" autocomplete="off" autocapitalize="off" spellcheck="false"></form>
       </section>
       <aside class="panel term-tasks"><div class="panel-title"><h2>Objectives</h2><span class="mono" id="t-count"></span></div><ol id="t-tasks"></ol>
-        <div class="row"><button class="link-btn" id="t-hint">Show a hint</button></div><div id="t-hinttext"></div>
+        <div id="t-hintslot"></div>
         <div class="row"><button class="btn ghost" id="t-reset">↺ Reset lab</button></div></aside>
     </div>
+    ${lab.simplification ? `<details class="simplification"><summary>How this simulation differs from the real thing</summary><p>${esc(lab.simplification)}</p></details>` : ""}
     <section class="panel" id="t-next" hidden><h2>Ready for a real terminal?</h2><p class="muted">This one only knows a handful of commands. Practise on the real thing:</p>
       <ul>${lab.next.map(n => `<li><a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.label)} ↗</a></li>`).join("")}</ul></section>
   </div>`;
@@ -427,20 +484,24 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     const next = lab.tasks.find(t => !done.has(t.id));
     $("t-tasks").innerHTML = lab.tasks.map(t => `<li class="${done.has(t.id) ? "got" : t === next ? "now" : ""}">${done.has(t.id) ? "✓ " : ""}${esc(t.text)}</li>`).join("");
     $("t-count").textContent = `${done.size}/${lab.tasks.length}`;
-    $("t-hinttext").innerHTML = "";
-    $("t-hint").hidden = !next;
     if (!next) { $("t-next").hidden = false; if (!finished) { finished = true; onComplete(); } }
   }
   const ps = () => { $("t-ps").textContent = sh.prompt(); };
+
+  // Objective strip, on-demand hints with Run it, tips and the rescue: static/js/labs/guide.js (shared with the network tools labs).
+  const g = guide($("t-now"), lab, { done, input, form: $("t-form"), same: sh.same });
 
   $("t-form").addEventListener("submit", e => {
     e.preventDefault();
     const line = input.value;
     print(`<div><span class="term-ps">${esc(sh.prompt())}</span> ${esc(line)}</div>`);
+    const pre = g.before();
     const res = sh.run(line);
     if (res.clear) out.innerHTML = ""; else print(format(res));
+    const tip = sh.explain(line, res);  // bash says what failed; this says why, in plain words
+    if (tip) print(`<div class="t-tip">[Tip: ${esc(tip)}]</div>`);
     input.value = ""; histI = null;
-    ps(); renderTasks();
+    ps(); renderTasks(); g.after(line, res, pre); g.draw();
   });
   input.addEventListener("keydown", e => {
     const h = sh.state.history;
@@ -455,9 +516,9 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     else if (e.key === "l" && e.ctrlKey) { e.preventDefault(); out.innerHTML = ""; }
   });
   out.addEventListener("click", () => input.focus());
-  $("t-hint").addEventListener("click", () => { const t = lab.tasks.find(x => !done.has(x.id)); if (t) $("t-hinttext").innerHTML = `<div class="feedback">Try: <code>${esc(t.hint)}</code></div>`; });
+  dock($("t-now"), $("t-hintslot"), root.querySelector(".term-shell"));  // one hint area: the panel, or above the terminal on a phone
   $("t-reset").addEventListener("click", onReset);
 
   print(`<div class="muted">Welcome to ${esc(lab.host)}. Type <b>help</b> to list commands. ↑/↓ for history, Tab to complete names.</div>`);
-  ps(); renderTasks();
+  ps(); renderTasks(); g.draw();
 }

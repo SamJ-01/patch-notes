@@ -56,6 +56,39 @@ for (const route of ROUTES) for (const [width, theme] of [[1280, "dark"], [390, 
   await page.close();
 }
 
+// Signature features: the thing that makes each of these pages worth visiting must still be there. A rewrite once
+// dropped the VLAN lab's live colour-coded diagram and addressing table (10 Nov) and nothing noticed until the owner
+// did (19 Nov); if one of these goes missing, the build fails instead.
+const SIGNATURE = {
+  "#agency": [".ag-badge > img", ".ag-b-name", ".ag-b-stamps .ag-bstamp"],
+  "#lab-vlans": ["#v-diagram svg", "#v-diagram [data-seg]", ".vl-table table", "#v-now", "#v-tasks li", "#v-panel .sw-panel", "#v-now [data-nowhint]"],
+  "#lab-intervlan": ["#v-diagram svg", ".vl-table table", "#v-now", "#v-now [data-nowhint]"],
+  "#lab-linux-terminal": ["#t-now", "#t-now [data-nowhint]", "#t-tasks li", "#t-in"],
+  "#lab-net-detective": ["#t-now", "#t-now [data-nowhint]", "#t-tasks li", "#nd-links .nd-link"],
+  "#lab-recon-basics": ["#t-now", ".scope-note", "#t-tasks li"],
+  "#lab-permissions": ["#pm-now [data-nowhint]", "#pm-matrix table", ".pm-bits", "#pm-tasks li"],
+  "#lab-network-builder": ["main svg"],
+  "#lab-firewall-packet": ["#fwg-chip", ".fwg-rule"],
+  "#lab-telnet-ssh": ["#tap-svg", "#tap-go"],
+  "#lab-sqli-shop": [".bw #ws-u", "#sq-behind", "#sq-safe"],
+  "#lab-malware-tree": [".pt-node", "#lab-pre"],
+  "#lesson-networking": [".flow.is-route .route-slab", ".route-lit"],
+  "#lesson-zero-day": [".zd-svg", "#zd-n"],
+  "#lesson-attack-models": [".kc-chain", "[data-run]"],
+  "#lesson-ransomware": ["main .xpl"],
+  "#today": [".home-hero .hh-screen"],
+};
+await journey("signature features", async () => {
+  for (const [route, sels] of Object.entries(SIGNATURE)) {
+    const page = await open(route, 1280, "dark");
+    for (const sel of sels) {
+      const found = await page.waitForSelector(sel, { state: "attached", timeout: 6000 }).then(() => true, () => false);
+      if (!found) problems.push(`${route}: its signature feature "${sel}" is missing`);
+    }
+    await page.close();
+  }
+});
+
 // Keyboard accessibility: the first Tab reveals the skip link and Enter moves focus to main.
 await journey("skip navigation", async () => {
   const page = await open("#today", 390, "dark");
@@ -267,4 +300,4 @@ await journey("works offline after a visit", async () => {
 
 await browser.close(); server.close();
 if (problems.length) { console.error(problems.join("\n")); console.error(`\n${problems.length} problem(s)`); process.exit(1); }
-console.log(`Smoke test passed: ${ROUTES.length} routes at desktop and phone, a lab, a shadowed shift, a route, two PBQs and offline.`);
+console.log(`Smoke test passed: ${ROUTES.length} routes at desktop and phone, signature features on ${Object.keys(SIGNATURE).length} pages, a lab, a shadowed shift, a route, two PBQs and offline.`);

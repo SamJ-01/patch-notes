@@ -243,6 +243,7 @@ import * as nettools from "../static/js/labs/nettools.js";
 test("nettools: tools reflect the simulated network and complete the objectives", () => {
   const L = lab("net-detective"), sh = nettools.createNetShell(L);
   assert.match(sh.run("ipconfig").out, /192\.168\.1\.50/);
+  assert.match(sh.run("ping www.example.com").out, /cannot resolve/, "the user's complaint reproduces");
   assert.ok(!sh.run("ping 192.168.1.1").error, "the gateway is up");
   assert.ok(!sh.run("ping 8.8.8.8").error, "the internet is reachable");
   assert.match(sh.run("nslookup www.example.com").out, /timed out/i, "the configured DNS server is down");

@@ -38,7 +38,8 @@ export function watchList(shift) {
     name = name.replace(/\s*\(([^)]+)\)\s*$/, (_, t) => { tags.push(t.trim()); return ""; });
     const colon = name.indexOf(": ");
     if (colon > 0) { tags.unshift(name.slice(colon + 2).trim()); name = name.slice(0, colon).trim(); }
-    const about = String(src.about || "").trim().split(/(?<=\.)\s/)[0];
+    // first sentence (up to the first full stop followed by a space); no look-behind, which iOS before 16.4 cannot parse
+    const full = String(src.about || "").trim(), first = full.match(/^[\s\S]*?\.(?=\s)/), about = first ? first[0] : full;
     return { id, icon: sourceIcon(id, src), name, tag: tags.filter(Boolean).join(" · "), about };
   });
 }

@@ -62,17 +62,42 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   }
   function markPart(k) { if (done.has(k)) return; done.add(k); onPart(k); drawParts(); if (done.has("telnet") && done.has("ssh")) markPart("compare"); if (["telnet", "ssh", "compare"].every(x => done.has(x))) onComplete(); }
 
+  // The packet slides along the wire (drawn frame by frame, so it moves in every browser: an <animateMotion> added after
+  // the page loads starts "in the past" in Safari and jumps to its end). As it passes under the eavesdropper the tap
+  // strikes down onto it, the packet flashes, and a copy rises to the eavesdropper; then the packet carries on.
   function packet(label, tone, fromClient) {
     return new Promise(resolve => {
-      if (reduced) return resolve();
-      const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-      g.setAttribute("class", `tap-pkt ${tone}`);
-      g.innerHTML = `<rect x="-30" y="-9" width="60" height="18" rx="4"/><text x="0" y="4">${esc(label.length > 10 ? label.slice(0, 9) + "…" : label)}</text>
-        <animateMotion dur="1.2s" path="${fromClient ? "M70 110 L350 110" : "M350 110 L70 110"}" fill="freeze" calcMode="linear"/>`;
-      svg.appendChild(g);
-      // Flash the tap as the packet passes under the eavesdropper.
-      setTimeout(() => { $("tap-svg").querySelector(".tap-tap")?.classList.add("live"); setTimeout(() => $("tap-svg").querySelector(".tap-tap")?.classList.remove("live"), 270); }, 540);
-      setTimeout(() => { g.remove(); resolve(); }, 1210);
+      const NS = "http://www.w3.org/2000/svg", Y = 110, MID = 210, TOP = 62, from = fromClient ? 70 : 350, to = fromClient ? 350 : 70;
+      const short = esc(label.length > 10 ? label.slice(0, 9) + "…" : label);
+      const g = document.createElementNS(NS, "g"); g.setAttribute("class", `tap-pkt ${tone}`);
+      g.innerHTML = `<rect x="-30" y="-9" width="60" height="18" rx="4"/><text x="0" y="3">${short}</text>`;
+      const strike = document.createElementNS(NS, "line"); strike.setAttribute("class", "tap-strike");
+      const copy = document.createElementNS(NS, "g"); copy.setAttribute("class", `tap-copy ${tone}`);
+      copy.innerHTML = `<rect x="-24" y="-7" width="48" height="14" rx="3"/><text x="0" y="2.5">${short}</text>`;
+      svg.append(strike, g, copy);
+      const place = (el, x, y, sc = 1, op = 1) => { el.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${sc})`); el.style.opacity = op; };
+      const reach = y => { strike.setAttribute("x1", MID); strike.setAttribute("x2", MID); strike.setAttribute("y1", TOP); strike.setAttribute("y2", y.toFixed(1)); };
+      const done = () => { g.remove(); strike.remove(); copy.remove(); resolve(); };
+      if (reduced) {  // no motion: show the moment of capture, then move on
+        place(g, MID, Y); reach(Y - 9); g.classList.add("hit"); place(copy, MID, 46, 0.9, 0.9);
+        return setTimeout(done, 900);
+      }
+      const ease = t => t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2, clamp = t => Math.max(0, Math.min(1, t)), lerp = (a, b, t) => a + (b - a) * t;
+      // ms: travel to the tap 0-750, strike 750-880, copy rises 880-1250, strike lifts 1150-1250, travel on 1250-2000.
+      place(copy, MID, Y, 1, 0); reach(TOP);
+      let t0 = null;
+      const frame = now => {
+        if (!g.isConnected) return resolve();
+        t0 ??= now; const t = now - t0;
+        place(g, t < 750 ? lerp(from, MID, ease(t / 750)) : t < 1250 ? MID : lerp(MID, to, ease(clamp((t - 1250) / 750))), Y);
+        reach(t < 750 ? TOP : t < 880 ? lerp(TOP, Y - 9, (t - 750) / 130) : t < 1150 ? Y - 9 : lerp(Y - 9, TOP, clamp((t - 1150) / 100)));
+        g.classList.toggle("hit", t >= 860 && t < 1200);
+        if (t >= 880 && t < 1250) { const k = ease((t - 880) / 370); place(copy, MID, lerp(Y, 44, k), lerp(1, 0.7, k), k < 0.8 ? 1 : (1 - k) * 5); }
+        else place(copy, MID, Y, 1, 0);
+        if (t >= 2000) return done();
+        requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
     });
   }
 

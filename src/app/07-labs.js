@@ -159,7 +159,7 @@ const headArt = k => (HEAD_PHOTOS.has(k)
   : `<span class="head-art card-art" aria-hidden="true">${sceneSvg(HEAD_SCENE[k])}</span>`);
 // Card pictures: an illustration where one exists (img/cards/<id>.webp, 2:1, one style, made in batches of six),
 // otherwise the drawn scene. Photos fade in once loaded, in space that's already reserved.
-const CARD_PHOTOS = new Set(["threat-model", "risk", "law", "attack-models", "cyber-essentials-check", "risk-register", "allowed-or-not", "asset-register", "soar-playbook", "firewall-packet", "vishing-call", "dhcp", "dns", "phish-triage", "ssh-brute", "hashing", "permissions",
+const CARD_PHOTOS = new Set(["recon-script", "automation-script", "cleanup-log", "risk-gone-wrong", "which-law-applies", "which-model-fits", "threat-model", "risk", "law", "attack-models", "cyber-essentials-check", "risk-register", "allowed-or-not", "asset-register", "soar-playbook", "firewall-packet", "vishing-call", "dhcp", "dns", "phish-triage", "ssh-brute", "hashing", "permissions",
   "osi-model", "topologies", "ports-protocols", "subnetting", "tcp-handshake", "cable-wiring",
   "finding-the-server", "one-request", "vlans", "network-builder", "telnet-ssh", "linux-terminal",
   "net-detective", "log-detective", "header-inspector", "cvss-builder", "recon-basics", "play",
@@ -371,6 +371,9 @@ function shiftCard(sh) {
     <span class="lmeta"><span>${sh.minutes} min</span><span>${rec ? `Best: ${rec.best} of ${rec.total} checks` : `+${sh.xp} XP`}</span></span></a>`;
 }
 // The Agency's own section: the agency, your staff badge, the time clock and the rota. Clocking in opens a shift.
+// The badge is a photo (img/kit/badge.webp, 19 Nov) with blank panels; your name, rank, ID and shift stamps are live text
+// laid over them by percentage (measured from the photo: a new photo means re-measuring .ag-b-* in site.css). The photo has
+// four stamp circles, so only the first four shifts get a stamp; "Shifts worked" counts them all.
 VIEWS.agency = () => {
   const shifts = DATA.agency || [], rec = id => (P.agency || {})[id];
   const worked = shifts.filter(sh => rec(sh.id)).length, next = shifts.find(sh => !rec(sh.id)) || shifts[0];
@@ -385,10 +388,13 @@ VIEWS.agency = () => {
     ${safeNote("fictional")}
     <div class="ag-hubgrid">
       <section class="ag-idcard" aria-label="Your staff badge">
-        <div class="ag-id-top"><span class="ag-logo sm" aria-hidden="true">LANTERNFIELD</span><span class="ag-id-no mono">LF-${String(1000 + worked * 37).padStart(4, "0")}</span></div>
-        <svg class="ag-id-face" viewBox="0 0 60 60" aria-hidden="true"><path class="ag-id-ring" d="M30 6a24 24 0 1 1 0 48a24 24 0 1 1 0-48z"/><path class="ag-id-lamp" d="M24 17h12M26 17v-3h8v3M22 21h16l-2 22H24zM21 43h18v4H21z"/><path class="ag-id-flame" d="M30 26c3 4 4 6 4 9a4 4 0 0 1-8 0c0-3 1-5 4-9z"/></svg>
-        <div class="ag-id-name">You</div><div class="ag-id-rank">${rank}</div>
-        <div class="ag-stamps"><span class="ag-stamps-h">Shift stamps</span><ol>${shifts.map((sh, i) => `<li class="ag-bstamp${rec(sh.id) ? " on" : ""}"><span aria-hidden="true">${String(i + 1).padStart(2, "0")}</span><span class="sr-only">Shift ${i + 1}, ${esc(sh.client || sh.title)}: ${rec(sh.id) ? "worked" : "not worked yet"}</span></li>`).join("")}</ol></div>
+        <div class="ag-badge">
+          <img src="img/kit/badge.webp" width="600" height="1092" alt="" decoding="async">
+          <svg class="ag-b-photo" viewBox="0 0 60 70" aria-hidden="true"><circle cx="30" cy="25" r="12"/><path d="M8 70c0-14 10-24 22-24s22 10 22 24z"/></svg>
+          <span class="ag-b-name">You</span>
+          <span class="ag-b-rank"><span>${rank}</span><span class="ag-b-no">LF-${String(1000 + worked * 37).padStart(4, "0")}</span></span>
+          <ol class="ag-b-stamps" aria-label="Shift stamps">${shifts.slice(0, 4).map((sh, i) => `<li class="ag-bstamp${rec(sh.id) ? " on" : ""}" style="--i:${i}"><span aria-hidden="true">${String(i + 1).padStart(2, "0")}</span><span class="sr-only">Shift ${i + 1}, ${esc(sh.client || sh.title)}: ${rec(sh.id) ? "worked" : "not worked yet"}</span></li>`).join("")}</ol>
+        </div>
         <dl class="ag-id-stats"><div><dt>Shifts worked</dt><dd>${worked} of ${shifts.length}</dd></div><div><dt>Best report</dt><dd>${worked ? `${Math.round(best * 100)}%` : "–"}</dd></div></dl>
       </section>
       <section class="ag-tc ag-tc-hub" aria-labelledby="ag-next-h">
@@ -473,7 +479,7 @@ function missionView(id) {
 }
 // A lab's safety notes (content/safety.json): "safety": key or [keys]; terminal labs get "Show me how" steps for their kind.
 const labSafety = l => [].concat(l.safety || []).map(k => safeNote(k, { how: l.kind })).join("");
-const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring", "wiretap", "vlan", "hashing", "netbuilder", "perms", "journey", "corridor", "firewall", "vishing"];  // labs with their own module in static/js/labs/<kind>.js
+const MODULE_LABS = ["osi", "terminal", "topology", "ports", "subnet", "nettools", "handshake", "wiring", "wiretap", "vlan", "hashing", "netbuilder", "perms", "journey", "corridor", "firewall", "vishing", "sqli"];  // labs with their own module in static/js/labs/<kind>.js
 function moduleLab(l) {
   main.innerHTML = `<div class="view" id="lab-root"><div class="empty">Loading lab…</div></div>`;
   import(`./js/labs/${l.kind}.js`).then(mod => {
@@ -534,8 +540,10 @@ function labView(id) {
     ${loopStrip(pageTopic(l), labStage(l))}
     ${labSafety(l)}
     ${l.artifact.kind === "headers" ? `<section class="lesson-mail">${MAIL.card({ headers: l.artifact.text, body: l.artifact.body, links: l.artifact.links }, { id: "lab-mail", views: ["message", "original"], org: "halcyonlabs.example", client: true })}</section>` : `<section class="panel screen"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
+      ${l.artifact.tree ? `<div class="row ev-views" role="group" aria-label="How to show the evidence"><button type="button" class="chip" data-ev-view="tree" aria-pressed="true">Tree</button><button type="button" class="chip" data-ev-view="raw" aria-pressed="false">Raw export</button></div><div id="lab-tree"><div class="empty">Drawing the tree…</div></div>` : ""}
+      <div id="lab-raw"${l.artifact.tree ? " hidden" : ""}>
       ${l.artifact.kind === "log" ? `<div class="row"><label class="sr" for="lab-f">Filter lines</label><span class="mono" style="color:var(--sun)">grep</span><input id="lab-f" type="search" placeholder="${esc(l.artifact.placeholder || "e.g. Failed password")}" autocomplete="off" spellcheck="false"></div>` : ""}
-      <pre class="evidence" id="lab-pre" tabindex="0" aria-label="Evidence"></pre></section>`}
+      <pre class="evidence" id="lab-pre" tabindex="0" aria-label="Evidence"></pre></div></section>`}
     <section class="stack" id="lab-steps">${l.steps.map((st, i) => `<div class="panel lab-step ${solved.has(i) ? "got" : ""}" data-i="${i}">
       <div class="panel-title"><h2>Question ${i + 1}</h2>${solved.has(i) ? '<span class="eyebrow" style="color:var(--good)">Solved</span>' : ""}</div>
       <p class="q">${gloss(st.q, 3)}</p>${st.where ? `<button type="button" class="link-btn where" data-where="${i}">Show me where ↑</button>` : ""}
@@ -559,6 +567,12 @@ function labView(id) {
     $("lab-n").textContent = `${shown.length} of ${lines.length} lines`;
   };
   if ($("lab-pre")) drawLog(); else MAIL.wire($("lab-mail").parentElement);
+  // A process-tree export (artifact.tree) opens drawn as a tree; "Raw export" shows the same text with the grep box.
+  const evView = v => { if (!$("lab-tree")) return; $("lab-tree").hidden = v !== "tree"; $("lab-raw").hidden = v === "tree"; document.querySelectorAll("[data-ev-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.evView === v))); };
+  if (l.artifact.tree) {
+    import("./js/proctree.js").then(m => { if ($("lab-tree")) m.mount($("lab-tree"), l.artifact.text); }).catch(() => evView("raw"));
+    document.querySelectorAll("[data-ev-view]").forEach(b => b.addEventListener("click", () => evView(b.dataset.evView)));
+  }
   $("lab-f")?.addEventListener("input", drawLog);
   const solve = (i, box) => {
     solved.add(i); P.labSteps[id] = [...solved];
@@ -572,15 +586,31 @@ function labView(id) {
   const showWhere = i => {
     const needle = l.steps[i].where;
     if ($("lab-mail")) { MAIL.highlight($("lab-mail"), needle); $("lab-mail").scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); $("lab-mail").querySelector(".em-raw")?.focus({ preventScroll: true }); }
-    else if ($("lab-f")) { $("lab-f").value = needle; drawLog(); $("lab-pre").scrollIntoView({ block: "start" }); $("lab-pre").focus({ preventScroll: true }); }
+    else if ($("lab-f")) { evView("raw"); $("lab-f").value = needle; drawLog(); $("lab-pre").scrollIntoView({ block: "start" }); $("lab-pre").focus({ preventScroll: true }); }
     // A document (no grep box): keep every line, mark the ones that matter.
     else if ($("lab-pre")) { $("lab-pre").innerHTML = lines.map(x => markText(x, [needle.toLowerCase()])).join("\n"); $("lab-pre").scrollIntoView({ block: "start" }); $("lab-pre").focus({ preventScroll: true }); }
   };
+  // Patch can help with the question in view: rule out a wrong option, show where to look, or give the step's hint.
+  // He never gives the answer: the explanation still comes from answering.
+  if (typeof PN_help === "function") PN_help({ kind: "lab",
+    current() {
+      const open = [...document.querySelectorAll("#lab-steps .lab-step:not(.got)")]; if (!open.length) return null;
+      const mid = innerHeight / 2, d = el => { const r = el.getBoundingClientRect(); return Math.abs(r.top + r.height / 2 - mid); };
+      const box = open.sort((a, b) => d(a) - d(b))[0], i = Number(box.dataset.i);
+      return { i, step: l.steps[i], struck: [...box.querySelectorAll(".opt.ruled, .opt.wrong")].map(b => Number(b.dataset.j)) };
+    },
+    ruleOut(i, j) {
+      const b = document.querySelector(`#lab-steps .lab-step[data-i="${i}"] .opt[data-j="${j}"]`); if (!b) return;
+      b.disabled = true; b.classList.add("ruled"); b.setAttribute("aria-label", `${b.textContent} (ruled out by Patch)`);
+      b.closest(".lab-step").scrollIntoView({ block: "nearest" });
+    },
+    where: i => showWhere(i) });
   $("lab-steps").addEventListener("click", e => {
     const w = e.target.closest("[data-where]"); if (w) return showWhere(Number(w.dataset.where));
     const b = e.target.closest(".opt"); if (!b || b.disabled) return;
     const box = b.closest(".lab-step"), i = Number(box.dataset.i), st = l.steps[i];
-    Number(b.dataset.j) === st.answer ? solve(i, box) : (b.classList.add("wrong"), miss(i, box, "Look at the evidence again."));
+    // A wrong pick says why that answer is tempting and why it's wrong (the step's `notes`), where one has been written.
+    Number(b.dataset.j) === st.answer ? solve(i, box) : (b.classList.add("wrong"), miss(i, box, st.notes?.[Number(b.dataset.j)] || "Look at the evidence again."));
   });
   $("lab-steps").addEventListener("submit", e => {
     e.preventDefault();

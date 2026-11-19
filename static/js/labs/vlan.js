@@ -6,6 +6,10 @@
 // trunk) and Windows (ping, ipconfig). Simplifications are listed in the lab's "simplification" text.
 
 import * as M from "../net/model.js";
+import * as V from "../net/view.js";
+import * as PANEL from "../net/panel.js";
+import * as WALK from "./walk.js";
+import { dock, hintHtml } from "./guide.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const pad = (s, n) => String(s).padEnd(n);
@@ -815,6 +819,14 @@ export function createNet(lab) {
   };
 }
 
+// The device an objective is done on, read from its check (so the console can offer "Use S1"). Pure; tested.
+export function taskDevice(t) {
+  const c = t?.check || {}, first = x => (Array.isArray(x) ? x[0] : x);
+  return c.ran?.device || c.pinged?.from || c.vlans?.devices?.[0] || c.access?.device || c.voice?.device
+    || first(first(c.trunks)) || first(first(c.native?.ports)) || c.subif?.device || c.aclIn?.device || c.routerUp?.device || Object.values(c).find(v => v && typeof v.device === "string")?.device || (typeof c.saved === "string" ? c.saved : null)
+    || (c.all ? c.all.map(x => taskDevice({ check: x })).find(Boolean) : null) || null;
+}
+
 // ---------- the on-page lab
 export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = () => {}, onReset = () => {} } = {}) {
   const net = createNet(lab);
@@ -825,6 +837,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   root.innerHTML = `<div class="term-lab vlan-lab">
     <div class="view-head"><a class="link-btn" href="#missions">← Missions</a>
       <div class="eyebrow">Lab · ${esc(lab.track)} · ${lab.minutes} min</div><h1>${esc(lab.title)}</h1><p>${esc(lab.intro)}</p></div>
+    <p class="eyebrow vn-intro">Try it first: what a VLAN does. Then build it in the console below.</p>
     <section class="vn-scene" id="v-scene" aria-label="Two rooms on one switch">
       <div class="vn-chassis"><span>Switch</span><b>one network, two rooms</b></div>
       <div class="vn-floor" id="vn-floor">
@@ -841,10 +854,21 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
         <button type="button" class="btn ghost" data-vn="trunk">Send across the trunk</button>
       </div>
       <p class="vn-say" id="v-say" aria-live="polite"></p>
+      <p class="vn-next" id="vn-next" hidden>That's what a VLAN does. Now build it for real on three switches.
+        <button type="button" class="btn brand sm" id="vn-go">Start objective 1 ↓</button></p>
     </section>
-    <details class="tbl simplification"><summary>How this simulation differs from real switches</summary><p>${esc(lab.simplification)}</p></details>
+    <section class="panel vl-net"><div class="panel-title"><h2>The network</h2><span class="sim-tag">Live: changes as you configure</span></div>
+      <div class="vl-diagram" id="v-diagram"></div>
+      <div class="vl-front"><div class="vl-front-head"><h3 class="eyebrow">Front panel</h3>
+        <div class="row" role="group" aria-label="How to show it"><button type="button" class="chip" data-pview="photo" aria-pressed="true">Photo</button><button type="button" class="chip" data-pview="draw" aria-pressed="false">Drawing</button></div>
+        <div class="row" role="group" aria-label="Which switch">${Object.keys(lab.switches).map(sw => `<button type="button" class="chip" data-panel="${sw}" aria-pressed="false">${sw}</button>`).join("")}</div></div>
+        <div class="vl-panel-wrap" id="v-panel"></div><p class="muted vl-port-info" id="v-port-info" aria-live="polite">Each port's light shows the colour of its network. Tap a port to see what's plugged in.</p></div>
+      ${(gw => `<div class="vl-table" role="region" aria-label="Addressing table" tabindex="0"><table class="tbl"><caption class="sr-only">Addressing table</caption><thead><tr><th scope="col">PC</th><th scope="col">IP address</th><th scope="col">Mask</th>${gw ? '<th scope="col">Gateway</th>' : ""}<th scope="col">Connected to</th><th scope="col">Planned VLAN</th></tr></thead>
+        <tbody>${Object.entries(lab.pcs).map(([id, pc]) => `<tr><th scope="row">${id}</th><td class="mono">${pc.ip}</td><td class="mono">${pc.mask}</td>${gw ? `<td class="mono">${esc(pc.gw || "")}</td>` : ""}<td>${pc.sw} ${pc.port}${pc.phone ? " (through an IP phone)" : ""}</td><td>${pc.vlan} (${esc(lab.vlans[pc.vlan])})</td></tr>`).join("")}</tbody></table></div>`)(Object.values(lab.pcs).some(pc => pc.gw))}
+      <details class="tbl simplification"><summary>How this simulation differs from real switches</summary><p>${esc(lab.simplification)}</p></details></section>
     <div class="term-grid">
       <section class="term-shell" aria-label="Simulated consoles">
+        <div class="vl-now" id="v-now" aria-live="polite"></div>
         <div class="term-bar vl-tabs" role="group" aria-label="Choose a device">${devices.map(d => `<button type="button" class="chip" data-dev="${d}" aria-pressed="${d === dev}">${d}</button>`).join("")}</div>
         <div class="term-out" id="v-out" aria-live="polite" tabindex="0" aria-label="Console output"></div>
         <form class="term-in" id="v-form"><label class="sr" for="v-in">Command for the selected device</label><span class="term-ps" id="v-ps"></span><input id="v-in" autocomplete="off" autocapitalize="off" spellcheck="false"></form>
@@ -852,7 +876,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
           <select id="v-reuse"></select><span class="muted vl-reuse-note">Fills the box; you still press Enter.</span></div>
       </section>
       <aside class="panel term-tasks"><div class="panel-title"><h2>Objectives</h2><span class="mono" id="v-count"></span></div><ol id="v-tasks"></ol>
-        <div class="row"><button class="link-btn" id="v-hint">Show a hint</button></div><div id="v-hinttext"></div>
+        <div id="v-hintslot"></div>
         <div class="row"><button class="btn ghost" id="v-reset">↺ Reset lab</button></div></aside>
     </div>
     ${lab.next ? `<section class="panel" id="v-next" hidden><h2>Take it further</h2><ul>${lab.next.map(n => `<li><a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.label)} ↗</a></li>`).join("")}</ul></section>` : ""}
@@ -864,8 +888,10 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   function vnMove(target, animate) {
     const floor = $("vn-floor"), pkt = $("v-pkt");
     const fr = floor.getBoundingClientRect(), tr = target.getBoundingClientRect();
+    if (!tr.width || !tr.height) return false;  // not drawn at this size: never fly the packet to the corner
     pkt.style.transition = animate && !reduced ? "transform .7s cubic-bezier(.2,.7,.2,1)" : "none";
     pkt.style.transform = `translate(${tr.left - fr.left + tr.width / 2 - pkt.offsetWidth / 2}px, ${tr.top - fr.top + tr.height / 2 - pkt.offsetHeight / 2}px)`;
+    return true;
   }
   function vnGo(kind) {
     if (vnBusy) return;
@@ -873,27 +899,84 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     const stamp = $("v-stamp"), wall = $("vn-wall"), say = $("v-say");
     stamp.hidden = true; wall.classList.remove("hit");
     vnMove($("vn-a"), false);
-    const target = kind === "same" ? $("vn-b") : kind === "cross" ? wall : $("vn-far");
+    // On a phone the trunk runs under the rooms: the packet rides the trunk instead of covering the next switch's label.
+    const target = kind === "same" ? $("vn-b") : kind === "cross" ? wall : matchMedia("(max-width: 720px)").matches ? $("vn-trunk") : $("vn-far");
     requestAnimationFrame(() => vnMove(target, true));
     setTimeout(() => {
       if (kind === "same") say.textContent = "Same room. The packet arrives.";
       if (kind === "cross") { wall.classList.add("hit"); say.textContent = "Stopped. Staff and Students cannot see each other."; }
       if (kind === "trunk") { stamp.hidden = false; say.textContent = "The trunk stamps it VLAN 10, so the next switch still knows it is Staff."; }
-      vnBusy = false;
+      vnBusy = false; $("vn-next").hidden = false;
     }, reduced ? 0 : 740);
   }
   root.querySelectorAll("[data-vn]").forEach(b => b.addEventListener("click", () => vnGo(b.dataset.vn)));
   requestAnimationFrame(() => vnMove($("vn-a"), false));
 
-  function drawDiagram() {}
+  // The live diagram (restored 19 Nov; dropped on 10 Nov when the two-rooms demo arrived): each broadcast domain in its
+  // own colour, trunks as bundles of the colours they carry. It redraws after every command, so you watch the network
+  // split into VLANs as you configure it. Tap a colour in the legend to light just that domain.
+  let focus = null, panelSw = Object.keys(lab.switches)[0], panelView = "photo";
+  // The switch you're typing on is the one shown, so its lights change as you press Enter.
+  function drawPanel() {
+    const box = $("v-panel"); if (!box) return;
+    box.innerHTML = panelView === "photo" ? PANEL.photoSvg(net.topo, panelSw) : PANEL.svg(net.topo, panelSw);
+    root.querySelectorAll("[data-pview]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.pview === panelView)));
+    root.querySelectorAll("[data-panel]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.panel === panelSw)));
+  }
+  function drawDiagram() {
+    drawPanel();
+    const box = $("v-diagram"); if (!box) return;
+    const seg = M.segments(net.topo);
+    if (focus != null && !seg.segments[focus]) focus = null;
+    box.innerHTML = V.svg(net.topo, { layout: lab.layout, width: 600, height: 320, seg, focus })
+      + `<h3 class="eyebrow">Who can talk to whom</h3>${V.legend(net.topo, seg, focus)}`;
+    box.querySelectorAll("[data-seg]").forEach(b => b.addEventListener("click", () => { focus = focus === Number(b.dataset.seg) ? null : Number(b.dataset.seg); drawDiagram(); box.querySelector(`[data-seg="${b.dataset.seg}"]`)?.focus(); }));
+  }
   const print = html => { outs[dev] += html; out.insertAdjacentHTML("beforeend", html); out.scrollTop = out.scrollHeight; };
   function renderTasks() {
-    lab.tasks.forEach(t => { if (!done.has(t.id) && net.isDone(t.check)) { done.add(t.id); onPart(t.id); } });
+    lab.tasks.forEach(t => { if (!done.has(t.id) && net.isDone(t.check)) { done.add(t.id); onPart(t.id); lastDone = t; } });
     const next = lab.tasks.find(t => !done.has(t.id));
     $("v-tasks").innerHTML = lab.tasks.map(t => `<li class="${done.has(t.id) ? "got" : t === next ? "now" : ""}">${done.has(t.id) ? "✓ " : ""}${esc(t.text)}${done.has(t.id) && t.why ? `<span class="vl-why">${esc(t.why)}</span>` : ""}</li>`).join("");
     $("v-count").textContent = `${done.size}/${lab.tasks.length}`;
-    $("v-hinttext").innerHTML = ""; $("v-hint").hidden = !next;
+    drawNow(next);
     if (!next) { if ($("v-next")) $("v-next").hidden = false; if (!finished) { finished = true; onComplete(); } }
+  }
+  // The objective you're on sits at the top of the console (on a phone the list is far below), with "Use S1" when it's
+  // done on another device and its hint one tap away; a finished one shows why it worked before the next appears.
+  let lastDone = null;
+  // Hints on demand in three steps, as in the Linux and network tools labs (guide.js hintHtml; the owner's call, 19 Nov):
+  // the objective's nudge, then the command's shape with the values blanked, then the full command with Run it (it types
+  // the command into the right console and runs it). The hint stays open while the console is moved towards a step
+  // (enable, conf t, the interface) and closes once the step itself has run; the nudge shows once per objective. Two
+  // errors in a row open it by themselves. Typing a step yourself moves the walk on too.
+  let level = 0, seen = false;
+  let walkTask = null, walkK = 0, sugg = null, errStreak = 0; const inside = {};
+  function suggestion(next) {
+    if (!next || !next.walk) return null;
+    if (walkTask !== next.id) { walkTask = next.id; walkK = 0; level = 0; seen = false; }
+    const st = WALK.steps(next); if (walkK >= st.length) return null;
+    return WALK.nextCommand(st[walkK], net.prompt(st[walkK].dev), inside[st[walkK].dev] || null);
+  }
+  function drawNow(next) {
+    const box = $("v-now"); if (!box) return;
+    if (!next) { sugg = null; box.innerHTML = `<b class="ok">All ${lab.tasks.length} objectives done.</b>`; return; }
+    const n = lab.tasks.indexOf(next) + 1, d = taskDevice(next);
+    const s = suggestion(next), rescue = !level && errStreak >= 2 && !!s;  // two errors in a row: show the way on
+    const lv = level || (rescue ? Math.max(2, opening(next, s)) : 0);
+    if (lv === 1) seen = true;
+    sugg = lv ? s : null;
+    box.dataset.level = lv;
+    box.innerHTML = `${lastDone ? `<p class="vl-done">✓ ${esc(lastDone.why || "Done.")}</p>` : ""}
+      <div class="vl-objrow"><p class="vl-obj"><span class="eyebrow">Objective ${n} of ${lab.tasks.length}</span> ${esc(next.text)}</p></div>
+      ${sugg ? hintHtml({ level: lv, nudge: next.nudge, step: sugg, rescue, on: sugg.dev !== dev ? ` · on ${esc(sugg.dev)}` : "" })
+      : `<div class="row">${d && d !== dev && devices.includes(d) ? `<button type="button" class="chip" data-use="${esc(d)}">Use ${esc(d)}</button>` : ""}${s ? `<button type="button" class="link-btn" data-nowhint aria-expanded="false">Show a hint</button>` : ""}</div>`}`;
+  }
+  const opening = (t, s) => WALK.openLevel({ nudge: t.nudge, shaped: !!WALK.shape(s.cmd), seen });
+  function runSugg() {  // types the hinted command into the right console and runs it
+    if (!sugg) return;
+    const c = sugg; if (c.dev !== dev) choose(c.dev, false);
+    input.value = c.cmd; input.focus({ preventScroll: true });
+    $("v-form").requestSubmit();
   }
   const ps = () => { $("v-ps").textContent = net.prompt(dev); };
   // "Reuse a command": once a switch (or router) has been configured, offer its proven config lines on another
@@ -916,18 +999,26 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   }
   function choose(d, focus = true) {
     dev = d; histI = null;
+    if (lab.switches[d] && d !== panelSw) { panelSw = d; drawPanel(); }
     root.querySelectorAll("[data-dev]").forEach(b => b.setAttribute("aria-pressed", b.dataset.dev === d));
     out.innerHTML = outs[d] || `<div class="muted">${lab.pcs[d] ? `${esc(d)}: Windows command prompt. Try ipconfig or ping.` : lab.routers?.[d] ? `${esc(d)}: Cisco 2911 router console. Type ? for help; abbreviations like "sh ip int br" work.` : `${esc(d)}: Cisco Catalyst 2960 console. Type ? for help; abbreviations like "sh vl br" work.`}</div>`;
     if (!outs[d]) outs[d] = out.innerHTML;
-    ps(); updateReuse(); if (focus) input.focus();
+    ps(); updateReuse(); drawNow(lab.tasks.find(t => !done.has(t.id))); if (focus) input.focus();
   }
 
   $("v-form").addEventListener("submit", e => {
     e.preventDefault();
     const line = input.value;
     print(`<div><span class="term-ps">${esc(net.prompt(dev))}</span>${esc(line)}</div>`);
-    const res = net.exec(dev, line);
+    const pre = suggestion(lab.tasks.find(t => !done.has(t.id))), before = net.prompt(dev), res = net.exec(dev, line);  // pre: the walk's next step, followed even with Guided off
     if (res.out) print(`<div class="${res.error ? "t-err" : ""}">${esc(res.out)}</div>`);
+    // Failsafes: the real device only says "Invalid input"; say what went wrong, in plain words, under it.
+    const tip = res.error ? WALK.explainError(line, before) : WALK.caseSlip(line, lab.tasks.find(t => !done.has(t.id)) || {});
+    if (tip) print(`<div class="t-tip">[Tip: ${esc(tip)}]</div>`);
+    errStreak = res.error ? errStreak + 1 : 0;
+    { const m = WALK.modeOf(net.prompt(dev)), was = pre;  // keep guided mode in step with what actually ran
+      if (!res.error) inside[dev] = m === "sub" ? (WALK.opensSub(line) ? line : inside[dev]) : null;  // a rejected command moves nothing
+      if (was && !res.error && was.dev === dev && WALK.same(line, was.cmd) && was.own) { walkK++; level = 0; errStreak = 0; } }
     input.value = ""; histI = null; ps(); drawDiagram(); renderTasks(); updateReuse();
   });
   // Choosing a proven command fills the input (never runs it): the learner reviews it and presses Enter.
@@ -940,8 +1031,23 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   });
   root.querySelectorAll("[data-dev]").forEach(b => b.addEventListener("click", () => choose(b.dataset.dev)));
   out.addEventListener("click", () => input.focus());
-  $("v-hint").addEventListener("click", () => { const t = lab.tasks.find(x => !done.has(x.id)); if (t) $("v-hinttext").innerHTML = `<div class="feedback">${esc(t.hint)}</div>`; });
+  // "Show a hint" opens the same hint in the strip above the console, with Run it.
+  const focusHint = () => $("v-now").querySelector("[data-runit], [data-more]")?.focus({ preventScroll: true });
+  const openHint = () => { const t = lab.tasks.find(x => !done.has(x.id)), s = suggestion(t); if (!s) return; level = opening(t, s); drawNow(t); focusHint(); };
+  dock($("v-now"), $("v-hintslot"), root.querySelector(".term-shell"));  // one hint area: the panel, or above the console on a phone
   $("v-reset").addEventListener("click", onReset);
+  root.querySelectorAll("[data-pview]").forEach(b => b.addEventListener("click", () => { panelView = b.dataset.pview; drawPanel(); }));
+  root.querySelectorAll("[data-panel]").forEach(b => b.addEventListener("click", () => { panelSw = b.dataset.panel; drawPanel(); $("v-port-info").textContent = "Tap a port to see what's plugged in."; }));
+  const portInfo = e => { const g = e.target.closest?.(".sp-port"); if (!g) return; const st = PANEL.portStates(net.topo, panelSw).find(p => p.name === g.dataset.port); if (st) $("v-port-info").textContent = `${panelSw} ${PANEL.label(st)}`; };
+  $("v-panel").addEventListener("click", portInfo); $("v-panel").addEventListener("focusin", portInfo);
+  $("v-now").addEventListener("click", e => {
+    if (e.target.closest("[data-runit]")) return runSugg();
+    const u = e.target.closest("[data-use]"); if (u) return choose(u.dataset.use);
+    if (e.target.closest("[data-nowhint]")) return openHint();
+    if (e.target.closest("[data-more]")) { const t = lab.tasks.find(x => !done.has(x.id)), s = suggestion(t); if (s) { level = WALK.more(+$("v-now").dataset.level || 1, { shaped: !!WALK.shape(s.cmd) }); drawNow(t); focusHint(); } return; }
+    if (e.target.closest("[data-hidehint]")) { level = 0; errStreak = 0; drawNow(lab.tasks.find(t => !done.has(t.id))); input.focus({ preventScroll: true }); }
+  });
+  $("vn-go").addEventListener("click", () => { const sh = root.querySelector(".term-shell"); sh.scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" }); input.focus({ preventScroll: true }); });
 
   drawDiagram(); renderTasks(); choose(dev, false);
   return { net };

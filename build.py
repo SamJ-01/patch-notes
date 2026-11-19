@@ -290,7 +290,7 @@ def lesson_page(lesson, nxt, fonts, css, site):
 <link rel="alternate" type="application/rss+xml" title="Patch Notes" href="../feed.xml">
 {fonts}
 <style>{css}
-.static {{ max-width: 760px; margin: 0 auto; padding-block: 28px 56px; }}
+.static {{ max-width: 760px; margin: 0 auto; padding-block: 28px 56px; overflow-wrap: anywhere; }}  /* long IPv6 addresses wrap on phones */
 </style>
 <header class="masthead" style="position:static"><div class="mast-inner">
   <a class="brand" href="../index.html"><b>PATCH<i>//</i>NOTES</b></a>
@@ -355,7 +355,7 @@ def practice_page(item, fonts, css, site):
 {social_meta(site, f"{item['title']} · Patch Notes", desc, f"practise/{item['id']}.html")}
 {fonts}
 <style>{css}
-.static {{ max-width: 760px; margin: 0 auto; padding-block: 28px 56px; }}
+.static {{ max-width: 760px; margin: 0 auto; padding-block: 28px 56px; overflow-wrap: anywhere; }}  /* long IPv6 addresses wrap on phones */
 </style>
 <header class="masthead" style="position:static"><div class="mast-inner">
   <a class="brand" href="../index.html"><b>PATCH<i>//</i>NOTES</b></a>

@@ -4,6 +4,7 @@
 // targets inside the lab's written in-scope range and refuses anything else, which is the point being taught.
 // createNetShell() is pure logic (tested in tests/labs.test.mjs); mount() is the on-page terminal.
 import { ipToInt, intToIp, maskOf } from "./subnet.js";
+import { guide, dock } from "./guide.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const isIp = s => ipToInt(s) !== null;
@@ -24,9 +25,10 @@ const MAN = {
   curl: "curl url: fetch a web page and show the response headers",
   discover: "discover target: list which hosts are up and which well-known ports answer. Only works inside this lab's authorised scope",
   cat: "cat file: print a file",
+  ls: "ls: list the files in this folder (dir on Windows)",
   clear: "clear: clear the screen",
 };
-const WELL_KNOWN = { 22: "ssh", 25: "smtp", 53: "domain", 80: "http", 443: "https", 3389: "ms-wbt-server" };
+const WELL_KNOWN = { 22: "ssh", 25: "smtp", 53: "domain", 80: "http", 443: "https", 445: "microsoft-ds", 3389: "ms-wbt-server" };  // Nmap's service names
 
 export function createNetShell(lab) {
   const net = lab.net, me = net.me;
@@ -57,6 +59,7 @@ export function createNetShell(lab) {
     help: () => ({ out: "Commands: " + Object.keys(MAN).join(", ") + "\nType man <command> for details." }),
     man: a => (MAN[a[0]] ? { out: MAN[a[0]] } : err(`No manual entry for ${a[0] || "(nothing)"}`)),
     clear: () => ({ out: "", clear: true }),
+    ls: () => ({ out: Object.keys(lab.files || {}).join("  ") }),
     cat: a => { const f = (lab.files || {})[a[0]]; log({ cmd: "cat", arg: a[0] }); return f ? { out: f } : err(`cat: ${a[0] || ""}: No such file or directory`); },
     ipconfig: () => {
       log({ cmd: "ipconfig" });
@@ -187,7 +190,7 @@ export function createNetShell(lab) {
     },
   };
   // Aliases to the real-world command names people type.
-  const ALIAS = { tracert: "traceroute", tracepath: "traceroute", ss: "netstat", ifconfig: "ipconfig" };
+  const ALIAS = { dir: "ls", tracert: "traceroute", tracepath: "traceroute", ss: "netstat", ifconfig: "ipconfig" };
   // Options that take a value (so "ping -c 4 host" doesn't read 4 as the host).
   const VALUE = { ping: /^-[cnwWilsI]$/, traceroute: /^-[mqwpf]$/, curl: /^-[oHXdAumebcx]$/, discover: /^-p$/ };
   // Real tools this shell doesn't model, with where to look instead.
@@ -227,6 +230,8 @@ export function createNetShell(lab) {
     if (check.resolved) return ev.some(e => e.cmd === "nslookup" && e.ok && (!check.server || e.server === check.server));
     if (check.found) return ev.some(e => e.cmd === "discover" && !e.refused);
     if (check.refused) return ev.some(e => e.cmd === "discover" && e.refused);  // learned to stay in scope
+    // Compared two DNS servers: the "bad" one failed and the "good" one answered (the point is the comparison).
+    if (check.lookup) return ev.some(e => e.cmd === "nslookup" && e.server === check.lookup.bad && !e.ok) && ev.some(e => e.cmd === "nslookup" && e.server === check.lookup.good && e.ok);
     if (check.read) return ev.some(e => e.cmd === "cat" && e.arg === check.read);
     return false;
   }
@@ -234,11 +239,56 @@ export function createNetShell(lab) {
     const names = [...Object.keys(MAN), ...Object.keys(ALIAS)];
     const words = prefix.split(/\s+/);
     if (words.length === 1) { const opts = names.filter(n => n.startsWith(words[0])); return opts.length === 1 ? { line: opts[0] + " ", options: [] } : { line: prefix, options: opts }; }
-    const hosts = net.hosts.map(h => h.name).filter(Boolean).concat(Object.keys(net.records || {}));
+    const hosts = net.hosts.map(h => h.name).filter(Boolean).concat(Object.keys(net.records || {}), Object.keys(lab.files || {}));
     const last = words[words.length - 1], opts = hosts.filter(h => h.startsWith(last));
     return opts.length === 1 ? { line: words.slice(0, -1).concat(opts[0] + " ").join(" "), options: [] } : { line: prefix, options: opts };
   }
-  return { run, isDone, complete, state, prompt: () => `${me.name || "pc"}:~$` };
+  // One link of the "Where's the fault?" chain: "ok", "bad" or null (not tested yet), from the latest matching event.
+  function probe(p) {
+    const last = f => [...state.events].reverse().find(f);
+    if (p.ran) return state.events.some(e => e.cmd === p.ran) ? "ok" : null;
+    const e = p.ping ? last(e => e.cmd === "ping" && (e.target === p.ping || e.ip === p.ping)) : p.lookup ? last(e => e.cmd === "nslookup" && e.server === p.lookup) : null;
+    return e ? (e.ok ? "ok" : "bad") : null;
+  }
+
+  // Guided mode: does a typed line do the same as a walk step? Names as the real tools spell them (tracert, ifconfig,
+  // ip a), DNS lookups by any of nslookup, dig or host (with @server or a second word), ping counts ignored.
+  function canon(line) {
+    const parts = (String(line).trim().match(/"[^"]*"|'[^']*'|\S+/g) || []).map(w => w.replace(/^(["'])(.*)\1$/, "$2"));
+    let cmd = (parts[0] || "").toLowerCase(); cmd = ALIAS[cmd] || cmd;
+    const words = []; for (let i = 1; i < parts.length; i++) { const x = parts[i]; if (VALUE[cmd]?.test(x) && /^\d+$/.test(parts[i + 1] || "")) { i++; continue; } if (!x.startsWith("-") && !x.startsWith("+")) words.push(x); }
+    if (cmd === "ip" && (!words[0] || "address".startsWith(words[0].toLowerCase()))) return "ipconfig";
+    if (cmd === "dig" || cmd === "host" || cmd === "nslookup") {
+      const at = words.find(w => w.startsWith("@")), rest = words.filter(w => !w.startsWith("@") && !/^a$/i.test(w));
+      return `lookup ${(rest[0] || "").toLowerCase()} ${(at ? at.slice(1) : cmd === "nslookup" && rest[1]) || me.dns[0]}`;
+    }
+    return [cmd, ...words.map(w => w.toLowerCase())].join(" ");
+  }
+  const same = (a, b) => canon(a) === canon(b);
+
+  // Failsafes: the real tools only say "timed out" or "Unknown host". explain() says what that tells you, or null.
+  // Call it straight after run(line) returned res. Pure; tested in tests/walk.test.mjs.
+  const near = (a, b) => { if (Math.abs(a.length - b.length) > 1 || a === b) return false; let i = 0; while (i < a.length && a[i] === b[i]) i++; return a.slice(i + 1) === b.slice(i + 1) || a.slice(i + 1) === b.slice(i) || a.slice(i) === b.slice(i + 1) || (a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2)); };
+  function explain(line, res) {
+    if (!res || !res.error) return null;
+    const msg = res.out || "", c = canon(line).split(" "), cmd = c[0], target = c[1] || "";
+    if (/command not found/.test(msg)) { const g = [...Object.keys(MAN), ...Object.keys(ALIAS)].find(k => near(cmd, k)); return g ? `Did you mean ${g}?` : null; }
+    if (/^Refused: /.test(msg)) return `The scope, ${net.scope}, covers ${intToIp(ipToInt(net.scope.split("/")[0]))} to ${intToIp(((ipToInt(net.scope.split("/")[0]) & maskOf(+net.scope.split("/")[1])) | (~maskOf(+net.scope.split("/")[1]) >>> 0)) >>> 0)}. Anything else is off limits, however close it looks. If a target matters, ask for the scope to be changed in writing.`;
+    if (cmd === "discover" && /not an IP address/.test(msg)) return "discover takes an address or a range like 10.10.10.0/24. To scan a name, look up its address first with nslookup, then check that address is in scope.";
+    if (cmd === "cat") { const names = Object.keys(lab.files || {}); return names.length ? `The files here are: ${names.join(", ")}. Tab completes names.` : null; }
+    if (cmd === "lookup" && /timed out|no servers could be reached/.test(msg)) return `The DNS server ${c[2]} didn't answer at all. Ask a different one to compare, for example nslookup ${target || "www.example.com"} 8.8.8.8. If that works, the fault is the server, not the name.`;
+    if (cmd === "lookup" && /Non-existent domain|NXDOMAIN|not found/.test(msg)) return "The DNS server answered: that name doesn't exist. Check the spelling, and whether it's an internal name only your own DNS server knows.";
+    if (cmd === "ping" && /cannot resolve/.test(msg)) return `ping couldn't turn ${target} into an address, so it never sent a packet. If ping to an address (such as 8.8.8.8) works, suspect DNS: try nslookup ${target} 8.8.8.8.`;
+    if (cmd === "ping" && /Request timed out/.test(msg)) {
+      const r = resolve(target), ip = r.ip || target;
+      if (sameSubnet(ip)) return `${ip} is on your own network but didn't reply: it's off, unplugged, or a firewall drops ping. Check the address with ipconfig, then the device itself.`;
+      return `No reply from ${ip}. Ping your gateway (${me.gateway}) first: if that answers, the problem is further out, and tracert ${ip} shows where replies stop.`;
+    }
+    if (cmd === "curl" && /Could not resolve host/.test(msg)) return "curl needs DNS to find the server, and the lookup failed. Try nslookup with the name to see why.";
+    return null;
+  }
+
+  return { run, isDone, complete, state, probe, same, canon, explain, prompt: () => `${me.name || "pc"}:~$` };
 }
 
 export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = () => {}, onReset = () => {} } = {}) {
@@ -250,16 +300,19 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     <div class="view-head"><a class="link-btn" href="#missions">← Missions</a>
       <div class="eyebrow">Lab · ${esc(lab.track)} · ${lab.minutes} min</div><h1>${esc(lab.title)}</h1><p>${esc(lab.intro)}</p></div>
     ${lab.net.scope ? `<p class="scope-note"><b>Authorised scope:</b> you may only scan <span class="mono">${esc(lab.net.scope)}</span> in this lab. In real life, written permission comes first, every time.</p>` : ""}
+    ${lab.ladder ? `<section class="nd-chain" aria-labelledby="nd-title"><h2 class="eyebrow" id="nd-title">${esc(lab.ladder.title)}</h2><ol class="nd-links" id="nd-links"></ol><p class="nd-verdict" id="nd-verdict" aria-live="polite" hidden></p></section>` : ""}
     <div class="term-grid">
-      <section class="term-shell" aria-label="Simulated terminal">
+      <section class="term-shell t-guided" aria-label="Simulated terminal">
+        <div class="vl-now" id="t-now" aria-live="polite"></div>
         <div class="term-bar"><span>${esc((lab.net.me.name || "pc"))}@${esc(lab.host || "workstation")}</span><span class="tag">Simulated</span></div>
         <div class="term-out" id="t-out" aria-live="polite" tabindex="0" aria-label="Terminal output"></div>
         <form class="term-in" id="t-form"><label class="sr" for="t-in">Command</label><span class="term-ps" id="t-ps"></span><input id="t-in" autocomplete="off" autocapitalize="off" spellcheck="false"></form>
       </section>
       <aside class="panel term-tasks"><div class="panel-title"><h2>Objectives</h2><span class="mono" id="t-count"></span></div><ol id="t-tasks"></ol>
-        <div class="row"><button class="link-btn" id="t-hint">Show a hint</button></div><div id="t-hinttext"></div>
+        <div id="t-hintslot"></div>
         <div class="row"><button class="btn ghost" id="t-reset">↺ Reset lab</button></div></aside>
     </div>
+    ${lab.simplification ? `<details class="simplification"><summary>How this simulation differs from the real thing</summary><p>${esc(lab.simplification)}</p></details>` : ""}
     ${lab.next ? `<section class="panel" id="t-next" hidden><h2>Take it further</h2><ul>${lab.next.map(n => `<li><a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.label)} ↗</a></li>`).join("")}</ul></section>` : ""}
   </div>`;
   const $ = id => root.querySelector("#" + id);
@@ -267,23 +320,39 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
 
   const print = html => { out.insertAdjacentHTML("beforeend", html); out.scrollTop = out.scrollHeight; };
   const format = res => res.error ? `<div class="t-err">${esc(res.out)}</div>` : res.out ? `<div>${esc(res.out)}</div>` : "";
+  // "Where's the fault?": each link from the PC outwards turns green or red as it's tested, with what that result means;
+  // once the deciding links agree (lab.ladder.when: [index, state]), the verdict says why.
+  function drawChain() {
+    const L = lab.ladder; if (!L) return;
+    const st = L.links.map(k => sh.probe(k.probe));
+    $("nd-links").innerHTML = L.links.map((k, i) => `<li class="nd-link ${st[i] || "todo"}"><span class="nd-dot" aria-hidden="true">${st[i] === "ok" ? "✓" : st[i] === "bad" ? "✗" : "?"}</span>
+      <b>${esc(k.label)}</b><span class="nd-sub mono">${esc(k.sub)}</span><span class="nd-say">${st[i] ? esc(k[st[i]] || "") : `Not tested yet <code>${esc(k.todo)}</code>`}</span>
+      <span class="sr">${st[i] === "ok" ? "Working." : st[i] === "bad" ? "Fault." : ""}</span></li>`).join("");
+    const v = $("nd-verdict"), hit = (L.when || []).every(([i, want]) => st[i] === want);
+    v.hidden = !hit; v.innerHTML = hit ? `<b>Verdict:</b> ${esc(L.verdict)}` : "";
+  }
   function renderTasks() {
+    drawChain();
     lab.tasks.forEach(t => { if (!done.has(t.id) && sh.isDone(t.check)) { done.add(t.id); onPart(t.id); } });
     const next = lab.tasks.find(t => !done.has(t.id));
     $("t-tasks").innerHTML = lab.tasks.map(t => `<li class="${done.has(t.id) ? "got" : t === next ? "now" : ""}">${done.has(t.id) ? "✓ " : ""}${esc(t.text)}</li>`).join("");
     $("t-count").textContent = `${done.size}/${lab.tasks.length}`;
-    $("t-hinttext").innerHTML = ""; $("t-hint").hidden = !next;
     if (!next) { if ($("t-next")) $("t-next").hidden = false; if (!finished) { finished = true; onComplete(); } }
   }
   const ps = () => { $("t-ps").textContent = sh.prompt(); };
+  // Objective strip, on-demand hints with Run it, tips and the rescue (static/js/labs/guide.js). Some steps are meant to fail (a DNS server that's down, an
+  // out-of-scope target), so a step that matches moves the walk on whatever the tool answered.
+  const g = guide($("t-now"), lab, { done, input, form: $("t-form"), same: sh.same, advanceOnError: true });
 
   $("t-form").addEventListener("submit", e => {
     e.preventDefault();
     const line = input.value;
     print(`<div><span class="term-ps">${esc(sh.prompt())}</span> ${esc(line)}</div>`);
-    const res = sh.run(line);
+    const pre = g.before(), res = sh.run(line);
     if (res.clear) out.innerHTML = ""; else print(format(res));
-    input.value = ""; histI = null; ps(); renderTasks();
+    const tip = sh.explain(line, res);  // the tool says what failed; this says what that tells you
+    if (tip) print(`<div class="t-tip">[Tip: ${esc(tip)}]</div>`);
+    input.value = ""; histI = null; ps(); renderTasks(); g.after(line, res, pre); g.draw();
   });
   input.addEventListener("keydown", e => {
     const h = sh.state.history;
@@ -293,9 +362,9 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     else if (e.key === "l" && e.ctrlKey) { e.preventDefault(); out.innerHTML = ""; }
   });
   out.addEventListener("click", () => input.focus());
-  $("t-hint").addEventListener("click", () => { const t = lab.tasks.find(x => !done.has(x.id)); if (t) $("t-hinttext").innerHTML = `<div class="feedback">Try: <code>${esc(t.hint)}</code></div>`; });
+  dock($("t-now"), $("t-hintslot"), root.querySelector(".term-shell"));  // one hint area: the panel, or above the terminal on a phone
   $("t-reset").addEventListener("click", onReset);
 
   print(`<div class="muted">Type <b>help</b> to list commands. ↑/↓ for history, Tab to complete names.</div>`);
-  ps(); renderTasks();
+  ps(); renderTasks(); g.draw();
 }

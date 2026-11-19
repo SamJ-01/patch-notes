@@ -125,7 +125,9 @@ VIEWS.today = () => {
   const top = trend[0];
   const featured = news.filter(n => n.topics.length);
 
-  const hero = `<section class="home-hero"><div class="hh-bg" aria-hidden="true"><img class="hh-img" src="img/hero-soc.webp" srcset="img/hero-soc-800.webp 800w, img/hero-soc.webp 1774w" sizes="100vw" alt="" width="1774" height="887" decoding="async" fetchpriority="high"><div class="hh-scrim"></div></div>
+  // The desk photo's monitor shows a live terminal (static/js/hero.js), warped onto the screen's corners.
+  const liveHero = () => import("./js/hero.js").then(m => { const el = main.querySelector(".home-hero"); if (el) m.mount(el, { kev: DATA.kev, news: DATA.news, lessons: DATA.lessons }); }).catch(() => {});
+  const hero = `<section class="home-hero"><div class="hh-bg" aria-hidden="true"><img class="hh-img" src="img/hero-desk.webp" srcset="img/hero-desk-800.webp 800w, img/hero-desk.webp 1914w" sizes="100vw" alt="" width="1914" height="822" decoding="async" fetchpriority="high"><div class="hh-scrim"></div></div>
     <div class="hh-inner">
       <p class="hh-eyebrow">Hands-on cyber security &amp; IT</p>
       <h1 class="hh-title">Learn it. Break it. <em class="accent">Understand it.</em></h1>
@@ -140,7 +142,7 @@ VIEWS.today = () => {
       <div class="split"><section class="panel" id="daily"></section>
         <aside class="panel news-line"><div class="eyebrow">This week</div><p><b>${news.length} stories</b> from ${sources} outlets, each linked to a lesson that explains it.</p><a class="btn ghost" href="#news">Read the news →</a></aside></div>
     </div>`;
-    renderDaily(); animateBriefing();
+    renderDaily(); animateBriefing(); liveHero();
     return;
   }
   main.innerHTML = `<div class="view home">
@@ -178,7 +180,7 @@ VIEWS.today = () => {
   </div>`;
   renderDaily();
   drawRoute();
-  animateBriefing();
+  animateBriefing(); liveHero();
 };
 
 // Bring the daily briefing to life on open: the command types out and the headline numbers count up.

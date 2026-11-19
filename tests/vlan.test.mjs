@@ -298,3 +298,15 @@ test("Windows PCs: ping options and honest notes for commands that aren't modell
   assert.match(on(net, pc, "tracert 10.10.10.12").out, /^\[Simulator: tracert is a real Windows command/);
   assert.match(on(net, pc, "frobnicate").out, /'frobnicate' is not recognized as an internal or external command/);
 });
+
+test("every VLAN lab objective names a device the console can switch to", async () => {
+  const { taskDevice } = await import("../static/js/labs/vlan.js");
+  const { readFileSync } = await import("node:fs");
+  const L = JSON.parse(readFileSync(new URL("../content/labs.json", import.meta.url)));
+  const labs = (L.labs || L).filter(l => l.kind === "vlan");
+  assert.ok(labs.length >= 2);
+  for (const l of labs) {
+    const devs = new Set([...Object.keys(l.switches), ...Object.keys(l.routers || {}), ...Object.keys(l.pcs)]);
+    for (const t of l.tasks) { const d = taskDevice(t); assert.ok(d && devs.has(d), `${l.id}/${t.id} -> ${d}`); }
+  }
+});

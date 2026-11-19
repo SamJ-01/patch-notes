@@ -8,6 +8,7 @@
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const clone = v => JSON.parse(JSON.stringify(v));
+import { guide, dock } from "./guide.js";
 export const CLASSES = ["owner", "group", "others"];
 const BITS = { r: 4, w: 2, x: 1 };
 
@@ -152,6 +153,38 @@ export function checkTask(world, ran, c) {
   return (c.all || []).every(([u, a, p, want]) => can(world, u, a, p).ok === want);
 }
 
+// Guided hints: two commands are "the same" when they're the same command and leave every file the same (chmod 640
+// salaries.csv = chmod u=rw,g=r,o= /srv/payroll/salaries.csv). Pure: runs both on copies of the world.
+const copy = w => ({ ...w, files: Object.fromEntries(Object.entries(w.files).map(([p, f]) => [p, { ...f }])) });
+export function sameEffect(world, cwd, a, b) {
+  const ca = String(a).trim().split(/\s+/)[0], cb = String(b).trim().split(/\s+/)[0];
+  if (!ca || ca !== cb) return false;
+  const wa = copy(world), wb = copy(world), ra = run(wa, cwd, a), rb = run(wb, cwd, b);
+  if (ra.error || rb.error) return false;
+  if (ca === "ls") return /-\w*l/.test(a) === /-\w*l/.test(b);
+  return JSON.stringify(wa.files) === JSON.stringify(wb.files);
+}
+
+// Failsafes: chmod and chown only say "invalid mode" or "No such file". explainPerm() says why, in plain words, or warns
+// when a change worked but opened a file to everyone. Pure; tested.
+const digitsOk = m => /^[0-7]{3,4}$/.test(m);
+export function explainPerm(world, cwd, line, res) {
+  const w = String(line).trim().split(/\s+/), [cmd, a1, a2] = w;
+  if (!cmd) return null;
+  const files = Object.keys(world.files).filter(p => world.files[p].show).map(p => p.startsWith(cwd + "/") ? p.slice(cwd.length + 1) : p);
+  if (res.error) {
+    if (/command not found/.test(res.out) && /^(CHMOD|Chmod|LS|Ls|CHOWN)$/.test(cmd)) return `Commands are lower case on Linux: type ${cmd.toLowerCase()}.`;
+    if ((cmd === "chmod" || cmd === "chown" || cmd === "chgrp") && w.length < 3) return `${cmd} needs two things: the ${cmd === "chmod" ? "mode (such as 640)" : cmd === "chown" ? "new owner" : "new group"}, then the file.`;
+    if (cmd === "chmod" && /invalid mode/.test(res.out)) return /^\d+$/.test(a1) && !digitsOk(a1) ? `Each octal digit is 0 to 7 (r = 4, w = 2, x = 1, added up), one digit for owner, group and others: ${a1} isn't a valid mode.` : "A mode is three octal digits (640) or letters: who (u, g, o, a), + or - or =, and which bits (r, w, x), for example o-r.";
+    if (/No such file or directory/.test(res.out)) return `You're in ${cwd}, so a bare name only finds files there. The files in this lab: ${files.join(", ")}. Use the full path for the others.`;
+    if (/invalid user/.test(res.out)) return `The people on this server: ${Object.keys(world.users).join(", ")} (and root).`;
+    if (/invalid group/.test(res.out)) return `The groups on this server: ${Object.keys(world.groups).join(", ")}.`;
+    return null;
+  }
+  if (cmd === "chmod" && a2) { const p = resolve(world, cwd, a2), f = p && world.files[p]; if (f && has(f.mode, "others", "w")) return `Careful: others now have w, so anyone on the server can change ${a2}. That's almost never what you want.`; }
+  return null;
+}
+
 // ---------- the on-page lab
 export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = () => {}, onReset = () => {} } = {}) {
   const world = loadWorld(lab.world), done = new Set(solved), cwd = lab.cwd;
@@ -168,11 +201,11 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
       <section class="panel" aria-labelledby="pm-who-h"><h2 id="pm-who-h">Who can do what</h2><div id="pm-matrix"></div></section>
     </div>
     <div class="term-grid">
-      <section class="term-shell" aria-label="Simulated terminal"><div class="term-bar"><span>root@${esc(lab.host)}:${esc(cwd)}</span><span class="tag">Simulated</span></div>
+      <section class="term-shell t-guided" aria-label="Simulated terminal"><div class="vl-now" id="pm-now" aria-live="polite"></div><div class="term-bar"><span>root@${esc(lab.host)}:${esc(cwd)}</span><span class="tag">Simulated</span></div>
         <div class="term-out" id="pm-out" aria-live="polite" tabindex="0" aria-label="Terminal output"></div>
         <form class="term-in" id="pm-form"><label class="sr" for="pm-in">Command</label><span class="term-ps">root@${esc(lab.host)}:${esc(cwd)}#</span><input id="pm-in" autocomplete="off" autocapitalize="off" spellcheck="false"></form></section>
       <aside class="panel term-tasks"><div class="panel-title"><h2>Objectives</h2><span class="mono" id="pm-count"></span></div><ol id="pm-tasks"></ol>
-        <div class="row"><button class="link-btn" id="pm-hint" type="button">Show a hint</button></div><div id="pm-hinttext"></div>
+        <div id="pm-hintslot"></div>
         <details class="tbl simplification"><summary>How this differs from a real server</summary><p>${esc(lab.simplification)}</p></details>
         <div class="row"><button class="btn ghost" id="pm-reset" type="button">↺ Reset lab</button></div></aside>
     </div>
@@ -206,30 +239,32 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   const whyLine = () => { const u = lab.spotlight, a = world.files[focus].dir ? "list" : "read", r = can(world, u, a, focus); return `${u} (${world.users[u].role}): ${r.ok ? "can" : "can't"} ${a} ${focus}. ${r.why[0].toUpperCase()}${r.why.slice(1)}.`; };
   function changed(cmd) {
     if (cmd) { out += `<div class="muted">(same as: ${esc(cmd)})</div>`; $("pm-out").innerHTML = out; $("pm-out").scrollTop = $("pm-out").scrollHeight; }
-    drawFile(); drawMatrix(); drawTasks();
+    drawFile(); drawMatrix(); drawTasks(); g.draw();
   }
   function drawTasks() {
     lab.tasks.forEach(t => { if (!done.has(t.id) && check(t.check)) { done.add(t.id); onPart(t.id); } });
     const next = lab.tasks.find(t => !done.has(t.id));
     $("pm-tasks").innerHTML = lab.tasks.map(t => `<li class="${done.has(t.id) ? "got" : t === next ? "now" : ""}">${done.has(t.id) ? "✓ " : ""}${esc(t.text)}${done.has(t.id) ? `<span class="vl-why">${esc(t.why)}</span>` : ""}</li>`).join("");
     $("pm-count").textContent = `${done.size}/${lab.tasks.length}`;
-    $("pm-hinttext").innerHTML = ""; $("pm-hint").hidden = !next;
     if (!next) { if ($("pm-next")) $("pm-next").hidden = false; if (!finished) { finished = true; onComplete(); } }
   }
   const check = c => checkTask(world, ran, c);
   const ran = [];
+  // Three-step hints, Run it and the rescue (guide.js), as in the other command-line labs. A command matches a walk step
+  // when it leaves the files the same (sameEffect), so any equivalent mode or path counts.
+  const g = guide($("pm-now"), lab, { done, input: $("pm-in"), form: $("pm-form"), same: (a, b) => sameEffect(world, cwd, a, b) });
 
   root.querySelectorAll("[data-file]").forEach(b => b.addEventListener("click", () => { focus = b.dataset.file; drawFile(); drawMatrix(); }));
   $("pm-form").addEventListener("submit", e => {
     e.preventDefault();
-    const line = $("pm-in").value, r = run(world, cwd, line);
-    out += `<div><span class="term-ps">root@${esc(lab.host)}:${esc(cwd)}#</span> ${esc(line)}</div>${r.out ? `<div class="${r.error ? "t-err" : ""}">${esc(r.out)}</div>` : ""}`;
+    const line = $("pm-in").value, pre = g.before(), r = run(world, cwd, line), tip = explainPerm(world, cwd, line, r);
+    out += `<div><span class="term-ps">root@${esc(lab.host)}:${esc(cwd)}#</span> ${esc(line)}</div>${r.out ? `<div class="${r.error ? "t-err" : ""}">${esc(r.out)}</div>` : ""}${tip ? `<div class="t-tip">[Tip: ${esc(tip)}]</div>` : ""}`;
     $("pm-out").innerHTML = out; $("pm-out").scrollTop = $("pm-out").scrollHeight; $("pm-in").value = "";
     if (!r.error && line.trim()) ran.push(line.trim().split(/\s+/)[0] + (line.includes(" -l") ? " -l" : ""));
     if (r.changed && world.files[r.changed].show) focus = r.changed;
-    changed();
+    drawFile(); drawMatrix(); drawTasks(); g.after(line, r, pre); g.draw();
   });
-  $("pm-hint").addEventListener("click", () => { const t = lab.tasks.find(x => !done.has(x.id)); if (t) $("pm-hinttext").innerHTML = `<div class="feedback">${esc(t.hint)}</div>`; });
+  dock($("pm-now"), $("pm-hintslot"), root.querySelector(".term-shell"));  // one hint area: the panel, or above the terminal on a phone
   $("pm-reset").addEventListener("click", onReset);
   out = `<div class="muted">You're root on ${esc(lab.host)} (on a real server you'd use sudo). Try ls -l, chmod, chown and id.</div>`;
   $("pm-out").innerHTML = out;

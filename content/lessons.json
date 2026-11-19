@@ -10,7 +10,11 @@
   "example": {
    "title": "Ransomware hits all three",
    "year": "Ongoing",
-   "text": "A ransomware attack is a neat illustration: encrypting the files destroys availability, stealing a copy first breaks confidentiality, and altering or deleting data breaks integrity. That's why it's treated as a top business risk, not just an IT problem."
+   "text": "A ransomware attack is a neat illustration: encrypting the files destroys availability, stealing a copy first breaks confidentiality, and altering or deleting data breaks integrity. That's why it's treated as a top business risk, not just an IT problem.",
+   "source": {
+    "label": "NCSC: What you need to know about ransomware",
+    "url": "https://www.ncsc.gov.uk/ransomware/home"
+   }
   },
   "defend": [
    "Confidentiality: encryption, strong authentication and least-privilege access",
@@ -469,10 +473,10 @@
   "example": {
    "title": "MGM Resorts (Scattered Spider)",
    "year": "2023",
-   "text": "Attackers found an employee on LinkedIn, called the IT help desk pretending to be them, and talked staff into resetting their login. That one phone call led to ransomware that shut down hotel systems and cost MGM about $100 million.",
+   "text": "Attackers reportedly found an employee on LinkedIn, called the IT help desk pretending to be them, and talked staff into resetting their login. That one phone call led to ransomware that shut down hotel systems and cost MGM about $100 million, by its own filing.",
    "source": {
-    "label": "Wikipedia: Scattered Spider",
-    "url": "https://en.wikipedia.org/wiki/Scattered_Spider"
+    "label": "MGM Resorts 8-K filing, SEC (October 2023)",
+    "url": "https://www.sec.gov/Archives/edgar/data/789570/000119312523251667/d461062d8k.htm"
    }
   },
   "defend": [
@@ -658,8 +662,8 @@
    "year": "2021",
    "text": "Attackers logged in to an old VPN account with a leaked password and no MFA. The resulting ransomware attack shut down the largest fuel pipeline in the US for days and caused fuel shortages along the East Coast.",
    "source": {
-    "label": "Wikipedia: Colonial Pipeline ransomware attack",
-    "url": "https://en.wikipedia.org/wiki/Colonial_Pipeline_ransomware_attack"
+    "label": "CISA: The attack on Colonial Pipeline",
+    "url": "https://www.cisa.gov/news-events/news/attack-colonial-pipeline-what-weve-learned-what-weve-done-over-past-two-years"
    }
   },
   "defend": [
@@ -745,8 +749,8 @@
    "year": "2017",
    "text": "A ransomware worm used a leaked NSA exploit (EternalBlue) to spread across unpatched Windows machines worldwide in hours, hitting the UK's NHS hard. Microsoft had released the patch two months earlier.",
    "source": {
-    "label": "Wikipedia: WannaCry ransomware attack",
-    "url": "https://en.wikipedia.org/wiki/WannaCry_ransomware_attack"
+    "label": "National Audit Office: Investigation into WannaCry and the NHS",
+    "url": "https://www.nao.org.uk/reports/investigation-wannacry-cyber-attack-and-the-nhs/"
    }
   },
   "defend": [
@@ -918,8 +922,8 @@
    "year": "2021",
    "text": "A flaw in Log4j, a logging library inside thousands of Java apps, let attackers run code just by getting a server to log a crafted string. It was exploited within hours of going public, and teams spent weeks just finding where Log4j was hiding.",
    "source": {
-    "label": "Wikipedia: Log4Shell",
-    "url": "https://en.wikipedia.org/wiki/Log4Shell"
+    "label": "CISA: Apache Log4j vulnerability guidance",
+    "url": "https://www.cisa.gov/news-events/news/apache-log4j-vulnerability-guidance"
    }
   },
   "defend": [
@@ -1014,7 +1018,11 @@
     "label": "Then a race",
     "text": "Once patched, attackers and defenders both rush."
    }
-  ]
+  ],
+  "explainer": {
+   "kind": "zeroday",
+   "why": "Drag when you patch. The zero-day window is out of your hands; the window after the fix is out is yours."
+  }
  },
  {
   "id": "vuln-management",
@@ -1029,8 +1037,8 @@
    "year": "2017",
    "text": "A patch for a critical Apache Struts flaw was available for two months, but one internet-facing system wasn't updated. Attackers used it to steal personal data on about 147 million people.",
    "source": {
-    "label": "Wikipedia: 2017 Equifax data breach",
-    "url": "https://en.wikipedia.org/wiki/2017_Equifax_data_breach"
+    "label": "US GAO report GAO-18-559 on the Equifax breach",
+    "url": "https://www.gao.gov/products/gao-18-559"
    }
   },
   "defend": [
@@ -1139,8 +1147,8 @@
    "year": "2024",
    "text": "Over two years, an attacker built trust as a helpful maintainer of a compression library used by Linux, then slipped in a backdoor targeting SSH. A Microsoft engineer spotted it because SSH logins were half a second slower than usual.",
    "source": {
-    "label": "Wikipedia: XZ Utils backdoor",
-    "url": "https://en.wikipedia.org/wiki/XZ_Utils_backdoor"
+    "label": "The original disclosure on oss-security (Andres Freund)",
+    "url": "https://www.openwall.com/lists/oss-security/2024/03/29/4"
    }
   },
   "defend": [
@@ -1312,8 +1320,8 @@
    "year": "2023",
    "text": "The Cl0p gang used a SQL injection zero-day in MOVEit Transfer, a file-sharing product, to steal data from over 2,700 organisations in one campaign, exposing personal data on roughly 93 million people.",
    "source": {
-    "label": "Wikipedia: 2023 MOVEit data breach",
-    "url": "https://en.wikipedia.org/wiki/2023_MOVEit_data_breach"
+    "label": "CISA and FBI advisory AA23-158A: CL0P exploits MOVEit",
+    "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a"
    }
   },
   "defend": [
@@ -1490,8 +1498,8 @@
    "year": "2020",
    "text": "Russian intelligence hackers slipped a backdoor into updates for SolarWinds Orion, network software used by about 18,000 organisations, then picked high-value targets including US government agencies.",
    "source": {
-    "label": "Wikipedia: 2020 US federal government data breach",
-    "url": "https://en.wikipedia.org/wiki/2020_United_States_federal_government_data_breach"
+    "label": "CISA Emergency Directive 21-01: SolarWinds Orion",
+    "url": "https://www.cisa.gov/news-events/directives/ed-21-01-mitigate-solarwinds-orion-code-compromise-closed"
    }
   },
   "defend": [
@@ -1604,8 +1612,8 @@
    "year": "2016",
    "text": "The Mirai botnet infected hundreds of thousands of cameras and routers that still used factory-default passwords, then hit DNS provider Dyn, making Twitter, Netflix, Reddit and others unreachable for parts of a day.",
    "source": {
-    "label": "Wikipedia: DDoS attacks on Dyn",
-    "url": "https://en.wikipedia.org/wiki/DDoS_attacks_on_Dyn"
+    "label": "US Department of Justice: Mirai botnet guilty pleas",
+    "url": "https://www.justice.gov/archives/opa/pr/justice-department-announces-charges-and-guilty-pleas-three-computer-crime-cases-involving"
    }
   },
   "defend": [
@@ -1828,8 +1836,8 @@
    "year": "2019",
    "text": "A misconfigured web firewall let an attacker use server-side request forgery (SSRF) to grab cloud credentials from AWS's metadata service, then download data on about 100 million customers.",
    "source": {
-    "label": "Wikipedia: Server-side request forgery (Capital One)",
-    "url": "https://en.wikipedia.org/wiki/Server-side_request_forgery"
+    "label": "US Department of Justice: arrest in the Capital One data theft",
+    "url": "https://www.justice.gov/usao-wdwa/pr/seattle-tech-worker-arrested-data-theft-involving-large-financial-services-company"
    }
   },
   "defend": [
@@ -1942,8 +1950,8 @@
    "year": "2024",
    "text": "Attackers used stolen credentials on a remote access portal that didn't have MFA. The ransomware attack disrupted pharmacy and insurance payments across the US for weeks.",
    "source": {
-    "label": "Wikipedia: Change Healthcare",
-    "url": "https://en.wikipedia.org/wiki/Change_Healthcare"
+    "label": "US Senate Finance Committee hearing on the Change Healthcare attack",
+    "url": "https://www.finance.senate.gov/hearings/hacking-americas-health-care-assessing-the-change-healthcare-cyber-attack-and-whats-next/"
    }
   },
   "defend": [
@@ -2200,8 +2208,8 @@
    "year": "2010",
    "text": "A highly sophisticated worm, widely attributed to the US and Israel, sabotaged Iranian uranium centrifuges by changing their speeds while showing operators normal readings. It crossed air-gapped networks via USB drives.",
    "source": {
-    "label": "Wikipedia: Stuxnet",
-    "url": "https://en.wikipedia.org/wiki/Stuxnet"
+    "label": "Symantec: W32.Stuxnet Dossier",
+    "url": "https://www.security.com/threat-intelligence/stuxnet-dossier-espionage"
    }
   },
   "defend": [
@@ -2367,8 +2375,8 @@
    "year": "2023",
    "text": "A SQL injection flaw in this widely used file-transfer product let the Cl0p gang steal data from thousands of organisations in one campaign.",
    "source": {
-    "label": "Wikipedia: 2023 MOVEit data breach",
-    "url": "https://en.wikipedia.org/wiki/2023_MOVEit_data_breach"
+    "label": "CISA and FBI advisory AA23-158A: CL0P exploits MOVEit",
+    "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a"
    }
   },
   "defend": [
@@ -2454,8 +2462,8 @@
    "year": "2005",
    "text": "A MySpace user hid a script in his profile that added him as a friend and copied itself to the profile of anyone who viewed it. Over a million people were infected in under a day.",
    "source": {
-    "label": "Wikipedia: Samy (computer worm)",
-    "url": "https://en.wikipedia.org/wiki/Samy_(computer_worm)"
+    "label": "Samy Kamkar's own write-up of the MySpace worm",
+    "url": "https://samy.pl/myspace/"
    }
   },
   "defend": [
@@ -2541,8 +2549,8 @@
    "year": "2022",
    "text": "Australia's second-largest telco lost personal data on almost 10 million current and former customers. It was widely reported that an internet-facing API needed no login and used sequential customer IDs, though Optus disputed how simple the attack was.",
    "source": {
-    "label": "Wikipedia: 2022 Optus data breach",
-    "url": "https://en.wikipedia.org/wiki/2022_Optus_data_breach"
+    "label": "OAIC: civil penalty action against Optus",
+    "url": "https://www.oaic.gov.au/news/media-centre/australian-information-commissioner-takes-civil-penalty-action-against-optus"
    }
   },
   "defend": [
@@ -2798,8 +2806,8 @@
    "year": "2017",
    "text": "Researcher Mathy Vanhoef showed that WPA2's handshake could be tricked into reusing encryption keys (key reinstallation attacks), letting someone in range decrypt some traffic. It was a flaw in the standard itself, so it affected almost every Wi-Fi device; vendors patched it, and WPA3 was designed partly in response.",
    "source": {
-    "label": "Wikipedia: KRACK",
-    "url": "https://en.wikipedia.org/wiki/KRACK"
+    "label": "KRACK Attacks: the researchers' site",
+    "url": "https://www.krackattacks.com/"
    }
   },
   "defend": [
@@ -3272,8 +3280,8 @@
    "year": "2012",
    "text": "In 2012 about 6.5 million LinkedIn password hashes were posted online; in 2016 it emerged the same breach covered about 117 million accounts. The hashes used SHA-1 with no salt, so attackers cracked most of them quickly with precomputed tables.",
    "source": {
-    "label": "Wikipedia: 2012 LinkedIn hack",
-    "url": "https://en.wikipedia.org/wiki/2012_LinkedIn_hack"
+    "label": "Troy Hunt: Observations on the LinkedIn data breach",
+    "url": "https://www.troyhunt.com/observations-and-thoughts-on-the-linkedin-data-breach/"
    }
   },
   "defend": [
@@ -3480,8 +3488,8 @@
    "year": "2011",
    "text": "Attackers broke into DigiNotar, a Dutch certificate authority, and issued themselves a valid certificate for google.com. It was used to intercept Gmail traffic, mostly from users in Iran. Browser makers removed DigiNotar from their trusted lists, which made every certificate it had issued worthless, and the company went bankrupt within weeks.",
    "source": {
-    "label": "Wikipedia: DigiNotar",
-    "url": "https://en.wikipedia.org/wiki/DigiNotar"
+    "label": "Fox-IT interim report on DigiNotar (filed with the SEC by its parent, VASCO)",
+    "url": "https://www.sec.gov/Archives/edgar/data/1044777/000119312511241796/dex992.htm"
    }
   },
   "defend": [
@@ -3589,7 +3597,11 @@
   "example": {
    "title": "Log triage",
    "year": "Everyday",
-   "text": "A SOC analyst can find brute-force attempts in seconds: grep \"Failed password\" /var/log/auth.log | awk '{print $(NF-3)}' | sort | uniq -c | sort -nr lists the IPs with the most failed SSH logins."
+   "text": "A SOC analyst can find brute-force attempts in seconds: grep \"Failed password\" /var/log/auth.log | awk '{print $(NF-3)}' | sort | uniq -c | sort -nr lists the IPs with the most failed SSH logins.",
+   "source": {
+    "label": "MITRE ATT&CK T1110.001: Password guessing",
+    "url": "https://attack.mitre.org/techniques/T1110/001/"
+   }
   },
   "defend": [
    "Disable SSH password logins; use keys",
@@ -3896,8 +3908,8 @@
    "year": "2024",
    "text": "Not an attack: a faulty security update crashed about 8.5 million Windows machines worldwide. It showed that IR plans need to cover outages and recovery at scale, not just hackers.",
    "source": {
-    "label": "Wikipedia: 2024 CrowdStrike-related IT outages",
-    "url": "https://en.wikipedia.org/wiki/2024_CrowdStrike-related_IT_outages"
+    "label": "CrowdStrike: Falcon content update remediation and guidance hub",
+    "url": "https://www.crowdstrike.com/falcon-content-update-remediation-and-guidance-hub/"
    }
   },
   "defend": [
@@ -4015,7 +4027,11 @@
   "example": {
    "title": "Job ads as recon",
    "year": "Everyday",
-   "text": "A job posting asking for 'experience with Fortinet VPN and Citrix' tells an attacker exactly which products to look up vulnerabilities for."
+   "text": "A job posting asking for 'experience with Fortinet VPN and Citrix' tells an attacker exactly which products to look up vulnerabilities for.",
+   "source": {
+    "label": "MITRE ATT&CK T1592.002: Gather victim host information (software)",
+    "url": "https://attack.mitre.org/techniques/T1592/002/"
+   }
   },
   "defend": [
    "Audit what your organisation exposes publicly",
@@ -4191,8 +4207,8 @@
    "year": "2018",
    "text": "TSB moved 5.2 million customers to a new banking platform in April 2018. Many were locked out for days and some saw other customers' details. In 2022 the UK regulators fined TSB £48.65 million for failing to manage the risks of the change.",
    "source": {
-    "label": "Wikipedia: TSB Bank",
-    "url": "https://en.wikipedia.org/wiki/TSB_Bank_(United_Kingdom)"
+    "label": "FCA: TSB fined £48.65m for operational resilience failings",
+    "url": "https://www.fca.org.uk/news/press-releases/tsb-fined-48m-operational-resilience-failings"
    }
   },
   "defend": [
@@ -4342,8 +4358,8 @@
    "year": "2015",
    "text": "Attackers used SQL injection on old web pages to steal data on about 157,000 customers. Several were convicted under the Computer Misuse Act, and the ICO fined TalkTalk £400,000 for failing to protect the data: both sides of the law in one breach.",
    "source": {
-    "label": "Wikipedia: TalkTalk Group",
-    "url": "https://en.wikipedia.org/wiki/TalkTalk_Group"
+    "label": "ICO: TalkTalk cyber attack, how the investigation unfolded",
+    "url": "https://ico.org.uk/about-the-ico/media-centre/talktalk-cyber-attack-how-the-ico-investigation-unfolded/"
    }
   },
   "defend": [
@@ -4585,6 +4601,11 @@
     "label": "Model before you build",
     "text": "STRIDE finds design flaws before attackers do."
    }
-  ]
+  ],
+  "explainer": {
+   "kind": "killchain",
+   "withConcept": true,
+   "why": "One attack walked through the seven Kill Chain stages, each with its ATT&CK technique. Then break the chain with one defence."
+  }
  }
 ]

@@ -139,5 +139,18 @@
     "tone": "good",
     "title": "",
     "text": "Saved only in this browser, with your progress."
+  },
+  "webattack": {
+    "tone": "warn",
+    "title": "Safe here. On a real site it needs permission.",
+    "text": "This shop is fictional and runs in your browser. Trying injection on a website you don't own, without written permission, can be a crime under the Computer Misuse Act 1990.",
+    "more": {
+      "summary": "Where to practise for real",
+      "items": [
+        "Run a deliberately vulnerable app on your own computer, such as OWASP Juice Shop.",
+        "Use free training labs made for it, such as PortSwigger's Web Security Academy.",
+        "At work, get written authorisation and an agreed scope before testing anything."
+      ]
+    }
   }
 }

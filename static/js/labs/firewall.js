@@ -77,6 +77,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     const p = pkt();
     $("fwg-chip").className = "fwg-chip" + (p.threat ? " threat" : "");
     $("fwg-chip").innerHTML = `<span class="fwg-cl">PACKET</span> <span class="fwg-cip">${esc(p.src)} → ${esc(p.dst)}:${esc(String(p.port))}</span> <span class="fwg-cpp">${esc(PROTO[p.proto] || p.proto)}</span>`;
+    place(null);
   }
   function renderBrief() {
     const p = pkt();
@@ -115,8 +116,11 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   }
   function place(el) {
     const you = $("fwg-you");
-    if (!el) { you.style.top = "8px"; return; }
-    you.style.top = (el.offsetTop + Math.max(8, (el.offsetHeight - you.offsetHeight) / 2)) + "px";
+    // At rest it waits above the rules; at a rule it stops in the lane above that rule's beam, never on top of the rule.
+    const lane = Math.max(54, you.offsetHeight + 14);  // the packet wraps to two lines on phones, so the lane grows with it
+    $("fwg-shaft").style.setProperty("--lane", lane + "px");
+    if (!el) { you.style.top = "12px"; return; }
+    you.style.top = (el.offsetTop + $("fwg-rules").offsetTop + (lane - you.offsetHeight) / 2) + "px";
   }
 
   async function send() {

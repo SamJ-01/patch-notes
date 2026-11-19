@@ -273,11 +273,19 @@ function mountRoute(el, d) {
     el.querySelectorAll(".route-dots span").forEach(c => { const k = Number(c.dataset.k); c.classList.toggle("now", k === i); c.classList.toggle("done", k < i); });
     el.querySelector(".route-caption").classList.toggle("back", !!p.back);
     el.querySelectorAll(".flow-step").forEach(c => { const on = Number(c.dataset.k) === i; c.classList.toggle("now", on); c.toggleAttribute("aria-hidden", !on); });
-    slab.style.left = pct(at);
     slab.classList.toggle("back", !!p.back);
-    // The stretch of cable the packet has just travelled glows; nothing glows before it has moved.
-    lit.style.left = pct(Math.min(from, at)); lit.style.width = `${(Math.abs(at - from) / n) * 100}%`;
     lit.classList.toggle("back", !!p.back);
+    // The packet travels this step's leg (from -> to) and the glow grows behind it as it goes: both start at the sender
+    // (no transition), then move together with the same timing, so the trail's leading edge is always the packet.
+    // (They used to slide from the last step's position as a block, which looked like a fixed packet and line jumping.)
+    const end = () => { slab.style.left = pct(at); lit.style.left = pct(Math.min(from, at)); lit.style.width = `${(Math.abs(at - from) / n) * 100}%`; };
+    if (speak && !reduced && from !== at) {
+      [slab, lit].forEach(x => { x.style.transition = "none"; });
+      slab.style.left = pct(from); lit.style.left = pct(from); lit.style.width = "0%";
+      void slab.offsetWidth;
+      [slab, lit].forEach(x => { x.style.transition = ""; });
+      requestAnimationFrame(end);
+    } else end();
     stops.forEach((nd, k) => nd.classList.toggle("on", k === at));
     el.querySelector('[data-go="-1"]').disabled = i === 0;
     const next = el.querySelector('[data-go="1"]');

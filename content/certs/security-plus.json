@@ -244,6 +244,10 @@
       },
       {
        "type": "lab",
+       "id": "sqli-shop"
+      },
+      {
+       "type": "lab",
        "id": "xss-review"
       },
       {
@@ -309,6 +313,10 @@
       {
        "type": "lab",
        "id": "sqli-log"
+      },
+      {
+       "type": "lab",
+       "id": "sqli-shop"
       },
       {
        "type": "lab",
@@ -750,6 +758,10 @@
       {
        "type": "lab",
        "id": "sqli-log"
+      },
+      {
+       "type": "lab",
+       "id": "sqli-shop"
       },
       {
        "type": "lab",
