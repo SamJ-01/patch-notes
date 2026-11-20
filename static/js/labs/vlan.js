@@ -837,7 +837,8 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   root.innerHTML = `<div class="term-lab vlan-lab">
     <div class="view-head"><a class="link-btn" href="#missions">← Missions</a>
       <div class="eyebrow">Lab · ${esc(lab.track)} · ${lab.minutes} min</div><h1>${esc(lab.title)}</h1><p>${esc(lab.intro)}</p></div>
-    <p class="eyebrow vn-intro">Try it first: what a VLAN does. Then build it in the console below.</p>
+    ${lab.glance ? `<p class="vn-glance">${esc(lab.glance)}</p>` : ""}
+    <p class="eyebrow vn-intro">${lab.routers ? "Recap: what a VLAN does. Then join them up in the console below." : "Try it first: what a VLAN does. Then build it in the console below."}</p>
     <section class="vn-scene" id="v-scene" aria-label="Two rooms on one switch">
       <div class="vn-chassis"><span>Switch</span><b>one network, two rooms</b></div>
       <div class="vn-floor" id="vn-floor">
@@ -859,10 +860,10 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     </section>
     <section class="panel vl-net"><div class="panel-title"><h2>The network</h2><span class="sim-tag">Live: changes as you configure</span></div>
       <div class="vl-diagram" id="v-diagram"></div>
-      <div class="vl-front"><div class="vl-front-head"><h3 class="eyebrow">Front panel</h3>
+      <details class="vl-front"><summary>Front panel: the switch's ports and their lights</summary><div class="vl-front-head"><h3 class="eyebrow">Front panel</h3>
         <div class="row" role="group" aria-label="How to show it"><button type="button" class="chip" data-pview="photo" aria-pressed="true">Photo</button><button type="button" class="chip" data-pview="draw" aria-pressed="false">Drawing</button></div>
         <div class="row" role="group" aria-label="Which switch">${Object.keys(lab.switches).map(sw => `<button type="button" class="chip" data-panel="${sw}" aria-pressed="false">${sw}</button>`).join("")}</div></div>
-        <div class="vl-panel-wrap" id="v-panel"></div><p class="muted vl-port-info" id="v-port-info" aria-live="polite">Each port's light shows the colour of its network. Tap a port to see what's plugged in.</p></div>
+        <div class="vl-panel-wrap" id="v-panel"></div><p class="muted vl-port-info" id="v-port-info" aria-live="polite">Each port's light shows the colour of its network. Tap a port to see what's plugged in.</p></details>
       ${(gw => `<div class="vl-table" role="region" aria-label="Addressing table" tabindex="0"><table class="tbl"><caption class="sr-only">Addressing table</caption><thead><tr><th scope="col">PC</th><th scope="col">IP address</th><th scope="col">Mask</th>${gw ? '<th scope="col">Gateway</th>' : ""}<th scope="col">Connected to</th><th scope="col">Planned VLAN</th></tr></thead>
         <tbody>${Object.entries(lab.pcs).map(([id, pc]) => `<tr><th scope="row">${id}</th><td class="mono">${pc.ip}</td><td class="mono">${pc.mask}</td>${gw ? `<td class="mono">${esc(pc.gw || "")}</td>` : ""}<td>${pc.sw} ${pc.port}${pc.phone ? " (through an IP phone)" : ""}</td><td>${pc.vlan} (${esc(lab.vlans[pc.vlan])})</td></tr>`).join("")}</tbody></table></div>`)(Object.values(lab.pcs).some(pc => pc.gw))}
       <details class="tbl simplification"><summary>How this simulation differs from real switches</summary><p>${esc(lab.simplification)}</p></details></section>

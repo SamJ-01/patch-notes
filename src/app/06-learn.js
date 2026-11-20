@@ -37,8 +37,7 @@ VIEWS.learn = () => {
     </div>
     ${levels.length > 2 ? `<div class="row level-filter" id="llevels" role="group" aria-label="Filter lessons by level"><span class="eyebrow level-lead">Level</span>${levels.map(lv => `<button class="chip chip-sm" data-l="${esc(lv)}" aria-pressed="${LS.level === lv}">${esc(lv)}</button>`).join("")}</div>` : ""}
     <section class="stack" style="gap:12px"><div class="panel-title"><h2 class="eyebrow" style="font-size:0.8rem">Learning paths</h2><span class="muted" style="font-size:0.85rem">Finish a path for +${PATH_XP} XP and a badge</span></div>
-      ${(ps => compact ? `<div class="learn-list">${ps.map(pathRow).join("")}</div>` : `<div class="paths-grid">${ps.map(pathCard).join("")}</div>`)(DATA.paths.filter(p => !p.exam))}
-      <p class="muted paths-foot">Going for a certificate? <a href="#exams">Network+, Security+ and PenTest+ routes live in Exams →</a></p></section>
+      ${(ps => compact ? `<div class="learn-list">${ps.map(pathRow).join("")}</div>` : `<div class="paths-grid">${ps.map(pathCard).join("")}</div>`)(DATA.paths.filter(p => !p.exam))}</section>
     <div class="stack" id="lgrid" style="gap:30px"></div>
     <section class="panel" style="grid-template-columns:minmax(0,1fr) auto;align-items:center">
       <div class="stack" style="gap:6px"><h2>Glossary</h2><p class="muted">${DATA.glossary.length + Object.keys(DATA.cwe).length} terms in plain English. Dotted words anywhere on the site open them.</p></div>
@@ -157,10 +156,6 @@ VIEWS.exams = () => {
   main.innerHTML = `<div class="view">
     <div class="view-head with-art">${headArt("exams")}<h1>Exam prep</h1>
       <p>CompTIA objectives mapped to what you can practise here, with practice questions, mock exams and an honest "Am I ready?" check.</p></div>
-    <ol class="exam-how" aria-label="How exam prep works">
-      <li><b>1</b><span><strong>Practise each objective</strong> with the lessons, labs and hands-on PBQs mapped to it</span></li>
-      <li><b>2</b><span><strong>Take a timed mock</strong> at the real exam's pace and domain weights</span></li>
-      <li><b>3</b><span><strong>Check "Am I ready?"</strong> for an honest verdict and what to study next</span></li></ol>
     <div class="row" style="justify-content:flex-end">${viewToggle()}</div>
     <h2 class="sr-only">Certifications</h2>
     ${compact ? `<div class="learn-list">${DATA.certs.map(certRow).join("")}</div>` : `<div class="paths exam-cards">${DATA.certs.map(certCard).join("")}</div>`}

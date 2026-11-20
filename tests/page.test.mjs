@@ -42,10 +42,12 @@ vm.runInContext([
   template.match(/const CVSS_METRICS = \[[\s\S]*?\n\];\n/)[0],
   template.match(/const CVSS4_METRICS = \[[\s\S]*?\n\];\n/)[0],
   extract("function readVector(str)"),
+  template.match(/const CVSS_GROUPS = \[[\s\S]*?\n\];\n/)[0],
+  extract("function cvssPlain(p)"),
   extract("function markText(text, terms)"),
-  "this.api = { findTerms, cvss31, cvssSeverity, parseVector, decodeVector, readVector, markText };",
+  "this.api = { findTerms, cvss31, cvssSeverity, parseVector, decodeVector, readVector, markText, CVSS_GROUPS, cvssPlain };",
 ].join("\n"), ctx);
-const { findTerms, cvss31, cvssSeverity, parseVector, decodeVector, readVector, markText } = ctx.api;
+const { findTerms, cvss31, cvssSeverity, parseVector, decodeVector, readVector, markText, CVSS_GROUPS, cvssPlain } = ctx.api;
 // Copy results out of the vm sandbox: its arrays have a different prototype, which strict deep-equal rejects.
 const terms = text => JSON.parse(JSON.stringify(findTerms(text).map(h => [text.substr(h.i, h.len), h.id])));
 
@@ -426,4 +428,16 @@ test("shuffled options keep their wrong-answer notes with them", () => {
     assert.equal(m.options[m.answer], "c");
   }
   assert.equal(c.mix({ options: ["x", "y"], answer: 0 }, Math.random).notes, undefined, "no notes, none added");
+});
+
+test("the CVSS builder's three plain questions cover all eight metrics once, and say the picks in words", () => {
+  assert.deepEqual(JSON.parse(JSON.stringify(CVSS_GROUPS.flatMap(g => g[2]).sort())), ["A", "AC", "AV", "C", "I", "PR", "S", "UI"]);
+  const worst = cvssPlain({ AV: "N", AC: "L", PR: "N", UI: "N", S: "C", C: "H", I: "H", A: "H" });
+  assert.equal(worst.reach, "Anyone on the internet, with no login, and nobody has to click anything.");
+  assert.equal(worst.effort, "It works reliably, every time.");
+  assert.equal(worst.damage, "They can read everything, change anything and take it down. It reaches beyond the vulnerable part (scope changed).");
+  const mild = cvssPlain({ AV: "P", AC: "H", PR: "H", UI: "R", S: "U", C: "L", I: "N", A: "N" });
+  assert.match(mild.reach, /hands on the device, with an admin account, but a victim has to click/);
+  assert.equal(mild.damage, "They can read some data.");
+  assert.equal(cvssPlain({ AV: "N", AC: "L", PR: "N", UI: "N", S: "U", C: "N", I: "N", A: "N" }).damage, "Nothing is read, changed or taken down.");
 });

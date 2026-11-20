@@ -253,8 +253,8 @@ VIEWS.missions = () => {
     <div class="row" style="justify-content:space-between;align-items:center;gap:10px">
       <div class="row pr-tracks" role="group" aria-label="Show a track">${["All", ...cats].map(c => `<button type="button" class="chip" data-t="${esc(c)}" aria-pressed="${PS.track === c}">${esc(c)} <span class="n">${c === "All" ? items.length : items.filter(i => i.cat === c).length}</span></button>`).join("")}</div>
     </div>
-    <div class="row pr-filterbar"><div class="row pr-filters" role="group" aria-label="Filter by length and progress"><span class="eyebrow">Length</span>${PRACTISE_TIMES.map(([k, t]) => `<button type="button" class="chip" data-time="${k}" aria-pressed="${PS.time === k}">${t}</button>`).join("")}
-      <span class="pr-sep" aria-hidden="true"></span><button type="button" class="chip pr-todo" data-todo aria-pressed="${PS.todo}">Not done yet</button></div>
+    <div class="row pr-filterbar"><details class="pr-filtfold"${PS.time !== "any" || PS.todo ? " open" : ""}><summary>Filters</summary><div class="row pr-filters" role="group" aria-label="Filter by length and progress"><span class="eyebrow">Length</span>${PRACTISE_TIMES.map(([k, t]) => `<button type="button" class="chip" data-time="${k}" aria-pressed="${PS.time === k}">${t}</button>`).join("")}
+      <span class="pr-sep" aria-hidden="true"></span><button type="button" class="chip pr-todo" data-todo aria-pressed="${PS.todo}">Not done yet</button></div></details>
       ${viewToggle()}</div>
     <p class="muted pr-count" aria-live="polite"></p>
     <div class="stack" id="pr-grid" style="gap:30px"></div>
@@ -545,6 +545,7 @@ function labView(id) {
     ${labSafety(l)}
     ${l.artifact.kind === "headers" ? `<section class="lesson-mail">${MAIL.card({ headers: l.artifact.text, body: l.artifact.body, links: l.artifact.links }, { id: "lab-mail", views: ["message", "original"], org: "halcyonlabs.example", client: true })}</section>` : `<section class="panel screen"><div class="panel-title"><h2>${esc(l.artifact.name)}</h2><span class="muted mono" id="lab-n" style="font-size:0.78rem"></span></div>
       ${l.artifact.tree ? `<div class="row ev-views" role="group" aria-label="How to show the evidence"><button type="button" class="chip" data-ev-view="tree" aria-pressed="true">Tree</button><button type="button" class="chip" data-ev-view="raw" aria-pressed="false">Raw export</button></div><div id="lab-tree"><div class="empty">Drawing the tree…</div></div>` : ""}
+      <div id="lab-anat"></div>
       <div id="lab-raw"${l.artifact.tree ? " hidden" : ""}>
       ${l.artifact.kind === "log" ? `<div class="row"><label class="sr" for="lab-f">Filter lines</label><span class="mono" style="color:var(--sun)">grep</span><input id="lab-f" type="search" placeholder="${esc(l.artifact.placeholder || "e.g. Failed password")}" autocomplete="off" spellcheck="false"></div>` : ""}
       <pre class="evidence" id="lab-pre" tabindex="0" aria-label="Evidence"></pre></div></section>`}
@@ -571,6 +572,13 @@ function labView(id) {
     $("lab-n").textContent = `${shown.length} of ${lines.length} lines`;
   };
   if ($("lab-pre")) drawLog(); else MAIL.wire($("lab-mail").parentElement);
+  // "Read a line" (20 Nov): one line of this log taken apart into labelled parts (labs/anatomy.js), so a newcomer can read
+  // the rest. Only for logs in a known format; the parts join back to the exact line.
+  if ($("lab-anat")) import("./js/labs/anatomy.js").then(m => {
+    const r = m.readLine(l.artifact.text), box = $("lab-anat"); if (!r || !box) return;
+    box.innerHTML = `<details class="ln-anat" open><summary><b>Read a line</b> <span class="muted">${esc(r.name)}: every line follows this pattern</span></summary>
+      <div class="ln-parts">${r.parts.filter(p => p[1]).map(([t, lab]) => `<span class="ln-p"><code title="${esc(t)}">${esc(t)}</code><small>${esc(lab)}</small></span>`).join("")}</div></details>`;
+  }).catch(() => {});
   // A process-tree export (artifact.tree) opens drawn as a tree; "Raw export" shows the same text with the grep box.
   const evView = v => { if (!$("lab-tree")) return; $("lab-tree").hidden = v !== "tree"; $("lab-raw").hidden = v === "tree"; document.querySelectorAll("[data-ev-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.evView === v))); };
   if (l.artifact.tree) {
@@ -634,6 +642,25 @@ const CVSS_METRICS = [
   ["I", "Integrity impact (data changed)", [["N", "None"], ["L", "Low (some data)"], ["H", "High (anything)"]]],
   ["A", "Availability impact (service down)", [["N", "None"], ["L", "Low (slower / partial)"], ["H", "High (fully down)"]]],
 ];
+// The eight metrics as three plain questions (20 Nov, the owner: the idea at a glance), each answered in a sentence from
+// the current picks. Pure; tested in page.test.
+const CVSS_GROUPS = [
+  ["reach", "How easy is it to reach?", ["AV", "PR", "UI"]],
+  ["effort", "How hard is it to pull off?", ["AC"]],
+  ["damage", "What does it break?", ["S", "C", "I", "A"]],
+];
+function cvssPlain(p) {
+  const who = { N: "Anyone on the internet", A: "Someone on the same local network", L: "Someone already logged in on the machine", P: "Someone with hands on the device" }[p.AV];
+  const login = { N: "with no login", L: "with a normal user account", H: "with an admin account" }[p.PR];
+  const click = p.UI === "R" ? "but a victim has to click or open something" : "and nobody has to click anything";
+  const hits = [{ L: "read some data", H: "read everything" }[p.C], { L: "change some data", H: "change anything" }[p.I], { L: "slow it down", H: "take it down" }[p.A]].filter(Boolean);
+  const list = hits.length > 1 ? `${hits.slice(0, -1).join(", ")} and ${hits[hits.length - 1]}` : hits[0];
+  return {
+    reach: `${who}, ${login}, ${click}.`,
+    effort: p.AC === "H" ? "It only works under special conditions." : "It works reliably, every time.",
+    damage: (hits.length ? `They can ${list}.` : "Nothing is read, changed or taken down.") + (p.S === "C" ? " It reaches beyond the vulnerable part (scope changed)." : ""),
+  };
+}
 // What to look for in a scenario when a metric is off (CVSS lab feedback): a question to ask of the text, never the value.
 const CVSS_CLUES = {
   AV: "Where does the attacker have to be? Look for words like 'anyone on the internet', 'same Wi-Fi', 'logged in' or 'hands on'.",
@@ -736,7 +763,9 @@ function cvssLab(l) {
       ${loopStrip(pageTopic(l), labStage(l))}
       <div class="row">${l.scenarios.map((x, i) => `<button class="chip" data-sc="${i}" aria-pressed="${i === cur}">${done.has(i) ? "✓ " : ""}${esc(x.title)}</button>`).join("")}</div>
       <section class="case"><h2 class="eyebrow">Scenario ${cur + 1}</h2><h3>${esc(sc.title)}</h3><p>${esc(sc.text)}</p></section>
-      <div class="cvss-grid">${CVSS_METRICS.map(([k, label, opts]) => `<fieldset class="metric"><legend>${esc(label)}</legend><div class="row">${opts.map(([v, t]) => `<button class="chip" data-m="${k}" data-v="${v}" aria-pressed="${pick[k] === v}">${esc(t)}</button>`).join("")}</div></fieldset>`).join("")}</div>
+      ${(() => { const say = cvssPlain(pick), fs = k => { const [, label, opts] = CVSS_METRICS.find(m => m[0] === k); return `<fieldset class="metric"><legend>${esc(label)}</legend><div class="row">${opts.map(([v, t]) => `<button class="chip" data-m="${k}" data-v="${v}" aria-pressed="${pick[k] === v}">${esc(t)}</button>`).join("")}</div></fieldset>`; };
+        return `<div class="cvss-qs">${CVSS_GROUPS.map(([id, q, keys], n) => `<section class="cvss-q cvss-${id}"><div class="cvss-qh"><span class="cvss-n" aria-hidden="true">${n + 1}</span><div><h2>${q}</h2><p class="cvss-say" aria-live="polite">${esc(say[id])}</p></div></div>
+          <div class="cvss-grid">${keys.map(fs).join("")}</div></section>`).join("")}</div>`; })()}
       <section class="panel score-panel"><div><div class="eyebrow">Your score</div><div class="score-big">${score.toFixed(1)}</div><div class="mono muted">${esc(cvssSeverity(score))} · CVSS:3.1/${esc(vec)}</div></div>
         <div class="stack" style="gap:8px"><button class="btn brand" id="cvss-check">${done.has(cur) ? "Solved ✓" : "Check my vector"}</button><div id="cvss-fb"></div></div></section>
     </article></div>`;

@@ -80,6 +80,7 @@ function renderXP() {
   const prog = r.next ? (P.xp - r.floor) / (r.next - r.floor) : 1;
   $("xp").innerHTML = `<span class="lvl">${esc(r.name)}</span><span class="bar" aria-hidden="true"><i style="width:${Math.round(prog * 100)}%"></i></span><span class="pts">${P.xp} XP</span>`;
   $("xp").title = r.next ? `${r.next - P.xp} XP to ${r.nextName}. Click for your progress.` : "Top rank reached";
+  $("xp").setAttribute("aria-label", `Your progress: ${r.name}, ${P.xp} XP`);
   renderStatus();
 }
 

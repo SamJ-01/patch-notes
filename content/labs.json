@@ -3018,7 +3018,7 @@
   "skill": "See why Telnet is unsafe and SSH is secure by watching what an eavesdropper captures",
   "title": "Telnet vs SSH: what a sniffer sees",
   "intro": "Old protocols like Telnet send your password across the network in plain text. Send a login over Telnet and then SSH, and watch exactly what someone listening on the wire captures.",
-  "card": "What an eavesdropper sees: Telnet vs SSH"
+  "card": "Sniff a login and see what encryption hides"
  },
  {
   "id": "cable-wiring",
@@ -3212,6 +3212,7 @@
   "track": "Networking",
   "minutes": 25,
   "lesson": "networking",
+  "glance": "Each switch port belongs to one VLAN, like a room: a device only reaches others in its own room. A trunk is the corridor that carries every room to the next switch.",
   "title": "VLANs: one network, kept apart",
   "skill": "Create VLANs, assign access and voice ports, and trunk them between Cisco switches",
   "intro": "Harbourside College puts staff, students and guests on one flat network. Split them with VLANs on three Cisco switches.",
@@ -4060,6 +4061,7 @@
   "track": "Networking",
   "minutes": 25,
   "lesson": "networking",
+  "glance": "VLANs can't reach each other on their own. A router joins them: each VLAN gets its own gateway on one router port (router on a stick), and an access list decides who may cross.",
   "title": "Inter-VLAN routing: letting VLANs talk",
   "skill": "Route between VLANs with a router on a stick (802.1Q subinterfaces), then filter it with an extended ACL",
   "card": "Route between VLANs with one router, then lock it down",
@@ -5867,7 +5869,7 @@
     "url": "https://overthewire.org/wargames/bandit/"
    }
   ],
-  "card": "Who can read this file? Fix it"
+  "card": "Read rwx, then fix a file anyone can open"
  },
  {
   "id": "hashing",

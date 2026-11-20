@@ -108,15 +108,37 @@ const ROLES = [
 const jobName = id => DATA.careers?.paths?.find(c => c.id === id)?.name;
 // How the site fits together, in the order a learner meets it; each step opens where that happens.
 const HOW = [
-  ["learn", "Learn", "A short lesson with a picture, one idea at a time.", "#learn"],
-  ["practise", "Practise", "Try it yourself in a lab: a terminal, a log, a real-looking page.", "#missions"],
-  ["investigate", "Investigate", "Work a realistic case: alerts, logs and people, as on a shift.", "#agency"],
-  ["job", "On the job", "See which jobs use it, and the path and exam that lead there.", "#careers"],
+  ["learn", "Learn", "A short lesson: one picture, one idea.", "#learn", '<path d="M3 5.5c2.5-1 5.5-1 9 1 3.5-2 6.5-2 9-1V19c-2.5-1-5.5-1-9 1-3.5-2-6.5-2-9-1z"/><path d="M12 6.5V20"/>'],
+  ["practise", "Practise", "Try it in a lab: a terminal, a log, a real-looking page.", "#missions", '<rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M7 9.5l3 2.5-3 2.5M12.5 15H17"/>'],
+  ["investigate", "Investigate", "Work a realistic case: alerts, logs and people.", "#agency", '<circle cx="10.5" cy="10.5" r="6"/><path d="M20 20l-5-5"/>'],
+  ["job", "On the job", "The jobs it leads to, and the path and exam that get you there.", "#careers", '<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 12.5h18"/>'],
 ];
+// Four tiles in the order a learner meets them (20 Nov: square tiles, no numbers, arrows or footnote, the owner's call).
 function howItWorks() {
-  return `<section class="how" aria-labelledby="how-h"><h2 id="how-h" class="eyebrow">How Patch Notes works</h2>
-    <ol class="how-steps">${HOW.map(([k, t, d, h], i) => `<li><a href="${h}"><span class="how-n" aria-hidden="true">${i + 1}</span><b>${t}</b><span>${d}</span></a></li>`).join("")}</ol>
-    <p class="muted how-foot">Every topic has all four steps, and every path walks them in order.</p></section>`;
+  return `<section class="how" aria-labelledby="how-h"><h2 id="how-h" class="eyebrow how-label">How it works</h2>
+    <ol class="how-steps">${HOW.map(([k, t, d, h, ic]) => `<li class="how-${k}"><a href="${h}"><span class="how-ic" aria-hidden="true"><svg viewBox="0 0 24 24">${ic}</svg></span><b>${t}</b><span class="how-d">${d}</span><span class="how-go" aria-hidden="true">Open →</span></a></li>`).join("")}</ol></section>`;
+}
+// Exam prep as three cards, each with its own drawn emblem (20 Nov). Not CompTIA's logos: their certification marks are
+// for certified people, and a learning site showing them could look endorsed. Network+ cyan, Security+ green, PenTest+ red.
+const EXAMS = {
+  "network-plus": { mono: "N+", tone: "net", line: "How networks work, and how to fix them when they don't.",
+    art: '<g class="xa-pat"><path d="M40 40L110 70L70 140L150 160M110 70L190 40M300 50L350 110L330 170L250 150M350 110L380 60"/><circle cx="40" cy="40" r="4"/><circle cx="110" cy="70" r="4"/><circle cx="70" cy="140" r="4"/><circle cx="150" cy="160" r="4"/><circle cx="190" cy="40" r="4"/><circle cx="300" cy="50" r="4"/><circle cx="350" cy="110" r="4"/><circle cx="330" cy="170" r="4"/><circle cx="250" cy="150" r="4"/><circle cx="380" cy="60" r="4"/></g>' },
+  "security-plus": { mono: "S+", tone: "sec", line: "The core security exam, and a common bar for a first security job.",
+    art: '<g class="xa-pat"><path d="M60 30l40 14v34c0 26-18 40-40 48-22-8-40-22-40-48V44z"/><path d="M340 70l34 12v28c0 22-15 34-34 40-19-6-34-18-34-40V82z"/><path d="M40 170h60M300 30h80M20 110h20M360 175h30"/></g>' },
+  "pentest-plus": { mono: "P+", tone: "pen", line: "Testing systems with permission. Best taken after Security+.",
+    art: '<g class="xa-pat"><circle cx="70" cy="70" r="38"/><circle cx="70" cy="70" r="18"/><path d="M70 20v22M70 98v22M20 70h22M98 70h22"/><circle cx="335" cy="140" r="30"/><path d="M335 100v18M335 162v18M295 140h18M357 140h18"/></g>' },
+};
+function examCards() {
+  const card = c => {
+    const x = EXAMS[c.id]; if (!x) return "";
+    const objs = c.domains.reduce((n, d) => n + d.objectives.length, 0);
+    return `<a class="xcard xc-${x.tone}" href="#cert-${esc(c.id)}">
+      <svg class="xa" viewBox="0 0 400 200" aria-hidden="true">${x.art}<g class="xa-badge" transform="translate(200 100)"><path class="xa-hex" d="M0-62L54-31V31L0 62L-54 31V-31z"/><path class="xa-hex2" d="M0-50L43-25V25L0 50L-43 25V-25z"/><text class="xa-mono" y="10" text-anchor="middle">${x.mono}</text></g></svg>
+      <span class="xc-code">${esc(c.exam)}</span><h3>${esc(c.name.replace(/^CompTIA /, ""))}</h3><p>${esc(x.line)}</p>
+      <span class="xc-meta">${objs} objectives · ${(c.questions || []).length} questions${(c.pbqs || []).length ? ` · ${c.pbqs.length} PBQs` : ""}</span><span class="xc-go">Start prep →</span></a>`;
+  };
+  return `<section class="how exams-home" aria-labelledby="xh-h"><p class="eyebrow">Exam prep</p><h2 id="xh-h" class="how-title">Going for a certificate?</h2>
+    <div class="xgrid">${DATA.certs.map(card).join("")}</div></section>`;
 }
 function roleCards() {
   const card = r => {
@@ -127,10 +149,8 @@ function roleCards() {
       ${done ? '<span class="done">DONE</span>' : ""}<span class="eyebrow">${esc(r.eyebrow)}</span><h3>${esc(r.title || jobName(r.id) || p.title)}</h3><p>${esc(r.text)}</p>
       <span class="role-meta">${steps} stops</span><span class="start-cta">${esc(r.cta || "Start the path")} →</span></a>`;
   };
-  return `<section class="start roles" aria-labelledby="roles-h"><h2 id="roles-h">Where are you headed?</h2>
-    <p class="muted start-note">Pick a direction and follow its ladder, one stop at a time. No account needed: your progress stays in this browser.</p>
-    <div class="start-grid">${ROLES.map(card).join("")}</div>
-    <p class="roles-foot">Chasing a certificate? <a href="#exams">Network+, Security+ and PenTest+ prep lives in Exams →</a></p></section>`;
+  return `<section class="start roles" aria-labelledby="roles-h"><p class="eyebrow">Choose a path</p><h2 id="roles-h" class="how-title">Where are you headed?</h2>
+    <div class="start-grid">${ROLES.map(card).join("")}</div></section>`;
 }
 VIEWS.today = () => {
   const news = DATA.news, m = DATA.meta;
@@ -149,8 +169,8 @@ VIEWS.today = () => {
       <p class="hh-eyebrow">Hands-on cyber security &amp; IT</p>
       <h1 class="hh-title">Learn it. Break it. <em class="accent">Understand it.</em></h1>
       <p class="hh-sub">See how real attacks work, learn to defend against them, and understand the news behind every headline. Free, visual, and built for real exams.</p>
-      <div class="hh-cta"><a class="btn brand lg" href="#path-awareness" data-trail="awareness">Start with the basics →</a><a class="btn ghost lg" href="#learn">Browse every topic</a></div>
-      <p class="hh-trust">No account needed · progress stays in your browser · built for Network+ (N10-009), Security+ (SY0-701) &amp; PenTest+ (PT0-003)</p>
+      <div class="hh-cta"><a class="btn brand lg" href="#path-awareness" data-trail="awareness">Start with the basics&nbsp;→</a><a class="btn ghost lg" href="#learn">Browse every topic</a></div>
+      <p class="hh-trust">No account needed · progress stays in your browser</p>
     </div></section>`;
   // The hero is a screen (19 Nov, the owner's choice over the desk photo): a monitor bezel, the headline on its glass and the
   // live terminal in a window beside it; no stand. ?hero=photo still shows the desk photo version.
@@ -159,8 +179,8 @@ VIEWS.today = () => {
       <p class="hh-eyebrow">Hands-on cyber security &amp; IT</p>
       <h1 class="hh-title">Learn it. Break it. <em class="accent">Understand it.</em></h1>
       <p class="hh-sub">See how real attacks work, learn to defend against them, and understand the news behind every headline. Free, visual, and built for real exams.</p>
-      <div class="hh-cta"><a class="btn brand lg" href="#path-awareness" data-trail="awareness">Start with the basics →</a><a class="btn ghost lg" href="#learn">Browse every topic</a></div>
-      <p class="hh-trust">No account needed · progress stays in your browser · built for Network+ (N10-009), Security+ (SY0-701) &amp; PenTest+ (PT0-003)</p>
+      <div class="hh-cta"><a class="btn brand lg" href="#path-awareness" data-trail="awareness">Start with the basics&nbsp;→</a><a class="btn ghost lg" href="#learn">Browse every topic</a></div>
+      <p class="hh-trust">No account needed · progress stays in your browser</p>
     </div>
       <div class="hm-term" aria-hidden="true"></div></div>
       <div class="hm-chin" aria-hidden="true"><span class="hm-brand">PATCH<i>//</i>NOTES</span><span class="hm-led"></span></div></div></section>`;
@@ -170,6 +190,8 @@ VIEWS.today = () => {
       ${hero}
       ${howItWorks()}
       ${roleCards()}
+    ${examCards()}
+      ${examCards()}
       <div class="split"><section class="panel" id="daily"></section>
         <aside class="panel news-line"><div class="eyebrow">This week</div><p><b>${news.length} stories</b> from ${sources} outlets, each linked to a lesson that explains it.</p><a class="btn ghost" href="#news">Read the news →</a></aside></div>
     </div>`;
@@ -180,6 +202,7 @@ VIEWS.today = () => {
     ${hero}
     ${howItWorks()}
     ${roleCards()}
+    ${examCards()}
     <div class="split">
       <div class="stack" style="gap:18px">
         <section class="changelog" aria-labelledby="today-h">

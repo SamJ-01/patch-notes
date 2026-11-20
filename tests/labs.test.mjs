@@ -440,3 +440,15 @@ test("wrong picks teach: topology, OSI layer and port notes", async () => {
   assert.equal(ports.pickNote(P, { type: "port" }, ports.portText(ftp)), "Ports 20, 21 are FTP.");
   assert.equal(ports.pickNote(P, { type: "transport" }, "UDP"), "");
 });
+
+test("subnet readAddress splits the 32 bits into the network part and the host part", async () => {
+  const { readAddress } = await import("../static/js/labs/subnet.js");
+  const r = readAddress("192.168.10.77", 26);
+  assert.equal(r.bits.length, 32); assert.deepEqual(r.octets, [192, 168, 10, 77]);
+  assert.equal(r.bits.filter(b => b.net).length, 26);
+  assert.equal(r.bits.slice(24).map(b => b.v).join(""), "01001101");  // 77
+  assert.match(r.net.text, /26 network bits: which network \(192\.168\.10\.64\/26\)/);
+  assert.match(r.host.text, /6 host bits: which device on it \(62 usable\)/);
+  assert.match(readAddress("10.0.0.1", 32).host.text, /no host bits/);
+  assert.match(readAddress("10.0.0.1", 31).host.text, /1 host bit:/);
+});

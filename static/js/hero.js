@@ -205,6 +205,8 @@ function play(hero, scr, cap, list) {
   const body = scr.querySelector(".hs-body"), tab = scr.querySelector(".hs-tab");
   let si = 0, li = 0, ch = 0, visible = true, timer = null;
   const caption = s => { if (!cap) return; cap.innerHTML = `<span class="hh-now-k">On screen:</span> ${esc(s.title.split(" · ")[1] || s.title)} <a href="${esc(s.link[0])}">Try it: ${esc(s.link[1])} →</a>`; };
+  // Each scene ends by waiting, then typing `clear` at that scene's prompt; "wipe" empties the screen for the next one.
+  const seq = i => { const L = list[i].lines; if (list.length < 2) return L; const ps = L.filter(l => l[0] === "cmd").pop()?.[3]; return L.concat([["wait"], ["cmd", "clear", "", ps], ["wipe"]]); };
   const startScene = () => { const s = list[si]; tab.textContent = s.title; body.innerHTML = ""; li = 0; ch = 0; caption(s); };
   if (!list.length) return;
   startScene();
@@ -214,9 +216,11 @@ function play(hero, scr, cap, list) {
     timer = null;
     if (!hero.isConnected) return;
     if (!visible || document.hidden) return void (timer = setTimeout(step, 800));
-    const s = list[si];
-    if (li >= s.lines.length) { timer = setTimeout(() => { si = (si + 1) % list.length; startScene(); step(); }, 7000); return; }
-    const [kind, text] = s.lines[li];
+    const lines = seq(si);
+    if (li >= lines.length) return;  // one scene only: it stays on screen
+    if (lines[li][0] === "wait") { li++; timer = setTimeout(step, 6000); return; }
+    if (lines[li][0] === "wipe") { timer = setTimeout(() => { si = (si + 1) % list.length; startScene(); step(); }, 350); return; }
+    const s = { lines }, [kind, text] = lines[li];
     if (kind === "pause") { li++; timer = setTimeout(step, 2600); return; }
     if (kind === "cmd" && ch < text.length) {
       if (ch === 0) body.insertAdjacentHTML("beforeend", row(["cmd", "", "", s.lines[li][3]]).replace('<span class="hs-t"></span>', '<span class="hs-t"></span><b class="hs-cur"></b>'));

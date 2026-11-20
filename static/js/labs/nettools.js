@@ -326,7 +326,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     const L = lab.ladder; if (!L) return;
     const st = L.links.map(k => sh.probe(k.probe));
     $("nd-links").innerHTML = L.links.map((k, i) => `<li class="nd-link ${st[i] || "todo"}"><span class="nd-dot" aria-hidden="true">${st[i] === "ok" ? "✓" : st[i] === "bad" ? "✗" : "?"}</span>
-      <b>${esc(k.label)}</b><span class="nd-sub mono">${esc(k.sub)}</span><span class="nd-say">${st[i] ? esc(k[st[i]] || "") : `Not tested yet <code>${esc(k.todo)}</code>`}</span>
+      <b>${esc(k.label)}</b><span class="nd-sub mono">${esc(k.sub)}</span><span class="nd-say">${st[i] ? esc(k[st[i]] || "") : `Not tested yet<span class="nd-try">Try: <code>${esc(k.todo)}</code></span>`}</span>
       <span class="sr">${st[i] === "ok" ? "Working." : st[i] === "bad" ? "Fault." : ""}</span></li>`).join("");
     const v = $("nd-verdict"), hit = (L.when || []).every(([i, want]) => st[i] === want);
     v.hidden = !hit; v.innerHTML = hit ? `<b>Verdict:</b> ${esc(L.verdict)}` : "";

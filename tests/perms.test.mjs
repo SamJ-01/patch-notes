@@ -117,3 +117,23 @@ test("lab content is consistent", () => {
   }
   assert.ok(!JSON.stringify(lab).includes("—"), "no em dashes");
 });
+
+// "Read the line" (20 Nov): the plain-English reading a beginner sees first.
+test("readFor says which set applies, what each letter allows, and when a folder above blocks it", async () => {
+  const P = await import("../static/js/labs/perms.js");
+  const w = P.loadWorld(lab.world), f = "/srv/payroll/salaries.csv";
+  const dave = P.readFor(w, "dave", f);
+  assert.equal(dave.cls, "others"); assert.equal(dave.bits, "r--");
+  assert.deepEqual(dave.rows.map(r => r.ok), [true, false, false]);
+  assert.match(dave.text, /isn't the owner \(alice\) and isn't in finance/);
+  assert.equal(P.readFor(w, "alice", f).cls, "owner");
+  assert.equal(P.readFor(w, "bob", f).cls, "group");
+  assert.equal(P.readFor(w, "root", f).cls, "root");
+  // Lock the folder to others: dave's r on the file no longer helps, and the reading says why.
+  w.files["/srv/payroll"].mode = 0o750;
+  const locked = P.readFor(w, "dave", f);
+  assert.equal(locked.blocked, "/srv/payroll"); assert.ok(locked.rows.every(r => !r.ok)); assert.match(locked.text, /can't reach it at all/);
+  assert.equal(P.can(w, "dave", "read", f).ok, false);
+  // A folder's letters are worded as folder actions.
+  assert.deepEqual(P.readFor(w, "bob", "/srv/payroll").rows.map(r => r.text), ["list what's inside", "add or delete files inside", "go into it"]);
+});

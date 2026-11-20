@@ -443,6 +443,38 @@ export function createShell(lab) {
   return { state, run, isDone, complete, same, canon, explain, prompt: () => `${user}@${lab.host}:${short(state.cwd)}$` };
 }
 
+// "Read the prompt" and "Read a command" (20 Nov, the owner: the idea at a glance before the terminal). Pure, tested.
+// The prompt as bash shows it, split into who, which machine, where and the ready sign; ~ is spelt out as the home folder.
+export function readPrompt(user, host, cwd, home) {
+  const where = cwd === home ? "~" : cwd.startsWith(home + "/") ? "~" + cwd.slice(home.length) : cwd, root = user === "root";
+  return [[user, "who you are"], ["@", null], [host, "which machine"], [":", null],
+    [where, "where you are"], [root ? "#" : "$", root ? "ready (as root)" : "ready"]];
+}
+const CMD_WORDS = { ls: "list files", cd: "change folder", pwd: "print where you are", whoami: "print who you are", cat: "show a file",
+  less: "read a long file", grep: "find lines containing", wc: "count lines, words or bytes", find: "search for files", chmod: "change permissions",
+  chown: "change owner", mkdir: "make a folder", touch: "make an empty file", rm: "delete", cp: "copy", mv: "move or rename", head: "show the first lines",
+  tail: "show the last lines", echo: "print text", id: "show your user and groups", sort: "sort lines", uniq: "drop repeated lines", awk: "pick out columns", sudo: "run as root" };
+// What an option means depends on its command (ls -l is long format, wc -l counts lines).
+const OPT_WORDS = { "ls -a": "include hidden files", "ls -l": "long format, one per line", "ls -la": "long format, hidden files too", "ls -al": "long format, hidden files too",
+  "ls -lh": "long format, human sizes", "grep -c": "count matching lines", "grep -i": "ignore upper and lower case", "grep -r": "every file in every folder inside",
+  "grep -v": "lines that don't match", "grep -n": "show line numbers", "wc -l": "count lines", "wc -w": "count words", "find -name": "match a file name",
+  "mkdir -p": "make parent folders too", "rm -r": "a folder and everything in it", "rm -f": "no questions asked", "rm -rf": "a folder and everything in it, no questions",
+  "chmod +x": "add permission to run", "chmod -x": "take away permission to run", "head -n": "how many lines", "tail -n": "how many lines", "tail -f": "keep showing new lines" };
+// A command line split into its parts: the command (and what it does), options, what it works on, pipes and redirects.
+export function readCommand(line) {
+  const toks = String(line || "").match(/"[^"]*"|'[^']*'|\S+/g) || [];
+  let cmd = null, pattern = false;
+  return toks.map(t => {
+    if (t === "|") { cmd = null; pattern = false; return [t, "pipe: send the output into the next command"]; }
+    if (t === ">" || t === ">>") { return [t, t === ">" ? "write the output to a file" : "add the output to the end of a file"]; }
+    if (!cmd) { cmd = t; return [t, CMD_WORDS[t] ? `command: ${CMD_WORDS[t]}` : "command"]; }
+    if (/^[-+]/.test(t) && !/^-?\d/.test(t)) { const w = OPT_WORDS[`${cmd} ${t}`]; return [t, w ? `option: ${w}` : "option: changes how it works"]; }
+    if (/^["']/.test(t) || (cmd === "grep" && !pattern)) { pattern = true; return [t, /^["']/.test(t) ? "what to look for (quoted)" : "what to look for"]; }
+    if (t.includes("/") || /\.\w+$/.test(t) || t === "~" || t === ".." || t === ".") return [t, "which file or folder"];
+    return [t, "what it works on"];
+  });
+}
+
 export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = () => {}, onReset = () => {} } = {}) {
   const sh = createShell(lab);
   const done = new Set(solved);
@@ -452,6 +484,10 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   root.innerHTML = `<div class="term-lab">
     <div class="view-head"><a class="link-btn" href="#missions">← Missions</a>
       <div class="eyebrow">Lab · ${esc(lab.track)} · ${lab.minutes} min</div><h1>${esc(lab.title)}</h1><p>${esc(lab.intro)}</p></div>
+    <section class="panel t-read" aria-label="How to read the terminal">
+      <div><h2>Read the prompt</h2><div class="pm-big t-prompt" id="t-pr"></div><p class="muted t-cmd-note" id="t-pr-note"></p></div>
+      <div><h2>Read a command</h2><p class="muted t-cmd-note" id="t-cmd-note"></p><div class="ln-parts" id="t-cmd"></div></div>
+    </section>
     <div class="term-grid">
       <section class="term-shell t-guided" aria-label="Simulated terminal">
         <div class="vl-now" id="t-now" aria-live="polite"></div>
@@ -486,7 +522,16 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     $("t-count").textContent = `${done.size}/${lab.tasks.length}`;
     if (!next) { $("t-next").hidden = false; if (!finished) { finished = true; onComplete(); } }
   }
-  const ps = () => { $("t-ps").textContent = sh.prompt(); };
+  const ps = () => { $("t-ps").textContent = sh.prompt(); drawPrompt(); };
+  // "Read the prompt" follows the folder you're in; "Read a command" takes apart the last command you ran (an example first).
+  const drawPrompt = () => { $("t-pr").innerHTML = readPrompt(lab.user, lab.host, sh.state.cwd, lab.home).map(([t, l]) => l
+    ? `<span class="pm-seg"><b>${esc(t)}</b><i>${esc(l)}</i></span>` : `<span class="pm-seg t-sep" aria-hidden="true"><b>${esc(t)}</b></span>`).join("");
+    $("t-pr-note").textContent = `~ means your home folder (${lab.home}). $ turns into # when you're root.`; };
+  const drawCmd = (line, example) => {
+    $("t-cmd-note").textContent = example ? "An example. Run a command and yours is taken apart here." : "Your last command:";
+    $("t-cmd").innerHTML = readCommand(line).map(([t, l]) => `<span class="ln-p"><code title="${esc(t)}">${esc(t)}</code><small>${esc(l)}</small></span>`).join("");
+  };
+  drawCmd('grep "Failed password" /var/log/auth.log', true);
 
   // Objective strip, on-demand hints with Run it, tips and the rescue: static/js/labs/guide.js (shared with the network tools labs).
   const g = guide($("t-now"), lab, { done, input, form: $("t-form"), same: sh.same });
@@ -501,6 +546,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     const tip = sh.explain(line, res);  // bash says what failed; this says why, in plain words
     if (tip) print(`<div class="t-tip">[Tip: ${esc(tip)}]</div>`);
     input.value = ""; histI = null;
+    if (line.trim()) drawCmd(line, false);
     ps(); renderTasks(); g.after(line, res, pre); g.draw();
   });
   input.addEventListener("keydown", e => {

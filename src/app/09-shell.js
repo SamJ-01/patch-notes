@@ -16,7 +16,7 @@ const FLAG_INFO = [
   { name: "Recon", hint: "Every web page has a source. Attackers read it first, and so should you.",
     how: ["On a computer, press Ctrl+U (Windows, Linux) or Option+Cmd+U (Mac). Safari: turn on Settings > Advanced > Show features for web developers first.",
       "A new tab opens with the page's HTML: the raw text your browser turns into this page.",
-      "Press Ctrl+F (Cmd+F on a Mac) and search for the word flag. It sits inside a comment near the top.",
+      "Press Ctrl+F (Cmd+F on a Mac) and search for flag{ (with the curly bracket). The first match is a comment at the very top, above the page's styles.",
       "Copy everything from flag{ to } and paste it in the box below."],
     phone: "On Android Chrome, type view-source: in front of the address. iPhones can't view source; use a computer." },
   { name: "Developer tools", hint: "Developers leave notes in the browser console. This one is base64-encoded, so it needs decoding.",
@@ -206,8 +206,8 @@ document.addEventListener("keydown", e => {
   if (typing || !cmdk.hidden || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === "/") { e.preventDefault(); openCmd(); }
   else if (e.key === "?") { e.preventDefault(); openCmd("help", true); }
-  else if (/^[1-8]$/.test(e.key)) { const tabs = ["today", "learn", "missions", "agency", "exams", "progress", "news", "cves"]; location.hash = tabs[Number(e.key) - 1]; }
-  else if (e.key === "9") location.hash = "feedback";
+  // Number keys follow the tabs left to right (1 Learn ... 6 CVE Radar), then 7 your progress, 8 feedback, 0 home.
+  else if (/^[0-8]$/.test(e.key)) location.hash = ["today", "learn", "missions", "agency", "exams", "news", "cves", "progress", "feedback"][Number(e.key)];
 });
 
 /* ---------- router ---------- */
@@ -287,10 +287,10 @@ function route() {
   noteCrumb(location.hash || "#today");
   noteLastActivity(location.hash);
   const r = parseRoute();
-  document.querySelectorAll("nav.tabs a").forEach(a => a.dataset.tab === r.tab ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+  document.querySelectorAll("nav.tabs a, #xp").forEach(a => a.dataset.tab === r.tab ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   closePop();
   main.onclick = null;
-  $("cwd").textContent = "~/" + r.path;
+  if ($("cwd")) $("cwd").textContent = "~/" + r.path;
   document.body.classList.toggle("life", r.path !== "review");
   renderStatus();
   window.scrollTo(0, 0);
@@ -377,10 +377,8 @@ document.addEventListener("touchmove", e => {
 }, { passive: true });
 document.addEventListener("touchend", () => { drag = null; }, { passive: true });
 
-$("ver").textContent = "v" + DATA.meta.version;
+if ($("ver")) $("ver").textContent = "v" + DATA.meta.version;
 $("foot-meta").textContent = `Updated ${DATA.meta.generated}.` + (DATA.site.author ? ` Built by ${DATA.site.author}.` : "");
-$("xp").addEventListener("click", () => { location.hash = "progress"; });
-$("xp").style.cursor = "pointer";
 if (DATA.site.url) $("lessons-link").href = DATA.site.url + "lessons/";
 if (DATA.site.feedback) { const fbl = $("feedback-link"); fbl.href = DATA.site.feedback; if (DATA.site.feedback.startsWith("#")) { fbl.removeAttribute("target"); fbl.removeAttribute("rel"); } }
 // The full CVE list (~600 KB) is only fetched by the views that use it.

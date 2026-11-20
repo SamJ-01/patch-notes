@@ -1256,6 +1256,23 @@ class Coherence(unittest.TestCase):
     offered from the front door, and paths that walk learn > practise > investigate. tests/coherence_check.mjs checks the
     pages themselves (repeated choices, dead ends, machine text)."""
 
+    def test_card_lines_do_not_repeat_titles(self):
+        """A card's short line under its title must add something, not say the title again (20 Nov: "Who can read this
+        file?" twice on the permissions card)."""
+        import json as _j
+        items = []
+        for f in ["labs.json", "lessons.json"]:
+            d = _j.loads((ROOT / "content" / f).read_text())
+            items += d if isinstance(d, list) else d.get("labs", [])
+        for m in sorted((ROOT / "content" / "missions").glob("*.json")): items.append(_j.loads(m.read_text()))
+        norm = lambda t: re.sub(r"[^a-z0-9 ]", "", t.lower()).strip()
+        for it in items:
+            card, title = it.get("card") or "", it.get("title") or ""
+            if not card or not title: continue
+            for part in re.split(r"[?:]", title):
+                p = norm(part)
+                if len(p.split()) >= 3: self.assertNotIn(p, norm(card), f"{it.get('id')}: card repeats its title ({card!r})")
+
     def setUp(self):
         self.careers = json.loads((ROOT / "content" / "careers.json").read_text())["paths"]
         p = json.loads((ROOT / "content" / "paths.json").read_text())
@@ -1364,3 +1381,14 @@ class LessonCheckNotes(unittest.TestCase):
                         continue
                     self.assertTrue(note and len(note) <= 220 and "—" not in note, f"{l['id']} Q{k} option {j}")
                     self.assertFalse(len(right) >= 8 and right in note.lower(), f"{l['id']} Q{k} option {j}: names the answer")
+
+
+class FlagHunt(unittest.TestCase):
+    """Flag 1's how-to says search the source for flag{ and find it at the top (20 Nov: the comment sat at line 5,424, after
+    41 matches for "flag" in the inlined styles, and the owner landed on CSS)."""
+
+    def test_flag_one_is_the_first_match_at_the_top(self):
+        # The template only: a built page may be stale when tests run (the publish gate tests before it builds).
+        tpl = (ROOT / "site_template.html").read_text()
+        self.assertLess(tpl.index("flag{v1ew_s0urce_is_r3con}"), tpl.index("<style>"), "comment comes before the styles")
+        self.assertEqual(tpl.index("flag{"), tpl.index("flag{v1ew_s0urce_is_r3con}"), "and is the first flag{ in the page")

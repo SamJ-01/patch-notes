@@ -29,12 +29,15 @@ const parents = path => path.split("/").slice(1, -1).map((_, i, a) => "/" + a.sl
 
 // Can `user` do `action` to the file or directory at `path`? Returns { ok, why }.
 // Actions: read, write, run (files); list, enter, create (directories: ls, cd, make or delete files inside).
+// The first folder above `path` that `user` can't go into (no x for their class), or null.
+export function blockedBy(world, user, path) {
+  if (user === "root") return null;
+  for (const dir of parents(path)) { const d = world.files[dir]; if (d && !has(d.mode, classOf(world, user, d), "x")) return dir; }
+  return null;
+}
 export function can(world, user, action, path) {
-  const f = world.files[path];
-  for (const dir of parents(path)) {
-    const d = world.files[dir];
-    if (d && user !== "root" && !has(d.mode, classOf(world, user, d), "x")) return { ok: false, why: `no x on ${dir} (${classOf(world, user, d)} bits ${rwx(d.mode).slice(...span(classOf(world, user, d)))}), so ${user} can't get into the folder at all` };
-  }
+  const f = world.files[path], dir = blockedBy(world, user, path);
+  if (dir) { const d = world.files[dir], c = classOf(world, user, d); return { ok: false, why: `no x on ${dir} (${c} bits ${rwx(d.mode).slice(...span(c))}), so ${user} can't get into the folder at all` }; }
   const cls = user === "root" ? "root" : classOf(world, user, f);
   const need = { read: ["r"], write: ["w"], run: ["x"], list: ["r", "x"], enter: ["x"], create: ["w", "x"] }[action];
   if (cls === "root") {
@@ -45,6 +48,21 @@ export function can(world, user, action, path) {
   return { ok, why: `${user} is ${cls === "owner" ? "the owner" : cls === "group" ? `in group ${f.group}` : "neither owner nor in the group"}, so the ${cls} bits apply: ${bits}${ok ? "" : ` (needs ${need.join(" and ")})`}` };
 }
 const span = cls => ({ owner: [0, 3], group: [3, 6], others: [6, 9] }[cls]);
+
+// "Read the line": one person's access to one file in plain words. Which set of three applies and why, what each of r, w
+// and x lets them do here (a folder's letters mean list, add or delete inside, go into), and a folder above that stops
+// them reaching it at all (then nothing in this file's line matters). Root skips the checks.
+export const WORDS = { file: { r: "read it", w: "change it", x: "run it" }, dir: { r: "list what's inside", w: "add or delete files inside", x: "go into it" } };
+export function readFor(world, user, path) {
+  const f = world.files[path], words = WORDS[f.dir ? "dir" : "file"];
+  if (user === "root") return { cls: "root", bits: rwx(f.mode), who: "root is the superuser", rows: [], blocked: null,
+    text: f.dir || /x/.test(rwx(f.mode)) ? "root skips the permission checks." : "root skips the read and write checks, but can't run a file with no x anywhere." };
+  const cls = classOf(world, user, f), bits = rwx(f.mode).slice(...span(cls)), blocked = blockedBy(world, user, path);
+  const who = cls === "owner" ? `${user} owns it` : cls === "group" ? `${user} isn't the owner, but is in the ${f.group} group` : `${user} isn't the owner (${f.owner}) and isn't in ${f.group}`;
+  const rows = ["r", "w", "x"].map((b, i) => ({ bit: b, ok: bits[i] !== "-" && !blocked, text: words[b] }));
+  const text = `${who}, so the ${cls} set applies: ${bits}.` + (blocked ? ` But there's no x for ${user} on ${blocked}, so they can't reach it at all.` : "");
+  return { cls, bits, who, rows, blocked, text };
+}
 
 // ---------- the terminal: ls -l, ls -ld, chmod (octal or symbolic), chown, chgrp, id
 // ls -l lines as GNU ls prints them: columns aligned across the listing (owner and group left-aligned, link
@@ -188,18 +206,18 @@ export function explainPerm(world, cwd, line, res) {
 // ---------- the on-page lab
 export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = () => {}, onReset = () => {} } = {}) {
   const world = loadWorld(lab.world), done = new Set(solved), cwd = lab.cwd;
-  let finished = lab.tasks.every(t => done.has(t.id)), focus = lab.focus, out = "";
+  let finished = lab.tasks.every(t => done.has(t.id)), focus = lab.focus, out = "", who = lab.spotlight;
   const people = Object.keys(world.users), paths = Object.keys(world.files).filter(p => world.files[p].show);
   const groupTone = g => `pg${Object.keys(world.groups).indexOf(g) % 6}`;
 
   root.innerHTML = `<div class="perm-lab stack">
     <div class="view-head"><a class="link-btn" href="#missions">← Practise</a>
       <div class="eyebrow">Lab · ${esc(lab.track)} · ${lab.minutes} min</div><h1>${esc(lab.title)}</h1><p>${esc(lab.intro)}</p></div>
-    <section class="panel"><h2>The people</h2><ul class="pm-people">${people.map(u => `<li><span class="pm-av" aria-hidden="true">${esc(u[0].toUpperCase())}</span><b>${esc(u)}</b> <span class="muted">${esc(world.users[u].role)}</span><span class="pm-groups">${world.users[u].groups.map(g => `<span class="pm-g ${groupTone(g)}">${esc(g)}</span>`).join("")}</span></li>`).join("")}</ul></section>
-    <div class="pm-grid">
-      <section class="panel" aria-labelledby="pm-files-h"><h2 id="pm-files-h">Files on ${esc(lab.host)}</h2><div class="row pm-tabs" role="group" aria-label="Choose a file">${paths.map(p => `<button type="button" class="chip" data-file="${esc(p)}">${esc(p.split("/").pop())}${world.files[p].dir ? "/" : ""}</button>`).join("")}</div><div id="pm-file"></div></section>
-      <section class="panel" aria-labelledby="pm-who-h"><h2 id="pm-who-h">Who can do what</h2><div id="pm-matrix"></div></section>
-    </div>
+    <section class="panel pm-read" aria-labelledby="pm-read-h">
+      <div class="panel-title"><h2 id="pm-read-h">Read the line</h2><div class="row pm-tabs" role="group" aria-label="Choose a file">${paths.map(p => `<button type="button" class="chip" data-file="${esc(p)}">${esc(p.split("/").pop())}${world.files[p].dir ? "/" : ""}</button>`).join("")}</div></div>
+      <div id="pm-anat"></div>
+      <details class="pm-fold"><summary>Change it without typing</summary><div id="pm-file"></div></details>
+    </section>
     <div class="term-grid">
       <section class="term-shell t-guided" aria-label="Simulated terminal"><div class="vl-now" id="pm-now" aria-live="polite"></div><div class="term-bar"><span>root@${esc(lab.host)}:${esc(cwd)}</span><span class="tag">Simulated</span></div>
         <div class="term-out" id="pm-out" aria-live="polite" tabindex="0" aria-label="Terminal output"></div>
@@ -209,10 +227,23 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
         <details class="tbl simplification"><summary>How this differs from a real server</summary><p>${esc(lab.simplification)}</p></details>
         <div class="row"><button class="btn ghost" id="pm-reset" type="button">↺ Reset lab</button></div></aside>
     </div>
+    <details class="panel pm-fold pm-all"><summary>Everyone at once: who can do what</summary><div id="pm-matrix"></div></details>
     ${lab.next ? `<section class="panel" id="pm-next" hidden><h2>Take it further</h2><ul>${lab.next.map(n => `<li><a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.label)} ↗</a></li>`).join("")}</ul></section>` : ""}
   </div>`;
   const $ = id => root.querySelector("#" + id);
 
+  // "Read the line" (20 Nov, the owner: a beginner should get it at a glance): the selected file's permissions, big, split
+  // into type, owner, group and others; pick a person and their set lights up, with what each letter lets them do.
+  function drawAnat() {
+    const f = world.files[focus], m = rwx(f.mode), r = readFor(world, who, focus), words = WORDS[f.dir ? "dir" : "file"];
+    const seg = (cls, bits, label, name) => `<span class="pm-seg pm-s-${cls}${r.cls === cls ? " on" : ""}"><b>${bits}</b><small>${label}</small><i>${name}</i></span>`;
+    $("pm-anat").innerHTML = `<div class="pm-big" role="img" aria-label="${esc(`${f.dir ? "d" : "-"}${m}: type ${f.dir ? "folder" : "file"}, owner ${f.owner} ${m.slice(0, 3)}, group ${f.group} ${m.slice(3, 6)}, others ${m.slice(6)}`)}">
+        ${seg("type", f.dir ? "d" : "-", "type", f.dir ? "folder" : "file")}${seg("owner", m.slice(0, 3), "owner", esc(f.owner))}${seg("group", m.slice(3, 6), "group", esc(f.group))}${seg("others", m.slice(6), "others", "everyone else")}</div>
+      <p class="pm-key">${["r", "w", "x"].map(b => `<span><b class="mono">${b}</b> ${esc(words[b])}</span>`).join("")}<span><b class="mono">-</b> not allowed</span></p>
+      <div class="pm-who" role="group" aria-label="Pick a person">${["root", ...people].map(u => `<button type="button" class="chip" data-u="${esc(u)}" aria-pressed="${u === who}">${esc(u)}<small>${esc(u === "root" ? "superuser" : world.users[u].role)}</small></button>`).join("")}</div>
+      <div class="pm-say" aria-live="polite"><p>${esc(r.text)}</p>${r.rows.length ? `<ul>${r.rows.map(x => `<li class="${x.ok ? "yes" : "no"}"><span aria-hidden="true">${x.ok ? "✓" : "✗"}</span> <span class="sr-only">${x.ok ? "Can" : "Can't"}</span>${esc(x.text)}</li>`).join("")}</ul>` : ""}</div>`;
+    root.querySelectorAll("[data-file]").forEach(b => b.setAttribute("aria-pressed", b.dataset.file === focus));
+  }
   // The selected file: its permission bits as a grid of switches, its owner and group, and the ls -l line.
   function drawFile() {
     const f = world.files[focus];
@@ -239,7 +270,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   const whyLine = () => { const u = lab.spotlight, a = world.files[focus].dir ? "list" : "read", r = can(world, u, a, focus); return `${u} (${world.users[u].role}): ${r.ok ? "can" : "can't"} ${a} ${focus}. ${r.why[0].toUpperCase()}${r.why.slice(1)}.`; };
   function changed(cmd) {
     if (cmd) { out += `<div class="muted">(same as: ${esc(cmd)})</div>`; $("pm-out").innerHTML = out; $("pm-out").scrollTop = $("pm-out").scrollHeight; }
-    drawFile(); drawMatrix(); drawTasks(); g.draw();
+    drawAnat(); drawFile(); drawMatrix(); drawTasks(); g.draw();
   }
   function drawTasks() {
     lab.tasks.forEach(t => { if (!done.has(t.id) && check(t.check)) { done.add(t.id); onPart(t.id); } });
@@ -254,7 +285,8 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
   // when it leaves the files the same (sameEffect), so any equivalent mode or path counts.
   const g = guide($("pm-now"), lab, { done, input: $("pm-in"), form: $("pm-form"), same: (a, b) => sameEffect(world, cwd, a, b) });
 
-  root.querySelectorAll("[data-file]").forEach(b => b.addEventListener("click", () => { focus = b.dataset.file; drawFile(); drawMatrix(); }));
+  root.querySelectorAll("[data-file]").forEach(b => b.addEventListener("click", () => { focus = b.dataset.file; drawAnat(); drawFile(); drawMatrix(); }));
+  $("pm-anat").addEventListener("click", e => { const b = e.target.closest("[data-u]"); if (!b) return; who = b.dataset.u; drawAnat(); root.querySelector(`#pm-anat [data-u="${who}"]`)?.focus(); });
   $("pm-form").addEventListener("submit", e => {
     e.preventDefault();
     const line = $("pm-in").value, pre = g.before(), r = run(world, cwd, line), tip = explainPerm(world, cwd, line, r);
@@ -262,7 +294,7 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     $("pm-out").innerHTML = out; $("pm-out").scrollTop = $("pm-out").scrollHeight; $("pm-in").value = "";
     if (!r.error && line.trim()) ran.push(line.trim().split(/\s+/)[0] + (line.includes(" -l") ? " -l" : ""));
     if (r.changed && world.files[r.changed].show) focus = r.changed;
-    drawFile(); drawMatrix(); drawTasks(); g.after(line, r, pre); g.draw();
+    drawAnat(); drawFile(); drawMatrix(); drawTasks(); g.after(line, r, pre); g.draw();
   });
   dock($("pm-now"), $("pm-hintslot"), root.querySelector(".term-shell"));  // one hint area: the panel, or above the terminal on a phone
   $("pm-reset").addEventListener("click", onReset);

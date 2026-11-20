@@ -37,6 +37,18 @@ export function subnetInfo(ip, prefix) {
   };
 }
 
+// "Read the address" (20 Nov, the owner: the key idea at a glance): the 32 bits in four octets, split by the prefix into the
+// network part (which network) and the host part (which device on it). Pure, tested.
+export function readAddress(ip, prefix) {
+  const addr = typeof ip === "number" ? ip : ipToInt(ip), i = subnetInfo(addr, prefix), hostBits = 32 - prefix;
+  return {
+    bits: [...Array(32)].map((_, b) => ({ v: (addr >>> (31 - b)) & 1, net: b < prefix })),
+    octets: [24, 16, 8, 0].map(sh => (addr >>> sh) & 255),
+    net: { bits: prefix, text: `${prefix} network bits: which network (${i.network}/${prefix})` },
+    host: { bits: hostBits, text: hostBits === 0 ? "no host bits: one single address" : `${hostBits} host bit${hostBits === 1 ? "" : "s"}: which device on it (${i.hosts.toLocaleString()} usable)` },
+  };
+}
+
 // A dotted mask like 255.255.255.192 as a prefix (26), or null if the 1s aren't contiguous.
 export function maskToPrefix(s) {
   const n = ipToInt(s);
@@ -176,6 +188,7 @@ export function mountCalc(el, { ip = "192.168.10.77", prefix = 26, onChange = ()
       <label class="sn-field"><span class="eyebrow">Hosts you need</span><input id="sc-need" class="sn-input" type="number" min="1" max="16777214" placeholder="e.g. 50"></label>
     </div>
     <div class="row sc-presets" role="group" aria-label="Examples">${PRESETS.map(([l, c]) => `<button class="chip" type="button" data-preset="${c}">${l}</button>`).join("")}</div>
+    <div class="sc-read" id="sc-read"></div>
     <p class="sc-msg" id="sc-msg" role="status"></p>
     <div class="sc-badges" id="sc-badges"></div>
     <p class="sc-note" id="sc-note"></p>
@@ -264,6 +277,13 @@ export function mountCalc(el, { ip = "192.168.10.77", prefix = 26, onChange = ()
     const cap = `The ${ORD[i.octet]} octet${prefixOct ? ` of ${prefixOct}.x` : ""}, 0 to 255${per > 1 ? `; each square is ${per.toLocaleString()} addresses` : ""}. Each band is one /${pre} subnet of ${i.block} square${i.block > 1 ? "s" : ""}, so ${256 / i.block} fit here. Yours is ${i.blockStart}${i.block > 1 ? `–${end}` : ""}.`;
     $("sc-mapcap").textContent = cap; $("sc-map").setAttribute("aria-label", cap);
 
+    // The address bar: a grid of 35 columns (32 bits and a gap between octets), the brackets spanning their bits.
+    const r = readAddress(addr, pre), col = b => b + Math.floor(b / 8) + 1;
+    $("sc-read").innerHTML = `<div class="sr-bar" role="img" aria-label="${esc(`${intToIp(addr)}/${pre}: ${r.net.text}; ${r.host.text}`)}">
+      ${r.bits.map((x, b) => `<i class="${x.net ? "net" : "host"}" style="grid-column:${col(b)}">${x.v}</i>`).join("")}
+      ${r.octets.map((d, o) => `<b style="grid-column:${col(o * 8)} / span 8">${d}${o < 3 ? "." : ""}</b>`).join("")}
+      ${pre ? `<span class="sr-net" style="grid-column:1 / ${col(pre - 1) + 1}">${esc(r.net.text)}</span>` : ""}
+      ${pre < 32 ? `<span class="sr-host" style="grid-column:${col(pre)} / 36">${esc(r.host.text)}</span>` : ""}</div>`;
     const mask = maskOf(pre);
     $("sc-bits").innerHTML = bitRows([["IP", addr], ["Mask", mask], ["AND", i.networkInt]], pre, i.octet);
     $("sc-tip").innerHTML = `<b>Shortcut:</b> the split is in the ${ORD[i.octet]} octet, where the mask is ${i.maskOctet}. Block size = 256 − ${i.maskOctet} = ${i.block}, so subnets start at 0, ${i.block}${i.block * 2 < 256 ? `, ${i.block * 2}` : ""}… ${myVal} sits in the one starting at ${i.blockStart}.`;
