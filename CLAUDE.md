@@ -321,5 +321,11 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   the dark tokens in the light theme (its text was 1.07:1), the VLAN diagrams have headroom for the S1/R1 names, and the
   lesson cycle diagram fits at 600 px and sizes its viewBox from its nodes (`nodeBox`, tested). New by-hand probe
   `tests/svg_check.mjs`: every SVG <text> on every route must sit inside its SVG (the box check skips SVG text).
+- Published 20 Nov, second release (dev 223facc), a coherent journey (rules in test_core `Coherence`): one name per job
+  (careers.json `name`); the home page's "How Patch Notes works" strip and all five jobs plus the basics; every non-exam path
+  puts practice after each lesson, ends on a mission or shift, and labels stops Learn / Practise / Investigate; "On the job"
+  in every lesson (`job`) and shift debrief; "Where this leads" on every path (`leadsTo`) and the jobs each exam supports;
+  topic case lists name shifts by title; PBQ pages and the log/CVSS tools link onward. New by-hand learner's-eye check:
+  `tests/coherence_check.mjs` (repeated choices, dead ends, machine text, same words to different places).
 - Next: learner feedback on the shift and the new labs, more Security+
   questions, more Agency shifts (one client and incident each; the people for a shift made in one image). No accounts/backend until real users need cross-device saves.
