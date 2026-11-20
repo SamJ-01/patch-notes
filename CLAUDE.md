@@ -317,5 +317,9 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   week" (Pellow & Finch: a leaver's HR export, a forgotten MFA exclusion, card data on a share; the Diagnose step for
   risk, law and frameworks), 25 more Security+ questions (174, at least 6 per objective) and card photos for
   physical-test and sqli-shop.
+- Published 20 Nov (dev 77712ff), fixes from the full pre-release run: the hint box docked above the terminal on phones keeps
+  the dark tokens in the light theme (its text was 1.07:1), the VLAN diagrams have headroom for the S1/R1 names, and the
+  lesson cycle diagram fits at 600 px and sizes its viewBox from its nodes (`nodeBox`, tested). New by-hand probe
+  `tests/svg_check.mjs`: every SVG <text> on every route must sit inside its SVG (the box check skips SVG text).
 - Next: learner feedback on the shift and the new labs, more Security+
   questions, more Agency shifts (one client and incident each; the people for a shift made in one image). No accounts/backend until real users need cross-device saves.
