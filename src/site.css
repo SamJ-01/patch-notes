@@ -5597,3 +5597,60 @@ details.vl-front[open] > summary { margin-bottom: 8px; }
 details.vl-front { display: block; min-width: 0; max-width: 100%; }
 details.vl-front > *:not(summary) { min-width: 0; max-width: 100%; margin-top: 8px; }
 details.vl-front .vl-panel-wrap { max-width: 100%; overflow-x: auto; }
+
+/* SQL injection lab, "What just happened" (20 Nov): under the shop, each request's result in plain words. */
+.sq-left { display: grid; gap: 14px; align-content: start; min-width: 0; }
+.sq-explain { border: 1px solid color-mix(in srgb, var(--brand) 35%, var(--line)); border-left: 3px solid var(--brand); border-radius: 12px; padding: 12px 16px; background: color-mix(in srgb, var(--brand) 5%, var(--surface)); }
+.sq-explain h2 { margin: 0 0 4px; font-size: 0.95rem; }
+.sq-explain p { margin: 0; line-height: 1.55; }
+
+/* Careers (20 Nov, the owner: line the boxes up): every card is a column with "Start this path" pinned to its foot, so the
+   buttons sit level across a row; one short label instead of "Start the path to <job>", which wrapped. */
+.path.career-card { display: flex; flex-direction: column; gap: 10px; }
+.path.career-card h3, .path.career-card h4, .path.career-card p, .path.career-card ul { margin: 0; }
+.career-go { margin-top: auto; align-self: flex-start; }
+.path.career-card > .row:last-of-type { margin-bottom: 8px; }
+
+/* CVE Radar "What to patch first" (20 Nov): one status colour (exploited) over a neutral mass; position shows the rest. */
+.cvc-panel { display: grid; gap: 10px; }
+.cvc-head h2 { margin: 0 0 4px; font-size: 1.1rem; }
+.cvc-head p { margin: 0; font-size: 0.92rem; max-width: 80ch; }
+.cvc-red { color: var(--exploited); }
+.cvc-wrap { position: relative; }
+.cvc { display: block; width: 100%; height: auto; overflow: visible; }
+.cvc-hot { fill: color-mix(in srgb, var(--exploited) 7%, transparent); }
+.cvc-grid { stroke: var(--line); stroke-width: 1; }
+.cvc-th { stroke: color-mix(in srgb, var(--ink) 35%, transparent); stroke-width: 1; stroke-dasharray: 4 4; }
+.cvc-tick, .cvc-th-l, .cvc-axis { fill: var(--muted); font: 500 11px var(--font-mono); }
+.cvc-axis { font: 500 12px var(--font-body); }
+.cvc-zone { fill: var(--exploited); font: 700 13px var(--font-body); }
+.cvc-zone.dim { fill: var(--muted); font-weight: 600; }
+.cvc-dot { fill: var(--other); opacity: 0.38; }
+.cvc-kev { fill: var(--exploited); stroke: var(--surface); stroke-width: 2; cursor: pointer; }
+.cvc .on { opacity: 1; stroke: var(--ink); stroke-width: 2; }
+.cvc-kev:focus-visible { outline: none; stroke: var(--ink); stroke-width: 3; }
+.cvc-tip { position: absolute; z-index: 3; max-width: 300px; display: grid; gap: 3px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); box-shadow: var(--elev); font-size: 0.82rem; pointer-events: none; }
+.cvc-tip span { color: var(--muted); }
+.cvc-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; font-size: 0.85rem; }
+.cvc-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.cvc-k { background: var(--exploited); } .cvc-o { background: var(--other); opacity: 0.6; }
+@media (max-width: 600px) { .cvc-tick, .cvc-th-l { font-size: 15px; } .cvc-axis { font-size: 16px; } .cvc-zone { font-size: 17px; } }
+/* Labels sit on a halo of the surface colour, so the dashed threshold lines pass behind them, not through them. */
+.cvc-th-l, .cvc-zone, .cvc-tick { paint-order: stroke; stroke: var(--cvc-halo); stroke-width: 7px; stroke-linejoin: round; }
+@media (max-width: 600px) { .cvc-axis[transform] { display: none; } }
+.cvc-panel { --cvc-halo: #0C121B; }
+:root[data-theme="light"] .cvc-panel { --cvc-halo: #FBFCFE; }
+
+/* Headings in the home page's calm style (20 Nov, Pass B): page, lesson and lab titles and section headings in mixed case,
+   without the amber "> " prompt, which competed with the cyan accent. The eyebrows above titles keep their small caps. */
+.view-head h1 { text-transform: none; letter-spacing: -0.01em; font-weight: 700; }
+.view-head h1::before { content: none; }
+.article h1 { text-transform: none; letter-spacing: -0.01em; }
+.cat-h { text-transform: none; letter-spacing: 0; font-size: 1.15rem; }
+/* One accent (20 Nov, Pass B): the rank badge and the panel-title markers use the cyan brand colour; amber stays for
+   warnings and the PATCH//NOTES mark. */
+a.xp .lvl, .xp .lvl { background: var(--brand); color: var(--brand-ink); }
+.panel-title h2::before, .panel > h2::before, .dir h3::before { color: var(--brand); }
+/* Risk register lab heat map (20 Nov): blind cells are plain until the scoring questions are answered. */
+.lab-matrix { margin-top: 4px; }
+.rm-cell.rm-blind { background: color-mix(in srgb, var(--ink) 5%, transparent); }

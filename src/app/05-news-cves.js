@@ -6,7 +6,7 @@ VIEWS.news = () => {
   const topics = Object.entries(counts).filter(([t]) => LESSON[t]).sort((a, b) => b[1] - a[1]);
   const sources = [...new Set(DATA.news.map(n => n.source))].sort();
   main.innerHTML = `<div class="view">
-    <div class="view-head with-art">${headArt("news")}<h1>Security news, explained</h1>
+    <div class="view-head"><h1>Security news, explained</h1>
 </div>
     <div class="controls">
       <div class="row"><label class="sr" for="nq">Search news</label><input id="nq" type="search" placeholder="Search headlines (e.g. Microsoft, ransomware, CVE-2026)" value="${esc(NS.q)}">
@@ -130,11 +130,12 @@ function cveCard(c) {
 }
 VIEWS.cves = () => {
   main.innerHTML = `<div class="view">
-    <div class="view-head with-art">${headArt("cves")}<h1>Which vulnerabilities actually matter</h1>
+    <div class="view-head"><h1>Which vulnerabilities actually matter</h1>
       <p>This week's vulnerabilities, ranked by real-world risk.</p></div>
     ${safeNote("cve")}
     ${(st => st.length ? `<p class="notice" role="note">${esc(st.join(" and "))} couldn't be reached on the last update, so ${st.length === 1 ? "its" : "their"} details come from an earlier one${DATA.meta.cveFetched ? ` (CVE list fetched ${esc(DATA.meta.cveFetched)})` : ""}. Check the source for anything urgent.</p>` : "")(DATA.meta.cveStale || [])}
     <section class="glance" id="glance" aria-label="At a glance"></section>
+    <section class="panel cvc-panel" id="cvechart" aria-label="What to patch first"></section>
     <details class="more-what fold-sec"><summary><h2>How the priority works</h2><span class="muted">exploited, likely, critical, high, other</span></summary>
       <div class="ladder">
         <div class="rung p1"><b>1 · Exploited</b><span>On CISA's KEV list. If you run it, patch first.</span></div>
@@ -197,7 +198,17 @@ function drawRadar() {
     (stackItems().length ? `<span>+ your stack (${stackItems().length}) <a href="#stack">edit</a></span>` : `<a href="#stack">+ add your stack</a>`) + `<form class="inline-form"><label class="sr" for="rwi">Add a vendor or product</label><input id="rwi" placeholder="add vendor/product" autocomplete="off"><button type="submit">Add</button></form>`;
   drawRadarList();
 }
+// The "What to patch first" chart (static/js/cvechart.js), drawn once the full list has loaded; a dot finds its CVE below.
+function drawCveChart() {
+  const box = $("cvechart"); if (!box || box.dataset.done || !CVES_READY || !DATA.cves.length) { if (box && !CVES_READY) box.hidden = true; return; }
+  box.dataset.done = "1"; box.hidden = false;
+  import("./js/cvechart.js").then(m => m.mount(box, DATA.cves, { onPick: id => {
+    RS.q = id; RS.prio = "all"; RS.onlyWatch = false; RS.onlyNew = false; RS.shown = 10; $("rq").value = id; drawRadar();
+    $("rlist").scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  } })).catch(() => { box.hidden = true; });
+}
 function drawRadarList() {
+  drawCveChart();
   if (!CVES_READY) {
     $("rcount").textContent = "";
     $("rlist").innerHTML = CVES_FAILED

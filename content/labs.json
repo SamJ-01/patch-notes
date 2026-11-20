@@ -12744,6 +12744,7 @@
   "track": "Governance",
   "minutes": 10,
   "lesson": "risk",
+  "matrixReveal": [0, 1],
   "title": "Build the risk register",
   "skill": "Score, rank and treat risks like a GRC analyst",
   "card": "Likelihood × impact, then decide",

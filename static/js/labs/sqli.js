@@ -221,19 +221,53 @@ export function judge(history, db = shopDb()) {
   };
 }
 
+// ---------- "What just happened" (20 Nov, the owner: the lab needed more explaining): one request's result in plain words,
+// saying what the database did and what it tells you. Pure; tested in sqli.test.
+export function explainResult(h, db = shopDb()) {
+  if (!h) return "";
+  const typed = Object.values(h.input).join(" "), injected = /['"#\\]|--|\/\*/.test(typed);
+  if (h.safe) return h.result?.values?.length
+    ? "Prepared statement: your input travelled as a value, separate from the SQL, and matched normally."
+    : "Prepared statement: your input travelled as a value, never as SQL. The quote and the -- were simply searched for as text, so nothing matched and nothing broke. This is the fix.";
+  if (h.error) {
+    const m = h.error.message;
+    if (h.error.code === 1054 && /order clause/.test(m)) return `ORDER BY ${m.match(/'(\d+)'/)?.[1] ?? "n"} sorts by that numbered column, and it doesn't exist. So the query has fewer columns than that: count down until the page loads again. That number is how many columns a UNION needs.`;
+    if (h.error.code === 1054) return "MySQL doesn't know that column name. The rest of your SQL ran far enough to be checked, so the injection itself is working: fix the name.";
+    if (h.error.code === 1222) return "Both halves of a UNION must return the same number of columns. Add or remove values in your SELECT until the counts match.";
+    if (h.error.code === 1146) return "That table doesn't exist. Attackers look up real table names in information_schema.tables first.";
+    return "Your quote ended the text early, so MySQL read the rest as SQL, couldn't make sense of it and stopped. A real site should log this, not show it: the error page tells an attacker the database is MySQL and that typing reaches the query.";
+  }
+  const rows = h.result?.values || [], admin = db.tables.users.find(u => u.role === "admin");
+  if (h.kind === "login") {
+    if (!rows.length) return injected ? "No row came back, so the shop said no. Look at The SQL: what would make the WHERE true, or stop the password check being read at all?" : "No user matched that username and password together, so the shop said no.";
+    if (injected && rows[0][2] === "admin") return "The -- (or #) turned everything after it into a comment, so the password check never ran. MySQL only saw WHERE username = 'admin' and handed back the admin's row.";
+    if (injected) return `Signed in as ${rows[0][1]} without that account's password: your input changed what the WHERE asked for.`;
+    return "A normal sign-in: your username and password went inside quote marks in the SQL, and one user matched both.";
+  }
+  if (/union/i.test(h.input.q || "")) {
+    if (rows.some(r => r.includes(admin.password_hash))) return "Those are rows from the users table, printed where products should be: usernames and password hashes. The shop only ever meant to show products. This is a data breach.";
+    return "MySQL accepted your UNION and glued its rows onto the product list. Each column you SELECT appears where the shop prints a product's name, price and description, so you now choose what this page displays.";
+  }
+  if (injected) return `Your characters changed the SQL but it still ran: ${rows.length} row${rows.length === 1 ? "" : "s"} came back. Compare The SQL with what a normal search sends.`;
+  return `A normal search: ${rows.length} product${rows.length === 1 ? "" : "s"} matched. Everything you typed sat inside quote marks in the SQL.`;
+}
+
 // ---------- the page
 export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = () => {}, onReset = () => {} } = {}) {
   const db = shopDb(), done = new Set(solved), history = [];
-  let page = "login", safe = false, last = null, who = null, view = "query", searched = "";
+  let page = "login", safe = false, last = null, who = null, view = "query", searched = "", hinted = null;
   root.innerHTML = `<div class="sq-lab">
     <div class="view-head"><a class="link-btn" href="#missions">← Missions</a>
       <div class="eyebrow">Lab · ${esc(lab.track)} · ${lab.minutes} min</div><h1>${esc(lab.title)}</h1><p>${esc(lab.intro)}</p></div>
     <div class="sq-grid">
+      <div class="sq-left">
       <section class="bw" aria-label="A web browser showing Wrenfield and Co's shop (simulated)">
         <div class="bw-top"><span class="bw-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="bw-tab"><span class="bw-fav" aria-hidden="true">W</span>Wrenfield &amp; Co</span></div>
         <div class="bw-bar"><span class="bw-nav" aria-hidden="true">‹ › ↻</span><div class="bw-url"><span class="bw-lock" aria-hidden="true">🔒</span><span id="sq-url"></span></div></div>
         <div class="bw-page" id="sq-page"></div>
       </section>
+      <div class="sq-explain" id="sq-explain" aria-live="polite"></div>
+      </div>
       <aside class="sq-side">
         <section class="sq-panel"><div class="sq-ptitle"><h2>Behind the scenes</h2>
           <div class="row" role="group" aria-label="What to show"><button type="button" class="chip" data-sqv="query" aria-pressed="true">The SQL</button><button type="button" class="chip" data-sqv="rows" aria-pressed="false">What came back</button><button type="button" class="chip" data-sqv="code" aria-pressed="false">The code</button></div></div>
@@ -285,7 +319,7 @@ $user = $db->query($sql)->fetch_assoc();   // your input is now part of the SQL`
 
   const shopHead = () => `<header class="ws-head"><span class="ws-logo">Wrenfield <i>&amp;</i> Co</span><nav class="ws-nav"><button type="button" data-ws="search">Shop</button><button type="button" data-ws="login">${who ? esc(who.username) : "Sign in"}</button></nav></header>`;
   function drawPage() {
-    const url = { login: "/login", search: `/search?q=${encodeURIComponent(searched)}`, account: "/account", error: "/login" }[page];
+    const url = { login: "/login", search: `/search?q=${encodeURIComponent(searched)}`, account: "/account", error: last?.kind === "search" ? `/search?q=${encodeURIComponent(searched)}` : "/login" }[page];
     $("sq-url").innerHTML = `<span class="muted">https://</span>shop.wrenfield.example${esc(url)}`;
     const P = $("sq-page");
     if (page === "error") {
@@ -322,7 +356,8 @@ Stack trace:
     const next = lab.tasks.find(t => !done.has(t.id));
     $("sq-tasks").innerHTML = lab.tasks.map(t => `<li class="${done.has(t.id) ? "got" : t === next ? "now" : ""}">${done.has(t.id) ? "✓ " : ""}${esc(t.text)}${done.has(t.id) && t.why ? `<span class="vl-why">${esc(t.why)}</span>` : ""}</li>`).join("");
     $("sq-count").textContent = `${done.size}/${lab.tasks.length}`;
-    $("sq-hint").hidden = !next; $("sq-hinttext").innerHTML = "";
+    $("sq-hint").hidden = !next;
+    if (!next || next.id !== hinted) { $("sq-hinttext").innerHTML = ""; hinted = null; }  // a hint stays open until its objective is done
     if (!next && done.size === lab.tasks.length) { onComplete(); globalThis.PN_patch?.("Broken in, then fixed it. That's the whole job.", 6000); }
   }
   function send(kind, input) {
@@ -331,7 +366,11 @@ Stack trace:
     if (r.error) page = "error";
     else if (kind === "login") { const row = r.result.values[0]; if (row) { who = { id: row[0], username: row[1], role: row[2] }; page = "account"; } else page = "login"; }
     else page = "search";
-    drawPage(); drawBehind(); drawTasks();
+    drawPage(); drawBehind(); drawTasks(); drawExplain();
+  }
+  function drawExplain() {
+    const t = explainResult(last, db);
+    $("sq-explain").innerHTML = t ? `<h2>What just happened</h2><p>${esc(t)}</p>` : `<h2>What just happened</h2><p class="muted">Use the shop: sign in or search. After each request, this says what the database did.</p>`;
   }
   root.addEventListener("submit", e => {
     e.preventDefault();
@@ -344,7 +383,7 @@ Stack trace:
     const v = e.target.closest("[data-sqv]"); if (v) { view = v.dataset.sqv; drawBehind(); return; }
   });
   $("sq-safe").addEventListener("change", e => { safe = e.target.checked; drawBehind(); });
-  $("sq-hint").addEventListener("click", () => { const t = lab.tasks.find(x => !done.has(x.id)); if (t) $("sq-hinttext").innerHTML = `<div class="feedback">${esc(t.hint)}</div>`; });
+  $("sq-hint").addEventListener("click", () => { const t = lab.tasks.find(x => !done.has(x.id)); if (t) { hinted = t.id; $("sq-hinttext").innerHTML = `<div class="feedback">${esc(t.hint)}</div>`; } });
   $("sq-reset").addEventListener("click", onReset);
-  drawPage(); drawBehind(); drawTasks();
+  drawPage(); drawBehind(); drawTasks(); drawExplain();
 }

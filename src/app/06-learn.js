@@ -27,7 +27,7 @@ VIEWS.learn = () => {
   const pathRow = p => { const steps = pathSteps(p), done = steps.filter(s => s.done).length;
     return listRow("#path-" + esc(p.id), p.title.replace(/^Path to /, ""), `${done} of ${steps.length}`, P.paths[p.id]); };
   main.innerHTML = `<div class="view">
-    <div class="view-head with-art">${headArt("learn")}<h1>The concepts behind the headlines</h1>
+    <div class="view-head"><h1>The concepts behind the headlines</h1>
       <p>Build your understanding through visual lessons, guided learning paths and practical examples.</p>
       <p class="muted learn-start">New? <a href="#path-awareness" data-trail="awareness">Start with the basics</a>. Not sure which job? <a href="#careers">Compare the five jobs</a>.</p>
     </div>
@@ -154,7 +154,7 @@ VIEWS.exams = () => {
   const certRow = c => { const objs = certObjectives(c), practised = objs.filter(o => { const p = objectiveProgress(o); return p.total && p.done === p.total; }).length;
     return listRow("#cert-" + esc(c.id), c.name, `${practised} of ${objs.length} practised`, false); };
   main.innerHTML = `<div class="view">
-    <div class="view-head with-art">${headArt("exams")}<h1>Exam prep</h1>
+    <div class="view-head"><h1>Exam prep</h1>
       <p>CompTIA objectives mapped to what you can practise here, with practice questions, mock exams and an honest "Am I ready?" check.</p></div>
     <div class="row" style="justify-content:flex-end">${viewToggle()}</div>
     <h2 class="sr-only">Certifications</h2>

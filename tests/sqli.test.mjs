@@ -2,7 +2,7 @@
 // errors use MySQL's own codes and wording, and parameterised queries make the same input harmless.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { sha256, run, request, judge, shopDb, tokenize } from "../static/js/labs/sqli.js";
+import { sha256, run, request, judge, shopDb, tokenize, explainResult } from "../static/js/labs/sqli.js";
 
 test("sha256 matches the published test vectors", () => {
   assert.equal(sha256(""), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
@@ -69,4 +69,20 @@ test("each objective is reached by the move it describes, and not by the others"
 test("comments and quotes tokenise like MySQL", () => {
   assert.deepEqual(tokenize("SELECT 'it''s' -- tail").map(t => t.v), ["SELECT", "it's"]);
   assert.deepEqual(tokenize("SELECT 1 # tail").map(t => t.v), ["SELECT", 1]);
+});
+
+// "What just happened": each kind of result gets its own plain explanation.
+test("explainResult explains each result the lab can produce", () => {
+  const db = shopDb(), go = (kind, input, safe = false) => ({ kind, input, safe, ...request(kind, input, { safe, db }) });
+  assert.match(explainResult(go("login", { username: "j.okafor", password: "Biscuit-Tin-42" }), db), /normal sign-in/);
+  assert.match(explainResult(go("login", { username: "j.okafor", password: "wrong" }), db), /No user matched/);
+  assert.match(explainResult(go("login", { username: "admin'", password: "x" }), db), /quote ended the text early/);
+  assert.match(explainResult(go("login", { username: "admin' -- ", password: "x" }), db), /password check never ran/);
+  assert.match(explainResult(go("search", { q: "' ORDER BY 4 -- " }), db), /ORDER BY 4 sorts by that numbered column/);
+  assert.match(explainResult(go("search", { q: "' UNION SELECT 1, 2 -- " }), db), /same number of columns/);
+  assert.match(explainResult(go("search", { q: "' UNION SELECT 1, 2, 3 -- " }), db), /accepted your UNION/);
+  assert.match(explainResult(go("search", { q: "' UNION SELECT username, password_hash, role FROM users -- " }), db), /data breach/);
+  assert.match(explainResult(go("login", { username: "admin' -- ", password: "x" }, true), db), /This is the fix/);
+  assert.match(explainResult(go("search", { q: "tea" }), db), /normal search/);
+  assert.equal(explainResult(null), "");
 });

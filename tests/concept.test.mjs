@@ -80,3 +80,22 @@ test("node diagrams: the viewBox holds every node, its glow and its label, for 3
     }
   }
 });
+
+// The risk register lab plots its own register on the heat map, blind until its scoring questions are answered.
+test("parseRegister reads the risk register lab's risks, notes and appetite", () => {
+  const lab = JSON.parse(readFileSync(new URL("../content/labs.json", import.meta.url), "utf8")).find(l => l.id === "risk-register");
+  const r = concept.parseRegister(lab.artifact.text);
+  assert.equal(r.items.length, 5); assert.equal(r.appetite, 15);
+  assert.deepEqual([r.items[0].l, r.items[0].i], [4, 5]);
+  assert.match(r.items[0].label, /^R1: Ransomware/); assert.match(r.items[0].text, /backups run nightly/);
+  assert.deepEqual(concept.validate({ type: "matrix", title: "x", appetite: r.appetite, items: r.items }), []);
+});
+
+test("a blind matrix shows where each risk sits but no score, band or appetite", () => {
+  const items = [{ label: "R1: Ransomware", l: 4, i: 5, text: "x" }, { label: "R2: Laptop", l: 3, i: 3, text: "y" }];
+  const blind = concept.matrixHtml({ type: "matrix", title: "t", appetite: 15, items, blind: true });
+  assert.ok(!/rm-s"|rm-b |rm-critical|rm-high|appetite \(15\)| over/.test(blind), "no scores, bands or appetite");
+  assert.equal((blind.match(/class="rm-dot"/g) || []).length, 2, "both risks plotted");
+  const shown = concept.matrixHtml({ type: "matrix", title: "t", appetite: 15, items });
+  assert.match(shown, /rm-s" aria-hidden="true">20</); assert.match(shown, /appetite \(15\)/);
+});

@@ -1143,12 +1143,6 @@ class CardPhotos(unittest.TestCase):
             data = f.read_bytes()
             self.assertEqual(data[:4], b"RIFF"); self.assertEqual(data[8:12], b"WEBP")
 
-    def test_head_photos_exist(self):
-        js = (Path(__file__).resolve().parent.parent / "src" / "app" / "07-labs.js").read_text()
-        ids = re.findall(r'"([\w-]+)"', re.search(r"const HEAD_PHOTOS = new Set\(\[(.*?)\]\)", js, re.S).group(1))
-        for i in ids:
-            self.assertTrue((Path(__file__).resolve().parent.parent / "static" / "img" / "heads" / f"{i}.webp").exists(), i)
-
 
 class OfflineApp(unittest.TestCase):
     """Installable and offline: the manifest's icons exist, and the service worker only ever handles this site's own

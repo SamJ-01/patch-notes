@@ -150,13 +150,6 @@ const HEAD_SCENE = {
   cves: { raw: RADAR_ART },
 };
 SCENE.play = HEAD_SCENE.play;  // the games card on the practise page
-// Page headers: an illustration where one exists (img/heads/<page>.webp, 2:1), otherwise the drawn scene.
-// loading="lazy" matters: Chrome's look-ahead preloader can read this template inside the page's script and fetch
-// the unfilled "img/heads/${k}.webp", but it skips lazy images. (It still loads at once: headers are at the top.)
-const HEAD_PHOTOS = new Set(["learn", "missions", "news", "cves", "progress", "careers", "exams", "play"]);
-const headArt = k => (HEAD_PHOTOS.has(k)
-  ? `<span class="head-art photo" aria-hidden="true"><img class="card-img" src="img/heads/${k}.webp" alt="" width="494" height="247" loading="lazy" decoding="async"></span>`
-  : `<span class="head-art card-art" aria-hidden="true">${sceneSvg(HEAD_SCENE[k])}</span>`);
 // Card pictures: an illustration where one exists (img/cards/<id>.webp, 2:1, one style, made in batches of six),
 // otherwise the drawn scene. Photos fade in once loaded, in space that's already reserved.
 const CARD_PHOTOS = new Set(["sqli-shop", "physical-test", "recon-script", "automation-script", "cleanup-log", "risk-gone-wrong", "which-law-applies", "which-model-fits", "threat-model", "risk", "law", "attack-models", "cyber-essentials-check", "risk-register", "allowed-or-not", "asset-register", "soar-playbook", "firewall-packet", "vishing-call", "dhcp", "dns", "phish-triage", "ssh-brute", "hashing", "permissions",
@@ -247,7 +240,7 @@ VIEWS.missions = () => {
   const picks = PRACTISE_PICKS.map(k => items.find(i => i.key === k)).filter(Boolean)
     .map(p => (p.done ? items.find(i => i.cat === p.cat && !i.done && !PRACTISE_PICKS.includes(i.key)) || p : p));
   main.innerHTML = `<div class="view">
-    <div class="view-head with-art">${headArt("missions")}<h1>Practise by doing</h1><p>Missions, labs, the Agency shift and games. Start with one from each track, or pick what you want to get better at.</p></div>
+    <div class="view-head"><h1>Practise by doing</h1><p>Missions, labs, the Agency shift and games. Start with one from each track, or pick what you want to get better at.</p></div>
     ${lastActivityHtml()}
     ${compact ? "" : `<section class="stack pr-start"${PS.track === "All" ? "" : " hidden"}><h2 class="cat-h">Start here: one from each track</h2><div class="lessons">${picks.map(p => p.html).join("")}</div></section>`}
     <div class="row" style="justify-content:space-between;align-items:center;gap:10px">
@@ -549,6 +542,7 @@ function labView(id) {
       <div id="lab-raw"${l.artifact.tree ? " hidden" : ""}>
       ${l.artifact.kind === "log" ? `<div class="row"><label class="sr" for="lab-f">Filter lines</label><span class="mono" style="color:var(--sun)">grep</span><input id="lab-f" type="search" placeholder="${esc(l.artifact.placeholder || "e.g. Failed password")}" autocomplete="off" spellcheck="false"></div>` : ""}
       <pre class="evidence" id="lab-pre" tabindex="0" aria-label="Evidence"></pre></div></section>`}
+    ${l.kind === "doc" ? `<section class="panel lab-matrix" id="lab-matrix" aria-label="Where each risk sits" hidden></section>` : ""}
     <section class="stack" id="lab-steps">${l.steps.map((st, i) => `<div class="panel lab-step ${solved.has(i) ? "got" : ""}" data-i="${i}">
       <div class="panel-title"><h2>Question ${i + 1}</h2>${solved.has(i) ? '<span class="eyebrow" style="color:var(--good)">Solved</span>' : ""}</div>
       <p class="q">${gloss(st.q, 3)}</p>${st.where ? `<button type="button" class="link-btn where" data-where="${i}">Show me where ↑</button>` : ""}
@@ -586,8 +580,19 @@ function labView(id) {
     document.querySelectorAll("[data-ev-view]").forEach(b => b.addEventListener("click", () => evView(b.dataset.evView)));
   }
   $("lab-f")?.addEventListener("input", drawLog);
+  // A risk register in the evidence is plotted on the 5 x 5 heat map (concept.js parseRegister), blind (no scores or
+  // appetite) until the questions in matrixReveal are answered, so the picture never gives the answers away (20 Nov).
+  let matrixApi = null;
+  const revealNow = () => (l.matrixReveal || l.steps.map((_, i) => i)).every(i => solved.has(i));
+  if ($("lab-matrix")) import("./js/concept.js").then(m => {
+    const r = m.parseRegister(l.artifact.text), box = $("lab-matrix"); if (r.items.length < 2 || !box) return;
+    box.hidden = false;
+    matrixApi = m.mount(box, { type: "matrix", title: "Where each risk sits", appetite: r.appetite, items: r.items, blind: !revealNow(),
+      blindNote: "Each risk sits at its likelihood (up) and impact (across). Work out the scores yourself: the colours and the appetite line appear once you've answered the first two questions." });
+  }).catch(() => {});
   const solve = (i, box) => {
     solved.add(i); P.labSteps[id] = [...solved];
+    if (matrixApi && revealNow()) matrixApi.reveal();
     box.classList.add("got");
     box.querySelector(".fb").innerHTML = `<div class="feedback"><b class="ok">Correct.</b> ${gloss(l.steps[i].explain, 3)}</div>`;
     box.querySelectorAll("button, input").forEach(el => el.disabled = true);

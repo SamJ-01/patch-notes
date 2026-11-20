@@ -63,6 +63,16 @@ export function riskBand(score) {
   return score >= 20 ? { key: "critical", label: "Critical" } : score >= 10 ? { key: "high", label: "High" } : score >= 5 ? { key: "medium", label: "Medium" } : { key: "low", label: "Low" };
 }
 
+// A risk register as plain text (the risk register lab's evidence): lines like "R1  Ransomware encrypts...  L 4  I 5  Owner: ..."
+// and "Risk appetite: anything scoring 15 or more". Notes ("R1: backups run nightly...") become each risk's text. Pure, tested.
+export function parseRegister(text) {
+  const t = String(text || ""), notes = {};
+  for (const m of t.matchAll(/^\s*(R\d+):\s*(.+)$/gm)) notes[m[1]] = m[2].trim();
+  const items = [...t.matchAll(/^(R\d+)\s+(.+?)\s+L ?([1-5])\s+I ?([1-5])\b/gm)].map(m => ({ label: `${m[1]}: ${m[2].trim()}`, l: Number(m[3]), i: Number(m[4]), text: notes[m[1]] || m[2].trim() }));
+  const ap = t.match(/appetite[^\n]*?(\d{1,2})\b/i);
+  return { items, appetite: ap ? Number(ap[1]) : null };
+}
+
 export function mount(el, c) {
   if (c.type === "cards") return mountCards(el, c);
   if (c.type === "matrix") return mountMatrix(el, c);
@@ -175,29 +185,39 @@ function mountScene(el, c) {
 
 // Matrix: a 5 x 5 likelihood x impact heat map with example risks plotted on it. Each risk is a button (in its
 // cell and in the list); selecting one shows its score, band, whether it's over the appetite, and its treatment.
-function mountMatrix(el, c) {
-  const rows = [5, 4, 3, 2, 1], cols = [1, 2, 3, 4, 5], ap = c.appetite;
+// `blind: true` (20 Nov, the risk register lab) plots each risk in its cell but hides every score, band and the
+// appetite, so the picture doesn't answer the lab's questions; reveal() then shows them. matrixHtml is pure (tested).
+export function matrixHtml(c) {
+  const rows = [5, 4, 3, 2, 1], cols = [1, 2, 3, 4, 5], ap = c.blind ? null : c.appetite, blind = Boolean(c.blind);
   const over = s => ap != null && s >= ap;
   const cell = (l, i) => { const s = riskScore(l, i), here = c.items.map((it, k) => ({ it, k })).filter(x => x.it.l === l && x.it.i === i);
-    return `<div class="rm-cell rm-${riskBand(s).key}${over(s) ? " over" : ""}"><span class="rm-s" aria-hidden="true">${s}</span>${here.map(x => `<button type="button" class="rm-dot" data-k="${x.k}" tabindex="-1" aria-label="${esc(x.it.label)}: likelihood ${l}, impact ${i}">${x.k + 1}</button>`).join("")}</div>`; };
-  el.innerHTML = `<figure class="concept cc-matrix"><figcaption class="cc-title">${esc(c.title)}</figcaption>
+    return `<div class="rm-cell ${blind ? "rm-blind" : `rm-${riskBand(s).key}`}${over(s) ? " over" : ""}">${blind ? "" : `<span class="rm-s" aria-hidden="true">${s}</span>`}${here.map(x => `<button type="button" class="rm-dot" data-k="${x.k}" tabindex="-1" aria-label="${esc(x.it.label)}: likelihood ${l}, impact ${i}">${x.k + 1}</button>`).join("")}</div>`; };
+  return `<figure class="concept cc-matrix${blind ? " rm-is-blind" : ""}"><figcaption class="cc-title">${esc(c.title)}</figcaption>
     <div class="rm-stage">
       <div class="rm-plot"><span class="rm-ylab" aria-hidden="true">Likelihood →</span>
         <div class="rm-grid">${rows.map(l => `<div class="rm-row">${cols.map(i => cell(l, i)).join("")}</div>`).join("")}</div>
         <span class="rm-xlab" aria-hidden="true">Impact →</span></div>
       <div class="rm-side"><div class="rm-detail" aria-live="polite"></div>
-        <ol class="rm-list">${c.items.map((it, k) => `<li><button type="button" class="rm-pick" data-k="${k}"><span class="rm-n" aria-hidden="true">${k + 1}</span>${esc(it.label)}<span class="rm-b rm-${riskBand(riskScore(it.l, it.i)).key}">${riskScore(it.l, it.i)}</span></button></li>`).join("")}</ol>
-        <p class="rm-key"><span class="rm-sw rm-low"></span>Low <span class="rm-sw rm-medium"></span>Medium <span class="rm-sw rm-high"></span>High <span class="rm-sw rm-critical"></span>Critical${ap != null ? ` <span class="rm-sw over"></span>At or over the appetite (${ap})` : ""}</p></div>
+        <ol class="rm-list">${c.items.map((it, k) => `<li><button type="button" class="rm-pick" data-k="${k}"><span class="rm-n" aria-hidden="true">${k + 1}</span>${esc(it.label)}${blind ? "" : `<span class="rm-b rm-${riskBand(riskScore(it.l, it.i)).key}">${riskScore(it.l, it.i)}</span>`}</button></li>`).join("")}</ol>
+        ${blind ? `<p class="rm-key">${esc(c.blindNote || "Each risk sits at its likelihood and impact. Work out the scores yourself: the colours appear once you have.")}</p>`
+          : `<p class="rm-key"><span class="rm-sw rm-low"></span>Low <span class="rm-sw rm-medium"></span>Medium <span class="rm-sw rm-high"></span>High <span class="rm-sw rm-critical"></span>Critical${ap != null ? ` <span class="rm-sw over"></span>At or over the appetite (${ap})` : ""}</p>`}</div>
     </div></figure>`;
-  const detail = el.querySelector(".rm-detail");
+}
+function mountMatrix(el, c) {
+  const ap = () => (c.blind ? null : c.appetite), over = s => ap() != null && s >= ap();
+  let current = null;
   const select = k => {
-    const it = c.items[k], s = riskScore(it.l, it.i), b = riskBand(s);
+    current = k;
+    const it = c.items[k], s = riskScore(it.l, it.i), b = riskBand(s), detail = el.querySelector(".rm-detail");
     el.querySelectorAll("[data-k]").forEach(x => { const on = Number(x.dataset.k) === k; x.classList.toggle("on", on); if (x.classList.contains("rm-pick")) x.setAttribute("aria-pressed", String(on)); });
     detail.innerHTML = `<span class="eyebrow">Risk ${k + 1} of ${c.items.length}</span><b>${esc(it.label)}</b>
-      <p class="rm-sum"><span class="rm-calc">Likelihood ${it.l} × impact ${it.i} = <strong>${s}</strong></span><span class="rm-b rm-${b.key}">${b.label}</span>${ap != null ? `<span class="rm-ap${over(s) ? " over" : ""}">${over(s) ? "Over the appetite: must be treated" : "Within the appetite"}</span>` : ""}</p>
+      <p class="rm-sum">${c.blind ? `<span class="rm-calc">Likelihood ${it.l}, impact ${it.i}</span>`
+        : `<span class="rm-calc">Likelihood ${it.l} × impact ${it.i} = <strong>${s}</strong></span><span class="rm-b rm-${b.key}">${b.label}</span>${ap() != null ? `<span class="rm-ap${over(s) ? " over" : ""}">${over(s) ? "Over the appetite: must be treated" : "Within the appetite"}</span>` : ""}`}</p>
       <p>${esc(it.text)}</p>${it.treat ? `<p class="cc-eg"><span class="eyebrow">Decision</span> ${esc(it.treat)}</p>` : ""}`;
   };
+  const draw = () => { el.innerHTML = matrixHtml(c); select(current ?? c.items.reduce((best, it, k) => riskScore(it.l, it.i) > riskScore(c.items[best].l, c.items[best].i) ? k : best, 0)); };
   el.addEventListener("click", e => { const b = e.target.closest("[data-k]"); if (b) select(Number(b.dataset.k)); });
   // Open on the biggest risk, so the picture explains itself before anyone clicks.
-  select(c.items.reduce((best, it, k) => riskScore(it.l, it.i) > riskScore(c.items[best].l, c.items[best].i) ? k : best, 0));
+  draw();
+  return { reveal() { if (c.blind) { c.blind = false; draw(); } } };
 }
