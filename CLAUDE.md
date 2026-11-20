@@ -335,5 +335,10 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   permissions "Read the line" (`readFor`), evidence labs "Read a line" (`labs/anatomy.js`, 8 log formats, 11 labs), the Linux
   terminal "Read the prompt" / "Read a command", subnetting "Read the address", CVSS under three plain questions, the VLAN
   labs' one-line `glance` and a folded front panel. Lesson quizzes have wrong-answer notes and scenario questions.
+- Published 20 Nov, fourth release (dev 494f3fd): CVE Radar's "What to patch first" scatter (`static/js/cvechart.js`: CVSS
+  across, EPSS up on a log scale, exploited in red, the priority thresholds dashed; hover, click or Enter finds the CVE); the
+  risk register lab's heat map, blind until its scoring questions are answered (concept.js `parseRegister`, `matrixHtml`); the
+  SQL lab's "What just happened" (`explainResult`) and hints that stay open; the eight page-header photos removed; career
+  cards with level "Start this path" buttons; mixed-case headings without the "> " prompt, and a cyan rank badge.
 - Next: learner feedback on the shift and the new labs, more Security+
   questions, more Agency shifts (one client and incident each; the people for a shift made in one image). No accounts/backend until real users need cross-device saves.
