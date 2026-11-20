@@ -1,6 +1,7 @@
 [
  {
   "id": "cia-triad",
+  "job": {"roles": ["grc", "soc"], "text": "Every risk assessment and incident report asks which of the three was hurt. A GRC analyst rates risks by it; a SOC analyst uses it to say how bad an incident is."},
   "title": "The CIA triad",
   "track": "Foundations",
   "level": "Beginner",
@@ -164,6 +165,7 @@
  },
  {
   "id": "frameworks",
+  "job": {"roles": ["grc"], "text": "A GRC analyst maps the company's controls to a framework, finds the gaps before an audit, and turns them into a plan the business can fund and track."},
   "title": "Security frameworks: NIST CSF, ISO 27001, CIS & Cyber Essentials",
   "track": "Governance",
   "level": "Beginner",
@@ -304,6 +306,7 @@
  },
  {
   "id": "security-controls",
+  "job": {"roles": ["grc", "soc", "it-support"], "text": "Audits ask which controls exist and whether they work. IT support runs many of them day to day; a SOC analyst sees which one failed during an incident."},
   "title": "Security controls",
   "track": "Foundations",
   "level": "Beginner",
@@ -460,6 +463,7 @@
  },
  {
   "id": "phishing",
+  "job": {"roles": ["soc", "it-support"], "text": "Reported emails land in the SOC queue every day: check the headers and links, find who else got it, and pull it from every mailbox. IT support takes the first 'I clicked it' call."},
   "explainer": {
    "kind": "inbox-rule",
    "why": "A stolen password is rarely the end of it. Once inside a mailbox, an attacker adds a hidden rule to bury the replies that would expose the fraud. Toggle it below."
@@ -651,6 +655,7 @@
  },
  {
   "id": "ransomware",
+  "job": {"roles": ["soc", "it-support"], "text": "A SOC analyst spots the early signs (odd admin logins, backups deleted) and isolates machines; IT support rebuilds them and restores from the backups they keep tested."},
   "title": "Ransomware",
   "track": "Threats",
   "level": "Beginner",
@@ -738,6 +743,7 @@
  },
  {
   "id": "malware",
+  "job": {"roles": ["soc"], "text": "A SOC analyst reads the EDR alert and process tree, decides whether it ran and what it touched, isolates the machine, and checks the rest of the estate for the same file."},
   "title": "Malware families",
   "track": "Threats",
   "level": "Beginner",
@@ -911,6 +917,7 @@
  },
  {
   "id": "zero-day",
+  "job": {"roles": ["soc", "it-support", "cloud"], "text": "When a vendor warns of an exploited flaw with no patch, the team applies the workaround the same day, hunts for signs it was already used, and patches the moment the fix lands."},
   "title": "Zero-days",
   "track": "Threats",
   "level": "Intermediate",
@@ -1026,6 +1033,7 @@
  },
  {
   "id": "vuln-management",
+  "job": {"roles": ["it-support", "cloud", "grc"], "text": "Every week someone reads the scan results, drops the false positives, ranks what's left by exposure and exploitation, and chases the fixes through change management."},
   "title": "Vulnerabilities & patching",
   "track": "Defence",
   "level": "Beginner",
@@ -1136,6 +1144,7 @@
  },
  {
   "id": "supply-chain",
+  "job": {"roles": ["cloud", "grc"], "text": "A cloud engineer pins and reviews dependencies and locks down build secrets; a GRC analyst assesses suppliers and writes what they must report into their contracts."},
   "title": "Supply chain attacks",
   "track": "Threats",
   "level": "Intermediate",
@@ -1309,6 +1318,7 @@
  },
  {
   "id": "data-breach",
+  "job": {"roles": ["grc", "soc"], "text": "A SOC analyst works out what left and when; a GRC analyst decides with the data protection lead whether to tell the ICO and the people affected, inside 72 hours."},
   "title": "Data breaches",
   "track": "Threats",
   "level": "Beginner",
@@ -1487,6 +1497,7 @@
  },
  {
   "id": "nation-state",
+  "job": {"roles": ["soc"], "text": "Analysts read joint advisories, turn their indicators and techniques into searches, and hunt their own logs for quiet, patient visitors that antivirus won't flag."},
   "title": "Nation-state hackers (APTs)",
   "track": "Threats",
   "level": "Intermediate",
@@ -1597,6 +1608,7 @@
  },
  {
   "id": "ddos",
+  "job": {"roles": ["soc", "it-support"], "text": "The team tells a real flood from a busy day, calls the provider or scrubbing service for floods that fill the link, and rate-limits the ones aimed at the app."},
   "title": "DDoS attacks",
   "track": "Threats",
   "level": "Beginner",
@@ -1711,6 +1723,7 @@
  },
  {
   "id": "ai-security",
+  "job": {"roles": ["cloud", "grc"], "text": "Engineers keep AI tools to the least access they need and block ways out for data; GRC writes the rules for what staff may paste into them."},
   "title": "AI & security",
   "track": "Threats",
   "level": "Beginner",
@@ -1821,6 +1834,7 @@
  },
  {
   "id": "cloud",
+  "job": {"roles": ["cloud"], "text": "A cloud security engineer reviews who can do what, hunts for public buckets and old keys, and builds guardrails so a mistake can't reach production."},
   "explainer": {
    "kind": "cloud",
    "why": "One key leaks eventually. See why giving each key only the access it needs stops that single leak from turning into a full breach."
@@ -1935,6 +1949,7 @@
  },
  {
   "id": "identity",
+  "job": {"roles": ["it-support", "soc", "cloud"], "text": "IT support creates and removes accounts and sets up MFA; the SOC investigates odd sign-ins; cloud engineers keep admin rights small and temporary."},
   "explainer": {
    "kind": "vpn",
    "why": "A sign-in is judged partly on where it comes from. See how a VPN changes the location a login appears to start from, for better and for worse."
@@ -2197,6 +2212,7 @@
  },
  {
   "id": "iot-ot",
+  "job": {"roles": ["it-support", "soc"], "text": "IT support finds the cameras, printers and controllers nobody listed, changes their default logins and puts them on their own network; the SOC watches that network for anything new."},
   "title": "IoT & industrial systems",
   "track": "Threats",
   "level": "Intermediate",
@@ -2360,6 +2376,7 @@
  },
  {
   "id": "web-sqli",
+  "job": {"roles": ["pentest", "soc"], "text": "A pentester proves the injection safely and writes up the fix (parameterised queries); a SOC analyst spots the probing in web logs and checks whether data left."},
   "explainer": {
    "kind": "sqli",
    "why": "Here is the heart of it. Watch a normal login turn against its own database when the input is treated as code instead of data."
@@ -2447,6 +2464,7 @@
  },
  {
   "id": "web-xss",
+  "job": {"roles": ["pentest", "soc"], "text": "A pentester finds where user input is shown without encoding and shows the impact; developers fix it and the SOC watches for stolen sessions being reused."},
   "explainer": {
    "kind": "xss",
    "why": "See the difference one step makes: the same review shown escaped, then raw, and how the raw version runs in every visitor's browser."
@@ -2534,6 +2552,7 @@
  },
  {
   "id": "web-access",
+  "job": {"roles": ["pentest", "cloud"], "text": "A pentester changes an ID in a request to test whether the app checks ownership; engineers add the server-side check to every record."},
   "explainer": {
    "kind": "idor",
    "why": "See it happen. Changing one order number in the address opens another customer's data, because the server never checks whose record it is."
@@ -2646,6 +2665,7 @@
  },
  {
   "id": "networking",
+  "job": {"roles": ["it-support", "soc"], "text": "IT support traces why a laptop can't reach a server; a SOC analyst reads addresses, ports and protocols in every alert to know what they're looking at."},
   "title": "Networking basics",
   "track": "Foundations",
   "level": "Beginner",
@@ -2795,6 +2815,7 @@
  },
  {
   "id": "wireless",
+  "job": {"roles": ["it-support", "soc"], "text": "IT support plans channels, sets up WPA3 or 802.1X and finds rogue access points; the SOC investigates when a staff network appears somewhere it shouldn't."},
   "title": "Wi-Fi & wireless security",
   "track": "Foundations",
   "level": "Beginner",
@@ -2964,6 +2985,7 @@
  },
  {
   "id": "network-ops",
+  "job": {"roles": ["it-support"], "text": "IT support and network teams keep the network running: watching baselines, making changes through change control, and restoring service within agreed targets when things fail."},
   "title": "Running a network",
   "track": "Foundations",
   "level": "Beginner",
@@ -3146,6 +3168,7 @@
  },
  {
   "id": "network-modern",
+  "job": {"roles": ["cloud", "it-support"], "text": "Engineers run dual-stack IPv6, software-defined networks and zero trust access, so getting the basics right in these is part of everyday network and cloud work."},
   "title": "Modern networks: IPv6, SDN and zero trust",
   "track": "Foundations",
   "level": "Beginner",
@@ -3265,6 +3288,7 @@
  },
  {
   "id": "encryption",
+  "job": {"roles": ["cloud", "it-support"], "text": "Engineers choose the right algorithm, keep keys out of code and in a vault, and check that passwords are stored with a slow, salted hash."},
   "explainer": {
    "kind": "hashing",
    "why": "See a hash in action. The same input always gives the same fingerprint, one small change rewrites it completely, and that is why passwords are hashed, not stored."
@@ -3473,6 +3497,7 @@
  },
  {
   "id": "certificates",
+  "job": {"roles": ["it-support", "cloud"], "text": "Someone has to renew certificates before they expire, fix the chain when a browser complains, and automate it so it doesn't happen again."},
   "title": "Certificates & PKI",
   "track": "Foundations",
   "level": "Beginner",
@@ -3588,6 +3613,7 @@
  },
  {
   "id": "linux",
+  "job": {"roles": ["it-support", "soc", "pentest"], "text": "Most servers run Linux. IT support fixes them over SSH, a SOC analyst searches their logs with grep, and a pentester works from a Linux machine all day."},
   "title": "Linux command line",
   "track": "Foundations",
   "level": "Beginner",
@@ -3703,6 +3729,7 @@
  },
  {
   "id": "soc",
+  "job": {"roles": ["soc"], "text": "This is the job: a queue of alerts, searching logs in the SIEM, deciding what's real, asking other teams to act, and handing over to the next shift."},
   "title": "The SOC, SIEM & logs",
   "track": "Defence",
   "level": "Beginner",
@@ -3893,6 +3920,7 @@
  },
  {
   "id": "incident-response",
+  "job": {"roles": ["soc", "grc"], "text": "When something is real, the team contains it, keeps evidence, gets systems back, and writes the lessons learned. GRC owns the plan and makes sure it's practised."},
   "explainer": {
    "kind": "chain",
    "why": "This is what a SOC pieces together: separate events, an infected PC, stolen logins, a data transfer, joined into one attack story and caught before the damage was done."
@@ -4017,6 +4045,7 @@
  },
  {
   "id": "osint",
+  "job": {"roles": ["pentest", "soc"], "text": "A pentester gathers public information within scope before testing; defenders run the same searches on their own company to find what's leaked first."},
   "safety": "osint",
   "title": "OSINT",
   "track": "Foundations",
@@ -4196,6 +4225,7 @@
  },
  {
   "id": "risk",
+  "job": {"roles": ["grc"], "text": "A GRC analyst keeps the risk register: scores each risk, finds it an owner, agrees what to do about it, and brings it back for review when facts change."},
   "title": "Risk, simply",
   "track": "Governance",
   "level": "Beginner",
@@ -4347,6 +4377,7 @@
  },
  {
   "id": "law",
+  "job": {"roles": ["grc", "pentest"], "text": "GRC makes sure the company meets UK GDPR and PCI DSS; a pentester never starts without written authorisation, because the Computer Misuse Act applies to them too."},
   "title": "The law and compliance",
   "track": "Governance",
   "level": "Beginner",
@@ -4482,6 +4513,7 @@
  },
  {
   "id": "attack-models",
+  "job": {"roles": ["soc", "grc"], "text": "SOC teams map alerts to ATT&CK techniques to find detection gaps; GRC and design reviews use STRIDE to spot threats before something is built."},
   "title": "How attacks are modelled",
   "track": "Threats",
   "level": "Intermediate",

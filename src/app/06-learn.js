@@ -68,6 +68,22 @@ function pathCard(p) {
   return `<a class="lcard" href="#path-${esc(p.id)}">${P.paths[p.id] ? '<span class="done">DONE</span>' : ""}<span class="eyebrow">${steps.length} steps</span><h3>${esc(p.title)}</h3><p>${esc(p.blurb)}</p>
     <div class="progress"><span class="trk" aria-hidden="true"><i style="width:${Math.round(done / steps.length * 100)}%"></i></span><span>${done}/${steps.length}</span></div></a>`;
 }
+// Every stop says which step of the site's rhythm it is, in the words the home page's "How Patch Notes works" strip uses
+// (20 Nov): Learn (a lesson), Practise (a lab, the game, the flag hunt), Investigate (a mission or an Agency shift).
+const STAGE_OF = { lesson: "learn", lab: "practise", game: "practise", ctf: "practise", mission: "investigate", agency: "investigate" };
+const STAGE_NAME = { learn: "Learn", practise: "Practise", investigate: "Investigate" };
+const KIND_NAME = { lesson: "lesson", lab: "lab", game: "game", ctf: "flag hunt", mission: "mission", agency: "Agency shift" };
+// Where a path leads (20 Nov): the job it's for, in a line, and the next step: the exam route that fits it and, for
+// the beginner and IT Support paths, the job path to take next. Every career path has `leadsTo` (tested).
+function leadsToHtml(p, career) {
+  const lt = p.leadsTo || {}, route = lt.exam && DATA.paths.find(x => x.exam === lt.exam), cert = lt.exam && DATA.certs.find(c => c.id === lt.exam);
+  const next = (lt.paths || []).map(id => DATA.paths.find(x => x.id === id)).filter(Boolean);
+  if (!career && !route && !next.length) return "";
+  return `<section class="leads panel" aria-labelledby="leads-h"><h2 id="leads-h">Where this leads</h2>
+    ${career ? `<p><b>${esc(career.name)}.</b> ${esc(career.tagline)} Job titles: ${career.titles.map(esc).join(", ")}. <a href="#careers">Read the career guide</a>.</p>` : ""}
+    <div class="row leads-next">${route ? `<a class="btn brand" href="#path-${esc(route.id)}">Next: the ${esc(cert ? cert.name : route.title)} exam route →</a>` : ""}
+      ${next.map(n => `<a class="btn ${route ? "ghost" : "brand"}" href="#path-${esc(n.id)}">Next: ${esc(n.title)} →</a>`).join("")}</div></section>`;
+}
 function pathView(id) {
   const p = DATA.paths.find(x => x.id === id); if (!p) return notFound(VIEWS.learn);
   const steps = pathSteps(p), done = steps.filter(s => s.done).length;
@@ -76,8 +92,9 @@ function pathView(id) {
     <a class="link-btn" href="#learn">← Learn</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">Learning path · ${done}/${steps.length} done</div><h1>${esc(p.title)}</h1><p class="hook">${esc(p.blurb)}</p></div>
     <div class="progress"><span class="trk" aria-hidden="true" style="flex-basis:100%"><i style="width:${Math.round(done / steps.length * 100)}%"></i></span></div>
-    <ol class="steps" data-trail="${esc(p.id)}">${steps.map((st, i) => `<li class="${st.done ? "got" : ""}"><span class="st">${i + 1}${st.done ? '<span class="st-tick" aria-hidden="true">✓</span><span class="sr-only"> (done)</span>' : ""}</span><span class="stack" style="gap:2px"><span class="eyebrow">${esc(st.kind)}</span><a href="${st.href}"${st.flags ? ' data-play-mode="flags"' : st.kind === "game" ? ' data-play-mode="phish"' : ""}>${esc(st.label)}</a></span></li>`).join("")}</ol>
-    <p class="muted">${P.paths[p.id] ? `Completed on ${esc(P.paths[p.id])}. Nice work.` : `Finish every step to earn <strong>+${PATH_XP} XP</strong> and the Pathfinder badge.`}${career ? ` See the <a href="#careers">${esc(career.role)}</a> career guide.` : ""}</p>
+    <ol class="steps" data-trail="${esc(p.id)}">${steps.map((st, i) => `<li class="${st.done ? "got" : ""}"><span class="st">${i + 1}${st.done ? '<span class="st-tick" aria-hidden="true">✓</span><span class="sr-only"> (done)</span>' : ""}</span><span class="stack" style="gap:2px"><span class="eyebrow st-stage st-${STAGE_OF[st.kind] || "learn"}">${esc((STAGE_NAME[STAGE_OF[st.kind]] || "Learn") + " · " + (KIND_NAME[st.kind] || st.kind))}</span><a href="${st.href}"${st.flags ? ' data-play-mode="flags"' : st.kind === "game" ? ' data-play-mode="phish"' : ""}>${esc(st.label)}</a></span></li>`).join("")}</ol>
+    ${leadsToHtml(p, career)}
+    <p class="muted">${P.paths[p.id] ? `Completed on ${esc(P.paths[p.id])}. Nice work.` : `Finish every step to earn <strong>+${PATH_XP} XP</strong> and the Pathfinder badge.`}${career ? ` See the <a href="#careers">${esc(career.name || career.role)}</a> career guide.` : ""}</p>
     ${P.paths[p.id] ? pathRecordHtml(p, steps) : ""}
   </article></div>`;
   if (P.paths[p.id]) wirePathRecord();
@@ -159,12 +176,20 @@ function pbqPanel(c) {
 }
 const PBQ_KINDS = { match: "Match", order: "Put in order", subnet: "Fill in the table", firewall: "Configure the firewall", cli: "Command line" };
 // One PBQ on its own page (#pbq-<id>), under the Exams tab.
+// After a PBQ: the next one for this exam (wrapping), the lab it's built on, and back to the exam page (20 Nov).
+function pbqNext(q, c) {
+  const all = c.pbqs || [], i = all.findIndex(x => x.id === q.id), nx = all.length > 1 ? all[(i + 1) % all.length] : null;
+  const lab = q.lab && LAB[q.lab];
+  return `<nav class="pbq-next row" aria-label="What next">${nx ? `<a class="btn brand" href="#pbq-${esc(nx.id)}">Next PBQ: ${esc(nx.title)} →</a>` : ""}
+    ${lab ? `<a class="btn ghost" href="#lab-${esc(lab.id)}">Practise in the lab: ${esc(lab.title)}</a>` : ""}<a class="btn ghost" href="#cert-${esc(c.id)}">All ${esc(c.name)} practice</a></nav>`;
+}
 function pbqView(id) {
   const f = PBQ(id); if (!f) return notFound(VIEWS.exams);
   const { q, c } = f, names = Object.fromEntries(certObjectives(c).map(o => [o.id, o.title]));
   main.innerHTML = `<div class="view"><article class="article lesson" style="max-width:940px"><a class="link-btn" href="#cert-${esc(c.id)}">← ${esc(c.name)}</a>
     <header class="lesson-open"><p class="eyebrow">PBQ · ${esc(c.exam)} · ${q.objectives.map(o => `${esc(o)} ${esc(names[o] || "")}`).join(" · ")}</p><h1>${esc(q.title)}</h1></header>
     <div id="pbq-root"><div class="empty">Loading…</div></div>
+    ${pbqNext(q, c)}
     ${toTopButton()}</article></div>`;
   Promise.all([import("./js/pbq.js"), q.lab ? loadFull("labs", LAB[q.lab]) : null]).then(([m]) => {
     if (parseRoute().path !== "exams/pbq/" + id) return;
@@ -336,6 +361,7 @@ function certView(id) {
     <div class="stack" style="gap:8px"><div class="eyebrow">Exam prep · ${esc(c.exam)}</div><h1>${esc(c.name)}</h1>
       <p class="hook">Every exam objective, mapped to what you can practise here, with honest gaps.</p></div>
     <p class="muted cert-note">${esc(c.note)} Objectives last checked ${esc(reviewed)} against <a href="${esc(c.source.url)}" target="_blank" rel="noopener">${esc(c.source.label)} ↗</a>.</p>
+    ${(jobs => jobs.length ? `<p class="cert-jobs"><span class="eyebrow">Jobs this exam supports</span> ${jobs.map(p => `<a class="chip" href="#path-${esc(p.id)}">${esc(p.title.replace(/^Path to /, ""))} →</a>`).join(" ")}</p>` : "")(DATA.paths.filter(p => p.career && p.leadsTo?.exam === c.id))}
     ${(r => r ? `<a class="btn brand" href="#path-${esc(r.id)}" style="justify-self:start">Follow the ${esc(r.title.replace(/^Path to /, ""))} route: ${r.steps.length} stops →</a>` : "")(DATA.paths.find(p => p.exam === c.id))}
     <section class="panel wide"><div class="panel-title"><h2>Your progress</h2><span class="eyebrow">${practised} of ${objs.length} objectives practised</span></div>
       <div class="progress"><span class="trk" aria-hidden="true" style="flex:1 1 auto"><i style="width:${Math.round(practised / objs.length * 100)}%"></i></span></div>
@@ -409,7 +435,7 @@ function topicStages(lessonId) {
   if (labs.length) { const items = labs.map(x => ({ href: "#lab-" + x.id, title: x.title, done: !!P.labs[x.id] })), d = items.filter(i => i.done).length, nx = items.find(i => !i.done) || items[0];
     stages.push({ key: "experiment", status: d === items.length ? "done" : d ? "part" : "open", href: nx.href, count: items.length > 1 ? `${d}/${items.length}` : "", items }); }
   const faults = [...mine(DATA.missions).map(m => ({ href: "#mission-" + m.id, title: m.title, done: count((P.missions || {})[m.id]) > 0 })),
-    ...(DATA.agency || []).filter(sh => (sh.lessons || []).includes(lessonId)).map(sh => ({ href: "#agency-" + sh.id, title: `PATCH//AGENCY: ${sh.client || sh.title}`, done: !!(P.agency || {})[sh.id] })),
+    ...(DATA.agency || []).filter(sh => (sh.lessons || []).includes(lessonId)).map(sh => ({ href: "#agency-" + sh.id, title: `PATCH//AGENCY: ${sh.title}`, done: !!(P.agency || {})[sh.id] })),
     ...mine(DATA.labs).filter(x => labStage(x) === "diagnose").map(x => ({ href: "#lab-" + x.id, title: x.title, done: !!P.labs[x.id] }))];
   if (faults.length) { const d = faults.filter(f => f.done).length, nx = faults.find(f => !f.done) || faults[0];
     stages.push({ key: "diagnose", status: d === faults.length ? "done" : d ? "part" : "open", href: nx.href, count: faults.length > 1 ? `${d}/${faults.length}` : "", items: faults }); }
@@ -608,6 +634,16 @@ const ledeOf = text => {
   const parts = String(text).match(/[^.!?]+[.!?]+(?:\s|$)/g) || [text];
   return { lede: parts.slice(0, 2).join(" ").trim(), more: parts.length > 2 };
 };
+// "On the job" (20 Nov): which of the site's five jobs use this topic and how, linking to each job's path, so a lesson
+// always answers "who does this at work?". Every lesson has a `job` { roles: [career ids], text } (tested).
+const jobLinks = roles => roles.map(r => { const c = DATA.careers.paths.find(x => x.id === r), p = DATA.paths.find(x => x.career === r); return c && p ? `<a class="chip" href="#path-${esc(p.id)}">${esc(c.name)} →</a>` : ""; }).join("");
+globalThis.PN_jobLinks = jobLinks;  // the Agency debrief (static/js/agency/ui.js) links its jobs the same way
+function jobBlock(l, seen) {
+  if (!l.job) return "";
+  const roles = jobLinks(l.job.roles);
+  return `<section class="job-block" id="l-job" tabindex="-1" aria-labelledby="l-job-h"><h2 id="l-job-h">On the job</h2><p>${gloss(l.job.text, 3, seen)}</p>
+    <div class="row job-roles"><span class="eyebrow">Jobs that use it</span>${roles}</div></section>`;
+}
 function lessonView(id) {
   const l = LESSON[id]; if (!l) return notFound(VIEWS.learn);
   const internal = l.practice.url.startsWith("#");
@@ -650,6 +686,7 @@ function lessonView(id) {
     ${l.tip ? `<div class="qtip" role="note"><span class="qtip-k">★ Quick tip</span><p>${gloss(l.tip, 3, lseen)}</p></div>` : ""}
     <section class="case" id="l-example" tabindex="-1"><div class="eyebrow">Real case · ${esc(l.example.year)}</div><h2 class="case-h">${esc(l.example.title)}</h2><p>${gloss(l.example.text, 4, lseen)}</p>${l.example.source ? `<p class="muted" style="font-size:0.85rem">Source: <a href="${esc(l.example.source.url)}" target="_blank" rel="noopener">${esc(l.example.source.label)} ↗</a></p>` : ""}</section>
     <section id="l-defend" tabindex="-1"><h2>How defenders stop it</h2><ul class="checklist">${l.defend.map(d => `<li>${esc(d)}</li>`).join("")}</ul></section>
+    ${jobBlock(l, lseen)}
     <section class="doc panel${practice.length > 1 ? " wide" : ""}"><h2>Try it</h2>
       ${[].concat(l.safety || []).map(k => safeNote(k)).join("")}
       ${practice.length ? `<div class="try-list">${practice.map(x => `<a class="try-row" href="${x.href}"><span class="eyebrow">${x.kind} · ${x.min} min${x.done ? ' · <span style="color:var(--good)">✓ done</span>' : ""}</span><b>${esc(x.title)}</b><span class="muted">${esc(x.sub)}</span></a>`).join("")}</div>` : ""}

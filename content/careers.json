@@ -2,6 +2,7 @@
   "paths": [
     {
       "id": "it-support",
+      "name": "IT Support",
       "role": "IT Support → Sysadmin",
       "tagline": "The most common door into security.",
       "what": "You fix laptops, reset accounts, manage users and keep systems running. It sounds unglamorous, but you learn how real networks, Windows domains and people actually work, which is exactly what attackers exploit.",
@@ -13,6 +14,7 @@
     },
     {
       "id": "soc",
+      "name": "SOC Analyst",
       "role": "SOC Analyst",
       "tagline": "The front line of defence. The most common first security job.",
       "what": "You watch alerts, investigate suspicious activity and escalate real incidents. A typical shift: triaging alerts in a SIEM, checking whether a login from abroad is really the user, analysing a phishing email someone reported, writing up what you found.",
@@ -24,6 +26,7 @@
     },
     {
       "id": "pentest",
+      "name": "Penetration Tester",
       "role": "Penetration Tester",
       "tagline": "Get paid to break in, with permission.",
       "what": "You attack organisations' systems, apps and people under contract to find weaknesses before criminals do, then write a report explaining the risk and the fix. The report matters as much as the hacking.",
@@ -35,6 +38,7 @@
     },
     {
       "id": "cloud",
+      "name": "Cloud Security Engineer",
       "role": "Cloud Security Engineer",
       "tagline": "Where the money and the misconfigurations are.",
       "what": "You secure AWS, Azure or Google Cloud environments: designing permissions, catching misconfigurations, building guardrails into deployment pipelines and responding to cloud incidents. Usually not a first job, but a great target.",
@@ -46,6 +50,7 @@
     },
     {
       "id": "grc",
+      "name": "GRC Analyst",
       "role": "GRC Analyst",
       "tagline": "Security for people who like people, process and policy.",
       "what": "Governance, Risk and Compliance. You assess risks, write policies, run audits against frameworks like ISO 27001, NIST CSF or SOC 2, and help the business make security decisions. Less keyboard, more conversation, and in high demand.",

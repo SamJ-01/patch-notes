@@ -1,5 +1,6 @@
 {
  "id": "shift-03",
+ "job": {"roles": ["soc"], "text": "Catching ransomware in the hours before encryption is what a SOC is for: join small signs across machines into one story, then get the right teams to act fast."},
  "title": "Night shift: Halstead & Rowe",
  "agency": "Lanternfield Security Operations",
  "client": "Halstead & Rowe",

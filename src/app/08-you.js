@@ -358,13 +358,13 @@ VIEWS.careers = () => {
     <div class="view-head with-art">${headArt("careers")}<h1>Find your way into cyber</h1>
       <p>Most people start in IT support or a SOC.</p></div>
     <h2 class="sr-only">Entry paths</h2><div class="paths">${C.paths.map(p => `<article class="path">
-      <h3>${esc(p.role)}</h3><p class="tl">${esc(p.tagline)}</p><p>${gloss(p.what, 3)}</p>
+      <h3>${esc(p.name || p.role)}</h3>${p.name && p.role !== p.name ? `<p class="eyebrow">${esc(p.role)}</p>` : ""}<p class="tl">${esc(p.tagline)}</p><p>${gloss(p.what, 3)}</p>
       <h4>Skills</h4><div class="pchips">${p.skills.map(s => `<span class="pchip">${esc(s)}</span>`).join("")}</div>
       <h4>Certifications</h4><div class="pchips">${p.certs.map(s => `<span class="pchip">${esc(s)}</span>`).join("")}</div>
       <h4>Start here</h4><ul>${p.start.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
       <h4>First job titles</h4><p class="muted" style="font-size:0.88rem">${p.titles.map(esc).join(" · ")}</p>
       <h4>Lessons for this path</h4><div class="row">${p.lessons.filter(id => LESSON[id]).map(id => `<a class="topic" href="#lesson-${esc(id)}">${esc(LESSON[id].title)}</a>`).join("")}</div>
-      ${(lp => lp ? `<a class="btn brand" href="#path-${esc(lp.id)}" style="justify-self:start">Start the learning path →</a>` : "")(DATA.paths.find(x => x.career === p.id))}
+      ${(lp => lp ? `<a class="btn brand" href="#path-${esc(lp.id)}" style="justify-self:start">Start ${esc(lp.title.replace(/^Path to/, "the path to"))} →</a>` : "")(DATA.paths.find(x => x.career === p.id))}
     </article>`).join("")}</div>
     <section class="stack">
       <div class="view-head"><h2>The best of the rest</h2></div>

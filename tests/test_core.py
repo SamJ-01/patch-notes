@@ -1249,3 +1249,75 @@ class LabDepth(unittest.TestCase):
                     self.assertTrue(len(s) >= 4 and s[3].strip(), f"{lid}/{t['id']}: every walk step says why")
             for st in lab.get("steps", []):
                 self.assertTrue(st.get("hint") and st.get("where") and st.get("explain"), f"{lid}: each step needs hint, where, explain")
+
+
+class Coherence(unittest.TestCase):
+    """The journey reads as one site (20 Nov, the owner: "coherent from beginning to end"): one name per job, every job
+    offered from the front door, and paths that walk learn > practise > investigate. tests/coherence_check.mjs checks the
+    pages themselves (repeated choices, dead ends, machine text)."""
+
+    def setUp(self):
+        self.careers = json.loads((ROOT / "content" / "careers.json").read_text())["paths"]
+        p = json.loads((ROOT / "content" / "paths.json").read_text())
+        self.paths = p["paths"] if isinstance(p, dict) else p
+
+    def test_one_name_per_job(self):
+        names = {c["id"]: c["name"] for c in self.careers}
+        self.assertEqual(len(set(names.values())), len(names), "each job has its own name")
+        for p in self.paths:
+            if p.get("career"):
+                self.assertEqual(p["title"], f"Path to {names[p['career']]}", f"{p['id']}: a career path is named after its job")
+        # Old names for the same jobs must not come back anywhere a learner reads.
+        for f in list((ROOT / "src" / "app").glob("*.js")) + list((ROOT / "content").glob("*.json")):
+            for old in ("Web Pentester", "Cloud Defender"):
+                self.assertNotIn(old, f.read_text(), f"{f.name}: '{old}' is now '{names['pentest' if 'Pent' in old else 'cloud']}'")
+
+    def test_every_job_is_offered_from_the_front_door(self):
+        home = (ROOT / "src" / "app" / "04-home.js").read_text()
+        roles = home[home.index("const ROLES = ["):home.index("];", home.index("const ROLES = ["))]
+        for c in self.careers:
+            self.assertIn(f'id: "{c["id"]}"', roles, f"the home page offers the {c['name']} path")
+            self.assertTrue(any(p.get("career") == c["id"] for p in self.paths), f"{c['id']} has a learning path")
+        self.assertIn('id: "awareness"', roles, "and a start for newcomers")
+
+    def test_every_path_walks_learn_practise_investigate(self):
+        """A lesson is always followed by something to do before the next lesson, and every path ends on a realistic
+        case (a mission or an Agency shift), so no path is a reading list (20 Nov: three were)."""
+        for p in self.paths:
+            if p.get("exam"):
+                continue  # exam routes follow the exam's objectives instead
+            steps = p.get("steps", [])
+            for a, b in zip(steps, steps[1:] + [{"type": "end"}]):
+                if a["type"] == "lesson":
+                    self.assertNotIn(b["type"], ("lesson", "end"), f"{p['id']}: {a['id']} needs practice before {b.get('id', 'the end')}")
+            self.assertIn(steps[-1]["type"], ("mission", "agency"), f"{p['id']}: ends on a realistic case")
+
+    def test_every_lesson_says_who_uses_it_at_work(self):
+        """Each lesson has "On the job": real roles from careers.json that have a path, and a short plain line."""
+        lessons = json.loads((ROOT / "content" / "lessons.json").read_text())
+        lessons = lessons["lessons"] if isinstance(lessons, dict) else lessons
+        jobs = {c["id"] for c in self.careers if any(p.get("career") == c["id"] for p in self.paths)}
+        for l in lessons:
+            j = l.get("job")
+            self.assertTrue(j and j.get("roles") and j.get("text"), f"{l['id']}: needs On the job")
+            self.assertTrue(set(j["roles"]) <= jobs, f"{l['id']}: unknown job {set(j['roles']) - jobs}")
+            self.assertLessEqual(len(j["text"].split()), 40, f"{l['id']}: keep it short")
+            self.assertNotIn("—", j["text"])
+
+    def test_every_path_leads_somewhere(self):
+        """A finished path points to what comes next: the exam route that fits the job, or the next job path; and every
+        exam is reached from at least one job path (its page lists the jobs it supports)."""
+        certs = {f.stem for f in (ROOT / "content" / "certs").glob("*.json") if not f.stem.endswith("-questions")}
+        ids = {p["id"] for p in self.paths}
+        for p in self.paths:
+            if p.get("exam"):
+                continue
+            lt = p.get("leadsTo") or {}
+            self.assertTrue(lt.get("exam") or lt.get("paths"), f"{p['id']}: needs leadsTo")
+            if lt.get("exam"):
+                self.assertIn(lt["exam"], certs)
+                self.assertTrue(any(x.get("exam") == lt["exam"] for x in self.paths), f"{p['id']}: {lt['exam']} has an exam route")
+            for n in lt.get("paths", []):
+                self.assertIn(n, ids)
+        for c in certs:
+            self.assertTrue(any((p.get("leadsTo") or {}).get("exam") == c and p.get("career") for p in self.paths), f"{c}: no job path leads to it")

@@ -515,3 +515,20 @@ test("saving mid-shift: every shift's shadow run can be saved and resumed at any
     }
   }
 });
+
+test("every shift has its own title, so lists that name shifts never show the same one twice", () => {
+  // 20 Nov: shift-01 and shift-05 share a client (Pellow & Finch), and a topic's case list labelled shifts by client.
+  const titles = shifts.map(s => s.title);
+  assert.equal(new Set(titles).size, titles.length, `duplicate shift titles: ${titles}`);
+  const learn = readFileSync(new URL("../src/app/06-learn.js", import.meta.url), "utf8");
+  assert.doesNotMatch(learn, /PATCH\/\/AGENCY: \$\{sh\.client/, "label shifts by title, not client");
+});
+
+test("every shift says which jobs do this work, in a short line (20 Nov: On the job in the debrief)", () => {
+  const careers = JSON.parse(readFileSync(new URL("../content/careers.json", import.meta.url), "utf8")).paths.map(c => c.id);
+  for (const sh of shifts) {
+    assert.ok(sh.job?.text && sh.job.roles?.length, `${sh.id}: needs job`);
+    assert.ok(sh.job.roles.every(r => careers.includes(r)), `${sh.id}: unknown job`);
+    assert.ok(sh.job.text.split(/\s+/).length <= 40 && !sh.job.text.includes("—"), `${sh.id}: short, no em dash`);
+  }
+});

@@ -2958,7 +2958,24 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .start-note { max-width: 70ch; margin: -4px 0 0; line-height: 1.55; }
 .start-note a { color: var(--brand); text-underline-offset: 3px; }
 .start-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-@media (max-width: 1100px) { .start-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.roles .start-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }  /* six cards: basics and the five jobs */
+.how { display: grid; gap: 10px; }
+.how-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; counter-reset: none; }
+.how-steps a { display: grid; gap: 4px; height: 100%; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); text-decoration: none; position: relative; }
+.how-steps a:hover, .how-steps a:focus-visible { border-color: var(--brand); }
+.how-steps b { font: 700 1.05rem var(--font-display); }
+.how-steps span:not(.how-n) { color: var(--muted); font-size: 0.9rem; }
+.how-n { font: 700 0.8rem var(--font-mono); color: var(--brand); }
+.how-steps li:not(:last-child) a::after { content: "→"; position: absolute; right: -11px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.9rem; }
+.how-foot { font-size: 0.9rem; margin: 0; }
+.leads { display: grid; gap: 10px; } .leads p { margin: 0; } .leads-next { gap: 10px; flex-wrap: wrap; }
+.cert-jobs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0; }
+.job-block { display: grid; gap: 10px; padding: 16px 18px; border-left: 3px solid var(--good); background: var(--surface); border-radius: var(--radius); }
+.job-block h2 { margin: 0; } .job-block p { margin: 0; }
+.job-roles { gap: 8px; align-items: center; flex-wrap: wrap; }
+.st-stage.st-practise { color: var(--sun); } .st-stage.st-investigate { color: var(--good); }
+@media (max-width: 900px) { .how-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } .how-steps li a::after { display: none; } }
+@media (max-width: 1100px) { .start-grid, .roles .start-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .start-card h3 { font-size: 1.15rem; }
 .start-cta { margin-top: auto; font: 700 0.85rem var(--font-mono); color: var(--brand); letter-spacing: 0.04em; }
 /* Role journey cards: one anatomy for every path, so the list reads as one system (04-home roleCards). Flex column so
@@ -2972,7 +2989,7 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .news-line { display: grid; gap: 8px; align-content: start; }
 .news-line p { margin: 0; }
 .news-line .btn { justify-self: start; }
-@media (max-width: 800px) { .start-grid { grid-template-columns: 1fr; } }
+@media (max-width: 800px) { .start-grid, .roles .start-grid { grid-template-columns: 1fr; } }
 /* Terminals never grow past their column: a long prompt or title shortens with an ellipsis instead of pushing the
    terminal wider than the screen (the permissions lab's "root@marlow-fs:/srv/payroll#" did on phones). */
 .term-grid > *, .term-shell { min-width: 0; }

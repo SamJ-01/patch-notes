@@ -95,20 +95,37 @@ addEventListener("resize", () => { clearTimeout(routeTimer); routeTimer = setTim
 const isNewcomer = () => !P.xp && !count(P.done) && !count(P.labs) && !count(P.missions) && !count(P.agency);
 // The journey: pick a role (or start with the basics) and follow its ladder. Certs live under Exams, not here, so the
 // list answers one question — "who do you want to become?" — instead of mixing roles, exams and levels.
+// Every job on the site has one name, from content/careers.json (`name`); the path and the careers page use it too (20 Nov,
+// the owner's "coherent from beginning to end": the home page had 3 jobs and two other names for them).
 const ROLES = [
   { id: "awareness", eyebrow: "New here", title: "Start with the basics", text: "No experience needed. Spot scams, protect your accounts and build the base.", cta: "Start the basics", img: "cia-triad" },
-  { id: "soc", eyebrow: "Defender", title: "SOC Analyst", text: "The most common first job: watch alerts, investigate, respond. The Agency shift is your live taste.", cta: "Start the path", img: "soc" },
-  { id: "pentest", eyebrow: "Breaker", title: "Web Pentester", text: "How web apps break, and how testers score what they find.", cta: "Start the path", img: "sqli-log" },
-  { id: "cloud", eyebrow: "Defender", title: "Cloud Defender", text: "Identity, cloud settings and the software supply chain.", cta: "Start the path", img: "cloud" },
+  { id: "it-support", eyebrow: "Fixer", text: "The most common way in: networks, Linux, Wi-Fi and fixing what breaks.", img: "networking" },
+  { id: "soc", eyebrow: "Defender", text: "The most common first security job: watch alerts, investigate, respond.", img: "soc" },
+  { id: "pentest", eyebrow: "Breaker", text: "Break web apps with permission, then explain the risk and the fix.", img: "sqli-log" },
+  { id: "cloud", eyebrow: "Builder", text: "Lock down cloud accounts, keys and the software supply chain.", img: "cloud" },
+  { id: "grc", eyebrow: "Adviser", text: "Risk, rules and frameworks: help a business make security decisions.", img: "risk" },
 ];
+const jobName = id => DATA.careers?.paths?.find(c => c.id === id)?.name;
+// How the site fits together, in the order a learner meets it; each step opens where that happens.
+const HOW = [
+  ["learn", "Learn", "A short lesson with a picture, one idea at a time.", "#learn"],
+  ["practise", "Practise", "Try it yourself in a lab: a terminal, a log, a real-looking page.", "#missions"],
+  ["investigate", "Investigate", "Work a realistic case: alerts, logs and people, as on a shift.", "#agency"],
+  ["job", "On the job", "See which jobs use it, and the path and exam that lead there.", "#careers"],
+];
+function howItWorks() {
+  return `<section class="how" aria-labelledby="how-h"><h2 id="how-h" class="eyebrow">How Patch Notes works</h2>
+    <ol class="how-steps">${HOW.map(([k, t, d, h], i) => `<li><a href="${h}"><span class="how-n" aria-hidden="true">${i + 1}</span><b>${t}</b><span>${d}</span></a></li>`).join("")}</ol>
+    <p class="muted how-foot">Every topic has all four steps, and every path walks them in order.</p></section>`;
+}
 function roleCards() {
   const card = r => {
     const p = DATA.paths.find(x => x.id === r.id);
     if (!p) return "";
     const steps = (p.steps || []).length, done = P.paths[r.id];
     return `<a class="lcard art-card start-card role-card" href="#path-${esc(r.id)}" data-trail="${esc(r.id)}">${cardArt(r.img)}
-      ${done ? '<span class="done">DONE</span>' : ""}<span class="eyebrow">${esc(r.eyebrow)}</span><h3>${esc(r.title)}</h3><p>${esc(r.text)}</p>
-      <span class="role-meta">${steps} stops</span><span class="start-cta">${esc(r.cta)} →</span></a>`;
+      ${done ? '<span class="done">DONE</span>' : ""}<span class="eyebrow">${esc(r.eyebrow)}</span><h3>${esc(r.title || jobName(r.id) || p.title)}</h3><p>${esc(r.text)}</p>
+      <span class="role-meta">${steps} stops</span><span class="start-cta">${esc(r.cta || "Start the path")} →</span></a>`;
   };
   return `<section class="start roles" aria-labelledby="roles-h"><h2 id="roles-h">Where are you headed?</h2>
     <p class="muted start-note">Pick a direction and follow its ladder, one stop at a time. No account needed: your progress stays in this browser.</p>
@@ -151,6 +168,7 @@ VIEWS.today = () => {
   if (isNewcomer()) {
     main.innerHTML = `<div class="view home">
       ${hero}
+      ${howItWorks()}
       ${roleCards()}
       <div class="split"><section class="panel" id="daily"></section>
         <aside class="panel news-line"><div class="eyebrow">This week</div><p><b>${news.length} stories</b> from ${sources} outlets, each linked to a lesson that explains it.</p><a class="btn ghost" href="#news">Read the news →</a></aside></div>
@@ -160,6 +178,7 @@ VIEWS.today = () => {
   }
   main.innerHTML = `<div class="view home">
     ${hero}
+    ${howItWorks()}
     ${roleCards()}
     <div class="split">
       <div class="stack" style="gap:18px">

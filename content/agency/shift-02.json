@@ -1,5 +1,6 @@
 {
  "id": "shift-02",
+ "job": {"roles": ["soc", "it-support"], "text": "Mailbox takeovers and fake invoices are some of the most common cases a SOC sees. IT support resets the account and checks the rules; the SOC proves what the attacker did."},
  "title": "Afternoon shift: Fernhollow Vets",
  "agency": "Lanternfield Security Operations",
  "client": "Fernhollow Veterinary Group",

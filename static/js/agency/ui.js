@@ -428,6 +428,7 @@ export function mount(root, shift, { done = false, onComplete = () => {}, onAgai
         <p>${ok(a.summary.ok)} Model summary: ${esc(a.summary.model)}</p>
         <p class="muted">${gl(a.why)}</p></details>`).join("")}
       ${rep.pending.length ? `<p class="muted">Still on their way at handover: ${rep.pending.map(esc).join("; ")}.</p>` : ""}
+      ${shift.job ? `<section class="job-block ag-job"><h3>On the job</h3><p>${gl(shift.job.text)}</p>${globalThis.PN_jobLinks ? `<div class="row job-roles"><span class="eyebrow">Jobs that do this</span>${globalThis.PN_jobLinks(shift.job.roles)}</div>` : ""}</section>` : ""}
       <h3 class="eyebrow">Handover notes</h3>
       <div class="ag-notes"><div><b>Yours</b><p>${rep.note ? esc(rep.note) : '<span class="muted">(none)</span>'}</p></div><div><b>A model handover</b><p>${esc(rep.modelNote)}</p></div></div>
       <div class="row"><button class="btn brand" type="button" id="ag-again">Work the shift again</button><button class="btn ghost" type="button" id="ag-watch">Watch ${esc(leadName)} work it</button>${shift.next ? `<a class="btn ghost" href="${esc(shift.next.href)}">${esc(shift.next.label)}</a>` : ""}</div>

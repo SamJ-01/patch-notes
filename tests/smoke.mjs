@@ -199,6 +199,7 @@ await journey("work shift-01", async () => {
   await page.evaluate(() => { document.querySelector("#ag-hfill")?.click(); document.querySelector("#ag-handform")?.requestSubmit(); });
   await page.waitForSelector("#ag-debrief:not([hidden])", { timeout: 5000 }).catch(() => problems.push("work shift-01: no debrief after handover"));
   if (!/Clocked out/.test(await page.evaluate(() => document.querySelector("#ag-d-h")?.innerText || ""))) problems.push("work shift-01: debrief didn't render");
+  if (!(await page.evaluate(() => !!document.querySelector("#ag-debrief .ag-job .job-roles a[href^='#path-']")))) problems.push("work shift-01: debrief has no On the job links");
   if (await page.evaluate(() => localStorage.getItem("pn-shift:shift-01"))) problems.push("work shift-01: the part-way save outlived the finished shift");
   await overflow(page, "work shift-01");
   await page.close();

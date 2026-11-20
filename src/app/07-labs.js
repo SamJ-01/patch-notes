@@ -216,7 +216,8 @@ function lastActivityHtml() {
   const a = lastActivity(raw);
   return a ? `<a class="pr-resume" href="${a.href}"><span class="eyebrow">Pick up where you left off · ${esc(a.kind)}</span><b>${esc(a.label)}</b><span class="pr-resume-go" aria-hidden="true">Continue ›</span></a>` : "";
 }
-const PRACTISE_PICKS = ["agency:shift-01", "lab:hashing", "lab:permissions", "lab:network-builder"];
+// Easiest first (20 Nov): a newcomer starts on a short guided lab and meets the full SOC shift last, when ready.
+const PRACTISE_PICKS = ["lab:vishing-call", "lab:permissions", "lab:network-builder", "agency:shift-01"];
 const PS = { track: "All", open: {}, time: "any", todo: false };  // the chosen filters and which tracks are expanded, for this visit
 // Does a practise item pass the length and "not done yet" filters? Tools and games have no length: they count as quick.
 const PRACTISE_TIMES = [["any", "Any length"], ["quick", "10 min or less"], ["mid", "10 to 20 min"], ["long", "Over 20 min"]];
@@ -312,11 +313,14 @@ function cvssToolCard() {
     <span class="eyebrow">Tool · your own evidence</span><h3>CVSS decoder</h3><p>Paste a vector; see the score and what it means</p><span class="lmeta"><span>Use any time</span><span>3.0, 3.1 and 4.0</span></span></a>`;
 }
 // Log search: paste or open a real log (static/js/tools/logs.js).
+// A tool page's way forward (20 Nov, the learner's-eye check): the labs that practise the same skill on made-up evidence.
+const toolNext = links => `<p class="muted tool-next">Want to practise first? ${links.map(([h, t]) => `<a href="${esc(h)}">${esc(t)}</a>`).join(" · ")}</p>`;
 function logToolView() {
   main.innerHTML = `<div class="view"><div class="view-head"><a class="link-btn" href="#missions">← Practise</a><div class="eyebrow">Tool · your own evidence</div><h1>Log search</h1>
     <p>Paste or open a real log. Search it like ${gloss("grep", 1)}, and see the summary an analyst would build first.</p></div>
     ${safeNote("paste")}
-    <div id="lg-root"><div class="empty">Loading…</div></div></div>`;
+    <div id="lg-root"><div class="empty">Loading…</div></div>
+    ${toolNext([["#lab-log-detective", "Log detective lab"], ["#mission-ssh-brute", "The 3am logins"], ["#lab-sqli-log", "Read the log: SQL injection"]])}</div>`;
   import("./js/tools/logs.js").then(mod => { if (parseRoute().path === "tools/log-search") mod.mount($("lg-root"), { samples: DATA.tools?.logSamples || [] }); })
     .catch(() => { $("lg-root").innerHTML = `<div class="empty">Couldn't load the log search. If you opened the file directly, preview with <span class="mono">python3 build.py --offline --serve</span>.</div>`; });
 }
@@ -699,7 +703,8 @@ function cvssToolView(h) {
     ${safeNote("cvss")}
     <section class="panel hc-in"><label for="cv-in" class="sr-only">CVSS vector</label><input id="cv-in" class="mono cv-in" placeholder="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H" autocomplete="off" spellcheck="false" value="${esc(start)}">
       <div class="row"><button class="btn brand" type="button" id="cv-go">Decode</button><span class="muted hc-try">or try:</span>${EX.map(([l, v]) => `<button class="chip" type="button" data-cv="${esc(v)}">${esc(l)}</button>`).join("")}</div></section>
-    <div id="cv-out" aria-live="polite"></div></div>`;
+    <div id="cv-out" aria-live="polite"></div>
+    ${toolNext([["#lab-cvss-builder", "Score it yourself: the CVSS lab"], ["#lab-patch-first", "Which one do you patch first?"], ["#cves", "This week's CVEs"]])}</div>`;
   const run = () => {
     const v = $("cv-in").value.trim(), r = readVector(v);
     if (v) history.replaceState(null, "", "#cvss-decode/" + encodeURIComponent(v));

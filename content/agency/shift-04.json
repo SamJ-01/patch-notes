@@ -1,5 +1,6 @@
 {
  "id": "shift-04",
+ "job": {"roles": ["soc", "pentest", "cloud"], "text": "A SOC analyst traces the attack through web and cloud logs. A penetration tester would have found these holes first, and a cloud engineer locks the key and bucket down."},
  "title": "Morning shift: Wrenfield & Co",
  "agency": "Lanternfield Security Operations",
  "client": "Wrenfield & Co",

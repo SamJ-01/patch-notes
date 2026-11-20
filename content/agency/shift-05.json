@@ -1,5 +1,6 @@
 {
  "id": "shift-05",
+ "job": {"roles": ["grc", "soc"], "text": "Not every case is an attack. GRC analysts live in this work: which rule applies, which control failed, whose risk it was, and what has to be reported, by when."},
  "title": "Audit week: Pellow & Finch",
  "agency": "Lanternfield Security Operations",
  "client": "Pellow & Finch Logistics",

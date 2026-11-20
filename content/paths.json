@@ -10,27 +10,50 @@
     "id": "phishing"
    },
    {
+    "type": "lab",
+    "id": "vishing-call"
+   },
+   {
+    "type": "game",
+    "id": "phish",
+    "min": 7
+   },
+   {
     "type": "lesson",
     "id": "identity"
+   },
+   {
+    "type": "lab",
+    "id": "signin-spray"
    },
    {
     "type": "lesson",
     "id": "data-breach"
    },
    {
-    "type": "lesson",
-    "id": "ransomware"
+    "type": "lab",
+    "id": "breach-clock"
    },
    {
     "type": "lesson",
     "id": "ai-security"
    },
    {
-    "type": "game",
-    "id": "phish",
-    "min": 7
+    "type": "lab",
+    "id": "trust-the-ai-output"
+   },
+   {
+    "type": "mission",
+    "id": "phish-triage",
+    "mode": "guided"
    }
-  ]
+  ],
+  "leadsTo": {
+   "paths": [
+    "it-support",
+    "soc"
+   ]
+  }
  },
  {
   "id": "soc",
@@ -58,6 +81,10 @@
    {
     "type": "lesson",
     "id": "linux"
+   },
+   {
+    "type": "lab",
+    "id": "linux-terminal"
    },
    {
     "type": "lesson",
@@ -98,14 +125,25 @@
     "id": "malware"
    },
    {
+    "type": "lab",
+    "id": "malware-tree"
+   },
+   {
     "type": "lesson",
     "id": "incident-response"
+   },
+   {
+    "type": "agency",
+    "id": "shift-03"
    }
-  ]
+  ],
+  "leadsTo": {
+   "exam": "security-plus"
+  }
  },
  {
   "id": "pentest",
-  "title": "Path to Web Pentester",
+  "title": "Path to Penetration Tester",
   "blurb": "How web apps break, and how testers score what they find.",
   "career": "pentest",
   "steps": [
@@ -118,24 +156,44 @@
     "id": "finding-the-server"
    },
    {
-    "type": "lab",
-    "id": "one-request"
-   },
-   {
     "type": "lesson",
     "id": "osint"
+   },
+   {
+    "type": "lab",
+    "id": "recon-basics"
+   },
+   {
+    "type": "lab",
+    "id": "nmap-read"
    },
    {
     "type": "lesson",
     "id": "web-sqli"
    },
    {
+    "type": "lab",
+    "id": "sqli-shop"
+   },
+   {
+    "type": "lab",
+    "id": "sqli-log"
+   },
+   {
     "type": "lesson",
     "id": "web-xss"
    },
    {
+    "type": "lab",
+    "id": "xss-review"
+   },
+   {
     "type": "lesson",
     "id": "web-access"
+   },
+   {
+    "type": "lab",
+    "id": "idor-log"
    },
    {
     "type": "lab",
@@ -144,12 +202,19 @@
    {
     "type": "flags",
     "min": 3
+   },
+   {
+    "type": "agency",
+    "id": "shift-04"
    }
-  ]
+  ],
+  "leadsTo": {
+   "exam": "pentest-plus"
+  }
  },
  {
   "id": "cloud",
-  "title": "Path to Cloud Defender",
+  "title": "Path to Cloud Security Engineer",
   "blurb": "Identity, cloud settings and the software supply chain.",
   "career": "cloud",
   "steps": [
@@ -158,24 +223,32 @@
     "id": "identity"
    },
    {
+    "type": "lab",
+    "id": "signin-spray"
+   },
+   {
     "type": "lesson",
     "id": "cloud"
    },
    {
     "type": "lab",
-    "id": "finding-the-server"
-   },
-   {
-    "type": "lab",
-    "id": "one-request"
+    "id": "open-bucket"
    },
    {
     "type": "lesson",
     "id": "encryption"
    },
    {
+    "type": "lab",
+    "id": "encrypted-but-readable"
+   },
+   {
     "type": "lesson",
     "id": "supply-chain"
+   },
+   {
+    "type": "lab",
+    "id": "typosquat-pr"
    },
    {
     "type": "lesson",
@@ -184,8 +257,19 @@
    {
     "type": "lab",
     "id": "cvss-builder"
+   },
+   {
+    "type": "lab",
+    "id": "patch-first"
+   },
+   {
+    "type": "agency",
+    "id": "shift-04"
    }
-  ]
+  ],
+  "leadsTo": {
+   "exam": "security-plus"
+  }
  },
  {
   "id": "network-plus",
@@ -434,8 +518,15 @@
    {
     "type": "lab",
     "id": "threat-model"
+   },
+   {
+    "type": "agency",
+    "id": "shift-05"
    }
-  ]
+  ],
+  "leadsTo": {
+   "exam": "security-plus"
+  }
  },
  {
   "id": "it-support",
@@ -490,6 +581,10 @@
     "id": "identity"
    },
    {
+    "type": "lab",
+    "id": "signin-spray"
+   },
+   {
     "type": "lesson",
     "id": "network-ops"
    },
@@ -500,7 +595,18 @@
    {
     "type": "lesson",
     "id": "phishing"
+   },
+   {
+    "type": "mission",
+    "id": "phish-triage",
+    "mode": "guided"
    }
-  ]
+  ],
+  "leadsTo": {
+   "exam": "network-plus",
+   "paths": [
+    "soc"
+   ]
+  }
  }
 ]

@@ -1,5 +1,6 @@
 {
  "id": "shift-01",
+ "job": {"roles": ["soc"], "text": "This is a Tier 1 SOC analyst's shift: a queue of alerts, most of them noise, logs to search, other teams to ask, and a handover so the next shift can pick up where you left off."},
  "title": "Early shift: Pellow & Finch",
  "agency": "Lanternfield Security Operations",
  "client": "Pellow & Finch Logistics",
