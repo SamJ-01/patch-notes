@@ -29,6 +29,7 @@ VIEWS.learn = () => {
   main.innerHTML = `<div class="view">
     <div class="view-head with-art">${headArt("learn")}<h1>The concepts behind the headlines</h1>
       <p>Build your understanding through visual lessons, guided learning paths and practical examples.</p>
+      <p class="muted learn-start">New? <a href="#path-awareness" data-trail="awareness">Start with the basics</a>. Not sure which job? <a href="#careers">Compare the five jobs</a>.</p>
     </div>
     <div class="row" style="justify-content:space-between;align-items:center">
       <div class="row" id="ltracks" role="group" aria-label="Filter lessons by track">${tracks.map(t => `<button class="chip" data-t="${esc(t)}" aria-pressed="${LS.track === t}">${esc(t)}</button>`).join("")}</div>
@@ -360,6 +361,7 @@ function certView(id) {
     <a class="link-btn" href="#exams">← Exam prep</a>
     <div class="stack" style="gap:8px"><div class="eyebrow">Exam prep · ${esc(c.exam)}</div><h1>${esc(c.name)}</h1>
       <p class="hook">Every exam objective, mapped to what you can practise here, with honest gaps.</p></div>
+    ${c.versionNote ? `<aside class="cert-version" role="note"><b>Which version?</b> ${esc(c.versionNote.text)} <a href="${esc(c.versionNote.url)}" target="_blank" rel="noopener">${esc(c.versionNote.label)} ↗</a></aside>` : ""}
     <p class="muted cert-note">${esc(c.note)} Objectives last checked ${esc(reviewed)} against <a href="${esc(c.source.url)}" target="_blank" rel="noopener">${esc(c.source.label)} ↗</a>.</p>
     ${(jobs => jobs.length ? `<p class="cert-jobs"><span class="eyebrow">Jobs this exam supports</span> ${jobs.map(p => `<a class="chip" href="#path-${esc(p.id)}">${esc(p.title.replace(/^Path to /, ""))} →</a>`).join(" ")}</p>` : "")(DATA.paths.filter(p => p.career && p.leadsTo?.exam === c.id))}
     ${(r => r ? `<a class="btn brand" href="#path-${esc(r.id)}" style="justify-self:start">Follow the ${esc(r.title.replace(/^Path to /, ""))} route: ${r.steps.length} stops →</a>` : "")(DATA.paths.find(p => p.exam === c.id))}

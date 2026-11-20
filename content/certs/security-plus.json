@@ -7,7 +7,13 @@
   "maxQuestions": 90,
   "source": "CompTIA exam objectives"
  },
- "card": "The core security exam, and a common bar for a first security job.",
+ "card": "The core security exam, and a common bar for a first security job. This practice follows V7 (SY0-701), which you can book until 11 June 2027.",
+ "versionNote": {
+  "text": "CompTIA launched Security+ V8 (SY0-801) on 17 November 2026. Everything here follows V7 (SY0-701), which you can still take in English until 11 June 2027 (other languages until 13 August 2027). Booking later? V8's domains and weights have changed, so check each topic against CompTIA's V8 objectives.",
+  "url": "https://www.comptia.org/en-us/certifications/security/v8/",
+  "label": "CompTIA: Security+ V8 (SY0-801)",
+  "checked": "2026-11-20"
+ },
  "source": {
   "label": "CompTIA: Security+ certification",
   "url": "https://www.comptia.org/en-us/certifications/security/"

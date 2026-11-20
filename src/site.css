@@ -2969,6 +2969,7 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 .how-steps li:not(:last-child) a::after { content: "→"; position: absolute; right: -11px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.9rem; }
 .how-foot { font-size: 0.9rem; margin: 0; }
 .leads { display: grid; gap: 10px; } .leads p { margin: 0; } .leads-next { gap: 10px; flex-wrap: wrap; }
+.cert-version { border: 1px solid var(--sun); border-left-width: 4px; border-radius: var(--radius); padding: 12px 14px; background: var(--surface); font-size: 0.95rem; }
 .cert-jobs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0; }
 .job-block { display: grid; gap: 10px; padding: 16px 18px; border-left: 3px solid var(--good); background: var(--surface); border-radius: var(--radius); }
 .job-block h2 { margin: 0; } .job-block p { margin: 0; }

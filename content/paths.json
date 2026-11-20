@@ -70,10 +70,6 @@
     "id": "finding-the-server"
    },
    {
-    "type": "lab",
-    "id": "one-request"
-   },
-   {
     "type": "mission",
     "id": "dhcp",
     "mode": "practice"
@@ -98,6 +94,14 @@
     "type": "mission",
     "id": "ssh-brute",
     "mode": "challenge"
+   },
+   {
+    "type": "lesson",
+    "id": "identity"
+   },
+   {
+    "type": "lab",
+    "id": "signin-spray"
    },
    {
     "type": "agency",

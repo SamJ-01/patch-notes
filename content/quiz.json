@@ -1,5 +1,5 @@
 [
-  { "q": "What does the 'C' in the CIA triad stand for?", "options": ["Cryptography", "Confidentiality", "Compliance", "Control"], "answer": 1, "why": "Confidentiality, Integrity, Availability: the three things security protects.", "topic": "networking" },
+  { "q": "What does the 'C' in the CIA triad stand for?", "options": ["Cryptography", "Confidentiality", "Compliance", "Control"], "answer": 1, "why": "Confidentiality, Integrity, Availability: the three things security protects.", "topic": "cia-triad" },
   { "q": "Which port does SSH use by default?", "options": ["21", "22", "80", "445"], "answer": 1, "why": "21 is FTP, 80 is HTTP, 445 is SMB.", "topic": "networking" },
   { "q": "What does DNS do?", "options": ["Encrypts web traffic", "Translates domain names into IP addresses", "Blocks malware", "Assigns MAC addresses"], "answer": 1, "why": "It's the internet's phone book.", "topic": "networking" },
   { "q": "Which is the correct order of the TCP three-way handshake?", "options": ["ACK, SYN, SYN-ACK", "SYN, SYN-ACK, ACK", "SYN, ACK, FIN", "HELLO, KEY, DONE"], "answer": 1, "why": "Client says SYN, server replies SYN-ACK, client confirms ACK.", "topic": "networking" },

@@ -4545,12 +4545,12 @@
   {
    "id": "sp-5.4-4",
    "objective": "5.4",
-   "stem": "A UK company finds out on Friday at 17:00 that a breach is likely to put customers at risk. By when must it tell the ICO?",
+   "stem": "A UK company finds out on Friday at 17:00 that a breach is likely to put customers at risk. Where feasible, what's the latest it should tell the ICO?",
    "options": [
     {
      "text": "Monday at 17:00: 72 hours from becoming aware, weekends included",
      "correct": true,
-     "why": "The clock runs in hours from awareness, through weekends. Report what you know and add the rest later."
+     "why": "UK GDPR says without undue delay and, where feasible, within 72 hours of becoming aware, weekends included. A later report must give the reasons; send what you know and add the rest later."
     },
     {
      "text": "The following Wednesday: 72 working hours",

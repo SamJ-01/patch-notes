@@ -1321,3 +1321,24 @@ class Coherence(unittest.TestCase):
                 self.assertIn(n, ids)
         for c in certs:
             self.assertTrue(any((p.get("leadsTo") or {}).get("exam") == c and p.get("career") for p in self.paths), f"{c}: no job path leads to it")
+
+
+class ExternalAuditFixes(unittest.TestCase):
+    """Claims corrected after the 20 Nov independent audits (Grok and GPT), so they can't come back."""
+
+    def test_claims_stay_correct(self):
+        lessons = (ROOT / "content" / "lessons.json").read_text()
+        self.assertNotIn("Most breaches start with a message", lessons, "unsourced; the 2025 DBIR ranks phishing third")
+        self.assertIn("where feasible, within 72 hours", lessons, "UK GDPR Art. 33: without undue delay and, where feasible, within 72 hours")
+        self.assertIn("simply owning a security tool isn't", lessons, "CMA s3A needs intent or belief")
+        pt = json.loads((ROOT / "content" / "certs" / "pentest-plus-questions.json").read_text())["questions"]
+        q = next(x for x in pt if x["id"] == "pt-1.0-3")
+        right = next(o for o in q["options"] if o["correct"])
+        self.assertIn("scope", right["text"], "written authorisation is evidence and scope; the Act doesn't require writing")
+
+    def test_security_plus_says_which_version(self):
+        c = json.loads((ROOT / "content" / "certs" / "security-plus.json").read_text())
+        v = c.get("versionNote") or {}
+        self.assertIn("SY0-801", v.get("text", ""))
+        self.assertIn("11 June 2027", v.get("text", ""))
+        self.assertTrue(v.get("url", "").startswith("https://www.comptia.org/"))
