@@ -203,9 +203,12 @@ function quizBlock(q, { onAnswer, answered } = {}) {
   const draw = choice => {
     const done = choice != null;
     wrap.innerHTML = `<p class="q">${gloss(q.q, 3)}</p><div class="opts">${q.options.map((o, i) => {
-      const cls = done ? (i === q.answer ? " right" : i === choice ? " wrong" : "") : "";
+      // With wrong-answer notes (lesson checks, 20 Nov), a miss explains that pick and keeps the answer hidden, so "Try again"
+      // is still a real try. Without notes (the home quiz), the answer and its why show as before.
+      const hide = done && choice !== q.answer && q.notes?.[choice];
+      const cls = done ? (i === choice ? (i === q.answer ? " right" : " wrong") : i === q.answer && !hide ? " right" : "") : "";
       return `<button class="opt${cls}" data-i="${i}" ${done ? "disabled" : ""}>${esc(o)}</button>`;
-    }).join("")}</div>` + (done ? `<div class="feedback">${choice === q.answer ? '<b class="ok">Correct.</b>' : '<b class="no">Not quite.</b>'} ${gloss(q.why, 3)}</div>` : "");
+    }).join("")}</div>` + (done ? `<div class="feedback">${choice === q.answer ? `<b class="ok">Correct.</b> ${gloss(q.why, 3)}` : q.notes?.[choice] ? `<b class="no">Not quite.</b> ${gloss(q.notes[choice], 3)}` : `<b class="no">Not quite.</b> ${gloss(q.why, 3)}`}</div>` : "");
   };
   draw(answered);
   wrap.addEventListener("click", e => {

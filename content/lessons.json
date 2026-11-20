@@ -38,7 +38,13 @@
     ],
     "answer": 0,
     "why": "Encryption keeps data secret, so only someone with the key can read it. That's confidentiality.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "Integrity is about data being changed. Encrypting a file doesn't stop anyone editing it; think about who can read it.",
+     "Availability is about getting to the data when you need it. Encryption doesn't keep a service up.",
+     "Encryption does protect one of the three. Which one is about who can read the data?"
+    ]
    },
    {
     "q": "A website is knocked offline by a flood of traffic. Which goal has been attacked?",
@@ -50,7 +56,13 @@
     ],
     "answer": 0,
     "why": "If people can't reach the system when they need it, availability has failed. A DDoS attacks availability.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "Nothing was read by the wrong people. The site just couldn't be reached.",
+     "Nothing was changed. Think about what users couldn't do.",
+     "Authentication is about proving who you are, and it isn't one of the three goals."
+    ]
    },
    {
     "q": "You compare a downloaded file's hash to the published one and they match. What have you confirmed?",
@@ -62,6 +74,31 @@
     ],
     "answer": 0,
     "why": "A matching hash shows the file is unchanged, which is integrity. (Proving who made it needs a signature.)",
+    "see": "what",
+    "notes": [
+     null,
+     "Comparing hashes doesn't hide anything. It checks something else about the file.",
+     "A hash match doesn't keep the file reachable. It tells you whether it changed.",
+     "A hash says nothing about the author. That needs a digital signature."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "A hospital's records system is up, private and unchanged, but a fault means doctors can only open it from one ward. Which goal is weakened?",
+    "options": [
+     "Availability",
+     "Confidentiality",
+     "Integrity",
+     "None: the data is safe"
+    ],
+    "answer": 0,
+    "why": "The data is secret and correct, but the people who need it can't get to it everywhere they need it. That's availability, and in a hospital it can matter most.",
+    "notes": [
+     null,
+     "Nobody is reading records they shouldn't. The problem is reaching them.",
+     "The records haven't been altered. Think about access, not accuracy.",
+     "Safe data that staff can't reach when treating patients is still a security failure."
+    ],
     "see": "what"
    }
   ],
@@ -202,7 +239,13 @@
     ],
     "answer": 0,
     "why": "The NIST CSF groups work into Govern, Identify, Protect, Detect, Respond and Recover.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "That's the Deming cycle for improving processes, not the NIST CSF's functions.",
+     "These are security tasks, not the CSF's six functions. Govern was added in CSF 2.0.",
+     "That's the CIA triad with extra words. The CSF's functions describe stages of security work."
+    ]
    },
    {
     "q": "Which of these can an organisation be certified against by an accredited body?",
@@ -214,7 +257,13 @@
     ],
     "answer": 0,
     "why": "ISO 27001 is a certifiable management system standard. The CSF and the CIS Controls are frameworks you adopt, and ATT&CK is a catalogue of attacker behaviour.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "The NIST CSF is a voluntary framework you adopt. No accredited body certifies against it.",
+     "ATT&CK is a catalogue of attacker techniques, not a standard you can be certified against.",
+     "The CIS Controls are a list of safeguards to adopt. There's no accredited certification for them."
+    ]
    },
    {
     "q": "Which of these is one of Cyber Essentials' five controls?",
@@ -226,7 +275,13 @@
     ],
     "answer": 0,
     "why": "The five are firewalls, secure configuration, security update management, user access control and malware protection.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "Cyber Essentials doesn't require a penetration test. Cyber Essentials Plus adds a hands-on check, but not a pentest.",
+     "Monitoring is good practice but isn't one of the five technical controls.",
+     "Data loss prevention isn't one of the five. They focus on basic technical hygiene."
+    ]
    },
    {
     "q": "What is CIS Implementation Group 1?",
@@ -238,7 +293,13 @@
     ],
     "answer": 0,
     "why": "IG1 is 'essential cyber hygiene': the safeguards every organisation should have first. IG2 and IG3 add more for larger or higher-risk organisations.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "IG1 is meant for every organisation, not just governments.",
+     "CIS Implementation Groups aren't exams. They're sets of safeguards.",
+     "That's IG3. IG1 is where everyone starts."
+    ]
    },
    {
     "q": "Which statement about compliance is true?",
@@ -250,6 +311,31 @@
     ],
     "answer": 0,
     "why": "Meeting rules like PCI DSS is a minimum bar; it doesn't guarantee you're actually secure.",
+    "see": "what",
+    "notes": [
+     null,
+     "Meeting a standard sets a minimum. Attackers don't check your certificate.",
+     "Compliance applies to many businesses, like PCI DSS for anyone taking cards.",
+     "Frameworks help you organise security beyond what rules require."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "A small firm wants to bid for a government contract that requires a basic, certified security standard. Which should it get first?",
+    "options": [
+     "Cyber Essentials",
+     "ISO/IEC 27001",
+     "NIST CSF 2.0",
+     "MITRE ATT&CK"
+    ],
+    "answer": 0,
+    "why": "UK government contracts that handle certain data ask for Cyber Essentials: five basic controls, quick to certify. ISO 27001 is far bigger, and the others aren't certifications.",
+    "notes": [
+     null,
+     "ISO 27001 is certifiable but takes months and a whole management system. It's more than a basic bar.",
+     "The CSF is a framework to adopt. There's no certificate to show a buyer.",
+     "ATT&CK describes attacker behaviour. It isn't something you certify against."
+    ],
     "see": "what"
    }
   ],
@@ -343,7 +429,13 @@
     ],
     "answer": 1,
     "why": "It notices and reports. A prevention system (IPS) would block the traffic.",
-    "see": "concept"
+    "see": "concept",
+    "notes": [
+     "A preventive control would stop the traffic. This one lets it through.",
+     null,
+     "Corrective controls fix things afterwards, like restoring from backup.",
+     "Directive controls tell people what to do, like a policy."
+    ]
    },
    {
     "q": "Which category does a written acceptable use policy belong to?",
@@ -355,7 +447,13 @@
     ],
     "answer": 2,
     "why": "Policies are decisions set by management. Corrective is a type, not a category.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Technical controls are enforced by technology. A policy is written down by management.",
+     "Physical controls are things like locks and fences.",
+     null,
+     "Corrective is a type of control (what it does), not a category (what it is)."
+    ]
    },
    {
     "q": "What does the Target breach show about detective controls?",
@@ -367,7 +465,14 @@
     ],
     "answer": 1,
     "why": "The alerts were raised; the missing piece was a response to them.",
-    "see": "example"
+    "see": "example",
+    "notes": [
+     "The alerts did fire. They were useful; nobody acted.",
+     null,
+     "Detection can't replace prevention. They work together.",
+     "Turning alerts off would hide attacks. Tuning, not switching off, reduces noise."
+    ],
+    "kind": "scenario"
    }
   ],
   "concept": {
@@ -504,7 +609,14 @@
     ],
     "answer": 2,
     "why": "Replying goes straight back to the attacker. Verify through a channel you already trust.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     "Urgency and secrecy are the trick. A real CEO can wait for you to check.",
+     "Replying goes straight back to whoever sent it, so of course it'll say it's real.",
+     null,
+     "Forwarding spreads a phishing email further. Verify with the sender first."
+    ],
+    "kind": "scenario"
    },
    {
     "q": "An email says your account will be closed within the hour unless you sign in now. Which trick is it mainly relying on?",
@@ -516,7 +628,13 @@
     ],
     "answer": 2,
     "why": "Attackers lean on urgency, authority and fear because people under pressure skip the checks they'd normally do.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Credential stuffing uses passwords leaked elsewhere. This email is pushing you to act now.",
+     "Nothing in the email is about encryption. Think about the pressure it creates.",
+     null,
+     "A zero-day is an unpatched flaw. This trick works on people, not software."
+    ]
    },
    {
     "q": "You typed your password into a fake login page. Which defence still stops the attacker getting in?",
@@ -528,7 +646,14 @@
     ],
     "answer": 3,
     "why": "A passkey or security key only works on the real website, so a stolen password on its own isn't enough.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     "The attacker already has the password, however long it is.",
+     "Clearing history doesn't take back the password you typed.",
+     "Antivirus on your phone doesn't stop someone signing in with your password elsewhere.",
+     null
+    ],
+    "kind": "scenario"
    }
   ],
   "diagram": {
@@ -692,7 +817,13 @@
     ],
     "answer": 1,
     "why": "Double extortion means restoring from backup doesn't stop the leak threat.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Good backups aren't encrypted by the attacker if they're kept offline. The problem is what else gangs do.",
+     null,
+     "Restoring your own backups is perfectly legal.",
+     "Ransomware doesn't remove the internet. Think about the stolen data."
+    ]
    },
    {
     "q": "In ransomware-as-a-service, who usually breaks into the victim's network?",
@@ -704,7 +835,13 @@
     ],
     "answer": 1,
     "why": "Developers rent the ransomware to affiliates, who break in, often with stolen passwords or unpatched VPNs, and spread before striking.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Developers write and rent out the ransomware. Someone else does the breaking in.",
+     null,
+     "Antivirus vendors defend against it.",
+     "The IT team is the victim here, not the attacker."
+    ]
    },
    {
     "q": "Which backups are most likely to survive a ransomware attack?",
@@ -716,7 +853,32 @@
     ],
     "answer": 2,
     "why": "Gangs hunt for reachable backups and destroy them. Offline or immutable copies can't be changed, and testing proves they actually restore.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     "The Recycle Bin is on the same disk and is easily emptied.",
+     "A copy on the same server is encrypted along with everything else.",
+     null,
+     "Ransomware encrypts anything it can reach, including mapped drives."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "At 02:00 your EDR shows a server deleting its shadow copies with vssadmin. What do you do first?",
+    "options": [
+     "Isolate the server from the network and alert the incident lead",
+     "Reboot it to clear the problem",
+     "Wait to see if files start being renamed",
+     "Email all staff to stop working"
+    ],
+    "answer": 0,
+    "why": "Deleting shadow copies is a classic step just before encryption. Isolating stops the spread while keeping the machine on for evidence, and the incident lead starts the response.",
+    "notes": [
+     null,
+     "A reboot can destroy evidence in memory and may let the encryption finish. Contain it first.",
+     "Waiting gives the attacker time to encrypt. Deleting backups is already the warning sign.",
+     "Emailing everyone is slow and may tip off an attacker reading mail. Contain the server first."
+    ],
+    "see": "what"
    }
   ],
   "explainer": {
@@ -780,7 +942,13 @@
     ],
     "answer": 1,
     "why": "Infostealers are a big driver of account takeovers because stolen cookies can bypass MFA.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "A worm spreads itself between machines. Think about which type is after saved logins.",
+     null,
+     "A loader only fetches more malware.",
+     "Adware shows unwanted adverts; it doesn't steal passwords."
+    ]
    },
    {
     "q": "Which type of malware spreads between machines by itself, without anyone clicking anything?",
@@ -792,7 +960,13 @@
     ],
     "answer": 1,
     "why": "A worm spreads on its own, which is why keeping systems patched (leaving it nothing to exploit) matters so much.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "A loader downloads other malware, but someone has to run it.",
+     null,
+     "A trojan pretends to be something useful, so someone has to open it.",
+     "An infostealer steals data from the machine it's on; it doesn't spread."
+    ]
    },
    {
     "q": "A program's only job is to download and run other malware. What is it?",
@@ -804,6 +978,31 @@
     ],
     "answer": 2,
     "why": "A loader fetches the next stage. Blocking it stops everything that would have followed.",
+    "see": "what",
+    "notes": [
+     "A RAT gives an attacker remote control.",
+     "Adware shows adverts.",
+     null,
+     "A botnet is many infected machines controlled together, not a single downloader."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "A user opened an 'invoice' and their browser's saved passwords were sent out. Resetting their Windows password is done. What else must happen?",
+    "options": [
+     "Sign them out everywhere and reset the passwords saved in the browser",
+     "Nothing more: the Windows password is changed",
+     "Delete the invoice from their Downloads folder",
+     "Run a full antivirus scan and close the ticket"
+    ],
+    "answer": 0,
+    "why": "An infostealer takes saved passwords and session cookies. Stolen sessions work without the password, so they must be ended, and every saved password changed from a clean device.",
+    "notes": [
+     null,
+     "The stolen data is browser passwords and cookies, not the Windows login.",
+     "Deleting the file doesn't undo what it already sent.",
+     "A scan can't take back stolen sessions; they still work until they're ended."
+    ],
     "see": "what"
    }
   ],
@@ -954,7 +1153,13 @@
     ],
     "answer": 1,
     "why": "Once a fix exists it's an n-day, but unpatched systems are still vulnerable.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "There's no time limit. The name is about whether a fix exists.",
+     null,
+     "A score says how bad it could be, not whether it's fixed.",
+     "It does stop. Think about what the vendor eventually releases."
+    ]
    },
    {
     "q": "What is an 'n-day'?",
@@ -966,7 +1171,13 @@
     ],
     "answer": 3,
     "why": "Once a patch ships, a zero-day becomes an n-day: attackers study the patch while defenders race to install it.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "That's a zero-day nobody has discovered. 'n-day' means it's known.",
+     "Not having a CVE ID doesn't make something an n-day.",
+     "Who found it doesn't matter. It's about whether a patch exists.",
+     null
+    ]
    },
    {
     "q": "There's no patch yet for a zero-day in software you run. What helps most right now?",
@@ -978,7 +1189,14 @@
     ],
     "answer": 1,
     "why": "Vendors often publish workarounds before a fix, and behaviour monitoring catches attacks that signatures miss.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     "The Wi-Fi password has nothing to do with a flaw in your software.",
+     null,
+     "Removing everything stops the business working. There are targeted steps.",
+     "Doing nothing leaves you exposed while attackers are already using it."
+    ],
+    "kind": "scenario"
    }
   ],
   "concept": {
@@ -1070,7 +1288,14 @@
     ],
     "answer": 1,
     "why": "Confirmed exploitation beats a theoretical worst case.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "A high score is a worst case. The other is being exploited right now.",
+     null,
+     "Both already have patches. Waiting helps attackers.",
+     "Publication date doesn't tell you which is more dangerous."
+    ],
+    "kind": "scenario"
    },
    {
     "q": "What does EPSS estimate?",
@@ -1082,7 +1307,13 @@
     ],
     "answer": 2,
     "why": "CVSS scores how bad a bug could be; EPSS estimates the chance it's exploited in the next 30 days.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "That's CVSS: how bad it could be.",
+     "EPSS doesn't count affected machines; your own inventory tells you that.",
+     null,
+     "It says nothing about how long a patch takes."
+    ]
    },
    {
     "q": "What does a CVE ID give you?",
@@ -1094,7 +1325,13 @@
     ],
     "answer": 3,
     "why": "A CVE ID is a shared name so everyone means the same bug. Severity comes from CVSS, and exploitation from CISA's KEV list.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "A CVE ID names a bug; it doesn't fix it.",
+     "Exploitation evidence comes from lists like KEV, not the CVE ID.",
+     "Severity comes from CVSS, a separate score.",
+     null
+    ]
    }
   ],
   "concept": {
@@ -1181,7 +1418,13 @@
     ],
     "answer": 1,
     "why": "Trust was the attack vector. Code review and reproducible builds are key defences.",
-    "see": "example"
+    "see": "example",
+    "notes": [
+     "That describes Pegasus-style spyware. XZ Utils was about trust in a maintainer.",
+     null,
+     "It didn't arrive by email. It was hidden inside trusted open-source code.",
+     "XZ Utils is a Linux compression library."
+    ]
    },
    {
     "q": "Why do attackers target software vendors and open-source packages?",
@@ -1193,7 +1436,13 @@
     ],
     "answer": 1,
     "why": "Compromising something many organisations trust lets an attacker reach all of its customers at once.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Attacking vendors is just as illegal. Think about reach.",
+     null,
+     "Vendors use passwords like anyone else. The draw is how many customers trust them.",
+     "Being findable isn't the reason. It's what one breach unlocks."
+    ]
    },
    {
     "q": "What is typosquatting in package registries?",
@@ -1205,6 +1454,31 @@
     ],
     "answer": 3,
     "why": "Attackers publish packages with names one typo away from popular libraries, hoping a developer installs theirs by mistake.",
+    "see": "what",
+    "notes": [
+     "Encryption has nothing to do with it. Look at the package names.",
+     "It's not about typing speed; it's about catching a typing mistake.",
+     "CVE IDs aren't involved. The trick is in package names.",
+     null
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "A pull request adds a package called 'reqeusts', published two days ago with 30 downloads. What do you do?",
+    "options": [
+     "Reject it and check whether the build already ran its install script",
+     "Merge it: the tests passed",
+     "Rename it to 'requests' in the file and merge",
+     "Ask the author if it's safe"
+    ],
+    "answer": 0,
+    "why": "A brand-new package one typo from a famous one is a classic typosquat. Its install script may already have run in CI, so check what the build exposed and rotate any secrets.",
+    "notes": [
+     null,
+     "Tests check the app works, not whether a dependency stole something.",
+     "Fixing the name stops future installs but ignores what the bad one may already have done.",
+     "The PR author may simply have made a typo. Check the package and the build yourself."
+    ],
     "see": "what"
    }
   ],
@@ -1355,7 +1629,13 @@
     ],
     "answer": 1,
     "why": "It works because people reuse passwords. Unique passwords stop it.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "That's brute force. Credential stuffing reuses real leaked pairs.",
+     null,
+     "Password managers are a defence, not the attack.",
+     "Attackers don't need to encrypt stolen passwords to use them."
+    ]
    },
    {
     "q": "Which of these is a data breach?",
@@ -1367,7 +1647,13 @@
     ],
     "answer": 2,
     "why": "A breach is any access to data by someone who shouldn't have it. Misconfigured, exposed databases count, not only hacks.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Installing an update is normal maintenance.",
+     "A slow network is a performance problem, not a breach.",
+     null,
+     "An outage hits availability, but no data reached the wrong people."
+    ]
    },
    {
     "q": "What stops credential stuffing from working on your accounts?",
@@ -1379,7 +1665,32 @@
     ],
     "answer": 2,
     "why": "Credential stuffing replays passwords leaked from one site on others, so it only works when a password is reused.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     "One strong password reused everywhere is exactly what stuffing exploits.",
+     "Cookies don't matter here; the attacker logs in with the password itself.",
+     null,
+     "Attackers usually use your email address, which you can't easily change."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "You find a test database with real customer emails was public for a week. Logs show one unknown download. What comes first?",
+    "options": [
+     "Close the access, keep the logs and tell whoever handles breach reporting",
+     "Delete the database so nobody can find it",
+     "Wait until you know who downloaded it",
+     "Email the customers straight away yourself"
+    ],
+    "answer": 0,
+    "why": "Stop the exposure, preserve evidence and hand it to the people who decide on reporting. In the UK the 72-hour clock starts when the organisation becomes aware.",
+    "notes": [
+     null,
+     "Deleting it destroys the evidence of what was exposed.",
+     "You may never know who it was, and the reporting clock is already running.",
+     "Telling customers is decided by the people responsible for breaches, with the facts in hand."
+    ],
+    "see": "what"
    }
   ],
   "scene": {
@@ -1534,7 +1845,13 @@
     ],
     "answer": 1,
     "why": "Built-in tools look normal, so defenders watch how they're used, not just whether they run.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "It has nothing to do with location. Look at which tools are used.",
+     null,
+     "It's not about farming. Think about the tools already on the system.",
+     "It's used on ordinary computers, not just physical infrastructure."
+    ]
    },
    {
     "q": "What does APT stand for?",
@@ -1546,7 +1863,13 @@
     ],
     "answer": 3,
     "why": "APTs are government-backed groups that spy, steal and pre-position, often staying hidden for a long time.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "APTs use phishing, but that's not what the letters mean.",
+     "Not related to piracy.",
+     "Penetration testers are authorised. An APT is the threat itself.",
+     null
+    ]
    },
    {
     "q": "Which framework maps attacker tactics so defenders can check what they'd detect?",
@@ -1558,7 +1881,32 @@
     ],
     "answer": 0,
     "why": "MITRE ATT&CK catalogues how attackers behave, so teams can map their defences and find the gaps.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     null,
+     "CVSS scores how severe a vulnerability is.",
+     "GDPR is a data protection law.",
+     "TLS encrypts connections."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "A joint advisory says a state-backed group uses ntdsutil and netsh to stay hidden. How should your SOC respond?",
+    "options": [
+     "Search your logs for those tools run by unusual accounts or at odd times",
+     "Block every Windows admin tool on every machine",
+     "Wait until antivirus flags something",
+     "Ignore it: you're not a government target"
+    ],
+    "answer": 0,
+    "why": "Living off the land leaves no malware for antivirus. Hunt for unusual use of normal tools and check who ran them.",
+    "notes": [
+     null,
+     "Admins need these tools. Look for unusual use, not all use.",
+     "These tools are legitimate, so antivirus won't flag them.",
+     "These groups also target suppliers and critical services. The advisory exists to be checked against."
+    ],
+    "see": "what"
    }
   ],
   "concept": {
@@ -1649,7 +1997,13 @@
     ],
     "answer": 1,
     "why": "It simply tried a short list of default usernames and passwords.",
-    "see": "example"
+    "see": "example",
+    "notes": [
+     "Mirai didn't need a Windows bug. Think about the devices it took over.",
+     null,
+     "No email was involved; it scanned the internet for devices.",
+     "It didn't pay for servers. It used devices people had left with factory logins."
+    ]
    },
    {
     "q": "What does 'distributed' mean in DDoS?",
@@ -1661,7 +2015,13 @@
     ],
     "answer": 0,
     "why": "The flood comes from many machines, usually a botnet, which is why blocking one source doesn't stop it.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "It isn't about databases. Think about where the traffic comes from.",
+     "One DDoS usually hits one target. The 'distributed' part is about the sources.",
+     "Worms spread themselves. A DDoS is about the flood's sources."
+    ]
    },
    {
     "q": "Which defence helps most against a large DDoS attack?",
@@ -1673,7 +2033,32 @@
     ],
     "answer": 1,
     "why": "Big providers absorb floods across their global networks before the traffic ever reaches you.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     "HTTPS doesn't make a flood worse, and turning it off exposes users.",
+     null,
+     "A password doesn't stop traffic arriving.",
+     "Antivirus doesn't stop a flood of requests."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "Your shop's site slows to a crawl just as a big sale starts. Traffic is normal web requests from thousands of real customers. What is it?",
+    "options": [
+     "A flash crowd: real demand, so add capacity or a queue",
+     "A DDoS: block the busiest addresses",
+     "A zero-day attack",
+     "A broken firewall"
+    ],
+    "answer": 0,
+    "why": "Normal requests at a predictable moment from real customers are demand, not an attack. Blocking them turns paying customers away.",
+    "notes": [
+     null,
+     "Blocking busy addresses blocks customers, including shared mobile networks.",
+     "Nothing points to an unpatched flaw. Look at the timing and the traffic.",
+     "The firewall is passing normal traffic. The servers are simply busy."
+    ],
+    "see": "what"
    }
   ],
   "concept": {
@@ -1760,7 +2145,13 @@
     ],
     "answer": 1,
     "why": "The AI can't reliably tell its user's instructions from text it's reading.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Length isn't the problem. It's what's hidden in the content.",
+     null,
+     "SQL injection targets databases. This is about instructions in content.",
+     "That's data poisoning, done at training time."
+    ]
    },
    {
     "q": "Your boss appears on a video call asking for an urgent payment. What's the safe move?",
@@ -1772,7 +2163,14 @@
     ],
     "answer": 1,
     "why": "Faces and voices can be cloned. Check payment requests out-of-band, even on video.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     "The chat belongs to the same call, which might be fake.",
+     null,
+     "The camera is already on. Faces and voices can be faked.",
+     "Seeing a face no longer proves who someone is."
+    ],
+    "kind": "scenario"
    },
    {
     "q": "Why should an AI agent get only the access it needs?",
@@ -1784,7 +2182,13 @@
     ],
     "answer": 3,
     "why": "Agents can be tricked by instructions hidden in what they read. Least access, plus approval for risky actions, limits the harm.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     "Cost isn't the reason. Think about what happens if it's tricked.",
+     "Fewer permissions don't make it faster.",
+     "Agents act through the access they're given.",
+     null
+    ]
    }
   ],
   "concept": {
@@ -1875,7 +2279,13 @@
     ],
     "answer": 1,
     "why": "The provider secures the platform; configuration is on you.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Amazon secures the platform. Bucket settings are configured by the customer.",
+     null,
+     "Someone always owns it. Read the shared responsibility split.",
+     "Your internet provider has nothing to do with cloud storage settings."
+    ]
    },
    {
     "q": "Which is one of the most common causes of cloud data leaks?",
@@ -1887,7 +2297,13 @@
     ],
     "answer": 0,
     "why": "Most cloud breaches come from customer misconfiguration, such as public buckets and over-powered keys, not the provider.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "Slow connections don't expose data.",
+     "Provider breaches are rare. Most leaks are configuration.",
+     "Two-factor authentication helps; it doesn't leak data."
+    ]
    },
    {
     "q": "Why is a leaked cloud access key so dangerous?",
@@ -1899,6 +2315,31 @@
     ],
     "answer": 1,
     "why": "With the right key, an attacker can create, read or delete resources from anywhere, as if they owned the account.",
+    "see": "what",
+    "notes": [
+     "Leaked keys keep working until someone revokes them.",
+     null,
+     "A key can do far more than run up bills.",
+     "A key grants access to resources, not just an IP address."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "A developer pushed a cloud access key to a public code repository an hour ago. What do you do first?",
+    "options": [
+     "Revoke the key, issue a new one, and check what the old key was used for",
+     "Delete the commit and carry on",
+     "Make the repository private",
+     "Wait to see if anyone uses it"
+    ],
+    "answer": 0,
+    "why": "Bots scan public repositories for keys within minutes. Assume it's been copied: revoke it, replace it, then check the logs for what it did.",
+    "notes": [
+     null,
+     "Deleting the commit doesn't stop anyone who already copied the key.",
+     "Copies may already exist. The key itself is the problem.",
+     "Automated scanners find keys within minutes. Waiting gives them time."
+    ],
     "see": "what"
    }
   ],
@@ -1990,7 +2431,13 @@
     ],
     "answer": 1,
     "why": "The browser won't release a passkey to a look-alike domain.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Length isn't what stops phishing.",
+     null,
+     "That describes one-time codes. Passkeys work differently.",
+     "Biometrics unlock the passkey on your device; that isn't what makes it phishing-resistant."
+    ]
    },
    {
     "q": "An attacker sends push MFA prompts over and over until someone taps Approve. What's this called, and what stops it?",
@@ -2002,7 +2449,14 @@
     ],
     "answer": 3,
     "why": "MFA fatigue wears people down with prompts. Number matching means approving needs a code from the real login screen.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     "Credential stuffing reuses leaked passwords, and a VPN doesn't stop prompts.",
+     "The attacker already has the password. Longer ones don't stop the prompts.",
+     "Brute force guesses passwords. Here the password is known; the target is the approval.",
+     null
+    ],
+    "kind": "scenario"
    },
    {
     "q": "Why are SMS codes weaker than other kinds of MFA?",
@@ -2014,7 +2468,13 @@
     ],
     "answer": 1,
     "why": "SMS codes can be SIM-swapped or relayed by fake login pages. Passkeys and security keys resist both.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Length isn't the weakness.",
+     null,
+     "SMS codes do expire quickly.",
+     "Text messages aren't end-to-end encrypted, and that isn't the main problem."
+    ]
    }
   ],
   "diagram": {
@@ -2249,7 +2709,13 @@
     ],
     "answer": 1,
     "why": "Availability and safety come first in OT, so changes are planned carefully.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "OT systems run software and firmware like anything else.",
+     null,
+     "Patching is legal. The challenge is downtime and safety.",
+     "Many are connected, which is part of the risk."
+    ]
    },
    {
     "q": "What does OT stand for?",
@@ -2261,7 +2727,13 @@
     ],
     "answer": 1,
     "why": "OT is the technology that runs physical processes: power grids, water plants and factories.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Not about telemetry. Think about physical processes.",
+     null,
+     "It's a whole category of technology, not online tools.",
+     "Nothing to do with wireless updates."
+    ]
    },
    {
     "q": "What's the most important rule for industrial control systems?",
@@ -2273,7 +2745,32 @@
     ],
     "answer": 3,
     "why": "Control systems were often built before anyone expected them online. Keep them off the internet and separate from office IT.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     "Restarting a control system hourly would stop production.",
+     "Broad admin access is the opposite of safe.",
+     "The office network is exactly what should be kept separate.",
+     null
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "A scan finds a factory's PLC reachable from an office PC, and its patch can only go on in August. What do you do now?",
+    "options": [
+     "Segment the network so only the HMI can reach the PLC, and monitor it",
+     "Patch it tonight anyway",
+     "Unplug it",
+     "Accept it until August"
+    ],
+    "answer": 0,
+    "why": "In OT, uptime and safety come first, so you reduce exposure with segmentation and monitoring until the planned window.",
+    "notes": [
+     null,
+     "An unplanned patch can stop production or affect safety.",
+     "Unplugging stops the factory.",
+     "Leaving it reachable from the office for months is a big risk when there's a safer step."
+    ],
+    "see": "what"
    }
   ],
   "scene": {
@@ -2417,7 +2914,13 @@
     ],
     "answer": 1,
     "why": "Parameters keep data and code separate, so input can never become part of the query.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     "Attackers get round blocked characters with encodings and other tricks, and real names like O'Brien need quotes.",
+     null,
+     "Without errors an attacker can still ask true or false questions. The query itself must change.",
+     "HTTPS protects data in transit; the injected text still reaches the query."
+    ]
    },
    {
     "q": "Why does ' OR '1'='1 work against a vulnerable login form?",
@@ -2429,7 +2932,13 @@
     ],
     "answer": 0,
     "why": "The input closes the quote and adds OR '1'='1, which is always true, so the query returns users without a valid password.",
-    "see": "xpl"
+    "see": "xpl",
+    "notes": [
+     null,
+     "Nothing is deleted. Look at what the extra OR does to the condition.",
+     "It doesn't encrypt anything. It changes the query's logic.",
+     "It doesn't need the password at all. That's the point."
+    ]
    },
    {
     "q": "What does a least-privilege database account limit?",
@@ -2441,7 +2950,32 @@
     ],
     "answer": 0,
     "why": "If the website's database account can only read what it needs, an injection can't drop tables or read everything.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     null,
+     "Permissions don't change query speed.",
+     "Database permissions don't control who visits the site.",
+     "Sign-ups aren't limited by the database account's rights."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "A developer says: 'We hide database errors, so SQL injection can't hurt us.' What do you tell them?",
+    "options": [
+     "Hidden errors only slow attackers down; use parameterised queries",
+     "Agree: without errors, attackers are blind",
+     "Add a CAPTCHA to the login form",
+     "Move the database to a different server"
+    ],
+    "answer": 0,
+    "why": "Blind injection works without any error messages, by asking true or false questions. Only keeping data and code separate fixes it.",
+    "notes": [
+     null,
+     "Attackers can still learn from what the page shows or how long it takes. That's blind SQL injection.",
+     "A CAPTCHA slows bots on one form but doesn't stop injected text reaching the query.",
+     "Moving the database doesn't change how the app builds its queries."
+    ],
+    "see": "what"
    }
   ],
   "keys": [
@@ -2505,7 +3039,13 @@
     ],
     "answer": 1,
     "why": "That's why it can act as the victim on the trusted site.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "The server stores or reflects it, but the script runs somewhere else.",
+     null,
+     "The database only stores it. Think about who opens the page.",
+     "The attacker plants it; it runs for the victim."
+    ]
    },
    {
     "q": "What's the difference between stored and reflected XSS?",
@@ -2517,7 +3057,13 @@
     ],
     "answer": 3,
     "why": "A stored payload sits on the site, like a comment, and hits every visitor; a reflected one comes from a crafted link.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "They differ in where the script lives.",
+     "Neither is about servers or databases as targets; both run in a browser.",
+     "Both work on any browser, including phones.",
+     null
+    ]
    },
    {
     "q": "Which cookie setting stops a script from reading the session cookie?",
@@ -2529,7 +3075,32 @@
     ],
     "answer": 1,
     "why": "HttpOnly cookies are sent to the server but can't be read by JavaScript, so an XSS script can't steal them.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     "The password isn't the issue; the session cookie is what's stolen.",
+     null,
+     "HTTPS protects the cookie on the network, not from a script on the page.",
+     "Images aren't involved in reading cookies."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "Customer reviews on a shop are shown on the page exactly as typed. What should the developers do?",
+    "options": [
+     "Encode user content when it's shown, and set HttpOnly on the session cookie",
+     "Only let logged-in customers post reviews",
+     "Ban the word 'script' in reviews",
+     "Move reviews to a separate page"
+    ],
+    "answer": 0,
+    "why": "Encoding makes typed code show as text instead of running, and HttpOnly stops scripts reading the session cookie. Together they stop stored XSS stealing sessions.",
+    "notes": [
+     null,
+     "Logged-in customers can still post a script.",
+     "Attackers get round word filters easily, with event handlers or different spellings.",
+     "The script still runs wherever the reviews are shown."
+    ],
+    "see": "what"
    }
   ],
   "keys": [
@@ -2591,7 +3162,11 @@
     ],
     "answer": 1,
     "why": "It makes guessing harder, but the real fix is checking ownership on every request.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     "Random IDs make guessing harder, but anyone with a leaked ID still gets in without a check.",
+     null
+    ]
    },
    {
     "q": "Changing /invoice/1001 to /invoice/1002 shows a stranger's invoice. What's the bug?",
@@ -2603,7 +3178,14 @@
     ],
     "answer": 3,
     "why": "This is an insecure direct object reference: the app trusts the ID in the URL instead of checking ownership.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "A DDoS overwhelms a service; here one request shows the wrong data.",
+     "Nothing is injected into a query. The ID itself is simply trusted.",
+     "No script runs. The server hands over someone else's record.",
+     null
+    ],
+    "kind": "scenario"
    },
    {
     "q": "Where must permission checks happen?",
@@ -2615,7 +3197,13 @@
     ],
     "answer": 0,
     "why": "Anything in the browser is under the user's control. Only the server can be trusted to decide who sees what.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     null,
+     "Checking only at login lets anyone logged in see everything.",
+     "Users can change browser code, so it can't be trusted.",
+     "URLs are typed by the user. They can't enforce anything."
+    ]
    }
   ],
   "concept": {
@@ -2702,7 +3290,13 @@
     ],
     "answer": 2,
     "why": "22 is SSH, 53 is DNS, 3389 is RDP.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "22 is SSH, for remote admin logins.",
+     "53 is DNS, for name lookups.",
+     null,
+     "3389 is Remote Desktop."
+    ]
    },
    {
     "q": "What does DNS do?",
@@ -2714,7 +3308,13 @@
     ],
     "answer": 2,
     "why": "DNS is the internet's phone book: your device asks it for the IP address behind a name.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "DNS doesn't block anything by default. It answers lookups.",
+     "Encryption is done by TLS, not DNS.",
+     null,
+     "MAC addresses are burned into network cards, not handed out by DNS."
+    ]
    },
    {
     "q": "What are the three steps of a TCP handshake?",
@@ -2726,6 +3326,31 @@
     ],
     "answer": 2,
     "why": "TCP opens a reliable conversation with SYN, SYN-ACK, ACK. (Discover, Offer, Request, Acknowledge is DHCP.)",
+    "see": "what",
+    "notes": [
+     "That isn't a real protocol exchange.",
+     "That's DHCP, which hands out IP addresses.",
+     null,
+     "Those are HTTP methods, used after a connection is open."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "A colleague can open websites by IP address but not by name. Which service should you check first?",
+    "options": [
+     "DNS",
+     "DHCP",
+     "The web server",
+     "The network cable"
+    ],
+    "answer": 0,
+    "why": "If addresses work but names don't, the connection is fine and the name lookup is failing. That's DNS.",
+    "notes": [
+     null,
+     "DHCP gave them an address already, or IP addresses wouldn't work.",
+     "Sites load fine by IP address, so the web servers are working.",
+     "The cable is fine: traffic flows when you use an IP address."
+    ],
     "see": "what"
    }
   ],
@@ -2852,7 +3477,13 @@
     ],
     "answer": 1,
     "why": "Each 2.4 GHz channel is 20 MHz wide but only 5 MHz apart, so only 1, 6 and 11 avoid each other.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Channels 1, 2 and 3 sit almost on top of each other.",
+     null,
+     "6, 7 and 8 overlap heavily.",
+     "In 2.4 GHz three channels can sit side by side without overlapping."
+    ]
    },
    {
     "q": "Why is WPA3-Personal stronger than WPA2-Personal?",
@@ -2864,7 +3495,13 @@
     ],
     "answer": 1,
     "why": "With WPA2-Personal, a captured handshake can be attacked with guesses offline. SAE means each guess needs a live exchange with the network.",
-    "see": "concept"
+    "see": "concept",
+    "notes": [
+     "Password length is up to you on either. WPA3's gain is in the handshake.",
+     null,
+     "Hiding the name protects nothing; it's still easy to find.",
+     "WPA3 works on 2.4, 5 and 6 GHz."
+    ]
    },
    {
     "q": "Why did KRACK affect almost every Wi-Fi device?",
@@ -2876,7 +3513,32 @@
     ],
     "answer": 0,
     "why": "When the flaw is in the standard, every correct implementation inherits it until patched.",
-    "see": "example"
+    "see": "example",
+    "notes": [
+     null,
+     "Passwords had nothing to do with it.",
+     "Different vendors' software was all affected, so it wasn't one codebase.",
+     "It affected WPA2-protected networks, not just open ones."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "A Wi-Fi survey finds an open network with your company's staff name, on hardware you don't own, in the car park. What is it most likely?",
+    "options": [
+     "An evil twin trying to catch staff devices",
+     "Your guest network",
+     "A neighbour's network",
+     "A normal channel overlap"
+    ],
+    "answer": 0,
+    "why": "An open copy of your staff network name on foreign hardware is an evil twin: devices that auto-join could send traffic through the attacker.",
+    "notes": [
+     null,
+     "Your guest network is on your own hardware with its own name.",
+     "A neighbour would use their own name, not yours.",
+     "Channel overlap is about interference, not a copy of your network name."
+    ],
+    "see": "what"
    }
   ],
   "scene": {
@@ -3022,7 +3684,13 @@
     ],
     "answer": 1,
     "why": "The recovery point objective is how far back you can afford to go: so backups must run at least every four hours.",
-    "see": "concept"
+    "see": "concept",
+    "notes": [
+     "RTO is how quickly you must be back up, not how much data you can lose.",
+     null,
+     "MTBF is the average time between failures.",
+     "MTTR is the average time to repair."
+    ]
    },
    {
     "q": "Which SNMP version adds authentication and encryption?",
@@ -3034,7 +3702,13 @@
     ],
     "answer": 2,
     "why": "v1 and v2c send a community string in plain text. SNMPv3 adds user logins and encryption.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "SNMPv1 sends a community string in plain text.",
+     "SNMPv2c still uses a plain-text community string.",
+     null,
+     "One version does add both."
+    ]
    },
    {
     "q": "What turned BA's 2017 power problem into a three-day disruption?",
@@ -3046,7 +3720,32 @@
     ],
     "answer": 1,
     "why": "Power and failover matter as much as cyber defences: owning a backup isn't the same as having tested it.",
-    "see": "example"
+    "see": "example",
+    "notes": [
+     "Nothing points to ransomware. It started with power.",
+     null,
+     "Its website wasn't flooded. The trouble was in the data centre.",
+     "No password leak was involved."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "An engineer wants to change the core switch's settings at lunchtime because 'it's a quick fix'. What should happen?",
+    "options": [
+     "Put it through change control: test it, get approval, schedule a quiet window and write a backout plan",
+     "Let them do it: it's quick",
+     "Do it, but only on Fridays",
+     "Ban all changes to the core switch"
+    ],
+    "answer": 0,
+    "why": "A 'quick fix' on core kit at peak time is how outages start. Change control adds testing, approval, timing and a way to undo it.",
+    "notes": [
+     null,
+     "Quick changes at busy times are a common cause of outages.",
+     "The day matters less than testing, approval and a way back.",
+     "Networks need changes. The answer is to make them safely."
+    ],
+    "see": "what"
    }
   ],
   "scene": {
@@ -3209,7 +3908,13 @@
     ],
     "answer": 0,
     "why": "Drop leading zeros in each group and replace the one run of zero groups with ::. :: can only appear once, and you can't drop zeros from the end of a group.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "You can't drop the zeros at the end of a group, and :: means a run of zero groups.",
+     ":: can appear only once in an address.",
+     "Leading zeros can go, but '2001' has none to drop."
+    ]
    },
    {
     "q": "What does SDN separate?",
@@ -3221,7 +3926,13 @@
     ],
     "answer": 1,
     "why": "With the decisions made centrally by a controller, many switches and routers can be programmed at once.",
-    "see": "concept"
+    "see": "concept",
+    "notes": [
+     "SDN isn't about IP versions.",
+     null,
+     "Separating guests from staff is a VLAN or policy job.",
+     "Wired and wireless can both be software-defined."
+    ]
    },
    {
     "q": "Why did Google move away from trusting its internal network?",
@@ -3233,7 +3944,32 @@
     ],
     "answer": 1,
     "why": "Zero trust checks each request on its own merits, so being on the network grants nothing.",
-    "see": "example"
+    "see": "example",
+    "notes": [
+     "Address space wasn't the reason.",
+     null,
+     "Firewall speed wasn't the point. Trusting the inside was.",
+     "SD-WAN connects sites; it's not why Google dropped the trusted inside."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "A staff laptop is on the office network but hasn't been patched in 90 days and isn't encrypted. Under zero trust, can it open the payroll app?",
+    "options": [
+     "No: device health fails, wherever it's plugged in",
+     "Yes: it's on the office network",
+     "Yes, if the user has MFA",
+     "Only during working hours"
+    ],
+    "answer": 0,
+    "why": "Zero trust checks identity and device health on every request. Being inside the office network earns nothing on its own.",
+    "notes": [
+     null,
+     "Zero trust doesn't trust the network, inside or out.",
+     "MFA proves the user, but the device must be healthy too.",
+     "Time of day doesn't fix an unpatched, unencrypted device."
+    ],
+    "see": "what"
    }
   ],
   "concept": {
@@ -3329,7 +4065,13 @@
     ],
     "answer": 1,
     "why": "The site only needs to check a match, never read the original.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Hashes aren't meant to be reversed at all.",
+     null,
+     "Encrypting passwords is legal; it's just the wrong tool.",
+     "Length isn't the point; it's one-way versus reversible."
+    ]
    },
    {
     "q": "Which kind of encryption uses a public key to lock and a private key to unlock?",
@@ -3341,7 +4083,13 @@
     ],
     "answer": 2,
     "why": "Asymmetric encryption is how HTTPS starts a secure connection with a site you've never met. Then both sides switch to a fast shared key.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Symmetric uses the same key to lock and unlock.",
+     "Hashing is one-way; there's nothing to unlock.",
+     null,
+     "Base64 is encoding with no key at all."
+    ]
    },
    {
     "q": "Why should each password hash use a unique salt?",
@@ -3353,6 +4101,31 @@
     ],
     "answer": 2,
     "why": "A salt is random data added before hashing, so attackers can't crack many identical passwords at once with ready-made tables.",
+    "see": "what",
+    "notes": [
+     "Salts don't make hashes reversible.",
+     "A salt is added per password, not used to encrypt the database.",
+     null,
+     "A salt doesn't shorten the hash."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "A developer stores passwords as unsalted MD5 'because it's hashed'. What do you recommend?",
+    "options": [
+     "Use a slow, salted password hash such as bcrypt, scrypt or Argon2",
+     "Encrypt the MD5 hashes with AES",
+     "Switch to Base64",
+     "Keep MD5 but make passwords longer"
+    ],
+    "answer": 0,
+    "why": "Password hashes need to be slow and salted, so leaked hashes are expensive to crack one by one. MD5 is fast and, unsalted, falls to precomputed tables.",
+    "notes": [
+     null,
+     "Encrypting the hashes adds a key to protect, and the hashes underneath are still fast to crack.",
+     "Base64 is encoding: anyone can reverse it.",
+     "Longer passwords help, but MD5 is still fast to guess against."
+    ],
     "see": "what"
    }
   ],
@@ -3538,7 +4311,13 @@
     ],
     "answer": 1,
     "why": "The CA checks the requester controls the name, then signs to say so. Your browser trusts that signature because it trusts the CA.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "The CA never sees the site's traffic. Its signature says something about the key.",
+     null,
+     "The private key never leaves the server. The CA only sees the public key.",
+     "Signing has nothing to do with speed."
+    ]
    },
    {
     "q": "A server's private key is stolen. What should happen to its certificate?",
@@ -3550,7 +4329,13 @@
     ],
     "answer": 2,
     "why": "Revocation tells clients to stop trusting it, and a new key pair makes the stolen key useless for the replacement.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Anyone with the stolen key can pretend to be the site until it's revoked.",
+     "Renewing with the same key leaves the thief able to use it.",
+     null,
+     "The password isn't the problem; the stolen private key is."
+    ]
    },
    {
     "q": "Why did removing DigiNotar from browsers' trusted lists stop its rogue google.com certificate working?",
@@ -3562,7 +4347,32 @@
     ],
     "answer": 0,
     "why": "No trusted root means no trusted chain, so every DigiNotar certificate failed the check.",
-    "see": "example"
+    "see": "example",
+    "notes": [
+     null,
+     "Changing addresses doesn't affect a certificate the browser already trusts.",
+     "Certificates are public. Trust comes from the chain.",
+     "Gmail kept using HTTPS. The browsers removed trust in the CA."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "Staff see a certificate warning on the internal printer's admin page, which uses a self-signed certificate. What's the sensible fix?",
+    "options": [
+     "Issue it a certificate from the company's internal CA, trusted on staff devices",
+     "Tell staff to always click 'Proceed anyway'",
+     "Turn off HTTPS on the printer",
+     "Buy a public certificate for the printer's internal address"
+    ],
+    "answer": 0,
+    "why": "An internal CA gives internal devices trusted certificates. Teaching people to click through warnings trains them to ignore real ones.",
+    "notes": [
+     null,
+     "Clicking through warnings becomes a habit attackers can exploit on real sites.",
+     "That sends the admin password in clear text across the network.",
+     "Public CAs don't issue certificates for internal-only names or private addresses."
+    ],
+    "see": "what"
    }
   ],
   "concept": {
@@ -3650,7 +4460,13 @@
     ],
     "answer": 1,
     "why": "find searches for files by name; grep searches their contents.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "find searches for files by name, not inside them.",
+     null,
+     "chmod changes permissions.",
+     "ps lists running processes."
+    ]
    },
    {
     "q": "Where do most Linux logs live?",
@@ -3662,7 +4478,13 @@
     ],
     "answer": 0,
     "why": "System and security logs, such as auth.log for logins, are kept under /var/log.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "/etc/passwd lists user accounts, not logs.",
+     "/home holds users' own files.",
+     "/tmp is for temporary files and is often cleared."
+    ]
    },
    {
     "q": "What does a pipe (|) do?",
@@ -3674,6 +4496,31 @@
     ],
     "answer": 3,
     "why": "Pipes chain commands together, for example grep Failed auth.log | wc -l counts failed logins.",
+    "see": "what",
+    "notes": [
+     "Deleting is rm.",
+     "Running as admin is sudo.",
+     "Hidden files are shown with ls -a.",
+     null
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "You need to count failed SSH logins in /var/log/auth.log. Which command does it?",
+    "options": [
+     "grep 'Failed password' /var/log/auth.log | wc -l",
+     "cat /var/log/auth.log",
+     "find /var/log -name Failed",
+     "chmod 600 /var/log/auth.log"
+    ],
+    "answer": 0,
+    "why": "grep picks out the failed login lines, and the pipe hands them to wc -l to count them.",
+    "notes": [
+     null,
+     "cat prints the whole log; you'd still have to count by hand.",
+     "find looks for file names, not text inside files.",
+     "chmod changes who can read the file, not what's in it."
+    ],
     "see": "what"
    }
   ],
@@ -3766,7 +4613,13 @@
     ],
     "answer": 1,
     "why": "It gives analysts one place to search and detect across everything.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "A SIEM doesn't block anything. Think about logs.",
+     null,
+     "Encryption isn't its job.",
+     "A SIEM works alongside the firewall."
+    ]
    },
    {
     "q": "Most alerts turn out to be false positives. What does that mean for an analyst?",
@@ -3778,7 +4631,14 @@
     ],
     "answer": 0,
     "why": "The skill is investigating quickly and calmly so the real incidents get attention.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "Some alerts are real. Ignoring them is how incidents are missed.",
+     "Switching detections off hides real attacks. Tuning is better.",
+     "Escalating everything buries the real incidents."
+    ],
+    "kind": "scenario"
    },
    {
     "q": "Which logs matter most to collect for detection?",
@@ -3790,7 +4650,13 @@
     ],
     "answer": 0,
     "why": "These show who logged in, what ran, where devices connected and what endpoint protection saw.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     null,
+     "Screensaver settings don't show attacks.",
+     "Wallpaper changes tell you nothing useful.",
+     "Printer counts don't show who logged in or what ran."
+    ]
    }
   ],
   "diagram": {
@@ -3961,7 +4827,14 @@
     ],
     "answer": 1,
     "why": "Containment stops the spread; evidence tells you how they got in.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Wiping first destroys the evidence of how they got in.",
+     null,
+     "A company-wide email can tip off the attacker and cause panic.",
+     "Paying is a business decision for much later, if ever."
+    ],
+    "kind": "scenario"
    },
    {
     "q": "Why can wiping an infected machine straight away be a mistake?",
@@ -3973,7 +4846,13 @@
     ],
     "answer": 0,
     "why": "Contain first and preserve evidence; otherwise you may never learn how the attacker got in, and they'll come back.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "Wiping doesn't spread malware.",
+     "Wiping your own machine is legal.",
+     "Warranties have nothing to do with it."
+    ]
    },
    {
     "q": "What's the final phase of the classic incident response cycle?",
@@ -3985,7 +4864,13 @@
     ],
     "answer": 2,
     "why": "The cycle ends with a blameless review so the same incident doesn't happen again.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Detection comes early in the cycle.",
+     "Containment comes in the middle.",
+     null,
+     "Preparation comes first, before anything happens."
+    ]
    }
   ],
   "concept": {
@@ -4083,7 +4968,13 @@
     ],
     "answer": 1,
     "why": "OSINT uses public information only and has a legitimate purpose.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Logging in with a guessed password is unauthorised access.",
+     null,
+     "Buying stolen data is illegal.",
+     "Tracking a stranger is intrusive and may be illegal."
+    ]
    },
    {
     "q": "How do defenders use OSINT?",
@@ -4095,7 +4986,13 @@
     ],
     "answer": 2,
     "why": "Looking at what's publicly exposed shows defenders what an attacker would find first.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     "Buying breached data is illegal.",
+     "Tracking staff at home is an invasion of privacy.",
+     null,
+     "Breaking into competitors is a crime."
+    ]
    },
    {
     "q": "A photo you publish contains GPS metadata. What's the risk, and the fix?",
@@ -4107,7 +5004,14 @@
     ],
     "answer": 2,
     "why": "Photo metadata can include location and device details. Strip it from files and photos before they go public.",
-    "see": "defend"
+    "see": "defend",
+    "notes": [
+     "Publishing photos is legal; the risk is what's hidden in the file.",
+     "Location data in photos can reveal where someone lives or works.",
+     null,
+     "Speed isn't the risk. Look at the hidden data."
+    ],
+    "kind": "scenario"
    }
   ],
   "scene": {
@@ -4262,7 +5166,13 @@
     ],
     "answer": 0,
     "why": "4 × 5 = 20 out of a possible 25, so it is near the top of the list.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "That adds them. Risk score multiplies likelihood by impact.",
+     "That subtracts them.",
+     "That's too big for a 5 by 5 scale."
+    ]
    },
    {
     "q": "A company buys cyber insurance against ransomware. Which treatment is that?",
@@ -4274,7 +5184,13 @@
     ],
     "answer": 0,
     "why": "Insurance moves some of the cost to someone else. It doesn't make the attack less likely, so it is usually combined with mitigation.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "Avoiding means stopping the activity altogether.",
+     "Accepting means taking no action. Buying a policy is action.",
+     "Mitigating means reducing likelihood or impact, which insurance doesn't."
+    ]
    },
    {
     "q": "What is residual risk?",
@@ -4286,7 +5202,13 @@
     ],
     "answer": 0,
     "why": "Controls rarely remove a risk completely. What remains is the residual risk, which the owner then accepts or treats further.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "That's the inherent risk, before controls.",
+     "An unowned risk is a governance gap, not residual risk.",
+     "Insuring a risk transfers cost; residual is what's left after controls."
+    ]
    },
    {
     "q": "Who decides what happens to a risk in the register?",
@@ -4298,7 +5220,13 @@
     ],
     "answer": 0,
     "why": "Every risk needs a named owner with the authority to fund a fix or accept it.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "Finding a risk doesn't give you authority over it.",
+     "Auditors check the process; they don't make the decision.",
+     "The helpdesk doesn't own business risks."
+    ]
    },
    {
     "q": "A loss would cost £20,000 (SLE) and is expected once every two years (ARO 0.5). What is the ALE?",
@@ -4310,6 +5238,31 @@
     ],
     "answer": 0,
     "why": "ALE = SLE × ARO = £20,000 × 0.5 = £10,000 a year, a guide to how much a control is worth spending.",
+    "see": "what",
+    "notes": [
+     null,
+     "That doubles the loss. ARO 0.5 means once every two years.",
+     "That's the SLE, before allowing for how often it happens.",
+     "That multiplies the wrong numbers."
+    ]
+   },
+   {
+    "kind": "scenario",
+    "q": "A known risk scores 20 and the board's appetite is 12. A junior manager wants to accept it to save money. What should happen?",
+    "options": [
+     "It needs treating, or accepting by someone with the authority to go over appetite",
+     "Accept it: someone has signed off",
+     "Lower its score to 12",
+     "Remove it from the register"
+    ],
+    "answer": 0,
+    "why": "Appetite sets what can simply be accepted. Over it, the risk must be treated or accepted at the level the board has set.",
+    "notes": [
+     null,
+     "A signature from someone without the authority isn't real acceptance.",
+     "Changing the number doesn't change the risk.",
+     "Hiding a risk makes it worse."
+    ],
     "see": "what"
    }
   ],
@@ -4414,19 +5367,32 @@
     ],
     "answer": 0,
     "why": "Under the Computer Misuse Act, unauthorised access alone is an offence. Good intentions and 'just looking' are no defence.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "Working there doesn't let your friend authorise testing the company's systems.",
+     "Accessing it without permission is the offence, even if you change nothing.",
+     "Reporting afterwards doesn't make unauthorised access legal."
+    ],
+    "kind": "scenario"
    },
    {
     "q": "How long does UK GDPR give an organisation to report a notifiable personal data breach to the ICO?",
     "options": [
-     "72 hours from becoming aware of it",
+     "Without undue delay, and where feasible within 72 hours of becoming aware",
      "24 hours from the breach",
      "30 days",
      "Only if customers complain"
     ],
     "answer": 0,
-    "why": "The 72 hours start when the organisation becomes aware, not when the breach happened.",
-    "see": "what"
+    "why": "The clock starts when the organisation becomes aware, not when the breach happened, and runs through weekends. A later report must give the reasons.",
+    "see": "what",
+    "notes": [
+     null,
+     "The window starts when the organisation becomes aware, and it's longer than 24 hours.",
+     "Thirty days is far too long for a reportable breach.",
+     "Reporting doesn't depend on complaints."
+    ]
    },
    {
     "q": "Which of these is a contractual standard rather than a law?",
@@ -4438,7 +5404,13 @@
     ],
     "answer": 0,
     "why": "PCI DSS is required by the card brands through contracts with banks and merchants. The others are law.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "UK GDPR is law, passed by Parliament.",
+     "The Computer Misuse Act is an Act of Parliament.",
+     "The NIS Regulations are law."
+    ]
    },
    {
     "q": "Which part of the Computer Misuse Act covers a denial-of-service attack?",
@@ -4450,7 +5422,13 @@
     ],
     "answer": 0,
     "why": "Section 3 covers unauthorised acts that impair a computer, which includes flooding it so it stops working.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "Section 1 is unauthorised access. A flood impairs a computer.",
+     "Section 2 is access with intent to commit another crime.",
+     "DoS is covered."
+    ]
    },
    {
     "q": "Which of these is one of UK GDPR's principles?",
@@ -4462,7 +5440,13 @@
     ],
     "answer": 0,
     "why": "The seven principles include integrity and confidentiality, often called the security principle. They don't prescribe specific tools.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "GDPR doesn't prescribe specific tools like encryption everywhere.",
+     "GDPR doesn't require annual penetration tests.",
+     "GDPR has no rule about supplier nationality."
+    ]
    }
   ],
   "concept": {
@@ -4550,7 +5534,13 @@
     ],
     "answer": 0,
     "why": "Delivery gets the weapon to the target (an email, a link); exploitation is when it runs and takes advantage of a weakness.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "Installation comes after the weapon has run.",
+     "Reconnaissance is the first stage, before delivery.",
+     "Command and control comes later, once malware is installed."
+    ]
    },
    {
     "q": "In MITRE ATT&CK, what is a tactic?",
@@ -4562,7 +5552,13 @@
     ],
     "answer": 0,
     "why": "Tactics are the 'why' (initial access, persistence, exfiltration); techniques are the 'how', each with an ID like T1566.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "Malware is a tool, not a tactic.",
+     "A CVE names a vulnerability.",
+     "Tactics describe attackers, not defenders."
+    ]
    },
    {
     "q": "An attacker changes the price in a request before it reaches the shop's server. Which STRIDE threat is that?",
@@ -4574,7 +5570,14 @@
     ],
     "answer": 0,
     "why": "Tampering is changing data you shouldn't be able to change. It breaks integrity.",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "Spoofing is pretending to be someone else.",
+     "Repudiation is denying you did something.",
+     "Elevation of privilege is gaining powers you shouldn't have."
+    ],
+    "kind": "scenario"
    },
    {
     "q": "Which four parts does the Diamond Model link?",
@@ -4586,7 +5589,13 @@
     ],
     "answer": 0,
     "why": "Every intrusion event has someone (adversary) using something (capability) over something (infrastructure) against someone (victim).",
-    "see": "what"
+    "see": "what",
+    "notes": [
+     null,
+     "That's the NIST CSF's functions.",
+     "That's a common people-process-technology model.",
+     "That's the CIA triad plus authenticity."
+    ]
    }
   ],
   "concept": {

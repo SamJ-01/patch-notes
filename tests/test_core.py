@@ -1342,3 +1342,25 @@ class ExternalAuditFixes(unittest.TestCase):
         self.assertIn("SY0-801", v.get("text", ""))
         self.assertIn("11 June 2027", v.get("text", ""))
         self.assertTrue(v.get("url", "").startswith("https://www.comptia.org/"))
+
+
+class LessonCheckNotes(unittest.TestCase):
+    """Lesson questions teach like the labs (20 Nov, after the Grok audit called them recall that gave the answer away):
+    every wrong option has a note that explains the pick without naming the answer, and every lesson asks at least one
+    "what would you do" question (`kind: scenario`)."""
+
+    def test_every_lesson_question_has_notes_and_every_lesson_a_scenario(self):
+        lessons = json.loads((ROOT / "content" / "lessons.json").read_text())
+        lessons = lessons["lessons"] if isinstance(lessons, dict) else lessons
+        for l in lessons:
+            self.assertTrue(any(c.get("kind") == "scenario" for c in l["checks"]), f"{l['id']}: needs a scenario question")
+            for k, c in enumerate(l["checks"]):
+                n = c.get("notes")
+                self.assertTrue(n and len(n) == len(c["options"]), f"{l['id']} Q{k}: one note per option")
+                self.assertIsNone(n[c["answer"]], f"{l['id']} Q{k}: no note on the answer")
+                right = c["options"][c["answer"]].lower()
+                for j, note in enumerate(n):
+                    if j == c["answer"]:
+                        continue
+                    self.assertTrue(note and len(note) <= 220 and "—" not in note, f"{l['id']} Q{k} option {j}")
+                    self.assertFalse(len(right) >= 8 and right in note.lower(), f"{l['id']} Q{k} option {j}: names the answer")
