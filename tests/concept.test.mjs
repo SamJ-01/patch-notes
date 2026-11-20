@@ -66,3 +66,17 @@ test("lesson photo scenes (the 'scene' field beside a diagram) are valid scenes"
     assert.ok(!l.diagram && !l.explainer, `${l.id}: a scene sits beside a concept, never a second picture beside a diagram`);
   }
 });
+
+test("node diagrams: the viewBox holds every node, its glow and its label, for 3 to 7 stages and the triad", () => {
+  const R = 78, cx = 110;
+  const ring = (n, cy) => Array.from({ length: n }, (_, i) => { const a = (-90 + (360 / n) * i) * Math.PI / 180; return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) }; });
+  const triad = [-90, 150, 30].map(d => ({ x: cx + R * Math.cos(d * Math.PI / 180), y: 104 + R * Math.sin(d * Math.PI / 180) }));
+  for (const pts of [triad, ...[3, 4, 5, 6, 7].map(n => ring(n, 98))]) {
+    const [x, y, w, h] = concept.nodeBox(pts);
+    for (const p of pts) {
+      assert.ok(p.y - 26 - 8 >= y, "glow above fits");
+      assert.ok(p.y + 42 + 6 <= y + h, "label below fits");          // label baseline at +42, descenders ~6
+      assert.ok(p.x - 40 >= x && p.x + 40 <= x + w, "label width fits");
+    }
+  }
+});

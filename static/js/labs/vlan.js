@@ -932,7 +932,8 @@ export function mount(root, lab, { solved = [], onPart = () => {}, onComplete = 
     const box = $("v-diagram"); if (!box) return;
     const seg = M.segments(net.topo);
     if (focus != null && !seg.segments[focus]) focus = null;
-    box.innerHTML = V.svg(net.topo, { layout: lab.layout, width: 600, height: 320, seg, focus })
+    // 16 px of headroom: S1 and R1 sit near the top and their names are drawn above them (svg_check, 19 Nov).
+    box.innerHTML = V.svg(net.topo, { layout: lab.layout, viewBox: "0 -16 600 336", seg, focus })
       + `<h3 class="eyebrow">Who can talk to whom</h3>${V.legend(net.topo, seg, focus)}`;
     box.querySelectorAll("[data-seg]").forEach(b => b.addEventListener("click", () => { focus = focus === Number(b.dataset.seg) ? null : Number(b.dataset.seg); drawDiagram(); box.querySelector(`[data-seg="${b.dataset.seg}"]`)?.focus(); }));
   }

@@ -95,6 +95,14 @@ function mountCards(el, c) {
 }
 
 // Triad: three corners of a triangle. Cycle: a ring with arrows. Both let you select a part to read its detail.
+// The viewBox that holds every node with room for its glow above and its label below (labels sit 42 below the centre and
+// can run ~40 either side). A fixed 220 x 200 box cut off the bottom label of a four-stage cycle (19 Nov). Pure, tested.
+export function nodeBox(pts, { r = 26, glow = 8, label = 50, half = 44 } = {}) {
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+  const x0 = Math.floor(Math.min(...xs) - Math.max(r + glow, half)), x1 = Math.ceil(Math.max(...xs) + Math.max(r + glow, half));
+  const y0 = Math.floor(Math.min(...ys) - r - glow), y1 = Math.ceil(Math.max(...ys) + label);
+  return [x0, y0, x1 - x0, y1 - y0];
+}
 function mountNodes(el, c) {
   const n = c.items.length, triad = c.type === "triad";
   const R = 78, cx = 110, cy = triad ? 104 : 98;
@@ -104,12 +112,13 @@ function mountNodes(el, c) {
     return { x: cx + R * Math.cos(a * Math.PI / 180), y: cy + R * Math.sin(a * Math.PI / 180), a };
   };
   const pts = c.items.map((_, i) => pos(i));
+  const box = nodeBox(pts);
   const edges = triad
     ? [[0, 1], [1, 2], [2, 0]].map(([a, b]) => `<line x1="${pts[a].x}" y1="${pts[a].y}" x2="${pts[b].x}" y2="${pts[b].y}"/>`).join("")
     : pts.map((p, i) => { const q = pts[(i + 1) % n]; return `<path d="M${p.x} ${p.y} A${R} ${R} 0 0 1 ${q.x} ${q.y}" marker-end="url(#cc-arrow-${el.id})"/>`; }).join("");
   el.innerHTML = `<figure class="concept cc-nodes"><figcaption class="cc-title">${esc(c.title)}</figcaption>
     <div class="cc-stage">
-      <svg viewBox="0 0 220 ${triad ? 210 : 200}" class="cc-svg" role="group" aria-label="${esc(c.title)}: select a part to read more">
+      <svg viewBox="${box.join(" ")}" class="cc-svg" role="group" aria-label="${esc(c.title)}: select a part to read more">
         <defs><marker id="cc-arrow-${el.id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z"/></marker></defs>
         <g class="cc-edges">${edges}</g>
         ${c.items.map((it, i) => `<g class="cc-node" data-i="${i}" tabindex="0" role="button" aria-label="${esc(it.label)}" transform="translate(${pts[i].x},${pts[i].y})">

@@ -4818,11 +4818,11 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
    already open beside it, and Back/Next to walk through it. */
 .cc-stage { grid-template-columns: minmax(220px, 340px) minmax(0, 1fr); gap: 24px; padding: 22px 24px;
   background: radial-gradient(90% 120% at 20% 50%, rgba(var(--brand-rgb), 0.08), transparent 60%), var(--surface-2); }
-.cc-side { display: grid; gap: 14px; align-content: center; }
+.cc-side { display: grid; gap: 14px; align-content: center; min-width: 0; }
 .cc-detail { display: grid; gap: 4px; padding: 16px 18px; border-radius: 12px; border: 1px solid rgba(var(--brand-rgb), 0.35); background: var(--surface); min-height: 0; }
 .cc-detail b { font: 700 1.25rem var(--font-display); }
 .cc-detail p { font-size: 0.95rem; }
-.cc-step { display: flex; gap: 8px; }
+.cc-step { display: flex; flex-wrap: wrap; gap: 8px; }
 .cc-step .btn { min-height: 36px; padding: 6px 14px; font-size: 0.78rem; }
 .cc-nodes .cc-edges path.on { stroke: var(--brand); stroke-dasharray: none; opacity: 1; stroke-width: 3; }
 .cc-node.on circle { stroke-width: 3; filter: drop-shadow(0 0 6px rgba(var(--brand-rgb), 0.55)); }
@@ -4830,7 +4830,8 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
   .cc-node.on circle { animation: cc-pulse 2.4s ease-in-out infinite; }
   @keyframes cc-pulse { 50% { filter: drop-shadow(0 0 11px rgba(var(--brand-rgb), 0.8)); } }
 }
-@media (max-width: 560px) { .cc-stage { grid-template-columns: minmax(0, 1fr); padding: 16px; } .cc-svg { max-width: 300px; justify-self: center; } }
+/* Stacked up to 680 px: at ~600 px the side column couldn't fit its detail and buttons (box check, 19 Nov). */
+@media (max-width: 680px) { .cc-stage { grid-template-columns: minmax(0, 1fr); padding: 16px; } .cc-svg { max-width: 300px; justify-self: center; } }
 
 /* Risk heat map (concept type "matrix"): 5 x 5 likelihood x impact, bands tinted so it reads at a glance. */
 .cc-matrix { --rm-low: 45, 212, 160; --rm-medium: 250, 204, 21; --rm-high: 251, 140, 50; --rm-critical: 244, 63, 94; }
@@ -5221,6 +5222,9 @@ button.try-row { font: inherit; text-align: left; cursor: pointer; width: 100%; 
 @media (max-width: 860px) { .term-shell.t-guided { height: 600px; } }
 @media (max-width: 520px) { .term-shell.t-guided { height: 660px; } }  /* the hint box wraps tall on a phone; keep ~250 px of output */
 /* In the objectives panel the list already marks the objective you're on, so the box shows only the hint and findings. */
+/* Docked above the terminal (860 px and below) the hint box sits on the console's dark navy in both themes. It takes its
+   colours from the shell's dark tokens; before 19 Nov the light theme's ink and teal showed there (text 1.07:1, links 3.1:1). */
+.term-shell .vl-now:not(.in-panel) { color: var(--ink); --muted: #9AA9BF; --surface-2: #142030; --brand: #3FE0E8; --brand-rgb: 63, 224, 232; --brand-ink: #04121A; --bad: #FF5470; }
 .vl-now.in-panel { padding: 0; border: 0; background: none; margin-top: 12px; }
 .vl-now.in-panel .vl-objrow { display: none; }
 .vl-now.in-panel .vl-next { background: var(--surface-2); }
