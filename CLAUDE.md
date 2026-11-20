@@ -9,7 +9,7 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
 - The page: `site_template.html` (HTML skeleton, ~5 KB) + `src/site.css` + `src/app/*.js`, joined by `build.assemble_template()`.
   The app files share one scope and run in name order: 01-core (DATA, helpers), 02-glossary, 03-progress, 04-home,
   05-news-cves, 06-learn (lessons, certs, loop), 07-labs (missions, labs, Agency), 08-you (progress, play, careers),
-  09-shell (status bar, palette, router). Nav tabs (keys 1-8, plus feedback on key 9): home, learn, practise, agency, exams, you, feedback, news, cve-radar. Views are `VIEWS.x` / `xxxView()` functions; routes in `parseRoute()`.
+  09-shell (palette, router, flags, Patch). Header: logo (home), tabs Learn, Practise, Agency, Exams, News, CVE Radar, then Search, the progress badge and the theme switch (keys 1-6 tabs, 7 you, 8 feedback, 0 home). Views are `VIEWS.x` / `xxxView()` functions; routes in `parseRoute()`.
 - `static/js/`: ES modules loaded on demand. `missions/engine.js` (pure rules, no DOM), `missions/ui.js`, `missions/layout.js`,
   `exam.js` (cert practice + `readiness()`), `labs/*.js`, `hw.js` (device drawings), `flow.js`, `concept.js`.
 - `content/`: all content as JSON. Missions in `content/missions/*.json` and Agency shifts in `content/agency/*.json` (picked up automatically), certs in `content/certs/`,
@@ -327,5 +327,13 @@ Built by one person with AI help: keep changes small, tested and reusable. Read 
   in every lesson (`job`) and shift debrief; "Where this leads" on every path (`leadsTo`) and the jobs each exam supports;
   topic case lists name shifts by title; PBQ pages and the log/CVSS tools link onward. New by-hand learner's-eye check:
   `tests/coherence_check.mjs` (repeated choices, dead ends, machine text, same words to different places).
+- Published 20 Nov, third release (dev c58d217), minimal and at a glance (the owner's direction): a one-row header (logo,
+  six tabs Learn / Practise / Agency / Exams / News / CVE Radar centred, Search, the progress badge as a link to #progress,
+  theme; no status bar, prompt, version or number badges; keys 1-6 tabs, 7 you, 8 feedback, 0 home; feedback in the footer);
+  the home page's square "How it works" tiles and three exam cards with drawn emblems (not CompTIA's logos); the hero types
+  `clear` between scenes; practise filters folded; flag 1 is the first flag{ in the source. Labs teach the idea first:
+  permissions "Read the line" (`readFor`), evidence labs "Read a line" (`labs/anatomy.js`, 8 log formats, 11 labs), the Linux
+  terminal "Read the prompt" / "Read a command", subnetting "Read the address", CVSS under three plain questions, the VLAN
+  labs' one-line `glance` and a folded front panel. Lesson quizzes have wrong-answer notes and scenario questions.
 - Next: learner feedback on the shift and the new labs, more Security+
   questions, more Agency shifts (one client and incident each; the people for a shift made in one image). No accounts/backend until real users need cross-device saves.
